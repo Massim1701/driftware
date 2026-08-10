@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="guide.title">Bedienungsanleitung — Snoxi</title>
+<meta name="description" data-i18n-content="guide.description" content="So funktioniert Snoxi: Fotos und Videos importieren oder aufnehmen, Filter, Wasserzeichen, Sticker, Gesichter unkenntlich machen und exportieren.">
+<style>
+  :root {
+    --bg: #0c1224;
+    --panel: #141c33;
+    --accent: #3aa8ff;
+    --text: #f5f7fa;
+    --muted: #9aa3c0;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  header {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 56px 24px 24px;
+  }
+  a.back { color: var(--accent); text-decoration: none; font-size: 14px; }
+  h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 16px 0 8px;
+  }
+  .tagline { color: var(--muted); font-size: 16px; margin: 0; }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+  }
+  .req {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin: 32px 0;
+  }
+  .req h2 { margin: 0 0 12px; font-size: 16px; }
+  .req ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+  .req li { margin-bottom: 4px; }
+  .req strong { color: var(--text); }
+  section { margin: 40px 0; }
+  h2.step-title {
+    font-size: 20px;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #06223d;
+    font-weight: 800;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .step-body { padding-left: 38px; }
+  .step-body p { color: var(--muted); margin: 8px 0; font-size: 15px; }
+  .step-body ul { color: var(--muted); font-size: 15px; padding-left: 20px; margin: 8px 0; }
+  .step-body li { margin-bottom: 4px; }
+  .pro-note {
+    display: inline-block;
+    background: rgba(58,168,255,0.12);
+    color: var(--accent);
+    border: 1px solid rgba(58,168,255,0.3);
+    border-radius: 8px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+  footer {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer .links { margin-top: 8px; }
+  footer .links a { margin: 0 8px; }
+</style>
+</head>
+<body>
+  <header>
+    <a class="back" href="index.html">&larr; <span data-i18n="guide.back">Zurück zu Snoxi</span></a>
+    <h1 data-i18n="guide.h1">Bedienungsanleitung</h1>
+    <p class="tagline" data-i18n="guide.tagline">So bearbeitest du Fotos und Videos mit Snoxi — Schritt für Schritt.</p>
+  </header>
+  <main>
+    <div class="req">
+      <h2 data-i18n="guide.req_title">Systemvoraussetzungen</h2>
+      <ul>
+        <li data-i18n="guide.req_ios_html" data-i18n-html><strong>iOS:</strong> iOS 15.1 oder neuer (iPhone)</li>
+        <li data-i18n="guide.req_android_html" data-i18n-html><strong>Android:</strong> Android 8.0 (Oreo) oder neuer</li>
+      </ul>
+    </div>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">1</span> <span data-i18n="guide.step1_title">Foto oder Video auswählen</span></h2>
+      <div class="step-body">
+        <p data-i18n="guide.step1_body">Auf dem Startbildschirm ein vorhandenes Foto oder Video aus deiner Galerie importieren — oder direkt über das Kamera-Symbol ein neues aufnehmen (siehe Schritt 7).</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">2</span> <span data-i18n="guide.step2_title">Filter anwenden</span></h2>
+      <div class="step-body">
+        <p data-i18n="guide.step2_body">Aus mehreren Stimmungs-Presets wählen, die live auf dem Foto oder Video angezeigt werden. Ein Tipp auf "Original" entfernt den Filter wieder.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">3</span> <span data-i18n="guide.step3_title">Zuschneiden</span></h2>
+      <div class="step-body">
+        <p data-i18n="guide.step3_body">Zwischen Original, 1:1 (quadratisch), 4:5 (Hochformat) und 16:9 (Breitbild) wählen.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">4</span> <span data-i18n="guide.step4_title">Wasserzeichen hinzufügen</span></h2>
+      <div class="step-body">
+        <p data-i18n="guide.step4_intro">Eigenen Text eingeben und frei auf dem Bild platzieren. Einstellbar sind:</p>
+        <ul>
+          <li data-i18n="guide.step4_li1">5 Schriftarten</li>
+          <li data-i18n="guide.step4_li2">5 Farben</li>
+          <li data-i18n="guide.step4_li3">Größe (durch Ziehen an den Ecken)</li>
+          <li data-i18n="guide.step4_li4">Transparenz</li>
+        </ul>
+        <p data-i18n="guide.step4_note">Die Einstellungen werden gemerkt und beim nächsten Mal automatisch vorgeschlagen.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">5</span> <span data-i18n="guide.step5_title">Sticker platzieren</span></h2>
+      <div class="step-body">
+        <p data-i18n="guide.step5_body">Beliebige Emojis auswählen, frei auf dem Bild verschieben und in der Größe anpassen. Mehrere Sticker gleichzeitig sind möglich.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">6</span> <span data-i18n="guide.step6_title">Gesicht unkenntlich machen</span><span class="pro-note" data-i18n="guide.step6_pro">nur Fotos</span></h2>
+      <div class="step-body">
+        <p data-i18n="guide.step6_body">Einen Weichzeichner-Kreis über ein Gesicht (oder einen beliebigen Bereich) legen, verschieben und skalieren, um es unkenntlich zu machen.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">7</span> <span data-i18n="guide.step7_title">Direkt mit der Kamera aufnehmen</span></h2>
+      <div class="step-body">
+        <p data-i18n="guide.step7_body">Über das Kamera-Symbol startet zunächst ein Einrichtungs-Bildschirm: dort Emojis und Wasserzeichen schon vorab auswählen und platzieren. Mit "Weiter zur Kamera" startet die Live-Ansicht, in der Sticker und Wasserzeichen schon in der Vorschau zu sehen sind. Foto oder Video aufnehmen — danach geht es direkt weiter zur Bearbeitung (Schritte 2–6).</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">8</span> <span data-i18n="guide.step8_title">Speichern & Teilen</span></h2>
+      <div class="step-body">
+        <p data-i18n="guide.step8_body">Das fertige Foto oder Video in Originalauflösung in der Galerie speichern oder direkt aus der App teilen. Alle Filter, Wasserzeichen und Sticker werden dabei fest ins Bild bzw. Video eingebrannt.</p>
+      </div>
+    </section>
+
+    <div class="req">
+      <h2 data-i18n="guide.pro_title">Hinweis zu PRO-Funktionen</h2>
+      <ul>
+        <li data-i18n="guide.pro_li1_html" data-i18n-html>Snoxi ist ein einmaliger Kauf (5,99&nbsp;€) — kein Abo, keine versteckten Kosten.</li>
+        <li data-i18n="guide.pro_li2">Nach dem Kauf sind alle Funktionen dauerhaft freigeschaltet, inklusive Speichern und Teilen ohne Wasserzeichen-Einschränkung.</li>
+        <li data-i18n="guide.pro_li3">🔒 100 % offline: Deine Fotos und Videos bleiben immer auf deinem Gerät.</li>
+      </ul>
+    </div>
+  </main>
+  <footer>
+    <span data-i18n="guide.footer_copyright">© 2026 Massimo — Snoxi</span>
+    <div class="links">
+      <a href="index.html" data-i18n="guide.footer_link_home">Start</a>
+      <a href="privacy.html" data-i18n="guide.footer_link_privacy">Datenschutzerklärung</a>
+      <a href="impressum.html" data-i18n="guide.footer_link_impressum">Impressum</a>
+      <a href="https://x.com/Massimo_71_" target="_blank" rel="noopener" data-i18n="guide.footer_link_contact">Support</a>
+    </div>
+  </footer>
+  <script src="i18n.js"></script>
+</body>
+</html>

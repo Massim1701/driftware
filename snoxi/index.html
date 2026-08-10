@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="home.title">Snoxi — Foto- & Video-Editor</title>
+<meta name="description" data-i18n-content="home.description" content="Snoxi: schneller, unkomplizierter Foto- und Video-Editor. Filter, Sticker, Wasserzeichen, Gesichter unkenntlich machen und eine Kamera mit Live-Vorschau — alles lokal auf deinem Gerät.">
+<style>
+  :root {
+    --bg: #0c1224;
+    --panel: #141c33;
+    --accent: #3aa8ff;
+    --text: #f5f7fa;
+    --muted: #9aa3c0;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 72px 24px 32px;
+    text-align: center;
+  }
+  .app-icon {
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--border);
+    margin: 0 0 16px;
+  }
+  .logo {
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin: 0 0 12px;
+  }
+  .tagline {
+    color: var(--muted);
+    font-size: 18px;
+    margin: 0 0 32px;
+  }
+  .badges {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .badge.soon { opacity: 0.6; }
+  .badge-nosub {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 14px;
+    background: rgba(58,168,255,0.1);
+    border: 1px solid rgba(58,168,255,0.35);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 14px;
+    margin-top: 16px;
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+  }
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 40px 0;
+  }
+  .feature {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .feature h3 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .feature p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .privacy-note {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 40px;
+  }
+  .privacy-note strong { color: var(--text); }
+  footer {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer .links { margin-top: 8px; }
+  footer .links a { margin: 0 8px; }
+</style>
+</head>
+<body>
+  <header>
+    <img class="app-icon" src="icon.png" alt="Snoxi App-Icon" width="96" height="96">
+    <p class="logo">Snoxi</p>
+    <p class="tagline" data-i18n="home.tagline">Filter, Sticker, Wasserzeichen & Gesichter unkenntlich machen — ganz einfach, komplett auf deinem Gerät.</p>
+    <div class="badges">
+      <span class="badge soon" data-i18n="home.badge_appstore">🍎 App Store — bald verfügbar</span>
+      <span class="badge soon" data-i18n="home.badge_googleplay">▶ Google Play — bald verfügbar</span>
+    </div>
+    <div class="badge-nosub" data-i18n="home.badge_nosub">♾️ Kein Abo — einmal kaufen, für immer nutzen.</div>
+  </header>
+  <main>
+    <div class="features">
+      <div class="feature">
+        <h3 data-i18n="home.feature_camera_title">📷 Kamera</h3>
+        <p data-i18n="home.feature_camera_desc">Fotos und Videos direkt in der App aufnehmen — Emojis und Wasserzeichen schon live in der Vorschau.</p>
+      </div>
+      <div class="feature">
+        <h3 data-i18n="home.feature_filter_title">🎨 Filter</h3>
+        <p data-i18n="home.feature_filter_desc">Mehrere Stimmungs-Presets für Fotos und Videos.</p>
+      </div>
+      <div class="feature">
+        <h3 data-i18n="home.feature_crop_title">✂️ Zuschneiden</h3>
+        <p data-i18n="home.feature_crop_desc">Original, 1:1, 4:5, 16:9.</p>
+      </div>
+      <div class="feature">
+        <h3 data-i18n="home.feature_sticker_title">😀 Sticker</h3>
+        <p data-i18n="home.feature_sticker_desc">Eigene Emojis frei platzieren und in der Größe anpassen.</p>
+      </div>
+      <div class="feature">
+        <h3 data-i18n="home.feature_watermark_title">💧 Wasserzeichen</h3>
+        <p data-i18n="home.feature_watermark_desc">Eigener Text, 5 Schriftarten, 5 Farben, Größe & Transparenz frei einstellbar.</p>
+      </div>
+      <div class="feature">
+        <h3 data-i18n="home.feature_face_title">🙈 Gesicht unkenntlich</h3>
+        <p data-i18n="home.feature_face_desc">Echte Weichzeichnung statt Störbalken, frei platzier- und skalierbar.</p>
+      </div>
+      <div class="feature">
+        <h3 data-i18n="home.feature_privacy_title">🔒 100 % privat</h3>
+        <p data-i18n="home.feature_privacy_desc">Keine Cloud, kein Konto, kein Tracking — deine Fotos und Videos verlassen nie dein Gerät.</p>
+      </div>
+    </div>
+    <div class="privacy-note" data-i18n="home.privacy_note_html" data-i18n-html>
+      <strong>Alles bleibt bei dir.</strong> Snoxi verarbeitet Fotos und Videos komplett lokal auf deinem Gerät — kein Konto, kein Hochladen, kein Tracking. Mehr dazu in der <a href="privacy.html" style="color:var(--accent)">Datenschutzerklärung</a>.
+    </div>
+    <div class="privacy-note" data-i18n="home.sysreq_note_html" data-i18n-html>
+      <strong>Systemvoraussetzungen:</strong> iOS 15.1+ oder Android 8.0+. Alle Details und die Schritt-für-Schritt-Anleitung findest du in der <a href="anleitung.html" style="color:var(--accent)">Bedienungsanleitung</a>.
+    </div>
+  </main>
+  <footer>
+    <span data-i18n="home.footer_copyright">© 2026 Massimo — Snoxi</span>
+    <div class="links">
+      <a href="anleitung.html" data-i18n="home.footer_link_guide">Anleitung</a>
+      <a href="privacy.html" data-i18n="home.footer_link_privacy">Datenschutzerklärung</a>
+      <a href="impressum.html" data-i18n="home.footer_link_impressum">Impressum</a>
+      <a href="https://x.com/Massimo_71_" target="_blank" rel="noopener" data-i18n="home.footer_link_contact">Support</a>
+    </div>
+  </footer>
+  <script src="i18n.js"></script>
+</body>
+</html>
