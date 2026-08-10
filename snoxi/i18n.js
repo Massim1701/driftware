@@ -2,6 +2,8 @@
 (function () {
   "use strict";
 
+  var CONTACT_EMAIL = "welove80sde@gmail.com";
+
   var SUPPORTED_LANGUAGES = ["de","en","es","fr","it","pt","nl","tr","pl","ru","ja","zh"];
   var LANG_NAMES = {
     de: "Deutsch", en: "English", es: "Español", fr: "Français", it: "Italiano",
@@ -12,7 +14,18 @@
   var translations = {};
 
   translations.de = {
-    common: { lang_label: "Sprache" },
+common: {
+          lang_label: "Sprache",
+          contact_heading: "Kontakt aufnehmen",
+          contact_name_label: "Name",
+          contact_form_email_label: "Deine E-Mail-Adresse",
+          contact_message_label: "Nachricht",
+          contact_send: "Senden",
+          contact_success: "Danke für deine Nachricht! Wir melden uns so schnell wie möglich bei dir.",
+          contact_alt_note: "Du kannst uns auch direkt über die oben angezeigte E-Mail-Adresse erreichen.",
+          contact_email_prefix: "E-Mail:",
+          contact_address_note: "Vollständiger Name und ladungsfähige Anschrift werden auf Anfrage über das Kontaktformular unten mitgeteilt."
+        },
     home: {
       title: "Snoxi — Foto- & Video-Editor",
       description: "Snoxi: schneller, unkomplizierter Foto- und Video-Editor. Filter, Sticker, Wasserzeichen, Gesichter unkenntlich machen und eine Kamera mit Live-Vorschau — alles lokal auf deinem Gerät.",
@@ -89,7 +102,7 @@
       h1: "Datenschutzerklärung – Snoxi",
       stand: "Stand: August 2026",
       h2_1: "1. Verantwortlicher",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Deutschland<br>E-Mail: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
+      p1: "Massimo",
       h2_2: "2. Worum es bei Snoxi geht",
       p2: "Snoxi ist eine App zur Bearbeitung von Fotos und Videos (Filter, Zuschneiden, Sticker, Wasserzeichen, Gesichter unkenntlich machen, Kamera-Aufnahme mit Live-Vorschau). Alle Bearbeitungen finden ausschließlich lokal auf deinem Gerät statt. Es werden keine Fotos, Videos oder sonstigen Inhalte an uns oder an Dritte übertragen.",
       h2_3: "3. Zugriffsberechtigungen und warum wir sie brauchen",
@@ -104,7 +117,7 @@
       h2_6: "6. Kinder",
       p6: "Snoxi richtet sich nicht gezielt an Kinder unter 16 Jahren. Da die App ohnehin keine personenbezogenen Daten erhebt, werden auch keine Daten von Kindern gesammelt.",
       h2_7: "7. Deine Rechte",
-      p7_html: "Da Snoxi keine personenbezogenen Daten erhebt, speichert oder überträgt, bestehen unsererseits keine Datenbestände, auf die sich Auskunfts-, Berichtigungs- oder Löschungsansprüche beziehen könnten. Bei Fragen erreichst du uns jederzeit unter <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>.",
+      p7_text: "Da Snoxi keine personenbezogenen Daten erhebt, speichert oder überträgt, bestehen unsererseits keine Datenbestände, auf die sich Auskunfts-, Berichtigungs- oder Löschungsansprüche beziehen könnten. Bei Fragen erreichst du uns jederzeit über die Kontaktmöglichkeit am Ende dieser Seite.",
       h2_8: "8. Änderungen dieser Erklärung",
       p8: "Wir behalten uns vor, diese Datenschutzerklärung bei Bedarf anzupassen, etwa wenn neue Funktionen hinzukommen. Die jeweils aktuelle Version ist unter dieser Seite abrufbar."
     },
@@ -113,18 +126,28 @@
       back: "Zurück",
       h1: "Impressum",
       h2_1: "Angaben gemäß § 5 TMG",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Deutschland",
+      p1: "Massimo",
       h2_kontakt: "Kontakt",
-      p_kontakt_html: "E-Mail: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
       h2_verantwortlich: "Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV",
-      p_verantwortlich: "Massimo Manca (Anschrift wie oben)",
+      p_verantwortlich: "Massimo",
       h2_hinweis: "Hinweis",
       p_hinweis: "Dieses Impressum wurde als Entwurf für eine Einzelperson (kein Gewerbe) erstellt und ersetzt keine Rechtsberatung. Bei Unsicherheiten zur Impressumspflicht empfiehlt sich eine kurze Prüfung durch einen Anwalt oder einen Generator wie eRecht24."
     }
   };
 
   translations.en = {
-    common: { lang_label: "Language" },
+common: {
+          lang_label: "Language",
+          contact_heading: "Get in Touch",
+          contact_name_label: "Name",
+          contact_form_email_label: "Your Email Address",
+          contact_message_label: "Message",
+          contact_send: "Send",
+          contact_success: "Thank you for your message! We’ll get back to you as soon as possible.",
+          contact_alt_note: "You can also reach us directly via the email address shown above.",
+          contact_email_prefix: "Email:",
+          contact_address_note: "Full name and a postal address for service of process will be provided on request via the contact form below."
+        },
     home: {
       title: "Snoxi — Photo & Video Editor",
       description: "Snoxi: a fast, effortless photo and video editor. Filters, stickers, watermarks, face blurring, and a camera with live preview — all on your device.",
@@ -201,7 +224,7 @@
       h1: "Privacy Policy – Snoxi",
       stand: "Last updated: August 2026",
       h2_1: "1. Data Controller",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Germany<br>Email: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
+      p1: "Massimo",
       h2_2: "2. What Snoxi is about",
       p2: "Snoxi is an app for editing photos and videos (filters, cropping, stickers, watermarks, face blurring, camera capture with live preview). All editing happens exclusively on your device. No photos, videos, or other content are ever transmitted to us or any third party.",
       h2_3: "3. Permissions and why we need them",
@@ -216,7 +239,7 @@
       h2_6: "6. Children",
       p6: "Snoxi is not specifically directed at children under 16. Since the app does not collect personal data in the first place, no data from children is collected either.",
       h2_7: "7. Your rights",
-      p7_html: "Since Snoxi does not collect, store, or transmit personal data, we hold no data on which access, correction, or deletion requests could be based. If you have questions, you can reach us anytime at <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>.",
+      p7_text: "Since Snoxi does not collect, store, or transmit personal data, we hold no data on which access, correction, or deletion requests could be based. If you have questions, you can reach us anytime via the contact option at the end of this page.",
       h2_8: "8. Changes to this policy",
       p8: "We reserve the right to update this privacy policy as needed, for example when new features are added. The current version is always available on this page."
     },
@@ -225,18 +248,28 @@
       back: "Back",
       h1: "Legal Notice",
       h2_1: "Information pursuant to § 5 TMG",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Germany",
+      p1: "Massimo",
       h2_kontakt: "Contact",
-      p_kontakt_html: "Email: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
       h2_verantwortlich: "Responsible for content pursuant to § 55 (2) RStV",
-      p_verantwortlich: "Massimo Manca (address as above)",
+      p_verantwortlich: "Massimo",
       h2_hinweis: "Note",
       p_hinweis: "This legal notice was drafted for a private individual (not a business) and does not constitute legal advice. If you are unsure about legal notice requirements, we recommend a brief review by a lawyer or a generator such as eRecht24."
     }
   };
 
   translations.es = {
-    common: { lang_label: "Idioma" },
+common: {
+          lang_label: "Idioma",
+          contact_heading: "Contáctanos",
+          contact_name_label: "Nombre",
+          contact_form_email_label: "Tu dirección de correo electrónico",
+          contact_message_label: "Mensaje",
+          contact_send: "Enviar",
+          contact_success: "¡Gracias por tu mensaje! Te responderemos lo antes posible.",
+          contact_alt_note: "También puedes contactarnos directamente a través de la dirección de correo electrónico indicada arriba.",
+          contact_email_prefix: "Correo electrónico:",
+          contact_address_note: "El nombre completo y una dirección postal válida se facilitarán previa solicitud a través del formulario de contacto que aparece más abajo."
+        },
     home: {
       title: "Snoxi — Editor de fotos y vídeos",
       description: "Snoxi: un editor de fotos y vídeos rápido y sencillo. Filtros, pegatinas, marcas de agua, difuminado de rostros y una cámara con vista previa en directo — todo en tu dispositivo.",
@@ -313,7 +346,7 @@
       h1: "Política de privacidad – Snoxi",
       stand: "Última actualización: agosto de 2026",
       h2_1: "1. Responsable",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Alemania<br>Correo electrónico: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
+      p1: "Massimo",
       h2_2: "2. De qué trata Snoxi",
       p2: "Snoxi es una app para editar fotos y vídeos (filtros, recorte, pegatinas, marcas de agua, difuminado de rostros, captura con cámara y vista previa en directo). Todas las ediciones se realizan exclusivamente en tu dispositivo. No se transmiten fotos, vídeos ni ningún otro contenido a nosotros ni a terceros.",
       h2_3: "3. Permisos de acceso y por qué los necesitamos",
@@ -328,7 +361,7 @@
       h2_6: "6. Menores",
       p6: "Snoxi no está dirigida específicamente a menores de 16 años. Dado que la app no recopila datos personales en ningún caso, tampoco se recopilan datos de menores.",
       h2_7: "7. Tus derechos",
-      p7_html: "Dado que Snoxi no recopila, almacena ni transmite datos personales, no disponemos de ningún registro de datos sobre el que puedan basarse solicitudes de acceso, rectificación o supresión. Si tienes alguna pregunta, puedes contactarnos en cualquier momento en <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>.",
+      p7_text: "Dado que Snoxi no recopila, almacena ni transmite datos personales, no disponemos de ningún registro de datos sobre el que puedan basarse solicitudes de acceso, rectificación o supresión. Si tienes alguna pregunta, puedes contactarnos en cualquier momento a través de la opción de contacto al final de esta página.",
       h2_8: "8. Cambios en esta política",
       p8: "Nos reservamos el derecho de adaptar esta política de privacidad cuando sea necesario, por ejemplo al añadir nuevas funciones. La versión vigente en cada momento está disponible en esta página."
     },
@@ -337,18 +370,28 @@
       back: "Volver",
       h1: "Aviso legal",
       h2_1: "Información conforme al § 5 TMG",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Alemania",
+      p1: "Massimo",
       h2_kontakt: "Contacto",
-      p_kontakt_html: "Correo electrónico: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
       h2_verantwortlich: "Responsable del contenido conforme al § 55 párr. 2 RStV",
-      p_verantwortlich: "Massimo Manca (dirección como se indica arriba)",
+      p_verantwortlich: "Massimo",
       h2_hinweis: "Nota",
       p_hinweis: "Este aviso legal se ha redactado como borrador para una persona particular (sin actividad comercial) y no sustituye el asesoramiento jurídico. Si tienes dudas sobre la obligación de aviso legal, se recomienda una breve revisión por parte de un abogado o de un generador como eRecht24."
     }
   };
 
   translations.fr = {
-    common: { lang_label: "Langue" },
+common: {
+          lang_label: "Langue",
+          contact_heading: "Nous contacter",
+          contact_name_label: "Nom",
+          contact_form_email_label: "Votre adresse e-mail",
+          contact_message_label: "Message",
+          contact_send: "Envoyer",
+          contact_success: "Merci pour votre message ! Nous vous répondrons dès que possible.",
+          contact_alt_note: "Vous pouvez également nous contacter directement via l’adresse e-mail indiquée ci-dessus.",
+          contact_email_prefix: "E-mail :",
+          contact_address_note: "Le nom complet et une adresse postale valable pour la signification seront communiqués sur demande via le formulaire de contact ci-dessous."
+        },
     home: {
       title: "Snoxi — Éditeur photo et vidéo",
       description: "Snoxi : un éditeur photo et vidéo rapide et simple. Filtres, autocollants, filigranes, floutage de visages et un appareil photo avec aperçu en direct — le tout sur votre appareil.",
@@ -425,7 +468,7 @@
       h1: "Politique de confidentialité – Snoxi",
       stand: "Dernière mise à jour : août 2026",
       h2_1: "1. Responsable du traitement",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Allemagne<br>E-mail : <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
+      p1: "Massimo",
       h2_2: "2. En quoi consiste Snoxi",
       p2: "Snoxi est une application d'édition de photos et de vidéos (filtres, recadrage, autocollants, filigranes, floutage de visages, capture avec appareil photo et aperçu en direct). Toutes les modifications s'effectuent exclusivement sur votre appareil. Aucune photo, vidéo ou autre contenu n'est jamais transmis à nous-mêmes ou à des tiers.",
       h2_3: "3. Autorisations d'accès et pourquoi nous en avons besoin",
@@ -440,7 +483,7 @@
       h2_6: "6. Enfants",
       p6: "Snoxi ne s'adresse pas spécifiquement aux enfants de moins de 16 ans. Comme l'app ne collecte de toute façon aucune donnée personnelle, aucune donnée d'enfant n'est collectée non plus.",
       h2_7: "7. Vos droits",
-      p7_html: "Comme Snoxi ne collecte, ne stocke ni ne transmet de données personnelles, nous ne disposons d'aucun fichier de données pouvant faire l'objet de demandes d'accès, de rectification ou de suppression. Pour toute question, contactez-nous à tout moment à l'adresse <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>.",
+      p7_text: "Comme Snoxi ne collecte, ne stocke ni ne transmet de données personnelles, nous ne disposons d'aucun fichier de données pouvant faire l'objet de demandes d'accès, de rectification ou de suppression. Pour toute question, vous pouvez nous contacter à tout moment via l'option de contact à la fin de cette page.",
       h2_8: "8. Modifications de cette politique",
       p8: "Nous nous réservons le droit d'adapter cette politique de confidentialité si nécessaire, par exemple lors de l'ajout de nouvelles fonctions. La version actuelle est toujours disponible sur cette page."
     },
@@ -449,18 +492,28 @@
       back: "Retour",
       h1: "Mentions légales",
       h2_1: "Informations conformément au § 5 TMG",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Allemagne",
+      p1: "Massimo",
       h2_kontakt: "Contact",
-      p_kontakt_html: "E-mail : <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
       h2_verantwortlich: "Responsable du contenu conformément au § 55 al. 2 RStV",
-      p_verantwortlich: "Massimo Manca (adresse ci-dessus)",
+      p_verantwortlich: "Massimo",
       h2_hinweis: "Remarque",
       p_hinweis: "Ces mentions légales ont été rédigées comme modèle pour un particulier (sans activité commerciale) et ne remplacent pas un conseil juridique. En cas de doute sur l'obligation de mentions légales, il est recommandé de faire vérifier ce document par un avocat ou un générateur tel qu'eRecht24."
     }
   };
 
   translations.it = {
-    common: { lang_label: "Lingua" },
+common: {
+          lang_label: "Lingua",
+          contact_heading: "Contattaci",
+          contact_name_label: "Nome",
+          contact_form_email_label: "La tua e-mail",
+          contact_message_label: "Messaggio",
+          contact_send: "Invia",
+          contact_success: "Grazie per il tuo messaggio! Ti risponderemo il prima possibile.",
+          contact_alt_note: "Puoi anche contattarci direttamente tramite l'indirizzo e-mail indicato sopra.",
+          contact_email_prefix: "E-mail:",
+          contact_address_note: "Il nome completo e un indirizzo postale valido per la notifica saranno forniti su richiesta tramite il modulo di contatto qui sotto."
+        },
     home: {
       title: "Snoxi — Editor foto e video",
       description: "Snoxi: un editor di foto e video veloce e semplice. Filtri, sticker, filigrane, sfocatura dei volti e una fotocamera con anteprima live — tutto sul tuo dispositivo.",
@@ -537,7 +590,7 @@
       h1: "Informativa sulla privacy – Snoxi",
       stand: "Ultimo aggiornamento: agosto 2026",
       h2_1: "1. Titolare del trattamento",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Germania<br>E-mail: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
+      p1: "Massimo",
       h2_2: "2. Di cosa si occupa Snoxi",
       p2: "Snoxi è un'app per l'editing di foto e video (filtri, ritaglio, sticker, filigrane, sfocatura dei volti, scatto con fotocamera e anteprima live). Tutte le modifiche avvengono esclusivamente sul tuo dispositivo. Nessuna foto, video o altro contenuto viene mai trasmesso a noi o a terzi.",
       h2_3: "3. Autorizzazioni di accesso e perché ci servono",
@@ -552,7 +605,7 @@
       h2_6: "6. Minori",
       p6: "Snoxi non si rivolge specificamente a minori di 16 anni. Poiché l'app non raccoglie comunque dati personali, non vengono raccolti neppure dati di minori.",
       h2_7: "7. I tuoi diritti",
-      p7_html: "Poiché Snoxi non raccoglie, memorizza o trasmette dati personali, da parte nostra non esiste alcun archivio di dati a cui possano riferirsi richieste di accesso, rettifica o cancellazione. Per qualsiasi domanda puoi contattarci in qualsiasi momento all'indirizzo <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>.",
+      p7_text: "Poiché Snoxi non raccoglie, memorizza o trasmette dati personali, da parte nostra non esiste alcun archivio di dati a cui possano riferirsi richieste di accesso, rettifica o cancellazione. Per qualsiasi domanda puoi contattarci in qualsiasi momento tramite l'opzione di contatto alla fine di questa pagina.",
       h2_8: "8. Modifiche alla presente informativa",
       p8: "Ci riserviamo il diritto di adattare questa informativa sulla privacy quando necessario, ad esempio in caso di aggiunta di nuove funzioni. La versione attuale è sempre disponibile in questa pagina."
     },
@@ -561,18 +614,28 @@
       back: "Indietro",
       h1: "Note legali",
       h2_1: "Informazioni ai sensi del § 5 TMG",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Germania",
+      p1: "Massimo",
       h2_kontakt: "Contatto",
-      p_kontakt_html: "E-mail: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
       h2_verantwortlich: "Responsabile del contenuto ai sensi del § 55 comma 2 RStV",
-      p_verantwortlich: "Massimo Manca (indirizzo come sopra)",
+      p_verantwortlich: "Massimo",
       h2_hinweis: "Nota",
       p_hinweis: "Queste note legali sono state redatte come bozza per una persona fisica (non un'attività commerciale) e non sostituiscono una consulenza legale. In caso di dubbi sull'obbligo di note legali, si consiglia una breve verifica da parte di un avvocato o di un generatore come eRecht24."
     }
   };
 
   translations.pt = {
-    common: { lang_label: "Idioma" },
+common: {
+          lang_label: "Idioma",
+          contact_heading: "Fale conosco",
+          contact_name_label: "Nome",
+          contact_form_email_label: "Seu e-mail",
+          contact_message_label: "Mensagem",
+          contact_send: "Enviar",
+          contact_success: "Obrigado pela sua mensagem! Responderemos o mais rápido possível.",
+          contact_alt_note: "Você também pode nos contatar diretamente pelo endereço de e-mail exibido acima.",
+          contact_email_prefix: "E-mail:",
+          contact_address_note: "O nome completo e um endereço postal válido para notificações serão fornecidos mediante solicitação através do formulário de contato abaixo."
+        },
     home: {
       title: "Snoxi — Editor de fotos e vídeos",
       description: "Snoxi: um editor de fotos e vídeos rápido e descomplicado. Filtros, adesivos, marcas d'água, desfoque de rostos e uma câmera com pré-visualização ao vivo — tudo no seu dispositivo.",
@@ -649,7 +712,7 @@
       h1: "Política de privacidade – Snoxi",
       stand: "Última atualização: agosto de 2026",
       h2_1: "1. Responsável",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Alemanha<br>E-mail: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
+      p1: "Massimo",
       h2_2: "2. Do que se trata o Snoxi",
       p2: "O Snoxi é um app para edição de fotos e vídeos (filtros, corte, adesivos, marcas d'água, desfoque de rostos, captura com câmera e pré-visualização ao vivo). Todas as edições ocorrem exclusivamente no seu dispositivo. Nenhuma foto, vídeo ou outro conteúdo é transmitido a nós ou a terceiros.",
       h2_3: "3. Permissões de acesso e por que precisamos delas",
@@ -664,7 +727,7 @@
       h2_6: "6. Crianças",
       p6: "O Snoxi não é direcionado especificamente a crianças menores de 16 anos. Como o app não coleta dados pessoais em nenhuma hipótese, também não são coletados dados de crianças.",
       h2_7: "7. Seus direitos",
-      p7_html: "Como o Snoxi não coleta, armazena nem transmite dados pessoais, não mantemos nenhum banco de dados ao qual solicitações de acesso, retificação ou exclusão possam se referir. Em caso de dúvidas, você pode nos contatar a qualquer momento em <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>.",
+      p7_text: "Como o Snoxi não coleta, armazena nem transmite dados pessoais, não mantemos nenhum banco de dados ao qual solicitações de acesso, retificação ou exclusão possam se referir. Em caso de dúvidas, você pode nos contatar a qualquer momento através da opção de contato no final desta página.",
       h2_8: "8. Alterações a esta política",
       p8: "Reservamo-nos o direito de adaptar esta política de privacidade quando necessário, por exemplo ao adicionar novos recursos. A versão atual está sempre disponível nesta página."
     },
@@ -673,18 +736,28 @@
       back: "Voltar",
       h1: "Aviso legal",
       h2_1: "Informações conforme o § 5 TMG",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Alemanha",
+      p1: "Massimo",
       h2_kontakt: "Contato",
-      p_kontakt_html: "E-mail: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
       h2_verantwortlich: "Responsável pelo conteúdo conforme o § 55, parágrafo 2 RStV",
-      p_verantwortlich: "Massimo Manca (endereço acima)",
+      p_verantwortlich: "Massimo",
       h2_hinweis: "Observação",
       p_hinweis: "Este aviso legal foi elaborado como modelo para uma pessoa física (sem atividade comercial) e não substitui aconselhamento jurídico. Em caso de dúvidas sobre a obrigatoriedade do aviso legal, recomenda-se uma breve verificação por um advogado ou por um gerador como o eRecht24."
     }
   };
 
   translations.nl = {
-    common: { lang_label: "Taal" },
+common: {
+          lang_label: "Taal",
+          contact_heading: "Neem contact op",
+          contact_name_label: "Naam",
+          contact_form_email_label: "Jouw e-mailadres",
+          contact_message_label: "Bericht",
+          contact_send: "Verzenden",
+          contact_success: "Bedankt voor je bericht! We reageren zo snel mogelijk.",
+          contact_alt_note: "Je kunt ons ook rechtstreeks bereiken via het hierboven getoonde e-mailadres.",
+          contact_email_prefix: "E-mail:",
+          contact_address_note: "Volledige naam en een correspondentieadres worden op verzoek verstrekt via het contactformulier hieronder."
+        },
     home: {
       title: "Snoxi — Foto- en video-editor",
       description: "Snoxi: een snelle, eenvoudige foto- en video-editor. Filters, stickers, watermerken, gezichten onherkenbaar maken en een camera met live-preview — allemaal lokaal op je apparaat.",
@@ -761,7 +834,7 @@
       h1: "Privacybeleid – Snoxi",
       stand: "Laatst bijgewerkt: augustus 2026",
       h2_1: "1. Verantwoordelijke",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Duitsland<br>E-mail: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
+      p1: "Massimo",
       h2_2: "2. Waar Snoxi voor staat",
       p2: "Snoxi is een app voor het bewerken van foto's en video's (filters, bijsnijden, stickers, watermerken, gezichten onherkenbaar maken, camera-opname met live-preview). Alle bewerkingen vinden uitsluitend lokaal op je apparaat plaats. Er worden geen foto's, video's of andere inhoud naar ons of naar derden verzonden.",
       h2_3: "3. Toegangsrechten en waarom we die nodig hebben",
@@ -776,7 +849,7 @@
       h2_6: "6. Kinderen",
       p6: "Snoxi richt zich niet specifiek op kinderen jonger dan 16 jaar. Aangezien de app sowieso geen persoonsgegevens verzamelt, worden er ook geen gegevens van kinderen verzameld.",
       h2_7: "7. Jouw rechten",
-      p7_html: "Omdat Snoxi geen persoonsgegevens verzamelt, opslaat of verzendt, beschikken wij niet over gegevensbestanden waarop verzoeken tot inzage, rectificatie of verwijdering betrekking zouden kunnen hebben. Bij vragen kun je ons altijd bereiken via <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>.",
+      p7_text: "Omdat Snoxi geen persoonsgegevens verzamelt, opslaat of verzendt, beschikken wij niet over gegevensbestanden waarop verzoeken tot inzage, rectificatie of verwijdering betrekking zouden kunnen hebben. Bij vragen kun je ons altijd bereiken via de contactmogelijkheid onderaan deze pagina.",
       h2_8: "8. Wijzigingen in dit beleid",
       p8: "Wij behouden ons het recht voor dit privacybeleid indien nodig aan te passen, bijvoorbeeld wanneer er nieuwe functies bijkomen. De actuele versie is altijd op deze pagina beschikbaar."
     },
@@ -785,18 +858,28 @@
       back: "Terug",
       h1: "Colofon",
       h2_1: "Gegevens conform § 5 TMG",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Duitsland",
+      p1: "Massimo",
       h2_kontakt: "Contact",
-      p_kontakt_html: "E-mail: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
       h2_verantwortlich: "Verantwoordelijk voor de inhoud conform § 55 lid 2 RStV",
-      p_verantwortlich: "Massimo Manca (adres zoals hierboven)",
+      p_verantwortlich: "Massimo",
       h2_hinweis: "Opmerking",
       p_hinweis: "Dit colofon is opgesteld als concept voor een particulier (geen bedrijf) en vervangt geen juridisch advies. Bij twijfel over de colofonverplichting wordt een korte controle door een advocaat of een generator zoals eRecht24 aanbevolen."
     }
   };
 
   translations.tr = {
-    common: { lang_label: "Dil" },
+common: {
+          lang_label: "Dil",
+          contact_heading: "Bize Ulaşın",
+          contact_name_label: "İsim",
+          contact_form_email_label: "E-posta Adresin",
+          contact_message_label: "Mesaj",
+          contact_send: "Gönder",
+          contact_success: "Mesajın için teşekkürler! En kısa sürede sana geri döneceğiz.",
+          contact_alt_note: "Bizimle yukarıda gösterilen e-posta adresi üzerinden doğrudan da iletişime geçebilirsin.",
+          contact_email_prefix: "E-posta:",
+          contact_address_note: "Tam ad ve tebligata elverişli adres, aşağıdaki iletişim formu üzerinden talep üzerine bildirilecektir."
+        },
     home: {
       title: "Snoxi — Fotoğraf ve Video Düzenleyici",
       description: "Snoxi: hızlı, kullanımı kolay fotoğraf ve video düzenleyici. Filtreler, çıkartmalar, filigranlar, yüz bulanıklaştırma ve canlı önizlemeli kamera — hepsi cihazında.",
@@ -873,7 +956,7 @@
       h1: "Gizlilik Politikası – Snoxi",
       stand: "Son güncelleme: Ağustos 2026",
       h2_1: "1. Veri Sorumlusu",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Almanya<br>E-posta: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
+      p1: "Massimo",
       h2_2: "2. Snoxi ne hakkında",
       p2: "Snoxi, fotoğraf ve video düzenlemeye yönelik bir uygulamadır (filtreler, kırpma, çıkartmalar, filigranlar, yüz bulanıklaştırma, canlı önizlemeli kamera çekimi). Tüm düzenlemeler yalnızca cihazında gerçekleşir. Hiçbir fotoğraf, video veya başka bir içerik bize ya da üçüncü taraflara aktarılmaz.",
       h2_3: "3. Erişim izinleri ve neden ihtiyacımız var",
@@ -888,7 +971,7 @@
       h2_6: "6. Çocuklar",
       p6: "Snoxi, özellikle 16 yaşın altındaki çocuklara yönelik değildir. Uygulama zaten kişisel veri toplamadığından, çocuklara ait veriler de toplanmaz.",
       h2_7: "7. Haklarınız",
-      p7_html: "Snoxi kişisel veri toplamadığı, saklamadığı veya aktarmadığı için, erişim, düzeltme veya silme taleplerinin dayanabileceği herhangi bir veri kaydımız bulunmamaktadır. Sorularınız için bize her zaman <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a> adresinden ulaşabilirsiniz.",
+      p7_text: "Snoxi kişisel veri toplamadığı, saklamadığı veya aktarmadığı için, erişim, düzeltme veya silme taleplerinin dayanabileceği herhangi bir veri kaydımız bulunmamaktadır. Sorularınız için bize her zaman bu sayfanın altındaki iletişim seçeneği üzerinden ulaşabilirsiniz.",
       h2_8: "8. Bu politikadaki değişiklikler",
       p8: "Örneğin yeni özellikler eklendiğinde, gerekli görüldüğünde bu gizlilik politikasını güncelleme hakkını saklı tutarız. Güncel sürüm her zaman bu sayfada mevcuttur."
     },
@@ -897,18 +980,28 @@
       back: "Geri",
       h1: "Yasal Bilgiler",
       h2_1: "§ 5 TMG uyarınca bilgiler",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Almanya",
+      p1: "Massimo",
       h2_kontakt: "İletişim",
-      p_kontakt_html: "E-posta: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
       h2_verantwortlich: "§ 55 Abs. 2 RStV uyarınca içerikten sorumlu kişi",
-      p_verantwortlich: "Massimo Manca (yukarıdaki adres)",
+      p_verantwortlich: "Massimo",
       h2_hinweis: "Not",
       p_hinweis: "Bu yasal bildirim, bir şahıs (ticari işletme değil) için taslak olarak hazırlanmıştır ve hukuki danışmanlığın yerini tutmaz. Yasal bildirim yükümlülüğü konusunda belirsizlik varsa bir avukat veya eRecht24 gibi bir oluşturucu tarafından kısa bir inceleme yapılması önerilir."
     }
   };
 
   translations.pl = {
-    common: { lang_label: "Język" },
+common: {
+          lang_label: "Język",
+          contact_heading: "Skontaktuj się z nami",
+          contact_name_label: "Imię",
+          contact_form_email_label: "Twój adres e-mail",
+          contact_message_label: "Wiadomość",
+          contact_send: "Wyślij",
+          contact_success: "Dziękujemy za wiadomość! Odpowiemy najszybciej, jak to możliwe.",
+          contact_alt_note: "Możesz się z nami skontaktować również bezpośrednio za pomocą adresu e-mail podanego powyżej.",
+          contact_email_prefix: "E-mail:",
+          contact_address_note: "Pełne imię i nazwisko oraz adres do doręczeń zostaną podane na żądanie za pośrednictwem poniższego formularza kontaktowego."
+        },
     home: {
       title: "Snoxi — Edytor zdjęć i wideo",
       description: "Snoxi: szybki, prosty edytor zdjęć i wideo. Filtry, naklejki, znaki wodne, rozmywanie twarzy i aparat z podglądem na żywo — wszystko lokalnie na Twoim urządzeniu.",
@@ -985,7 +1078,7 @@
       h1: "Polityka prywatności – Snoxi",
       stand: "Ostatnia aktualizacja: sierpień 2026",
       h2_1: "1. Administrator danych",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Niemcy<br>E-mail: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
+      p1: "Massimo",
       h2_2: "2. Czym jest Snoxi",
       p2: "Snoxi to aplikacja do edycji zdjęć i filmów (filtry, przycinanie, naklejki, znaki wodne, rozmywanie twarzy, nagrywanie aparatem z podglądem na żywo). Wszystkie edycje odbywają się wyłącznie lokalnie na Twoim urządzeniu. Żadne zdjęcia, filmy ani inne treści nie są przesyłane do nas ani do osób trzecich.",
       h2_3: "3. Uprawnienia dostępu i dlaczego ich potrzebujemy",
@@ -1000,7 +1093,7 @@
       h2_6: "6. Dzieci",
       p6: "Snoxi nie jest skierowana specjalnie do dzieci poniżej 16 roku życia. Ponieważ aplikacja i tak nie zbiera danych osobowych, nie są zbierane również żadne dane dzieci.",
       h2_7: "7. Twoje prawa",
-      p7_html: "Ponieważ Snoxi nie zbiera, nie przechowuje ani nie przesyła danych osobowych, nie posiadamy żadnych zbiorów danych, do których mogłyby odnosić się żądania dostępu, sprostowania lub usunięcia. W razie pytań możesz się z nami skontaktować w dowolnym momencie pod adresem <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>.",
+      p7_text: "Ponieważ Snoxi nie zbiera, nie przechowuje ani nie przesyła danych osobowych, nie posiadamy żadnych zbiorów danych, do których mogłyby odnosić się żądania dostępu, sprostowania lub usunięcia. W razie pytań możesz się z nami skontaktować w dowolnym momencie za pośrednictwem opcji kontaktu na końcu tej strony.",
       h2_8: "8. Zmiany niniejszej polityki",
       p8: "Zastrzegamy sobie prawo do dostosowania niniejszej polityki prywatności w razie potrzeby, na przykład przy dodawaniu nowych funkcji. Aktualna wersja jest zawsze dostępna na tej stronie."
     },
@@ -1009,18 +1102,28 @@
       back: "Wstecz",
       h1: "Nota prawna",
       h2_1: "Informacje zgodnie z § 5 TMG",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Niemcy",
+      p1: "Massimo",
       h2_kontakt: "Kontakt",
-      p_kontakt_html: "E-mail: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
       h2_verantwortlich: "Odpowiedzialny za treść zgodnie z § 55 ust. 2 RStV",
-      p_verantwortlich: "Massimo Manca (adres jak wyżej)",
+      p_verantwortlich: "Massimo",
       h2_hinweis: "Uwaga",
       p_hinweis: "Niniejsza nota prawna została sporządzona jako projekt dla osoby prywatnej (bez działalności gospodarczej) i nie zastępuje porady prawnej. W razie wątpliwości co do obowiązku publikacji noty prawnej zaleca się krótką weryfikację przez prawnika lub generator taki jak eRecht24."
     }
   };
 
   translations.ru = {
-    common: { lang_label: "Язык" },
+common: {
+          lang_label: "Язык",
+          contact_heading: "Связаться с нами",
+          contact_name_label: "Имя",
+          contact_form_email_label: "Ваш адрес электронной почты",
+          contact_message_label: "Сообщение",
+          contact_send: "Отправить",
+          contact_success: "Спасибо за ваше сообщение! Мы ответим вам как можно скорее.",
+          contact_alt_note: "Вы также можете связаться с нами напрямую по указанному выше адресу электронной почты.",
+          contact_email_prefix: "Эл. почта:",
+          contact_address_note: "Полное имя и почтовый адрес для вручения корреспонденции будут предоставлены по запросу через контактную форму ниже."
+        },
     home: {
       title: "Snoxi — Фото- и видеоредактор",
       description: "Snoxi: быстрый, простой фото- и видеоредактор. Фильтры, стикеры, водяные знаки, размытие лиц и камера с живым предпросмотром — всё локально на вашем устройстве.",
@@ -1097,7 +1200,7 @@
       h1: "Политика конфиденциальности – Snoxi",
       stand: "Последнее обновление: август 2026",
       h2_1: "1. Ответственное лицо",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Германия<br>Эл. почта: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
+      p1: "Massimo",
       h2_2: "2. О чём Snoxi",
       p2: "Snoxi — приложение для редактирования фото и видео (фильтры, обрезка, стикеры, водяные знаки, размытие лиц, съёмка с камеры с живым предпросмотром). Все правки происходят исключительно локально на вашем устройстве. Никакие фото, видео или другой контент не передаются нам или третьим лицам.",
       h2_3: "3. Разрешения на доступ и зачем они нам нужны",
@@ -1112,7 +1215,7 @@
       h2_6: "6. Дети",
       p6: "Snoxi не ориентировано специально на детей младше 16 лет. Поскольку приложение в принципе не собирает персональные данные, данные детей также не собираются.",
       h2_7: "7. Ваши права",
-      p7_html: "Поскольку Snoxi не собирает, не хранит и не передаёт персональные данные, у нас отсутствуют какие-либо базы данных, к которым могли бы относиться запросы на доступ, исправление или удаление. По любым вопросам вы можете связаться с нами в любое время по адресу <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>.",
+      p7_text: "Поскольку Snoxi не собирает, не хранит и не передаёт персональные данные, у нас отсутствуют какие-либо базы данных, к которым могли бы относиться запросы на доступ, исправление или удаление. По любым вопросам вы можете связаться с нами в любое время через контактные данные в конце этой страницы.",
       h2_8: "8. Изменения настоящей политики",
       p8: "Мы оставляем за собой право адаптировать настоящую политику конфиденциальности при необходимости, например при добавлении новых функций. Актуальная версия всегда доступна на этой странице."
     },
@@ -1121,18 +1224,28 @@
       back: "Назад",
       h1: "Выходные данные",
       h2_1: "Сведения согласно § 5 TMG",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Германия",
+      p1: "Massimo",
       h2_kontakt: "Контакты",
-      p_kontakt_html: "Эл. почта: <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
       h2_verantwortlich: "Ответственный за содержание согласно § 55 абз. 2 RStV",
-      p_verantwortlich: "Massimo Manca (адрес указан выше)",
+      p_verantwortlich: "Massimo",
       h2_hinweis: "Примечание",
       p_hinweis: "Эти выходные данные составлены как черновик для частного лица (не для коммерческой деятельности) и не заменяют юридическую консультацию. При наличии сомнений относительно обязательности выходных данных рекомендуется краткая проверка юристом или таким генератором, как eRecht24."
     }
   };
 
   translations.ja = {
-    common: { lang_label: "言語" },
+common: {
+          lang_label: "言語",
+          contact_heading: "お問い合わせ",
+          contact_name_label: "お名前",
+          contact_form_email_label: "あなたのメールアドレス",
+          contact_message_label: "メッセージ",
+          contact_send: "送信",
+          contact_success: "メッセージをお送りいただきありがとうございます。できるだけ早くご返信いたします。",
+          contact_alt_note: "上記に表示されているメールアドレスから直接ご連絡いただくことも可能です。",
+          contact_email_prefix: "メール：",
+          contact_address_note: "氏名の詳細および送達可能な住所については、下記のお問い合わせフォームからご請求いただければお伝えします。"
+        },
     home: {
       title: "Snoxi — 写真・動画エディター",
       description: "Snoxi：すばやく手軽に使える写真・動画エディター。フィルター、ステッカー、透かし、顔のぼかし、ライブプレビュー付きカメラ — すべて端末内で完結。",
@@ -1209,7 +1322,7 @@
       h1: "プライバシーポリシー – Snoxi",
       stand: "最終更新日：2026年8月",
       h2_1: "1. 管理者",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>ドイツ<br>メール：<a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
+      p1: "Massimo",
       h2_2: "2. Snoxiについて",
       p2: "Snoxiは写真や動画を編集するアプリです（フィルター、トリミング、ステッカー、透かし、顔のぼかし、ライブプレビュー付きカメラ撮影）。編集はすべて端末内でのみ行われます。写真、動画、その他のコンテンツが当方や第三者に送信されることはありません。",
       h2_3: "3. アクセス許可とその必要性",
@@ -1224,7 +1337,7 @@
       h2_6: "6. 子供について",
       p6: "Snoxiは16歳未満の子供を特に対象としたものではありません。アプリはそもそも個人情報を収集しないため、子供のデータも収集されません。",
       h2_7: "7. あなたの権利",
-      p7_html: "Snoxiは個人情報を収集・保存・送信しないため、開示・訂正・削除請求の対象となるデータは存在しません。ご質問がある場合は、いつでも<a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>までご連絡ください。",
+      p7_text: "Snoxiは個人情報を収集・保存・送信しないため、開示・訂正・削除請求の対象となるデータは存在しません。ご質問がある場合は、このページ末尾の連絡先からいつでもご連絡ください。",
       h2_8: "8. 本ポリシーの変更",
       p8: "新機能の追加などに応じて、本プライバシーポリシーを必要に応じて更新する場合があります。最新版は常にこのページでご確認いただけます。"
     },
@@ -1233,18 +1346,28 @@
       back: "戻る",
       h1: "運営者情報",
       h2_1: "§ 5 TMGに基づく表示",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>ドイツ",
+      p1: "Massimo",
       h2_kontakt: "連絡先",
-      p_kontakt_html: "メール：<a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
       h2_verantwortlich: "§ 55 Abs. 2 RStVに基づくコンテンツ責任者",
-      p_verantwortlich: "Massimo Manca（住所は上記のとおり）",
+      p_verantwortlich: "Massimo",
       h2_hinweis: "注記",
       p_hinweis: "この運営者情報は個人（事業者ではない）向けの草案として作成されたものであり、法的助言に代わるものではありません。表示義務について不明な点がある場合は、弁護士またはeRecht24のような生成サービスによる簡単な確認をおすすめします。"
     }
   };
 
   translations.zh = {
-    common: { lang_label: "语言" },
+common: {
+          lang_label: "语言",
+          contact_heading: "联系我们",
+          contact_name_label: "姓名",
+          contact_form_email_label: "您的电子邮箱",
+          contact_message_label: "留言",
+          contact_send: "发送",
+          contact_success: "感谢您的留言！我们会尽快回复您。",
+          contact_alt_note: "您也可以通过上方显示的邮箱地址直接与我们联系。",
+          contact_email_prefix: "邮箱：",
+          contact_address_note: "完整姓名及可送达的通信地址将根据下方联系表单的请求提供。"
+        },
     home: {
       title: "Snoxi — 照片和视频编辑器",
       description: "Snoxi：快速、简单的照片和视频编辑器。滤镜、贴纸、水印、人脸模糊，以及带实时预览的相机 — 一切都在你的设备本地完成。",
@@ -1321,7 +1444,7 @@
       h1: "隐私政策 – Snoxi",
       stand: "更新日期：2026年8月",
       h2_1: "1. 责任方",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>德国<br>邮箱：<a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
+      p1: "Massimo",
       h2_2: "2. 关于 Snoxi",
       p2: "Snoxi 是一款用于编辑照片和视频的应用（滤镜、裁剪、贴纸、水印、人脸模糊，以及带实时预览的相机拍摄）。所有编辑操作均仅在你的设备本地完成。我们不会向自己或任何第三方传输任何照片、视频或其他内容。",
       h2_3: "3. 访问权限及其用途",
@@ -1336,7 +1459,7 @@
       h2_6: "6. 儿童",
       p6: "Snoxi 并非专门面向16岁以下儿童。由于应用本身不收集任何个人数据，因此也不会收集儿童的数据。",
       h2_7: "7. 你的权利",
-      p7_html: "由于 Snoxi 不收集、存储或传输个人数据，我们没有任何可供访问、更正或删除请求所依据的数据记录。如有任何疑问，欢迎随时通过 <a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a> 与我们联系。",
+      p7_text: "由于 Snoxi 不收集、存储或传输个人数据，我们没有任何可供访问、更正或删除请求所依据的数据记录。如有任何疑问，欢迎随时通过本页底部的联系方式与我们联系。",
       h2_8: "8. 本政策的变更",
       p8: "我们保留在必要时（例如新增功能时）调整本隐私政策的权利。最新版本将始终在本页面提供。"
     },
@@ -1345,11 +1468,10 @@
       back: "返回",
       h1: "版权信息",
       h2_1: "根据《德国电信媒体法》第5条（§ 5 TMG）提供的信息",
-      p1_html: "Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>德国",
+      p1: "Massimo",
       h2_kontakt: "联系方式",
-      p_kontakt_html: "邮箱：<a href=\"mailto:manca.massimo@gmail.com\">manca.massimo@gmail.com</a>",
       h2_verantwortlich: "根据《德国广播州际协议》第55条第2款（§ 55 Abs. 2 RStV）负责内容者",
-      p_verantwortlich: "Massimo Manca（地址同上）",
+      p_verantwortlich: "Massimo",
       h2_hinweis: "说明",
       p_hinweis: "本版权信息是为个人（非商业经营者）起草的示例文本，不能替代法律咨询。如对版权信息义务存在疑问，建议咨询律师或使用 eRecht24 等生成工具进行简要核查。"
     }
@@ -1475,6 +1597,148 @@
   } else {
     init();
   }
+
+
+  /* ---------- Contact block (mail slot + FormSubmit.co contact form) ---------- */
+
+  function currentLangData() {
+    var lang = detectLanguage();
+    return translations[lang] || translations.en;
+  }
+
+  function injectContactStyles() {
+    if (document.getElementById("snoxi-contact-style")) return;
+    var style = document.createElement("style");
+    style.id = "snoxi-contact-style";
+    style.textContent =
+      ".snoxi-contact-panel{background:var(--panel,#141c33);border:1px solid var(--border,rgba(255,255,255,.08));border-radius:16px;padding:20px 24px;margin:32px 0;}" +
+      ".snoxi-contact-panel h3{margin:0 0 12px;font-size:16px;color:var(--text,#f5f7fa);}" +
+      ".snoxi-contact-email-line{margin:0 0 16px;font-size:14px;color:var(--muted,#9aa3c0);}" +
+      ".snoxi-contact-email-line a{color:var(--accent,#3aa8ff);}" +
+      ".snoxi-contact-success{background:rgba(58,168,255,.12);border:1px solid rgba(58,168,255,.3);color:var(--accent,#3aa8ff);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:14px;}" +
+      ".snoxi-contact-form{display:flex;flex-direction:column;gap:12px;}" +
+      ".snoxi-contact-form label{font-size:13px;color:var(--muted,#9aa3c0);font-weight:600;display:flex;flex-direction:column;gap:6px;}" +
+      ".snoxi-contact-form input,.snoxi-contact-form textarea{background:var(--bg,#0c1224);border:1px solid var(--border,rgba(255,255,255,.08));border-radius:10px;padding:10px 12px;color:var(--text,#f5f7fa);font-family:inherit;font-size:14px;}" +
+      ".snoxi-contact-form textarea{min-height:100px;resize:vertical;}" +
+      ".snoxi-contact-form button{align-self:flex-start;background:var(--accent,#3aa8ff);color:#06223d;border:none;border-radius:10px;padding:10px 22px;font-weight:700;font-size:14px;cursor:pointer;}" +
+      ".snoxi-contact-note{margin:14px 0 0;font-size:13px;color:var(--muted,#9aa3c0);}" +
+      ".snoxi-contact-honey{position:absolute;left:-9999px;}";
+    document.head.appendChild(style);
+  }
+
+  function buildEmailLine() {
+    var c = currentLangData().common || {};
+    var line = document.createElement("p");
+    line.className = "snoxi-contact-email-line";
+    var label = document.createElement("span");
+    label.setAttribute("data-i18n", "common.contact_email_prefix");
+    label.textContent = c.contact_email_prefix || "Email:";
+    var link = document.createElement("a");
+    link.href = "mailto:" + CONTACT_EMAIL;
+    link.textContent = CONTACT_EMAIL;
+    line.appendChild(label);
+    line.appendChild(document.createTextNode(" "));
+    line.appendChild(link);
+    return line;
+  }
+
+  function renderMailSlot(containerId) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    injectContactStyles();
+    container.innerHTML = "";
+    container.appendChild(buildEmailLine());
+    applyTranslations(detectLanguage());
+  }
+
+  function contactField(labelKey, fallbackLabel, tagName, inputName, inputType) {
+    var label = document.createElement("label");
+    var span = document.createElement("span");
+    span.setAttribute("data-i18n", labelKey);
+    span.textContent = fallbackLabel;
+    label.appendChild(span);
+    var field = document.createElement(tagName);
+    if (tagName === "input") field.type = inputType || "text";
+    field.name = inputName;
+    field.required = true;
+    label.appendChild(field);
+    return label;
+  }
+
+  function renderContactBlock(containerId) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    injectContactStyles();
+    container.innerHTML = "";
+    var c = currentLangData().common || {};
+
+    var panel = document.createElement("div");
+    panel.className = "snoxi-contact-panel";
+
+    var heading = document.createElement("h3");
+    heading.setAttribute("data-i18n", "common.contact_heading");
+    heading.textContent = c.contact_heading || "Contact";
+    panel.appendChild(heading);
+
+    panel.appendChild(buildEmailLine());
+
+    if (/[?&]snoxi_contact=success/.test(window.location.search)) {
+      var success = document.createElement("div");
+      success.className = "snoxi-contact-success";
+      success.setAttribute("data-i18n", "common.contact_success");
+      success.textContent = c.contact_success || "Thank you for your message!";
+      panel.appendChild(success);
+    }
+
+    var form = document.createElement("form");
+    form.className = "snoxi-contact-form";
+    form.method = "POST";
+    form.action = "https://formsubmit.co/" + CONTACT_EMAIL;
+
+    function hidden(name, value) {
+      var inp = document.createElement("input");
+      inp.type = "hidden";
+      inp.name = name;
+      inp.value = value;
+      form.appendChild(inp);
+    }
+    hidden("_subject", "Snoxi — neue Kontaktanfrage");
+    hidden("_template", "table");
+    var nextUrl = window.location.origin + window.location.pathname + "?snoxi_contact=success";
+    hidden("_next", nextUrl);
+
+    var honey = document.createElement("input");
+    honey.type = "text";
+    honey.name = "_honey";
+    honey.className = "snoxi-contact-honey";
+    honey.tabIndex = -1;
+    honey.autocomplete = "off";
+    form.appendChild(honey);
+
+    form.appendChild(contactField("common.contact_name_label", c.contact_name_label || "Name", "input", "name", "text"));
+    form.appendChild(contactField("common.contact_form_email_label", c.contact_form_email_label || "Your Email Address", "input", "email", "email"));
+    form.appendChild(contactField("common.contact_message_label", c.contact_message_label || "Message", "textarea", "message"));
+
+    var btn = document.createElement("button");
+    btn.type = "submit";
+    btn.setAttribute("data-i18n", "common.contact_send");
+    btn.textContent = c.contact_send || "Send";
+    form.appendChild(btn);
+
+    panel.appendChild(form);
+
+    var note = document.createElement("p");
+    note.className = "snoxi-contact-note";
+    note.setAttribute("data-i18n", "common.contact_alt_note");
+    note.textContent = c.contact_alt_note || "You can also reach us directly via the email address shown above.";
+    panel.appendChild(note);
+
+    container.appendChild(panel);
+    applyTranslations(detectLanguage());
+  }
+
+  window.renderContactBlock = renderContactBlock;
+  window.renderMailSlot = renderMailSlot;
 
   window.snoxiSetLanguage = setLanguage;
 })();

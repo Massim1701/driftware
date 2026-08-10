@@ -21,17 +21,24 @@
   <h1 data-i18n="impressum.h1">Impressum</h1>
 
   <h2 data-i18n="impressum.h2_1">Angaben gemäß § 5 TMG</h2>
-  <p data-i18n="impressum.p1_html" data-i18n-html>Massimo Manca<br>Nohlstraße 215<br>46045 Oberhausen<br>Deutschland</p>
+  <p data-i18n="impressum.p1">Massimo</p>
+  <p data-i18n="common.contact_address_note">Vollständiger Name und ladungsfähige Anschrift werden auf Anfrage über das Kontaktformular unten mitgeteilt.</p>
 
   <h2 data-i18n="impressum.h2_kontakt">Kontakt</h2>
-  <p data-i18n="impressum.p_kontakt_html" data-i18n-html>E-Mail: <a href="mailto:manca.massimo@gmail.com">manca.massimo@gmail.com</a></p>
+  <div id="contact-email-slot"></div>
 
   <h2 data-i18n="impressum.h2_verantwortlich">Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
-  <p data-i18n="impressum.p_verantwortlich">Massimo Manca (Anschrift wie oben)</p>
+  <p data-i18n="impressum.p_verantwortlich">Massimo</p>
 
   <h2 data-i18n="impressum.h2_hinweis">Hinweis</h2>
   <p data-i18n="impressum.p_hinweis">Dieses Impressum wurde als Entwurf für eine Einzelperson (kein Gewerbe) erstellt und ersetzt keine Rechtsberatung. Bei Unsicherheiten zur Impressumspflicht empfiehlt sich eine kurze Prüfung durch einen Anwalt oder einen Generator wie eRecht24.</p>
+
+  <div id="contact-block"></div>
 </main>
 <script src="i18n.js"></script>
+<script>
+  renderMailSlot('contact-email-slot');
+  renderContactBlock('contact-block');
+</script>
 </body>
 </html>
