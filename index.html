@@ -147,14 +147,11 @@
   .utility-block {
     position: fixed;
     top: 12px;
-    left: 12px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 50;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 10px;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-direction: row;
     gap: 10px;
   }
   .utility-tile {

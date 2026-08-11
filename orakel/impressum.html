@@ -21,9 +21,8 @@
   .contact-form button { align-self:flex-start; background:var(--accent); color:#241b06; border:none; border-radius:10px; padding:10px 22px; font-weight:700; font-size:14px; cursor:pointer; }
   .contact-honey { position:absolute; left:-9999px; }
   .utility-block {
-    position: fixed; top: 12px; left: 12px; z-index: 50;
-    background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 10px;
-    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+    position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 50;
+    display: flex; flex-direction: row; gap: 10px;
   }
   .utility-tile { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: var(--text); width: 40px; }
   .utility-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
