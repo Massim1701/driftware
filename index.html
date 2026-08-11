@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Driftware — Apps</title>
 <meta name="description" content="Driftware: kleine, unabhängige Apps ohne Schnickschnack. Foto- & Video-Editor Snoxi und weitere Projekte.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0c1224;
@@ -28,12 +31,37 @@
     padding: 88px 24px 24px;
     text-align: center;
   }
-  .logo {
-    font-size: 40px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--text);
+  .brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
     margin: 0 0 12px;
+  }
+  .brand-mark {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #3aa8ff, #7f5aff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', -apple-system, sans-serif;
+    font-weight: 700;
+    font-size: 24px;
+    color: #0c1224;
+    flex-shrink: 0;
+  }
+  .logo {
+    font-family: 'Space Grotesk', -apple-system, sans-serif;
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0;
+    background: linear-gradient(90deg, #3aa8ff, #7f5aff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   .tagline {
     color: var(--muted);
@@ -103,7 +131,10 @@
 </head>
 <body>
   <header>
-    <p class="logo">Driftware</p>
+    <div class="brand">
+      <div class="brand-mark">D</div>
+      <p class="logo">Driftware</p>
+    </div>
     <p class="tagline">Kleine, unabhängige Apps ohne Schnickschnack.</p>
   </header>
   <main>
