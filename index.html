@@ -138,6 +138,45 @@
     opacity: 0.45;
     pointer-events: none;
   }
+  .utility-block {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 50;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .utility-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    text-decoration: none;
+    color: var(--text);
+    width: 40px;
+  }
+  .utility-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .utility-icon svg { width: 18px; height: 18px; }
+  .utility-icon.placeholder {
+    background: rgba(255,255,255,0.06);
+    border: 1px dashed var(--border);
+    box-shadow: none;
+  }
+  .utility-label { font-size: 9px; color: var(--muted); }
+  .utility-tile.soon { opacity: 0.45; pointer-events: none; }
   footer {
     max-width: 720px;
     margin: 0 auto;
@@ -215,6 +254,28 @@
 </style>
 </head>
 <body>
+  <div class="utility-block">
+    <a class="utility-tile" href="/">
+      <div class="utility-icon" style="background:#d98c1f">
+        <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
+      </div>
+      <span class="utility-label">Home</span>
+    </a>
+    <a class="utility-tile" href="#" id="utility-mail">
+      <div class="utility-icon" style="background:#4a90d9">
+        <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
+      </div>
+      <span class="utility-label">Mail</span>
+    </a>
+    <div class="utility-tile soon">
+      <div class="utility-icon placeholder"></div>
+      <span class="utility-label">Bald</span>
+    </div>
+    <div class="utility-tile soon">
+      <div class="utility-icon placeholder"></div>
+      <span class="utility-label">Bald</span>
+    </div>
+  </div>
   <header>
     <div class="brand">
       <div class="brand-mark">D</div>
@@ -253,11 +314,9 @@
     (function () {
       // Neue App hinzufügen: einfach ein Objekt unten in APPS ergänzen —
       // Blöcke (2x2) und Platzhalter-Kacheln werden automatisch berechnet.
-      var MAIL_SVG = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#bfe0ff"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>';
-
+      // (Home/Mail sind Utility-Kacheln oben links, nicht Teil dieser Liste.)
       var APPS = [
-        { href: '/snoxi/', icon: '/snoxi/icon.png', label: 'Snoxi' },
-        { action: 'contact', bg: '#4a90d9', svg: MAIL_SVG, label: 'Mail' }
+        { href: '/snoxi/', icon: '/snoxi/icon.png', label: 'Snoxi' }
       ];
       var MIN_SLOTS = 12; // Mindestanzahl Kacheln insgesamt (füllt mit "Bald" auf)
 
@@ -327,6 +386,7 @@
     (function () {
       var overlay = document.getElementById('contact-modal');
       var link = document.getElementById('contact-link');
+      var mailTile = document.getElementById('utility-mail');
       var closeBtn = document.getElementById('contact-close');
       var nextField = document.getElementById('contact-next');
       nextField.value = window.location.origin + window.location.pathname + '?contact=success';
@@ -335,6 +395,7 @@
       function close() { overlay.classList.remove('open'); }
 
       link.addEventListener('click', function (e) { e.preventDefault(); open(); });
+      if (mailTile) mailTile.addEventListener('click', function (e) { e.preventDefault(); open(); });
       closeBtn.addEventListener('click', close);
       overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
 
