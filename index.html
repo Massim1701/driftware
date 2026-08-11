@@ -124,6 +124,16 @@
     justify-content: center;
     font-size: 22px;
   }
+  .app-icon-custom {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .app-icon-custom svg { width: 30px; height: 30px; }
   .app-tile.soon {
     opacity: 0.45;
     pointer-events: none;
@@ -213,62 +223,7 @@
     <p class="tagline">Kleine, unabhängige Apps ohne Schnickschnack.</p>
   </header>
   <main>
-    <div class="apps">
-      <div class="tile-block">
-        <a class="app-tile" href="/snoxi/">
-          <img class="app-icon" src="/snoxi/icon.png" alt="Snoxi Icon">
-          <span class="app-label">Snoxi</span>
-        </a>
-        <div class="app-tile soon">
-          <div class="app-placeholder-icon">✨</div>
-          <span class="app-label">Bald</span>
-        </div>
-        <div class="app-tile soon">
-          <div class="app-placeholder-icon">✨</div>
-          <span class="app-label">Bald</span>
-        </div>
-        <div class="app-tile soon">
-          <div class="app-placeholder-icon">✨</div>
-          <span class="app-label">Bald</span>
-        </div>
-      </div>
-      <div class="tile-block">
-        <div class="app-tile soon">
-          <div class="app-placeholder-icon">✨</div>
-          <span class="app-label">Bald</span>
-        </div>
-        <div class="app-tile soon">
-          <div class="app-placeholder-icon">✨</div>
-          <span class="app-label">Bald</span>
-        </div>
-        <div class="app-tile soon">
-          <div class="app-placeholder-icon">✨</div>
-          <span class="app-label">Bald</span>
-        </div>
-        <div class="app-tile soon">
-          <div class="app-placeholder-icon">✨</div>
-          <span class="app-label">Bald</span>
-        </div>
-      </div>
-      <div class="tile-block">
-        <div class="app-tile soon">
-          <div class="app-placeholder-icon">✨</div>
-          <span class="app-label">Bald</span>
-        </div>
-        <div class="app-tile soon">
-          <div class="app-placeholder-icon">✨</div>
-          <span class="app-label">Bald</span>
-        </div>
-        <div class="app-tile soon">
-          <div class="app-placeholder-icon">✨</div>
-          <span class="app-label">Bald</span>
-        </div>
-        <div class="app-tile soon">
-          <div class="app-placeholder-icon">✨</div>
-          <span class="app-label">Bald</span>
-        </div>
-      </div>
-    </div>
+    <div class="apps" id="apps-container"></div>
   </main>
   <footer>
     &copy; 2026 Driftware
@@ -293,6 +248,80 @@
       </form>
     </div>
   </div>
+
+  <script>
+    (function () {
+      // Neue App hinzufügen: einfach ein Objekt unten in APPS ergänzen —
+      // Blöcke (2x2) und Platzhalter-Kacheln werden automatisch berechnet.
+      var MAIL_SVG = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#bfe0ff"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>';
+
+      var APPS = [
+        { href: '/snoxi/', icon: '/snoxi/icon.png', label: 'Snoxi' },
+        { action: 'contact', bg: '#4a90d9', svg: MAIL_SVG, label: 'Mail' }
+      ];
+      var MIN_SLOTS = 12; // Mindestanzahl Kacheln insgesamt (füllt mit "Bald" auf)
+
+      function renderApps() {
+        var container = document.getElementById('apps-container');
+        if (!container) return;
+        var totalSlots = Math.max(APPS.length, MIN_SLOTS);
+        var slotCount = Math.ceil(totalSlots / 4) * 4;
+        var blocks = [];
+        for (var i = 0; i < slotCount; i += 4) {
+          var block = document.createElement('div');
+          block.className = 'tile-block';
+          for (var j = i; j < i + 4; j++) {
+            var app = APPS[j];
+            if (app) {
+              var a = document.createElement('a');
+              a.className = 'app-tile';
+              a.href = app.href || '#';
+              if (app.action === 'contact') {
+                a.addEventListener('click', function (e) {
+                  e.preventDefault();
+                  var link = document.getElementById('contact-link');
+                  if (link) link.click();
+                });
+              }
+              if (app.icon) {
+                var img = document.createElement('img');
+                img.className = 'app-icon';
+                img.src = app.icon;
+                img.alt = app.label + ' Icon';
+                a.appendChild(img);
+              } else if (app.svg) {
+                var iconBox = document.createElement('div');
+                iconBox.className = 'app-icon-custom';
+                iconBox.style.background = app.bg || 'var(--accent)';
+                iconBox.innerHTML = app.svg;
+                a.appendChild(iconBox);
+              }
+              var label = document.createElement('span');
+              label.className = 'app-label';
+              label.textContent = app.label;
+              a.appendChild(label);
+              block.appendChild(a);
+            } else {
+              var div = document.createElement('div');
+              div.className = 'app-tile soon';
+              var icon = document.createElement('div');
+              icon.className = 'app-placeholder-icon';
+              icon.textContent = '✨';
+              var label2 = document.createElement('span');
+              label2.className = 'app-label';
+              label2.textContent = 'Bald';
+              div.appendChild(icon);
+              div.appendChild(label2);
+              block.appendChild(div);
+            }
+          }
+          blocks.push(block);
+        }
+        blocks.forEach(function (b) { container.appendChild(b); });
+      }
+      renderApps();
+    })();
+  </script>
 
   <script>
     (function () {
