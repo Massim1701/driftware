@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bedienungsanleitung — Orakel</title>
+<meta name="description" content="So funktioniert Orakel: Tageskarte ziehen, Kartenlegungen, Mondphase, Schumann-Resonanz, Meditation, Tageshoroskop und Aszendent.">
+<style>
+  :root {
+    --bg: #140e1f;
+    --panel: #1e1730;
+    --accent: #c9962f;
+    --text: #f5f2fa;
+    --muted: #a89dbf;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  header { max-width: 720px; margin: 0 auto; padding: 56px 24px 24px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 14px; }
+  h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; margin: 16px 0 8px; }
+  .tagline { color: var(--muted); font-size: 16px; margin: 0; }
+  main { max-width: 720px; margin: 0 auto; padding: 0 24px 64px; }
+  .req { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin: 32px 0; }
+  .req h2 { margin: 0 0 12px; font-size: 16px; }
+  .req ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+  .req li { margin-bottom: 4px; }
+  .req strong { color: var(--text); }
+  section { margin: 40px 0; }
+  h2.step-title { font-size: 20px; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+  .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%; background: var(--accent);
+    color: #241b06; font-weight: 800; font-size: 14px; flex-shrink: 0;
+  }
+  .step-body { padding-left: 38px; }
+  .step-body p { color: var(--muted); margin: 8px 0; font-size: 15px; }
+  footer {
+    max-width: 720px; margin: 0 auto; padding: 24px; text-align: center;
+    color: var(--muted); font-size: 13px; border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer .links { margin-top: 8px; }
+  footer .links a { margin: 0 8px; }
+  .utility-block {
+    position: fixed; top: 12px; left: 12px; z-index: 50;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 10px;
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+  }
+  .utility-tile { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: var(--text); width: 40px; }
+  .utility-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  .utility-icon svg { width: 18px; height: 18px; }
+  .utility-label { font-size: 9px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <div class="utility-block">
+    <a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">
+      <div class="utility-icon" style="background:#d98c1f">
+        <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
+      </div>
+      <span class="utility-label">Home</span>
+    </a>
+    <a class="utility-tile" href="privacy.html#kontakt">
+      <div class="utility-icon" style="background:#4a90d9">
+        <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
+      </div>
+      <span class="utility-label">Mail</span>
+    </a>
+    <a class="utility-tile" href="anleitung.html">
+      <div class="utility-icon" style="background:#3d9970">
+        <svg viewBox="0 0 24 24" fill="#a8e6c1" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v2H4V4zm0 5h16v2H4V9zm0 5h10v2H4v-2zm0 5h10v2H4v-2z"/></svg>
+      </div>
+      <span class="utility-label">Anleitung</span>
+    </a>
+    <a class="utility-tile" href="privacy.html">
+      <div class="utility-icon" style="background:#6a5acd">
+        <svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>
+      </div>
+      <span class="utility-label">Datenschutz</span>
+    </a>
+  </div>
+  <header>
+    <a class="back" href="index.html">&larr; Zurück zu Orakel</a>
+    <h1>Bedienungsanleitung</h1>
+    <p class="tagline">So nutzt du Orakel — Schritt für Schritt.</p>
+  </header>
+  <main>
+    <div class="req">
+      <h2>Systemvoraussetzungen</h2>
+      <ul>
+        <li><strong>iOS:</strong> iOS 15.1 oder neuer (iPhone)</li>
+        <li><strong>Android:</strong> Android 8.0 (Oreo) oder neuer</li>
+      </ul>
+    </div>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">1</span> Tageskarte ziehen</h2>
+      <div class="step-body">
+        <p>Auf dem Startbildschirm "Tageskarte" öffnen und eine Karte ziehen — einmal täglich, wahlweise mit Fokus auf Liebe, Finanzen oder Gesundheit. Zum Aufdecken das Handy schütteln oder die Karte antippen.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">2</span> Kartenlegung wählen</h2>
+      <div class="step-body">
+        <p>Unter "Kartenlegung" aus mehreren Legungen wählen, von der einfachen 3-Karten-Legung bis zum Keltischen Kreuz. Nach dem Aufdecken aller Karten zeigt die App ein zusammenfassendes Fazit über die gesamte Legung.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">3</span> Anderes Kartendeck wählen</h2>
+      <div class="step-body">
+        <p>In der Legungsauswahl oben auf "Andere Decks" tippen, um zwischen dem kostenlosen klassischen Tarot-Deck und optionalen weiteren Decks zu wechseln.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">4</span> Mondphase & Schumann-Resonanz</h2>
+      <div class="step-body">
+        <p>Die aktuelle Mondphase ist direkt auf dem Startbildschirm sichtbar. Über die Kachel "Schumann-Resonanz" öffnet sich ein 21-Tage-Diagramm mit Einordnung der Werte.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">5</span> Meditation</h2>
+      <div class="step-body">
+        <p>Unter "Meditation" eine 5-minütige Ambient-Session starten. Der Track passt sich automatisch der Tageszeit an — morgens, mittags oder abends zum Einschlafen.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">6</span> Horoskop & Aszendent</h2>
+      <div class="step-body">
+        <p>Unter "Horoskop" dein Sternzeichen auswählen, um das Tageshoroskop zu sehen. Unter "Aszendent" Geburtsdatum, -zeit und -ort eingeben, um deinen Aszendenten zu berechnen.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">7</span> Verlauf ansehen</h2>
+      <div class="step-body">
+        <p>Unter "Verlauf" alle bisherigen Ziehungen und Legungen nachschlagen.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">8</span> Erinnerung & Sprache</h2>
+      <div class="step-body">
+        <p>In den Einstellungen eine tägliche Erinnerung aktivieren und Uhrzeit festlegen. Oben rechts auf dem Startbildschirm zwischen Deutsch und Englisch wechseln.</p>
+      </div>
+    </section>
+
+    <div class="req">
+      <h2>Hinweis</h2>
+      <ul>
+        <li>🔒 100 % lokal: Deine Ziehungen und Eingaben bleiben immer auf deinem Gerät.</li>
+        <li>Tarot, Horoskop und Mondphase sind unterhaltend gedeutet, kein Ersatz für professionelle Beratung.</li>
+      </ul>
+    </div>
+  </main>
+  <footer>
+    <span>© 2026 Massimo — Orakel</span>
+    <div class="links">
+      <!-- Impressum-Link bewusst im Footer belassen, nicht entfernt: §5 TMG verlangt eine leicht auffindbare Anbieterkennzeichnung. -->
+      <a href="impressum.html">Impressum</a>
+    </div>
+  </footer>
+</body>
+</html>

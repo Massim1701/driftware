@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orakel — Tarot, Mondphase & täglicher Begleiter</title>
+<meta name="description" content="Orakel: Tageskarte, Tarot-Legungen, Mondphase, Schumann-Resonanz, 5-Minuten-Meditation, Tageshoroskop und Aszendent — alles lokal auf deinem Gerät, ohne Konto und ohne Tracking.">
+<style>
+  :root {
+    --bg: #140e1f;
+    --panel: #1e1730;
+    --accent: #c9962f;
+    --text: #f5f2fa;
+    --muted: #a89dbf;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    position: relative;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 72px 24px 32px;
+    text-align: center;
+  }
+  .app-icon {
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--border);
+    margin: 0 0 16px;
+  }
+  .utility-block {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 50;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .utility-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    text-decoration: none;
+    color: var(--text);
+    width: 40px;
+  }
+  .utility-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .utility-icon svg { width: 18px; height: 18px; }
+  .utility-label { font-size: 9px; color: var(--muted); }
+  .logo {
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin: 0 0 12px;
+  }
+  .tagline {
+    color: var(--muted);
+    font-size: 18px;
+    margin: 0 0 32px;
+  }
+  .badges {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .badge.soon { opacity: 0.6; }
+  .badge-nosub {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 14px;
+    background: rgba(201,150,47,0.12);
+    border: 1px solid rgba(201,150,47,0.35);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 14px;
+    margin-top: 16px;
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+  }
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 40px 0;
+  }
+  .feature {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .feature h3 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .feature p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .privacy-note {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 40px;
+  }
+  .privacy-note strong { color: var(--text); }
+  footer {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer .links { margin-top: 8px; }
+  footer .links a { margin: 0 8px; }
+</style>
+</head>
+<body>
+  <div class="utility-block">
+    <a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">
+      <div class="utility-icon" style="background:#d98c1f">
+        <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
+      </div>
+      <span class="utility-label">Home</span>
+    </a>
+    <a class="utility-tile" href="privacy.html#kontakt">
+      <div class="utility-icon" style="background:#4a90d9">
+        <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
+      </div>
+      <span class="utility-label">Mail</span>
+    </a>
+    <a class="utility-tile" href="anleitung.html">
+      <div class="utility-icon" style="background:#3d9970">
+        <svg viewBox="0 0 24 24" fill="#a8e6c1" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v2H4V4zm0 5h16v2H4V9zm0 5h10v2H4v-2zm0 5h10v2H4v-2z"/></svg>
+      </div>
+      <span class="utility-label">Anleitung</span>
+    </a>
+    <a class="utility-tile" href="privacy.html">
+      <div class="utility-icon" style="background:#6a5acd">
+        <svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>
+      </div>
+      <span class="utility-label">Datenschutz</span>
+    </a>
+  </div>
+  <header>
+    <img class="app-icon" src="icon.png" alt="Orakel App-Icon" width="96" height="96">
+    <p class="logo">Orakel</p>
+    <p class="tagline">Tageskarte, Tarot-Legungen, Mondphase & mehr — dein ruhiger Begleiter durch den Tag.</p>
+    <div class="badges">
+      <span class="badge soon">🍎 App Store — bald verfügbar</span>
+      <span class="badge soon">▶ Google Play — bald verfügbar</span>
+    </div>
+    <div class="badge-nosub">🔒 100 % lokal — kein Konto, kein Tracking.</div>
+  </header>
+  <main>
+    <div class="features">
+      <div class="feature">
+        <h3>🌅 Tageskarte</h3>
+        <p>Eine Tarotkarte pro Tag, mit optionalem Fokus auf Liebe, Finanzen oder Gesundheit.</p>
+      </div>
+      <div class="feature">
+        <h3>🃏 Kartenlegungen</h3>
+        <p>Von der einfachen 3-Karten-Legung bis zum Keltischen Kreuz — inklusive Fazit über alle Karten hinweg.</p>
+      </div>
+      <div class="feature">
+        <h3>🌙 Mondphase</h3>
+        <p>Die aktuelle Mondphase auf einen Blick, direkt auf dem Startbildschirm.</p>
+      </div>
+      <div class="feature">
+        <h3>〰️ Schumann-Resonanz</h3>
+        <p>21-Tage-Diagramm der Erdfrequenz mit Einordnung, was die Werte für dein Wohlbefinden bedeuten könnten.</p>
+      </div>
+      <div class="feature">
+        <h3>🧘 5-Minuten-Meditation</h3>
+        <p>Ambient-Musik, die sich automatisch der Tageszeit anpasst — morgens, mittags oder abends zum Einschlafen.</p>
+      </div>
+      <div class="feature">
+        <h3>✨ Tageshoroskop & Aszendent</h3>
+        <p>Tägliche Deutung für dein Sternzeichen sowie ein Aszendent-Rechner nach Geburtsdatum, -zeit und -ort.</p>
+      </div>
+      <div class="feature">
+        <h3>🎴 Mehrere Kartendecks</h3>
+        <p>Das klassische Rider-Waite-Tarot ist kostenlos enthalten, weitere Decks sind optional freischaltbar.</p>
+      </div>
+      <div class="feature">
+        <h3>🎨 Saisonales Design</h3>
+        <p>Die Farbwelt der App passt sich automatisch an Jahreszeit und Tageszeit an.</p>
+      </div>
+    </div>
+    <div class="privacy-note">
+      <strong>Alles bleibt bei dir.</strong> Orakel läuft komplett lokal auf deinem Gerät — kein Konto, kein Server, kein Tracking. Mehr dazu in der <a href="privacy.html" style="color:var(--accent)">Datenschutzerklärung</a>.
+    </div>
+  </main>
+  <footer>
+    <span>© 2026 Massimo — Orakel</span>
+    <div class="links">
+      <!-- Impressum-Link bewusst im Footer belassen, nicht entfernt: §5 TMG verlangt eine leicht auffindbare Anbieterkennzeichnung. -->
+      <a href="impressum.html">Impressum</a>
+    </div>
+  </footer>
+</body>
+</html>
