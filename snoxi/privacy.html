@@ -15,9 +15,68 @@
   p { color:#dbe0ee; }
   ul { color:#dbe0ee; padding-left:20px; }
   .back { display:inline-block; margin-bottom:24px; color:var(--muted); text-decoration:none; font-size:14px; }
+  .utility-block {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 50;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .utility-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    text-decoration: none;
+    color: var(--text);
+    width: 40px;
+  }
+  .utility-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .utility-icon svg { width: 18px; height: 18px; }
+  .utility-label { font-size: 9px; color: var(--muted); }
 </style>
 </head>
 <body>
+<div class="utility-block">
+  <a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">
+    <div class="utility-icon" style="background:#d98c1f">
+      <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
+    </div>
+    <span class="utility-label">Home</span>
+  </a>
+  <a class="utility-tile" href="#kontakt">
+    <div class="utility-icon" style="background:#4a90d9">
+      <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
+    </div>
+    <span class="utility-label">Mail</span>
+  </a>
+  <a class="utility-tile" href="anleitung.html">
+    <div class="utility-icon" style="background:#3d9970">
+      <svg viewBox="0 0 24 24" fill="#a8e6c1" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v2H4V4zm0 5h16v2H4V9zm0 5h10v2H4v-2zm0 5h10v2H4v-2z"/></svg>
+    </div>
+    <span class="utility-label">Anleitung</span>
+  </a>
+  <a class="utility-tile" href="privacy.html">
+    <div class="utility-icon" style="background:#6a5acd">
+      <svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>
+    </div>
+    <span class="utility-label">Datenschutz</span>
+  </a>
+</div>
 <main>
   <a class="back" href="index.html">&larr; <span data-i18n="privacy.back">Zurück</span></a>
   <h1 data-i18n="privacy.h1">Datenschutzerklärung – Snoxi</h1>

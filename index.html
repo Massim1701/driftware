@@ -69,15 +69,21 @@
     margin: 0;
   }
   main {
-    max-width: 560px;
+    max-width: 860px;
     margin: 0 auto;
     padding: 40px 24px 64px;
   }
   .apps {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(4, auto);
     gap: 20px;
-    align-items: center;
+    justify-content: center;
+  }
+  @media (max-width: 780px) {
+    .apps { grid-template-columns: repeat(2, auto); }
+  }
+  @media (max-width: 420px) {
+    .apps { grid-template-columns: repeat(1, auto); }
   }
   .tile-block {
     background: var(--panel);
@@ -318,7 +324,7 @@
       var APPS = [
         { href: '/snoxi/', icon: '/snoxi/icon.png', label: 'Snoxi' }
       ];
-      var MIN_SLOTS = 12; // Mindestanzahl Kacheln insgesamt (füllt mit "Bald" auf)
+      var MIN_SLOTS = 32; // Mindestanzahl Kacheln insgesamt = 8 Blöcke, 4 pro Reihe
 
       function renderApps() {
         var container = document.getElementById('apps-container');
