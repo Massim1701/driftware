@@ -3,6 +3,9 @@
   "use strict";
 
   var CONTACT_EMAIL = "welove80sde@gmail.com";
+  // FormSubmit-ID statt nackter E-Mail-Adresse im Formular-action, damit Bots die Adresse nicht
+  // aus dem Quelltext scrapen können (CONTACT_EMAIL bleibt für die sichtbare mailto-Zeile).
+  var FORMSUBMIT_ID = "0b4cb7348b4cff5d1891bf8d99f1e757";
 
   var SUPPORTED_LANGUAGES = ["de","en","es","fr","it","pt","nl","tr","pl","ru","ja","zh"];
   var LANG_NAMES = {
@@ -22,8 +25,8 @@ common: {
           contact_message_label: "Nachricht",
           contact_send: "Senden",
           contact_success: "Danke für deine Nachricht! Wir melden uns so schnell wie möglich bei dir.",
-          contact_alt_note: "Du kannst uns auch direkt über die oben angezeigte E-Mail-Adresse erreichen.",
-          contact_email_prefix: "E-Mail:",
+          contact_alt_note: "Du kannst uns auch direkt über den E-Mail-Link oben erreichen.",
+          contact_email_prefix: "E-Mail erstellen",
           contact_address_note: "Vollständiger Name und ladungsfähige Anschrift werden auf Anfrage über das Kontaktformular unten mitgeteilt."
         },
     home: {
@@ -46,6 +49,8 @@ common: {
       feature_face_desc: "Echte Weichzeichnung statt Störbalken, frei platzier- und skalierbar.",
       feature_privacy_title: "🔒 100 % privat",
       feature_privacy_desc: "Keine Cloud, kein Konto, kein Tracking — deine Fotos und Videos verlassen nie dein Gerät.",
+      feature_whysnoxi_title: "🛡️ Warum Snoxi?",
+      feature_whysnoxi_desc: "KI-Tools sind großartig — aber deine Fotos landen dafür oft auf einem fremden Server. Wer sichergehen will, dass nichts hochgeladen wird, ist mit Snoxi einfacher und günstiger unterwegs.",
       badge_nosub: "♾️ Kein Abo — einmal kaufen, für immer nutzen.",
       privacy_note_html: "<strong>Alles bleibt bei dir.</strong> Snoxi verarbeitet Fotos und Videos komplett lokal auf deinem Gerät — kein Konto, kein Hochladen, kein Tracking. Mehr dazu in der <a href=\"privacy.html\" style=\"color:var(--accent)\">Datenschutzerklärung</a>.",
       sysreq_note_html: "<strong>Systemvoraussetzungen:</strong> iOS 15.1+ oder Android 8.0+. Alle Details und die Schritt-für-Schritt-Anleitung findest du in der <a href=\"anleitung.html\" style=\"color:var(--accent)\">Bedienungsanleitung</a>.",
@@ -144,8 +149,8 @@ common: {
           contact_message_label: "Message",
           contact_send: "Send",
           contact_success: "Thank you for your message! We’ll get back to you as soon as possible.",
-          contact_alt_note: "You can also reach us directly via the email address shown above.",
-          contact_email_prefix: "Email:",
+          contact_alt_note: "You can also reach us directly via the email link above.",
+          contact_email_prefix: "Create Email",
           contact_address_note: "Full name and a postal address for service of process will be provided on request via the contact form below."
         },
     home: {
@@ -168,6 +173,8 @@ common: {
       feature_face_desc: "Real blurring instead of a censor bar — freely placeable and scalable.",
       feature_privacy_title: "🔒 100% private",
       feature_privacy_desc: "No cloud, no account, no tracking — your photos and videos never leave your device.",
+      feature_whysnoxi_title: "🛡️ Why Snoxi?",
+      feature_whysnoxi_desc: "AI tools are great — but your photos often end up on someone else's server. If you want to be sure nothing gets uploaded, Snoxi is the simpler, more affordable way to go.",
       badge_nosub: "♾️ No subscription — buy once, keep it forever.",
       privacy_note_html: "<strong>Everything stays with you.</strong> Snoxi processes photos and videos entirely on your device — no account, no uploads, no tracking. Learn more in the <a href=\"privacy.html\" style=\"color:var(--accent)\">privacy policy</a>.",
       sysreq_note_html: "<strong>System requirements:</strong> iOS 15.1+ or Android 8.0+. You'll find all the details and a step-by-step guide in the <a href=\"anleitung.html\" style=\"color:var(--accent)\">user guide</a>.",
@@ -266,8 +273,8 @@ common: {
           contact_message_label: "Mensaje",
           contact_send: "Enviar",
           contact_success: "¡Gracias por tu mensaje! Te responderemos lo antes posible.",
-          contact_alt_note: "También puedes contactarnos directamente a través de la dirección de correo electrónico indicada arriba.",
-          contact_email_prefix: "Correo electrónico:",
+          contact_alt_note: "También puedes contactarnos directamente a través del enlace de correo electrónico indicado arriba.",
+          contact_email_prefix: "Crear correo",
           contact_address_note: "El nombre completo y una dirección postal válida se facilitarán previa solicitud a través del formulario de contacto que aparece más abajo."
         },
     home: {
@@ -290,6 +297,8 @@ common: {
       feature_face_desc: "Difuminado real en lugar de una barra de censura, colocable y ajustable libremente.",
       feature_privacy_title: "🔒 100 % privado",
       feature_privacy_desc: "Sin nube, sin cuenta, sin rastreo — tus fotos y vídeos nunca salen de tu dispositivo.",
+      feature_whysnoxi_title: "🛡️ ¿Por qué Snoxi?",
+      feature_whysnoxi_desc: "Las herramientas de IA son geniales, pero tus fotos suelen acabar en un servidor ajeno. Si quieres tener la certeza de que nada se sube, Snoxi es la opción más sencilla y económica.",
       badge_nosub: "♾️ Sin suscripción — compra única, tuya para siempre.",
       privacy_note_html: "<strong>Todo se queda contigo.</strong> Snoxi procesa fotos y vídeos completamente en tu dispositivo — sin cuenta, sin subidas, sin rastreo. Más información en la <a href=\"privacy.html\" style=\"color:var(--accent)\">política de privacidad</a>.",
       sysreq_note_html: "<strong>Requisitos del sistema:</strong> iOS 15.1+ o Android 8.0+. Encontrarás todos los detalles y la guía paso a paso en las <a href=\"anleitung.html\" style=\"color:var(--accent)\">instrucciones de uso</a>.",
@@ -388,8 +397,8 @@ common: {
           contact_message_label: "Message",
           contact_send: "Envoyer",
           contact_success: "Merci pour votre message ! Nous vous répondrons dès que possible.",
-          contact_alt_note: "Vous pouvez également nous contacter directement via l’adresse e-mail indiquée ci-dessus.",
-          contact_email_prefix: "E-mail :",
+          contact_alt_note: "Vous pouvez également nous contacter directement via le lien e-mail indiqué ci-dessus.",
+          contact_email_prefix: "Créer un e-mail",
           contact_address_note: "Le nom complet et une adresse postale valable pour la signification seront communiqués sur demande via le formulaire de contact ci-dessous."
         },
     home: {
@@ -412,6 +421,8 @@ common: {
       feature_face_desc: "Un vrai flou plutôt qu'une barre de censure, librement positionnable et redimensionnable.",
       feature_privacy_title: "🔒 100 % privé",
       feature_privacy_desc: "Pas de cloud, pas de compte, pas de suivi — vos photos et vidéos ne quittent jamais votre appareil.",
+      feature_whysnoxi_title: "🛡️ Pourquoi Snoxi ?",
+      feature_whysnoxi_desc: "Les outils d'IA sont formidables, mais vos photos finissent souvent sur un serveur externe. Si vous voulez être sûr que rien n'est envoyé en ligne, Snoxi est la solution la plus simple et économique.",
       badge_nosub: "♾️ Sans abonnement — achetez une fois, gardez-le pour toujours.",
       privacy_note_html: "<strong>Tout reste chez vous.</strong> Snoxi traite les photos et vidéos entièrement sur votre appareil — pas de compte, pas d'envoi, pas de suivi. Plus d'informations dans la <a href=\"privacy.html\" style=\"color:var(--accent)\">politique de confidentialité</a>.",
       sysreq_note_html: "<strong>Configuration requise :</strong> iOS 15.1+ ou Android 8.0+. Retrouvez tous les détails et le guide étape par étape dans le <a href=\"anleitung.html\" style=\"color:var(--accent)\">mode d'emploi</a>.",
@@ -510,8 +521,8 @@ common: {
           contact_message_label: "Messaggio",
           contact_send: "Invia",
           contact_success: "Grazie per il tuo messaggio! Ti risponderemo il prima possibile.",
-          contact_alt_note: "Puoi anche contattarci direttamente tramite l'indirizzo e-mail indicato sopra.",
-          contact_email_prefix: "E-mail:",
+          contact_alt_note: "Puoi anche contattarci direttamente tramite il link e-mail indicato sopra.",
+          contact_email_prefix: "Crea email",
           contact_address_note: "Il nome completo e un indirizzo postale valido per la notifica saranno forniti su richiesta tramite il modulo di contatto qui sotto."
         },
     home: {
@@ -534,6 +545,8 @@ common: {
       feature_face_desc: "Sfocatura reale invece di una barra censura, posizionabile e ridimensionabile liberamente.",
       feature_privacy_title: "🔒 100% privato",
       feature_privacy_desc: "Niente cloud, niente account, nessun tracciamento — le tue foto e i tuoi video non lasciano mai il tuo dispositivo.",
+      feature_whysnoxi_title: "🛡️ Perché Snoxi?",
+      feature_whysnoxi_desc: "Gli strumenti IA sono fantastici, ma le tue foto spesso finiscono su un server esterno. Se vuoi essere sicuro che nulla venga caricato, Snoxi è la soluzione più semplice ed economica.",
       badge_nosub: "♾️ Nessun abbonamento — acquisti una volta, è tuo per sempre.",
       privacy_note_html: "<strong>Tutto resta con te.</strong> Snoxi elabora foto e video interamente sul tuo dispositivo — nessun account, nessun caricamento, nessun tracciamento. Maggiori informazioni nella <a href=\"privacy.html\" style=\"color:var(--accent)\">informativa sulla privacy</a>.",
       sysreq_note_html: "<strong>Requisiti di sistema:</strong> iOS 15.1+ o Android 8.0+. Tutti i dettagli e la guida passo passo si trovano nelle <a href=\"anleitung.html\" style=\"color:var(--accent)\">istruzioni per l'uso</a>.",
@@ -632,8 +645,8 @@ common: {
           contact_message_label: "Mensagem",
           contact_send: "Enviar",
           contact_success: "Obrigado pela sua mensagem! Responderemos o mais rápido possível.",
-          contact_alt_note: "Você também pode nos contatar diretamente pelo endereço de e-mail exibido acima.",
-          contact_email_prefix: "E-mail:",
+          contact_alt_note: "Você também pode nos contatar diretamente pelo link de e-mail exibido acima.",
+          contact_email_prefix: "Criar e-mail",
           contact_address_note: "O nome completo e um endereço postal válido para notificações serão fornecidos mediante solicitação através do formulário de contato abaixo."
         },
     home: {
@@ -656,6 +669,8 @@ common: {
       feature_face_desc: "Desfoque real em vez de uma barra de censura, posicionável e ajustável livremente.",
       feature_privacy_title: "🔒 100% privado",
       feature_privacy_desc: "Sem nuvem, sem conta, sem rastreamento — suas fotos e vídeos nunca saem do seu dispositivo.",
+      feature_whysnoxi_title: "🛡️ Por que Snoxi?",
+      feature_whysnoxi_desc: "As ferramentas de IA são ótimas, mas suas fotos costumam parar em um servidor de terceiros. Se você quer ter certeza de que nada é enviado, o Snoxi é a opção mais simples e econômica.",
       badge_nosub: "♾️ Sem assinatura — compre uma vez, use para sempre.",
       privacy_note_html: "<strong>Tudo fica com você.</strong> O Snoxi processa fotos e vídeos totalmente no seu dispositivo — sem conta, sem envio para servidores, sem rastreamento. Saiba mais na <a href=\"privacy.html\" style=\"color:var(--accent)\">política de privacidade</a>.",
       sysreq_note_html: "<strong>Requisitos do sistema:</strong> iOS 15.1+ ou Android 8.0+. Todos os detalhes e o guia passo a passo estão nas <a href=\"anleitung.html\" style=\"color:var(--accent)\">instruções de uso</a>.",
@@ -754,8 +769,8 @@ common: {
           contact_message_label: "Bericht",
           contact_send: "Verzenden",
           contact_success: "Bedankt voor je bericht! We reageren zo snel mogelijk.",
-          contact_alt_note: "Je kunt ons ook rechtstreeks bereiken via het hierboven getoonde e-mailadres.",
-          contact_email_prefix: "E-mail:",
+          contact_alt_note: "Je kunt ons ook rechtstreeks bereiken via de hierboven getoonde e-maillink.",
+          contact_email_prefix: "E-mail opstellen",
           contact_address_note: "Volledige naam en een correspondentieadres worden op verzoek verstrekt via het contactformulier hieronder."
         },
     home: {
@@ -778,6 +793,8 @@ common: {
       feature_face_desc: "Echte vervaging in plaats van een censuurbalk, vrij plaatsbaar en schaalbaar.",
       feature_privacy_title: "🔒 100% privé",
       feature_privacy_desc: "Geen cloud, geen account, geen tracking — je foto's en video's verlaten nooit je apparaat.",
+      feature_whysnoxi_title: "🛡️ Waarom Snoxi?",
+      feature_whysnoxi_desc: "AI-tools zijn geweldig, maar je foto's belanden vaak op een server van een ander. Wil je zeker weten dat er niets wordt geüpload? Dan is Snoxi de eenvoudigste en voordeligste optie.",
       badge_nosub: "♾️ Geen abonnement — eenmalig kopen, voor altijd gebruiken.",
       privacy_note_html: "<strong>Alles blijft bij jou.</strong> Snoxi verwerkt foto's en video's volledig lokaal op je apparaat — geen account, geen uploads, geen tracking. Meer informatie in het <a href=\"privacy.html\" style=\"color:var(--accent)\">privacybeleid</a>.",
       sysreq_note_html: "<strong>Systeemvereisten:</strong> iOS 15.1+ of Android 8.0+. Alle details en de stap-voor-stap-handleiding vind je in de <a href=\"anleitung.html\" style=\"color:var(--accent)\">gebruiksaanwijzing</a>.",
@@ -876,8 +893,8 @@ common: {
           contact_message_label: "Mesaj",
           contact_send: "Gönder",
           contact_success: "Mesajın için teşekkürler! En kısa sürede sana geri döneceğiz.",
-          contact_alt_note: "Bizimle yukarıda gösterilen e-posta adresi üzerinden doğrudan da iletişime geçebilirsin.",
-          contact_email_prefix: "E-posta:",
+          contact_alt_note: "Bizimle yukarıda gösterilen e-posta bağlantısı üzerinden doğrudan da iletişime geçebilirsin.",
+          contact_email_prefix: "E-posta oluştur",
           contact_address_note: "Tam ad ve tebligata elverişli adres, aşağıdaki iletişim formu üzerinden talep üzerine bildirilecektir."
         },
     home: {
@@ -900,6 +917,8 @@ common: {
       feature_face_desc: "Sansür çubuğu yerine gerçek bulanıklaştırma, serbestçe yerleştirilebilir ve boyutlandırılabilir.",
       feature_privacy_title: "🔒 %100 gizli",
       feature_privacy_desc: "Bulut yok, hesap yok, takip yok — fotoğrafların ve videoların asla cihazından çıkmaz.",
+      feature_whysnoxi_title: "🛡️ Neden Snoxi?",
+      feature_whysnoxi_desc: "Yapay zekâ araçları harika, ama fotoğrafların genelde başkasının sunucusunda son buluyor. Hiçbir şeyin yüklenmediğinden emin olmak istiyorsan Snoxi daha basit ve uygun fiyatlı bir seçenek.",
       badge_nosub: "♾️ Abonelik yok — bir kez satın al, sonsuza kadar kullan.",
       privacy_note_html: "<strong>Her şey sende kalır.</strong> Snoxi, fotoğrafları ve videoları tamamen cihazında işler — hesap yok, yükleme yok, takip yok. Ayrıntılar için <a href=\"privacy.html\" style=\"color:var(--accent)\">gizlilik politikasına</a> göz at.",
       sysreq_note_html: "<strong>Sistem gereksinimleri:</strong> iOS 15.1+ veya Android 8.0+. Tüm ayrıntıları ve adım adım rehberi <a href=\"anleitung.html\" style=\"color:var(--accent)\">kullanım kılavuzunda</a> bulabilirsin.",
@@ -998,8 +1017,8 @@ common: {
           contact_message_label: "Wiadomość",
           contact_send: "Wyślij",
           contact_success: "Dziękujemy za wiadomość! Odpowiemy najszybciej, jak to możliwe.",
-          contact_alt_note: "Możesz się z nami skontaktować również bezpośrednio za pomocą adresu e-mail podanego powyżej.",
-          contact_email_prefix: "E-mail:",
+          contact_alt_note: "Możesz się z nami skontaktować również bezpośrednio za pomocą linku e-mail podanego powyżej.",
+          contact_email_prefix: "Utwórz e-mail",
           contact_address_note: "Pełne imię i nazwisko oraz adres do doręczeń zostaną podane na żądanie za pośrednictwem poniższego formularza kontaktowego."
         },
     home: {
@@ -1022,6 +1041,8 @@ common: {
       feature_face_desc: "Prawdziwe rozmycie zamiast paska cenzury — dowolnie umieszczane i skalowane.",
       feature_privacy_title: "🔒 100% prywatności",
       feature_privacy_desc: "Bez chmury, bez konta, bez śledzenia — Twoje zdjęcia i filmy nigdy nie opuszczają Twojego urządzenia.",
+      feature_whysnoxi_title: "🛡️ Dlaczego Snoxi?",
+      feature_whysnoxi_desc: "Narzędzia AI są świetne, ale Twoje zdjęcia często trafiają na cudzy serwer. Jeśli chcesz mieć pewność, że nic nie zostanie przesłane, Snoxi to prostsza i tańsza opcja.",
       badge_nosub: "♾️ Bez subskrypcji — kup raz, korzystaj na zawsze.",
       privacy_note_html: "<strong>Wszystko zostaje u Ciebie.</strong> Snoxi przetwarza zdjęcia i filmy wyłącznie lokalnie na Twoim urządzeniu — bez konta, bez przesyłania danych, bez śledzenia. Więcej informacji w <a href=\"privacy.html\" style=\"color:var(--accent)\">polityce prywatności</a>.",
       sysreq_note_html: "<strong>Wymagania systemowe:</strong> iOS 15.1+ lub Android 8.0+. Wszystkie szczegóły oraz instrukcję krok po kroku znajdziesz w <a href=\"anleitung.html\" style=\"color:var(--accent)\">instrukcji obsługi</a>.",
@@ -1120,8 +1141,8 @@ common: {
           contact_message_label: "Сообщение",
           contact_send: "Отправить",
           contact_success: "Спасибо за ваше сообщение! Мы ответим вам как можно скорее.",
-          contact_alt_note: "Вы также можете связаться с нами напрямую по указанному выше адресу электронной почты.",
-          contact_email_prefix: "Эл. почта:",
+          contact_alt_note: "Вы также можете связаться с нами напрямую по ссылке электронной почты выше.",
+          contact_email_prefix: "Написать письмо",
           contact_address_note: "Полное имя и почтовый адрес для вручения корреспонденции будут предоставлены по запросу через контактную форму ниже."
         },
     home: {
@@ -1144,6 +1165,8 @@ common: {
       feature_face_desc: "Настоящее размытие вместо цензурной полосы — свободно перемещается и масштабируется.",
       feature_privacy_title: "🔒 100% приватность",
       feature_privacy_desc: "Без облака, без аккаунта, без слежения — ваши фото и видео никогда не покидают устройство.",
+      feature_whysnoxi_title: "🛡️ Почему Snoxi?",
+      feature_whysnoxi_desc: "Инструменты на основе ИИ отличные, но ваши фото часто попадают на чужой сервер. Если вы хотите быть уверены, что ничего не загружается, Snoxi — более простой и доступный вариант.",
       badge_nosub: "♾️ Без подписки — купите один раз, пользуйтесь всегда.",
       privacy_note_html: "<strong>Всё остаётся у вас.</strong> Snoxi обрабатывает фото и видео полностью локально на вашем устройстве — без аккаунта, без загрузки на сервер, без слежения. Подробнее в <a href=\"privacy.html\" style=\"color:var(--accent)\">политике конфиденциальности</a>.",
       sysreq_note_html: "<strong>Системные требования:</strong> iOS 15.1+ или Android 8.0+. Все подробности и пошаговое руководство вы найдёте в <a href=\"anleitung.html\" style=\"color:var(--accent)\">инструкции по использованию</a>.",
@@ -1242,8 +1265,8 @@ common: {
           contact_message_label: "メッセージ",
           contact_send: "送信",
           contact_success: "メッセージをお送りいただきありがとうございます。できるだけ早くご返信いたします。",
-          contact_alt_note: "上記に表示されているメールアドレスから直接ご連絡いただくことも可能です。",
-          contact_email_prefix: "メール：",
+          contact_alt_note: "上記のメールリンクから直接ご連絡いただくことも可能です。",
+          contact_email_prefix: "メールを作成",
           contact_address_note: "氏名の詳細および送達可能な住所については、下記のお問い合わせフォームからご請求いただければお伝えします。"
         },
     home: {
@@ -1266,6 +1289,8 @@ common: {
       feature_face_desc: "モザイクではなく本物のぼかし処理。自由に配置・拡大縮小可能。",
       feature_privacy_title: "🔒 完全プライベート",
       feature_privacy_desc: "クラウドなし、アカウント不要、トラッキングなし — 写真や動画が端末の外に出ることはありません。",
+      feature_whysnoxi_title: "🛡️ Snoxiを選ぶ理由",
+      feature_whysnoxi_desc: "AIツールは素晴らしいですが、写真は他人のサーバーに送られることが多いです。何もアップロードされないことを確実にしたいなら、Snoxiがよりシンプルで手頃な選択肢です。",
       badge_nosub: "♾️ サブスクなし — 一度購入すればずっと使える。",
       privacy_note_html: "<strong>すべてあなたの手元に。</strong> Snoxiは写真や動画をすべて端末内で処理します — アカウント登録不要、アップロードなし、トラッキングなし。詳しくは<a href=\"privacy.html\" style=\"color:var(--accent)\">プライバシーポリシー</a>をご覧ください。",
       sysreq_note_html: "<strong>動作環境：</strong> iOS 15.1以降、またはAndroid 8.0以降。詳細とステップバイステップガイドは<a href=\"anleitung.html\" style=\"color:var(--accent)\">使い方ガイド</a>をご覧ください。",
@@ -1364,8 +1389,8 @@ common: {
           contact_message_label: "留言",
           contact_send: "发送",
           contact_success: "感谢您的留言！我们会尽快回复您。",
-          contact_alt_note: "您也可以通过上方显示的邮箱地址直接与我们联系。",
-          contact_email_prefix: "邮箱：",
+          contact_alt_note: "您也可以通过上方的邮箱链接直接与我们联系。",
+          contact_email_prefix: "创建邮件",
           contact_address_note: "完整姓名及可送达的通信地址将根据下方联系表单的请求提供。"
         },
     home: {
@@ -1388,6 +1413,8 @@ common: {
       feature_face_desc: "真正的模糊效果，而非马赛克，可自由放置和缩放。",
       feature_privacy_title: "🔒 100% 隐私保护",
       feature_privacy_desc: "无云端、无需账号、无追踪 — 你的照片和视频永远不会离开你的设备。",
+      feature_whysnoxi_title: "🛡️ 为什么选择 Snoxi？",
+      feature_whysnoxi_desc: "AI 工具很棒，但你的照片通常会上传到别人的服务器。如果你想确保没有任何内容被上传，Snoxi 是更简单、更实惠的选择。",
       badge_nosub: "♾️ 无需订阅 — 一次购买，永久使用。",
       privacy_note_html: "<strong>一切都留在你身边。</strong> Snoxi 完全在你的设备本地处理照片和视频 — 无需账号，不上传，不追踪。更多信息请参阅<a href=\"privacy.html\" style=\"color:var(--accent)\">隐私政策</a>。",
       sysreq_note_html: "<strong>系统要求：</strong>iOS 15.1 及以上，或 Android 8.0 及以上。所有详情及分步指南请参阅<a href=\"anleitung.html\" style=\"color:var(--accent)\">使用说明</a>。",
@@ -1630,14 +1657,12 @@ common: {
     var c = currentLangData().common || {};
     var line = document.createElement("p");
     line.className = "snoxi-contact-email-line";
-    var label = document.createElement("span");
-    label.setAttribute("data-i18n", "common.contact_email_prefix");
-    label.textContent = c.contact_email_prefix || "Email:";
+    // Adresse selbst nicht mehr sichtbar anzeigen (nur noch generischer CTA-Link-Text),
+    // um Scraping/Spam zu erschweren – der mailto-Link bleibt funktional.
     var link = document.createElement("a");
     link.href = "mailto:" + CONTACT_EMAIL;
-    link.textContent = CONTACT_EMAIL;
-    line.appendChild(label);
-    line.appendChild(document.createTextNode(" "));
+    link.setAttribute("data-i18n", "common.contact_email_prefix");
+    link.textContent = c.contact_email_prefix || "Create Email";
     line.appendChild(link);
     return line;
   }
@@ -1693,7 +1718,7 @@ common: {
     var form = document.createElement("form");
     form.className = "snoxi-contact-form";
     form.method = "POST";
-    form.action = "https://formsubmit.co/" + CONTACT_EMAIL;
+    form.action = "https://formsubmit.co/" + FORMSUBMIT_ID;
 
     function hidden(name, value) {
       var inp = document.createElement("input");
