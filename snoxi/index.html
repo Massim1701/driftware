@@ -23,6 +23,7 @@
     line-height: 1.5;
   }
   header {
+    position: relative;
     max-width: 720px;
     margin: 0 auto;
     padding: 72px 24px 32px;
@@ -34,6 +35,32 @@
     border-radius: 22px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--border);
     margin: 0 0 16px;
+  }
+  .home-tile {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    color: var(--text);
+  }
+  .home-tile-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffb74d, #ff9800);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  }
+  .home-tile-label {
+    font-size: 11px;
+    color: var(--muted);
   }
   .logo {
     font-size: 40px;
@@ -134,6 +161,10 @@
 </head>
 <body>
   <header>
+    <a class="home-tile" href="/" aria-label="Zurück zur Driftware Startseite">
+      <div class="home-tile-icon">🏠</div>
+      <span class="home-tile-label">Home</span>
+    </a>
     <img class="app-icon" src="icon.png" alt="Snoxi App-Icon" width="96" height="96">
     <p class="logo">Snoxi</p>
     <p class="tagline" data-i18n="home.tagline">Filter, Sticker, Wasserzeichen & Gesichter unkenntlich machen — ganz einfach, komplett auf deinem Gerät.</p>

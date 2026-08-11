@@ -127,6 +127,70 @@
     border-top: 1px solid var(--border);
   }
   footer a { color: var(--accent); text-decoration: none; }
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 100;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 400px;
+    width: 100%;
+  }
+  .modal-panel h3 { margin: 0 0 12px; font-size: 17px; }
+  .modal-close {
+    float: right;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .contact-email-line { margin: 0 0 16px; font-size: 14px; color: var(--muted); }
+  .contact-email-line a { color: var(--accent); }
+  .contact-success {
+    background: rgba(58,168,255,.12);
+    border: 1px solid rgba(58,168,255,.3);
+    color: var(--accent);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+  .contact-form { display: flex; flex-direction: column; gap: 12px; }
+  .contact-form label { font-size: 13px; color: var(--muted); font-weight: 600; display: flex; flex-direction: column; gap: 6px; }
+  .contact-form input, .contact-form textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+  }
+  .contact-form textarea { min-height: 90px; resize: vertical; }
+  .contact-form button {
+    align-self: flex-start;
+    background: var(--accent);
+    color: #06223d;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .contact-honey { position: absolute; left: -9999px; }
 </style>
 </head>
 <body>
@@ -167,7 +231,48 @@
   </main>
   <footer>
     &copy; 2026 Driftware
-    <div><a href="mailto:manca.massimo@gmail.com">Kontakt</a></div>
+    <div><a href="#" id="contact-link">Kontakt</a></div>
   </footer>
+
+  <div class="modal-overlay" id="contact-modal">
+    <div class="modal-panel">
+      <button class="modal-close" id="contact-close" aria-label="Schließen">&times;</button>
+      <h3>Kontakt aufnehmen</h3>
+      <p class="contact-email-line">E-Mail: <a href="mailto:welove80sde@gmail.com">welove80sde@gmail.com</a></p>
+      <div class="contact-success" id="contact-success" style="display:none;">Danke für deine Nachricht! Wir melden uns so schnell wie möglich bei dir.</div>
+      <form class="contact-form" method="POST" action="https://formsubmit.co/welove80sde@gmail.com">
+        <input type="hidden" name="_subject" value="Driftware — neue Kontaktanfrage">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_next" id="contact-next" value="">
+        <input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">
+        <label><span>Name</span><input type="text" name="name" required></label>
+        <label><span>Deine E-Mail-Adresse</span><input type="email" name="email" required></label>
+        <label><span>Nachricht</span><textarea name="message" required></textarea></label>
+        <button type="submit">Senden</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var overlay = document.getElementById('contact-modal');
+      var link = document.getElementById('contact-link');
+      var closeBtn = document.getElementById('contact-close');
+      var nextField = document.getElementById('contact-next');
+      nextField.value = window.location.origin + window.location.pathname + '?contact=success';
+
+      function open() { overlay.classList.add('open'); }
+      function close() { overlay.classList.remove('open'); }
+
+      link.addEventListener('click', function (e) { e.preventDefault(); open(); });
+      closeBtn.addEventListener('click', close);
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+
+      if (/[?&]contact=success/.test(window.location.search)) {
+        document.getElementById('contact-success').style.display = 'block';
+        open();
+      }
+    })();
+  </script>
 </body>
 </html>
