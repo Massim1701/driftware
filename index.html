@@ -74,9 +74,19 @@
     padding: 40px 24px 64px;
   }
   .apps {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+  }
+  .tile-block {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
-    gap: 24px 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 24px;
   }
   .app-tile {
     display: flex;
@@ -85,6 +95,7 @@
     gap: 8px;
     text-decoration: none;
     color: var(--text);
+    width: 64px;
   }
   .app-icon {
     width: 64px;
@@ -203,29 +214,59 @@
   </header>
   <main>
     <div class="apps">
-      <a class="app-tile" href="/snoxi/">
-        <img class="app-icon" src="/snoxi/icon.png" alt="Snoxi Icon">
-        <span class="app-label">Snoxi</span>
-      </a>
-      <div class="app-tile soon">
-        <div class="app-placeholder-icon">✨</div>
-        <span class="app-label">Bald</span>
+      <div class="tile-block">
+        <a class="app-tile" href="/snoxi/">
+          <img class="app-icon" src="/snoxi/icon.png" alt="Snoxi Icon">
+          <span class="app-label">Snoxi</span>
+        </a>
+        <div class="app-tile soon">
+          <div class="app-placeholder-icon">✨</div>
+          <span class="app-label">Bald</span>
+        </div>
+        <div class="app-tile soon">
+          <div class="app-placeholder-icon">✨</div>
+          <span class="app-label">Bald</span>
+        </div>
+        <div class="app-tile soon">
+          <div class="app-placeholder-icon">✨</div>
+          <span class="app-label">Bald</span>
+        </div>
       </div>
-      <div class="app-tile soon">
-        <div class="app-placeholder-icon">✨</div>
-        <span class="app-label">Bald</span>
+      <div class="tile-block">
+        <div class="app-tile soon">
+          <div class="app-placeholder-icon">✨</div>
+          <span class="app-label">Bald</span>
+        </div>
+        <div class="app-tile soon">
+          <div class="app-placeholder-icon">✨</div>
+          <span class="app-label">Bald</span>
+        </div>
+        <div class="app-tile soon">
+          <div class="app-placeholder-icon">✨</div>
+          <span class="app-label">Bald</span>
+        </div>
+        <div class="app-tile soon">
+          <div class="app-placeholder-icon">✨</div>
+          <span class="app-label">Bald</span>
+        </div>
       </div>
-      <div class="app-tile soon">
-        <div class="app-placeholder-icon">✨</div>
-        <span class="app-label">Bald</span>
-      </div>
-      <div class="app-tile soon">
-        <div class="app-placeholder-icon">✨</div>
-        <span class="app-label">Bald</span>
-      </div>
-      <div class="app-tile soon">
-        <div class="app-placeholder-icon">✨</div>
-        <span class="app-label">Bald</span>
+      <div class="tile-block">
+        <div class="app-tile soon">
+          <div class="app-placeholder-icon">✨</div>
+          <span class="app-label">Bald</span>
+        </div>
+        <div class="app-tile soon">
+          <div class="app-placeholder-icon">✨</div>
+          <span class="app-label">Bald</span>
+        </div>
+        <div class="app-tile soon">
+          <div class="app-placeholder-icon">✨</div>
+          <span class="app-label">Bald</span>
+        </div>
+        <div class="app-tile soon">
+          <div class="app-placeholder-icon">✨</div>
+          <span class="app-label">Bald</span>
+        </div>
       </div>
     </div>
   </main>
