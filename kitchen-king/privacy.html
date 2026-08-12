@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Datenschutzerklärung — Kitchen King</title>
+<style>
+  :root { --bg:#0c1224; --panel:#141c33; --accent:#3aa8ff; --text:#f5f7fa; --muted:#9aa3c0; --border:rgba(255,255,255,0.08); }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+  main { max-width:680px; margin:0 auto; padding:56px 24px 64px; }
+  a { color:var(--accent); }
+  h1 { font-size:28px; margin-bottom:4px; }
+  .stand { color:var(--muted); font-size:14px; margin-bottom:32px; }
+  h2 { font-size:18px; margin-top:36px; color:var(--text); border-bottom:1px solid var(--border); padding-bottom:6px; }
+  p { color:#dbe0ee; }
+  ul { color:#dbe0ee; padding-left:20px; }
+  .back { display:inline-block; margin-bottom:24px; color:var(--muted); text-decoration:none; font-size:14px; }
+  .contact-panel { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:20px 24px; margin:32px 0; }
+  .contact-form { display:flex; flex-direction:column; gap:12px; margin-top:16px; }
+  .contact-form label { font-size:13px; color:var(--muted); font-weight:600; display:flex; flex-direction:column; gap:6px; }
+  .contact-form input, .contact-form textarea { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-family:inherit; font-size:14px; }
+  .contact-form textarea { min-height:100px; resize:vertical; }
+  .contact-form button { align-self:flex-start; background:var(--accent); color:#06223d; border:none; border-radius:10px; padding:10px 22px; font-weight:700; font-size:14px; cursor:pointer; }
+  .contact-honey { position:absolute; left:-9999px; }
+  .utility-block {
+    position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 50;
+    display: flex; flex-direction: row; gap: 10px;
+  }
+  .utility-tile { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: var(--text); width: 40px; }
+  .utility-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  .utility-icon svg { width: 18px; height: 18px; }
+  .utility-label { font-size: 9px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="utility-block">
+  <a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">
+    <div class="utility-icon" style="background:#d98c1f">
+      <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
+    </div>
+    <span class="utility-label">Home</span>
+  </a>
+  <a class="utility-tile" href="#kontakt">
+    <div class="utility-icon" style="background:#4a90d9">
+      <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
+    </div>
+    <span class="utility-label">Mail</span>
+  </a>
+  <a class="utility-tile" href="anleitung.html">
+    <div class="utility-icon" style="background:#3d9970">
+      <svg viewBox="0 0 24 24" fill="#a8e6c1" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v2H4V4zm0 5h16v2H4V9zm0 5h10v2H4v-2zm0 5h10v2H4v-2z"/></svg>
+    </div>
+    <span class="utility-label">Anleitung</span>
+  </a>
+  <a class="utility-tile" href="privacy.html">
+    <div class="utility-icon" style="background:#6a5acd">
+      <svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>
+    </div>
+    <span class="utility-label">Datenschutz</span>
+  </a>
+</div>
+<main>
+  <a class="back" href="index.html">&larr; Zurück</a>
+  <h1>Datenschutzerklärung – Kitchen King</h1>
+  <p class="stand">Stand: August 2026</p>
+
+  <h2>1. Verantwortlicher</h2>
+  <p>Vollständiger Name und ladungsfähige Anschrift werden auf Anfrage über das Kontaktformular unten mitgeteilt.</p>
+
+  <h2>2. Worum es bei Kitchen King geht</h2>
+  <p>Kitchen King ist eine App zum Entdecken, Hochladen und Bewerten von Rezepten. Rezepte ansehen, bewerten und favorisieren ist ohne Konto möglich; wer selbst Rezepte hochladen möchte, benötigt ein Nutzerkonto.</p>
+
+  <h2>3. Nutzerkonto</h2>
+  <p>Beim Anlegen eines Kontos werden E-Mail-Adresse, ein selbst gewählter Nutzername sowie die von dir erstellten Inhalte (Rezepte, Bewertungen, Favoriten) in unserer Datenbank (Supabase, EU-Hosting) gespeichert. Ohne Konto kannst du die App als Gast nutzen — dafür wird eine anonyme, technische Sitzungs-ID angelegt, die keinerlei persönliche Angaben enthält.</p>
+
+  <h2>4. Rezepte, Bilder und Sichtbarkeit</h2>
+  <p>Öffentlich markierte Rezepte inklusive Bildern sind für alle Nutzer sichtbar und werden in unserer Datenbank gespeichert. Als privat markierte Rezepte werden ebenfalls in der Datenbank gespeichert, sind aber ausschließlich für dein eigenes Konto einsehbar (technisch abgesichert durch Zugriffsregeln auf Datenbankebene). Private Rezepte kannst du zusätzlich jederzeit als PDF exportieren, das direkt auf deinem Gerät erzeugt wird.</p>
+
+  <h2>5. Rezept-Foto-Scan, Kühlschrank-Scan und Link-Import</h2>
+  <p>Wenn du ein Rezeptfoto, ein Kühlschrankfoto oder einen Rezept-Link importierst, wird der jeweilige Inhalt zur Auswertung an unsere Server und von dort an einen KI-Dienst (Anthropic) übermittelt, der Text bzw. Zutaten daraus erkennt und übersetzt. Die Inhalte werden dabei nicht dauerhaft auf unseren Servern gespeichert, sondern nur zur Auswertung verarbeitet.</p>
+
+  <h2>6. Einkaufsliste</h2>
+  <p>Einträge deiner Einkaufsliste werden, sofern du eingeloggt bist, mit deinem Konto verknüpft in der Datenbank gespeichert, damit sie geräteübergreifend verfügbar sind.</p>
+
+  <h2>7. In-App-Käufe (Spende)</h2>
+  <p>Kitchen King ist kostenlos nutzbar. Eine freiwillige Spende ist als einmaliger In-App-Kauf möglich. Der Zahlungsvorgang läuft vollständig über den App Store (Apple) bzw. Google Play. Zahlungsdaten wie Kreditkarteninformationen erhalten wir zu keinem Zeitpunkt — diese verbleiben vollständig bei Apple bzw. Google.</p>
+
+  <h2>8. Kinder</h2>
+  <p>Kitchen King richtet sich nicht gezielt an Kinder unter 16 Jahren.</p>
+
+  <h2>9. Deine Rechte</h2>
+  <p>Du hast das Recht auf Auskunft, Berichtigung und Löschung deiner bei uns gespeicherten Daten. Dein Konto und alle damit verknüpften Rezepte, Bewertungen und Einkaufslisten kannst du jederzeit über die Kontaktmöglichkeit am Ende dieser Seite löschen lassen.</p>
+
+  <h2>10. Änderungen dieser Erklärung</h2>
+  <p>Wir behalten uns vor, diese Datenschutzerklärung bei Bedarf anzupassen, etwa wenn neue Funktionen hinzukommen. Die jeweils aktuelle Version ist unter dieser Seite abrufbar.</p>
+
+  <div class="contact-panel" id="kontakt">
+    <h2 style="margin-top:0;border-bottom:none;padding-bottom:0;">Kontakt</h2>
+    <p style="margin:8px 0 0;"><a href="mailto:welove80sde@gmail.com">E-Mail erstellen</a></p>
+    <form class="contact-form" method="POST" action="https://formsubmit.co/0b4cb7348b4cff5d1891bf8d99f1e757">
+      <input type="hidden" name="_subject" value="Kitchen King — neue Kontaktanfrage">
+      <input type="hidden" name="_template" value="table">
+      <input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">
+      <label><span>Name</span><input type="text" name="name" required></label>
+      <label><span>Deine E-Mail-Adresse</span><input type="email" name="email" required></label>
+      <label><span>Nachricht</span><textarea name="message" required></textarea></label>
+      <button type="submit">Senden</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>

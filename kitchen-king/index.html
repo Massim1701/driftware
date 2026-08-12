@@ -55,13 +55,7 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   }
   .utility-icon svg { width: 18px; height: 18px; }
-  .utility-icon.placeholder {
-    background: rgba(255,255,255,0.06);
-    border: 1px dashed var(--border);
-    box-shadow: none;
-  }
   .utility-label { font-size: 9px; color: var(--muted); }
-  .utility-tile.soon { opacity: 0.45; pointer-events: none; }
   header {
     position: relative;
     max-width: 720px;
@@ -178,68 +172,6 @@
   footer a { color: var(--accent); text-decoration: none; }
   footer .links { margin-top: 8px; }
   footer .links a { margin: 0 8px; }
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.55);
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    z-index: 100;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal-panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    max-width: 400px;
-    width: 100%;
-  }
-  .modal-panel h3 { margin: 0 0 12px; font-size: 17px; }
-  .modal-close {
-    float: right;
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 20px;
-    cursor: pointer;
-    line-height: 1;
-  }
-  .contact-success {
-    background: rgba(58,168,255,.12);
-    border: 1px solid rgba(58,168,255,.3);
-    color: var(--accent);
-    border-radius: 10px;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-    font-size: 14px;
-  }
-  .contact-form { display: flex; flex-direction: column; gap: 12px; }
-  .contact-form label { font-size: 13px; color: var(--muted); font-weight: 600; display: flex; flex-direction: column; gap: 6px; }
-  .contact-form input, .contact-form textarea {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 12px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 14px;
-  }
-  .contact-form textarea { min-height: 90px; resize: vertical; }
-  .contact-form button {
-    align-self: flex-start;
-    background: var(--accent);
-    color: #06223d;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 22px;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  .contact-honey { position: absolute; left: -9999px; }
 </style>
 </head>
 <body>
@@ -250,20 +182,24 @@
       </div>
       <span class="utility-label">Home</span>
     </a>
-    <button class="utility-tile" id="utility-mail" type="button">
+    <a class="utility-tile" href="privacy.html#kontakt">
       <div class="utility-icon" style="background:#4a90d9">
         <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
       </div>
       <span class="utility-label">Mail</span>
-    </button>
-    <div class="utility-tile soon">
-      <div class="utility-icon placeholder"></div>
-      <span class="utility-label">Bald</span>
-    </div>
-    <div class="utility-tile soon">
-      <div class="utility-icon placeholder"></div>
-      <span class="utility-label">Bald</span>
-    </div>
+    </a>
+    <a class="utility-tile" href="anleitung.html">
+      <div class="utility-icon" style="background:#3d9970">
+        <svg viewBox="0 0 24 24" fill="#a8e6c1" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v2H4V4zm0 5h16v2H4V9zm0 5h10v2H4v-2zm0 5h10v2H4v-2z"/></svg>
+      </div>
+      <span class="utility-label">Anleitung</span>
+    </a>
+    <a class="utility-tile" href="privacy.html">
+      <div class="utility-icon" style="background:#6a5acd">
+        <svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>
+      </div>
+      <span class="utility-label">Datenschutz</span>
+    </a>
   </div>
   <header>
     <img class="app-icon" src="/kitchen-king/icon.png" alt="Kitchen King App-Icon" width="96" height="96">
@@ -321,48 +257,8 @@
     </div>
   </main>
   <footer>
-    &copy; 2026 Driftware
-    <div class="links"><a href="/">Zurück zu Driftware</a> · <a href="/impressum.html">Impressum</a></div>
+    &copy; 2026 Massimo — Kitchen King
+    <div class="links"><a href="/">Zurück zu Driftware</a> · <a href="impressum.html">Impressum</a></div>
   </footer>
-
-  <div class="modal-overlay" id="contact-modal">
-    <div class="modal-panel">
-      <button class="modal-close" id="contact-close" aria-label="Schließen">&times;</button>
-      <h3>Kontakt aufnehmen</h3>
-      <div class="contact-success" id="contact-success" style="display:none;">Danke für deine Nachricht! Wir melden uns so schnell wie möglich bei dir.</div>
-      <form class="contact-form" method="POST" action="https://formsubmit.co/0b4cb7348b4cff5d1891bf8d99f1e757">
-        <input type="hidden" name="_subject" value="Kitchen King — neue Kontaktanfrage">
-        <input type="hidden" name="_template" value="table">
-        <input type="hidden" name="_next" id="contact-next" value="">
-        <input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">
-        <label><span>Name</span><input type="text" name="name" required></label>
-        <label><span>Deine E-Mail-Adresse</span><input type="email" name="email" required></label>
-        <label><span>Nachricht</span><textarea name="message" required></textarea></label>
-        <button type="submit">Senden</button>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    (function () {
-      var overlay = document.getElementById('contact-modal');
-      var mailTile = document.getElementById('utility-mail');
-      var closeBtn = document.getElementById('contact-close');
-      var nextField = document.getElementById('contact-next');
-      nextField.value = window.location.origin + window.location.pathname + '?contact=success';
-
-      function open() { overlay.classList.add('open'); }
-      function close() { overlay.classList.remove('open'); }
-
-      if (mailTile) mailTile.addEventListener('click', function (e) { e.preventDefault(); open(); });
-      closeBtn.addEventListener('click', close);
-      overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
-
-      if (/[?&]contact=success/.test(window.location.search)) {
-        document.getElementById('contact-success').style.display = 'block';
-        open();
-      }
-    })();
-  </script>
 </body>
 </html>
