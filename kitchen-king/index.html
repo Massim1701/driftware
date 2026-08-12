@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kitchen King — Driftware</title>
+<meta name="description" content="Kitchen King: Rezepte entdecken, hochladen und bewerten. Ohne Werbung, mit Portions- und Kalorienrechner.">
+<style>
+  :root {
+    --bg: #0c1224;
+    --panel: #141c33;
+    --accent: #3aa8ff;
+    --text: #f5f7fa;
+    --muted: #9aa3c0;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 72px 24px 24px;
+    text-align: center;
+  }
+  .icon {
+    width: 96px;
+    height: 96px;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    margin-bottom: 20px;
+  }
+  h1 { font-size: 30px; margin: 0 0 10px; }
+  .tagline { color: var(--muted); font-size: 16px; margin: 0 0 20px; }
+  .badge {
+    display: inline-block;
+    background: rgba(58,168,255,.12);
+    border: 1px solid rgba(58,168,255,.3);
+    color: var(--accent);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 20px 24px 64px;
+  }
+  .features {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px 28px;
+    display: grid;
+    gap: 14px;
+  }
+  .features li { color: var(--text); }
+  .features ul { margin: 0; padding-left: 20px; }
+  footer {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+  <header>
+    <img class="icon" src="/kitchen-king/icon.png" alt="Kitchen King Icon">
+    <h1>Kitchen King</h1>
+    <p class="tagline">Rezepte entdecken, hochladen und bewerten — ohne Werbung.</p>
+    <span class="badge">Bald verfügbar</span>
+  </header>
+  <main>
+    <div class="features">
+      <ul>
+        <li>Stöbern und bewerten ganz ohne Konto</li>
+        <li>Über 30 Kategorien — von „Was Oma noch wusste“ bis Fermentieren</li>
+        <li>Automatische Kategorie-Erkennung beim Hochladen</li>
+        <li>Portionsrechner und Kalorienschätzung pro Rezept</li>
+        <li>Einkaufsliste direkt aus dem Rezept</li>
+        <li>Rezept per Foto einlesen statt abtippen</li>
+      </ul>
+    </div>
+  </main>
+  <footer>
+    &copy; 2026 Driftware
+    <div><a href="/">Zurück zu Driftware</a> · <a href="/impressum.html">Impressum</a></div>
+  </footer>
+</body>
+</html>
