@@ -22,49 +22,152 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     line-height: 1.5;
   }
+  .utility-block {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+  .utility-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    text-decoration: none;
+    color: var(--text);
+    width: 40px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .utility-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .utility-icon svg { width: 18px; height: 18px; }
+  .utility-icon.placeholder {
+    background: rgba(255,255,255,0.06);
+    border: 1px dashed var(--border);
+    box-shadow: none;
+  }
+  .utility-label { font-size: 9px; color: var(--muted); }
+  .utility-tile.soon { opacity: 0.45; pointer-events: none; }
   header {
-    max-width: 640px;
+    position: relative;
+    max-width: 720px;
     margin: 0 auto;
-    padding: 72px 24px 24px;
+    padding: 72px 24px 32px;
     text-align: center;
   }
-  .icon {
+  .app-icon {
     width: 96px;
     height: 96px;
-    border-radius: 24px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    margin-bottom: 20px;
+    border-radius: 22px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--border);
+    margin: 0 0 16px;
   }
-  h1 { font-size: 30px; margin: 0 0 10px; }
-  .tagline { color: var(--muted); font-size: 16px; margin: 0 0 20px; }
-  .description { color: var(--text); font-size: 15px; line-height: 1.7; text-align: left; margin: 0 0 24px; }
+  .logo {
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin: 0 0 12px;
+  }
+  .tagline {
+    color: var(--muted);
+    font-size: 18px;
+    margin: 0 0 32px;
+  }
+  .badges {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
   .badge {
-    display: inline-block;
-    background: rgba(58,168,255,.12);
-    border: 1px solid rgba(58,168,255,.3);
-    color: var(--accent);
-    border-radius: 20px;
-    padding: 6px 16px;
-    font-size: 13px;
-    font-weight: 600;
-  }
-  main {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 20px 24px 64px;
-  }
-  .features {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 14px;
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 24px 28px;
-    display: grid;
-    gap: 14px;
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
   }
-  .features li { color: var(--text); }
-  .features ul { margin: 0; padding-left: 20px; }
+  .badge.soon { opacity: 0.6; }
+  .badge-nosub {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 14px;
+    background: rgba(58,168,255,0.1);
+    border: 1px solid rgba(58,168,255,0.35);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 14px;
+    margin-top: 16px;
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+  }
+  .description {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.7;
+    text-align: left;
+    margin: 0 0 8px;
+  }
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 40px 0;
+  }
+  .feature {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .feature h3 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .feature p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .privacy-note {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 24px;
+  }
+  .privacy-note strong { color: var(--text); }
   footer {
-    max-width: 640px;
+    max-width: 720px;
     margin: 0 auto;
     padding: 24px;
     text-align: center;
@@ -73,43 +176,193 @@
     border-top: 1px solid var(--border);
   }
   footer a { color: var(--accent); text-decoration: none; }
+  footer .links { margin-top: 8px; }
+  footer .links a { margin: 0 8px; }
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 100;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 400px;
+    width: 100%;
+  }
+  .modal-panel h3 { margin: 0 0 12px; font-size: 17px; }
+  .modal-close {
+    float: right;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .contact-success {
+    background: rgba(58,168,255,.12);
+    border: 1px solid rgba(58,168,255,.3);
+    color: var(--accent);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+  .contact-form { display: flex; flex-direction: column; gap: 12px; }
+  .contact-form label { font-size: 13px; color: var(--muted); font-weight: 600; display: flex; flex-direction: column; gap: 6px; }
+  .contact-form input, .contact-form textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+  }
+  .contact-form textarea { min-height: 90px; resize: vertical; }
+  .contact-form button {
+    align-self: flex-start;
+    background: var(--accent);
+    color: #06223d;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .contact-honey { position: absolute; left: -9999px; }
 </style>
 </head>
 <body>
+  <div class="utility-block">
+    <a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">
+      <div class="utility-icon" style="background:#d98c1f">
+        <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
+      </div>
+      <span class="utility-label">Home</span>
+    </a>
+    <button class="utility-tile" id="utility-mail" type="button">
+      <div class="utility-icon" style="background:#4a90d9">
+        <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
+      </div>
+      <span class="utility-label">Mail</span>
+    </button>
+    <div class="utility-tile soon">
+      <div class="utility-icon placeholder"></div>
+      <span class="utility-label">Bald</span>
+    </div>
+    <div class="utility-tile soon">
+      <div class="utility-icon placeholder"></div>
+      <span class="utility-label">Bald</span>
+    </div>
+  </div>
   <header>
-    <img class="icon" src="/kitchen-king/icon.png" alt="Kitchen King Icon">
-    <h1>Kitchen King</h1>
+    <img class="app-icon" src="/kitchen-king/icon.png" alt="Kitchen King App-Icon" width="96" height="96">
+    <p class="logo">Kitchen King</p>
     <p class="tagline">Rezepte entdecken, hochladen und bewerten — ohne Werbung.</p>
-    <span class="badge">Bald verfügbar</span>
+    <div class="badges">
+      <span class="badge soon">🍎 App Store — bald verfügbar</span>
+      <span class="badge soon">▶ Google Play — bald verfügbar</span>
+    </div>
+    <div class="badge-nosub">💛 100% kostenlos — keine Pflicht-Abos, freiwillig unterstützbar</div>
   </header>
   <main>
     <p class="description">
       Kitchen King ist eine Rezept-App zum Stöbern, Sammeln und Teilen — ganz ohne Werbung und ohne Zwang zur
       Anmeldung. Rezepte ansehen, bewerten und favorisieren geht sofort; wer selbst etwas hochladen will, legt in
-      Sekunden ein Konto an. Beim Anlegen erkennt die App automatisch die passende Kategorie, übersetzt
-      fremdsprachige oder handschriftliche Rezepte — auch Omas alte Sütterlin-Schrift — ins Deutsche, und schlägt
-      anhand eines Kühlschrank-Fotos passende Gerichte aus der eigenen Datenbank vor. Rezepte lassen sich als
-      öffentlich oder privat markieren, private jederzeit als PDF exportieren. Kitchen King bleibt zu 100%
-      kostenlos — wer mag, unterstützt die Entwicklung mit einer freiwilligen Spende über den App Store bzw.
-      Google Play.
+      Sekunden ein Konto an.
     </p>
     <div class="features">
-      <ul>
-        <li>Stöbern, bewerten und favorisieren ganz ohne Konto</li>
-        <li>Über 30 Kategorien — von „Was Oma noch wusste“ bis Fermentieren</li>
-        <li>Automatische Kategorie-Erkennung beim Hochladen</li>
-        <li>Rezept per Foto einlesen statt abtippen — auch aus dem Ausland oder alter Handschrift übersetzt</li>
-        <li>Kühlschrank fotografieren → passende Rezepte aus der Datenbank</li>
-        <li>Portionsrechner und Kalorienschätzung pro Rezept</li>
-        <li>Einkaufsliste direkt aus dem Rezept, Erledigtes einfach wegklicken</li>
-        <li>Rezepte öffentlich oder privat — private als PDF exportierbar</li>
-        <li>100% kostenlos, keine Werbung, freiwillig unterstützbar</li>
-      </ul>
+      <div class="feature">
+        <h3>🧑‍🍳 Ohne Konto stöbern</h3>
+        <p>Rezepte ansehen, bewerten und favorisieren — ganz ohne Anmeldung.</p>
+      </div>
+      <div class="feature">
+        <h3>🗂️ Über 30 Kategorien</h3>
+        <p>Von „Was Oma noch wusste" bis Fermentieren, mit automatischer Kategorie-Erkennung beim Hochladen.</p>
+      </div>
+      <div class="feature">
+        <h3>📸 Rezept per Foto</h3>
+        <p>Statt abzutippen — auch fremdsprachige oder handschriftliche Rezepte, sogar alte Sütterlin-Schrift, automatisch ins Deutsche übersetzt.</p>
+      </div>
+      <div class="feature">
+        <h3>🧊 Kühlschrank-Scan</h3>
+        <p>Foto vom Kühlschrank rein, passende Rezepte aus der Datenbank raus.</p>
+      </div>
+      <div class="feature">
+        <h3>🍽️ Portionsrechner</h3>
+        <p>Mengen automatisch umrechnen, inklusive Kalorienschätzung pro Portion.</p>
+      </div>
+      <div class="feature">
+        <h3>🛒 Einkaufsliste</h3>
+        <p>Direkt aus dem Rezept erstellt — Vorhandenes einfach wegklicken.</p>
+      </div>
+      <div class="feature">
+        <h3>🔒 Öffentlich oder privat</h3>
+        <p>Eigene Rezepte frei wählbar, private jederzeit als PDF exportierbar.</p>
+      </div>
+      <div class="feature">
+        <h3>💛 100% kostenlos</h3>
+        <p>Keine Werbung, keine Pflicht-Abos — wer mag, unterstützt die Entwicklung freiwillig über den Store.</p>
+      </div>
+    </div>
+    <div class="privacy-note">
+      <strong>Deine privaten Rezepte bleiben privat.</strong> Als privat markierte Rezepte sind nur für dich sichtbar
+      und lassen sich jederzeit direkt auf dein Gerät als PDF exportieren.
     </div>
   </main>
   <footer>
     &copy; 2026 Driftware
-    <div><a href="/">Zurück zu Driftware</a> · <a href="/impressum.html">Impressum</a></div>
+    <div class="links"><a href="/">Zurück zu Driftware</a> · <a href="/impressum.html">Impressum</a></div>
   </footer>
+
+  <div class="modal-overlay" id="contact-modal">
+    <div class="modal-panel">
+      <button class="modal-close" id="contact-close" aria-label="Schließen">&times;</button>
+      <h3>Kontakt aufnehmen</h3>
+      <div class="contact-success" id="contact-success" style="display:none;">Danke für deine Nachricht! Wir melden uns so schnell wie möglich bei dir.</div>
+      <form class="contact-form" method="POST" action="https://formsubmit.co/0b4cb7348b4cff5d1891bf8d99f1e757">
+        <input type="hidden" name="_subject" value="Kitchen King — neue Kontaktanfrage">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_next" id="contact-next" value="">
+        <input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">
+        <label><span>Name</span><input type="text" name="name" required></label>
+        <label><span>Deine E-Mail-Adresse</span><input type="email" name="email" required></label>
+        <label><span>Nachricht</span><textarea name="message" required></textarea></label>
+        <button type="submit">Senden</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var overlay = document.getElementById('contact-modal');
+      var mailTile = document.getElementById('utility-mail');
+      var closeBtn = document.getElementById('contact-close');
+      var nextField = document.getElementById('contact-next');
+      nextField.value = window.location.origin + window.location.pathname + '?contact=success';
+
+      function open() { overlay.classList.add('open'); }
+      function close() { overlay.classList.remove('open'); }
+
+      if (mailTile) mailTile.addEventListener('click', function (e) { e.preventDefault(); open(); });
+      closeBtn.addEventListener('click', close);
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+
+      if (/[?&]contact=success/.test(window.location.search)) {
+        document.getElementById('contact-success').style.display = 'block';
+        open();
+      }
+    })();
+  </script>
 </body>
 </html>
