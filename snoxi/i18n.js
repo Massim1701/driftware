@@ -660,29 +660,6 @@ common: {
     document.head.appendChild(style);
   }
 
-  function buildEmailLine() {
-    var c = currentLangData().common || {};
-    var line = document.createElement("p");
-    line.className = "snoxi-contact-email-line";
-    // Adresse selbst nicht mehr sichtbar anzeigen (nur noch generischer CTA-Link-Text),
-    // um Scraping/Spam zu erschweren – der mailto-Link bleibt funktional.
-    var link = document.createElement("a");
-    link.href = "mailto:" + CONTACT_EMAIL;
-    link.setAttribute("data-i18n", "common.contact_email_prefix");
-    link.textContent = c.contact_email_prefix || "Create Email";
-    line.appendChild(link);
-    return line;
-  }
-
-  function renderMailSlot(containerId) {
-    var container = document.getElementById(containerId);
-    if (!container) return;
-    injectContactStyles();
-    container.innerHTML = "";
-    container.appendChild(buildEmailLine());
-    applyTranslations(detectLanguage());
-  }
-
   function contactField(labelKey, fallbackLabel, tagName, inputName, inputType) {
     var label = document.createElement("label");
     var span = document.createElement("span");
@@ -711,8 +688,6 @@ common: {
     heading.setAttribute("data-i18n", "common.contact_heading");
     heading.textContent = c.contact_heading || "Contact";
     panel.appendChild(heading);
-
-    panel.appendChild(buildEmailLine());
 
     if (/[?&]snoxi_contact=success/.test(window.location.search)) {
       var success = document.createElement("div");
@@ -759,18 +734,11 @@ common: {
 
     panel.appendChild(form);
 
-    var note = document.createElement("p");
-    note.className = "snoxi-contact-note";
-    note.setAttribute("data-i18n", "common.contact_alt_note");
-    note.textContent = c.contact_alt_note || "You can also reach us directly via the email address shown above.";
-    panel.appendChild(note);
-
     container.appendChild(panel);
     applyTranslations(detectLanguage());
   }
 
   window.renderContactBlock = renderContactBlock;
-  window.renderMailSlot = renderMailSlot;
 
   window.snoxiSetLanguage = setLanguage;
 })();
