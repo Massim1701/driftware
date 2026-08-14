@@ -7,11 +7,11 @@
   // aus dem Quelltext scrapen können (CONTACT_EMAIL bleibt für die sichtbare mailto-Zeile).
   var FORMSUBMIT_ID = "0b4cb7348b4cff5d1891bf8d99f1e757";
 
-  var SUPPORTED_LANGUAGES = ["de","en","es","fr","it","pt","nl","tr","pl","ru","ja","zh"];
+  var SUPPORTED_LANGUAGES = ["de","en","es","fr","it","pt","nl","tr","pl","ru","ja"];
   var LANG_NAMES = {
     de: "Deutsch", en: "English", es: "Español", fr: "Français", it: "Italiano",
     pt: "Português", nl: "Nederlands", tr: "Türkçe", pl: "Polski", ru: "Русский",
-    ja: "日本語", zh: "中文"
+    ja: "日本語"
   };
 
   var translations = {};
@@ -1377,130 +1377,6 @@ common: {
       p_verantwortlich: "Massimo",
       h2_hinweis: "注記",
       p_hinweis: "この運営者情報は個人（事業者ではない）向けの草案として作成されたものであり、法的助言に代わるものではありません。表示義務について不明な点がある場合は、弁護士またはeRecht24のような生成サービスによる簡単な確認をおすすめします。"
-    }
-  };
-
-  translations.zh = {
-common: {
-          lang_label: "语言",
-          contact_heading: "联系我们",
-          contact_name_label: "姓名",
-          contact_form_email_label: "您的电子邮箱",
-          contact_message_label: "留言",
-          contact_send: "发送",
-          contact_success: "感谢您的留言！我们会尽快回复您。",
-          contact_alt_note: "您也可以通过上方的邮箱链接直接与我们联系。",
-          contact_email_prefix: "创建邮件",
-          contact_address_note: "完整姓名及可送达的通信地址将根据下方联系表单的请求提供。"
-        },
-    home: {
-      title: "Snoxi — 照片和视频编辑器",
-      description: "Snoxi：快速、简单的照片和视频编辑器。滤镜、贴纸、水印、人脸模糊，以及带实时预览的相机 — 一切都在你的设备本地完成。",
-      tagline: "滤镜、贴纸、水印和人脸模糊 — 简单易用，完全在你的设备上完成。",
-      badge_appstore: "🍎 App Store — 即将上线",
-      badge_googleplay: "▶ Google Play — 即将上线",
-      feature_camera_title: "📷 相机",
-      feature_camera_desc: "直接在应用内拍摄照片和视频 — 表情符号和水印已在实时预览中显示。",
-      feature_filter_title: "🎨 滤镜",
-      feature_filter_desc: "为照片和视频提供多种氛围预设。",
-      feature_crop_title: "✂️ 裁剪",
-      feature_crop_desc: "原图、1:1、4:5、16:9。",
-      feature_sticker_title: "😀 贴纸",
-      feature_sticker_desc: "自由放置你自己的表情符号并调整大小。",
-      feature_watermark_title: "💧 水印",
-      feature_watermark_desc: "自定义文字，5种字体，5种颜色，大小和透明度可自由调整。",
-      feature_face_title: "🙈 人脸模糊",
-      feature_face_desc: "真正的模糊效果，而非马赛克，可自由放置和缩放。",
-      feature_privacy_title: "🔒 100% 隐私保护",
-      feature_privacy_desc: "无云端、无需账号、无追踪 — 你的照片和视频永远不会离开你的设备。",
-      feature_whysnoxi_title: "🛡️ 为什么选择 Snoxi？",
-      feature_whysnoxi_desc: "AI 工具很棒，但你的照片通常会上传到别人的服务器。如果你想确保没有任何内容被上传，Snoxi 是更简单、更实惠的选择。",
-      badge_nosub: "♾️ 无需订阅 — 一次购买，永久使用。",
-      privacy_note_html: "<strong>一切都留在你身边。</strong> Snoxi 完全在你的设备本地处理照片和视频 — 无需账号，不上传，不追踪。更多信息请参阅<a href=\"privacy.html\" style=\"color:var(--accent)\">隐私政策</a>。",
-      sysreq_note_html: "<strong>系统要求：</strong>iOS 15.1 及以上，或 Android 8.0 及以上。所有详情及分步指南请参阅<a href=\"anleitung.html\" style=\"color:var(--accent)\">使用说明</a>。",
-      footer_copyright: "© 2026 Massimo — Snoxi",
-      footer_link_guide: "使用说明",
-      footer_link_privacy: "隐私政策",
-      footer_link_impressum: "版权信息",
-      footer_link_contact: "支持"
-    },
-    guide: {
-      title: "使用说明 — Snoxi",
-      description: "Snoxi 使用方法：导入或拍摄照片和视频，应用滤镜、水印、贴纸，进行人脸模糊并导出。",
-      back: "返回 Snoxi",
-      h1: "使用说明",
-      tagline: "如何使用 Snoxi 编辑照片和视频 — 分步讲解。",
-      req_title: "系统要求",
-      req_ios_html: "<strong>iOS：</strong>iOS 15.1 或更高版本（iPhone）",
-      req_android_html: "<strong>Android：</strong>Android 8.0（Oreo）或更高版本",
-      step1_title: "选择照片或视频",
-      step1_body: "在主屏幕上从相册导入已有的照片或视频 — 或点击相机图标直接拍摄新的内容（参见第7步）。",
-      step2_title: "应用滤镜",
-      step2_body: "从多种氛围预设中选择，效果会实时显示在照片或视频上。点击“原图”可再次移除滤镜。",
-      step3_title: "裁剪",
-      step3_body: "可在原图、1:1（正方形）、4:5（竖版）和 16:9（宽屏）之间选择。",
-      step4_title: "添加水印",
-      step4_intro: "输入你自己的文字，并自由放置在图片上。可调整的内容包括：",
-      step4_li1: "5种字体",
-      step4_li2: "5种颜色",
-      step4_li3: "大小（拖动四角调整）",
-      step4_li4: "透明度",
-      step4_note: "设置会被记住，下次会自动为你建议。",
-      step5_title: "放置贴纸",
-      step5_body: "选择任意表情符号，在图片上自由移动并调整大小。支持同时放置多个贴纸。",
-      step6_title: "人脸模糊",
-      step6_pro: "仅限照片",
-      step6_body: "将模糊圆圈覆盖在脸部（或任意区域）上，移动并缩放以使其无法辨认。",
-      step7_title: "直接用相机拍摄",
-      step7_body: "点击相机图标后，会先打开一个设置界面：你可以在这里预先选择并放置表情符号和水印。点击“继续前往相机”会启动实时视图，此时贴纸和水印已经显示在预览中。拍摄照片或视频后，会直接进入编辑流程（第2至6步）。",
-      step8_title: "保存与分享",
-      step8_body: "将完成的照片或视频以原始分辨率保存到相册，或直接从应用分享。所有滤镜、水印和贴纸都会永久嵌入到图片或视频中。",
-      pro_title: "关于 PRO 功能",
-      pro_li1_html: "Snoxi 为一次性购买（5.99&nbsp;欧元）— 无需订阅，没有隐藏费用。",
-      pro_li2: "购买后，所有功能将永久解锁，包括不受水印限制的保存与分享。",
-      pro_li3: "🔒 100% 离线：你的照片和视频始终保留在你的设备上。",
-      footer_copyright: "© 2026 Massimo — Snoxi",
-      footer_link_home: "首页",
-      footer_link_privacy: "隐私政策",
-      footer_link_impressum: "版权信息",
-      footer_link_contact: "支持"
-    },
-    privacy: {
-      title: "隐私政策 — Snoxi",
-      back: "返回",
-      h1: "隐私政策 – Snoxi",
-      stand: "更新日期：2026年8月",
-      h2_1: "1. 责任方",
-      p1: "Massimo",
-      h2_2: "2. 关于 Snoxi",
-      p2: "Snoxi 是一款用于编辑照片和视频的应用（滤镜、裁剪、贴纸、水印、人脸模糊，以及带实时预览的相机拍摄）。所有编辑操作均仅在你的设备本地完成。我们不会向自己或任何第三方传输任何照片、视频或其他内容。",
-      h2_3: "3. 访问权限及其用途",
-      li3_1: "照片图库（读取）：用于选择你想要编辑的照片或视频。",
-      li3_2: "相机和麦克风：用于直接在应用内拍摄照片和视频（含声音）。",
-      li3_3: "照片图库（写入/保存）：用于将编辑结果保存到你的图库中。",
-      p3_2: "这些权限仅在你的设备本地使用。你的照片、视频或相机/麦克风数据在任何时候都不会上传到服务器。",
-      h2_4: "4. 不收集个人数据",
-      p4: "Snoxi 不使用用户账号、不进行追踪，也不使用任何分析或广告 SDK。我们不会收集、存储或传输设备标识符、位置数据或使用统计信息。应用会自动识别你设备的语言以相应显示界面 — 该过程完全在本地完成，不涉及任何数据传输。",
-      h2_5: "5. 应用内购买",
-      p5: "高级版解锁（\"Snoxi Pro\"）为一次性应用内购买。整个支付流程通过 App Store（Apple）或 Google Play 完成，不涉及其他第三方服务。我们在任何时候都不会获取信用卡等支付信息 — 这些信息完全由 Apple 或 Google 保管。",
-      h2_6: "6. 儿童",
-      p6: "Snoxi 并非专门面向16岁以下儿童。由于应用本身不收集任何个人数据，因此也不会收集儿童的数据。",
-      h2_7: "7. 你的权利",
-      p7_text: "由于 Snoxi 不收集、存储或传输个人数据，我们没有任何可供访问、更正或删除请求所依据的数据记录。如有任何疑问，欢迎随时通过本页底部的联系方式与我们联系。",
-      h2_8: "8. 本政策的变更",
-      p8: "我们保留在必要时（例如新增功能时）调整本隐私政策的权利。最新版本将始终在本页面提供。"
-    },
-    impressum: {
-      title: "版权信息 — Snoxi",
-      back: "返回",
-      h1: "版权信息",
-      h2_1: "根据《德国电信媒体法》第5条（§ 5 TMG）提供的信息",
-      p1: "Massimo",
-      h2_kontakt: "联系方式",
-      h2_verantwortlich: "根据《德国广播州际协议》第55条第2款（§ 55 Abs. 2 RStV）负责内容者",
-      p_verantwortlich: "Massimo",
-      h2_hinweis: "说明",
-      p_hinweis: "本版权信息是为个人（非商业经营者）起草的示例文本，不能替代法律咨询。如对版权信息义务存在疑问，建议咨询律师或使用 eRecht24 等生成工具进行简要核查。"
     }
   };
 
