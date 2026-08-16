@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kitchen King — Driftware</title>
-<meta name="description" content="Kitchen King: Rezepte entdecken, hochladen und bewerten – ganz ohne Konto-Zwang und ohne Werbung. Mit Foto-Erkennung, Übersetzung, Kühlschrank-Vorschlägen und Portionsrechner.">
+<meta name="description" content="Kitchen King: die Rezept-App ohne Werbung, ohne Konto-Zwang, ohne Abzocke. Rezept per Foto oder Link erfassen, Kühlschrank fotografieren statt suchen, Barcode-Scanner warnt vor Bedenklichem – über 38 Kategorien inkl. Thermomix, komplett kostenlos.">
 <style>
   :root {
     --bg: #0c1224;
@@ -121,6 +121,47 @@
     margin: 0 auto;
     padding: 0 24px 64px;
   }
+  .hook {
+    text-align: center;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--text);
+    max-width: 560px;
+    margin: 0 auto 36px;
+  }
+  .hook strong { color: var(--accent); }
+  .highlights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 0 0 44px;
+  }
+  .highlight {
+    background: linear-gradient(160deg, rgba(58,168,255,0.14), rgba(58,168,255,0.03));
+    border: 1px solid rgba(58,168,255,0.3);
+    border-radius: 18px;
+    padding: 22px 20px;
+  }
+  .highlight .emoji { font-size: 26px; display: block; margin-bottom: 10px; }
+  .highlight h2 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .highlight p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+  .section-label {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 16px;
+  }
   .description {
     color: var(--muted);
     font-size: 15px;
@@ -204,7 +245,7 @@
   <header>
     <img class="app-icon" src="/kitchen-king/icon.png" alt="Kitchen King App-Icon" width="96" height="96">
     <p class="logo">Kitchen King</p>
-    <p class="tagline">Rezepte entdecken, hochladen und bewerten — ohne Werbung.</p>
+    <p class="tagline">Die Rezept-App, die nichts von dir will — außer guten Rezepten.</p>
     <div class="badges">
       <span class="badge soon">🍎 App Store — bald verfügbar</span>
       <span class="badge soon">▶ Google Play — bald verfügbar</span>
@@ -212,39 +253,78 @@
     <div class="badge-nosub">💛 100% kostenlos — keine Pflicht-Abos, freiwillig unterstützbar</div>
   </header>
   <main>
+    <p class="hook">
+      Kein Werbebanner zwischen den Rezepten. Kein Konto-Zwang nur zum Stöbern. Kein Abo, das sich von allein
+      verlängert. <strong>Einfach kochen, entdecken und teilen.</strong>
+    </p>
+    <div class="highlights">
+      <div class="highlight">
+        <span class="emoji">🚫</span>
+        <h2>Null Werbung, nirgends</h2>
+        <p>Keine Banner, kein Tracking-Müll — die App finanziert sich über freiwillige Unterstützung, nicht über deine Aufmerksamkeit.</p>
+      </div>
+      <div class="highlight">
+        <span class="emoji">🔓</span>
+        <h2>Sofort loslegen, ganz ohne Konto</h2>
+        <p>Rezepte ansehen, favorisieren und mit 5 Sternen bewerten — als Gast, ohne Registrierung, ohne Umweg.</p>
+      </div>
+      <div class="highlight">
+        <span class="emoji">🤖</span>
+        <h2>Abtippen war gestern</h2>
+        <p>Foto vom Kochbuch machen oder Link einfügen — Kitchen King erkennt Zutaten und Zubereitung automatisch, sogar aus alter Handschrift.</p>
+      </div>
+      <div class="highlight">
+        <span class="emoji">🛡️</span>
+        <h2>Bedenkliches im Blick</h2>
+        <p>Barcode scannen und sofort wissen: Zusatzstoffe, Allergene, Insektenprotein, vegan oder vegetarisch — bevor es im Einkaufswagen landet.</p>
+      </div>
+    </div>
     <p class="description">
       Kitchen King ist eine Rezept-App zum Stöbern, Sammeln und Teilen — ganz ohne Werbung und ohne Zwang zur
-      Anmeldung. Rezepte ansehen, bewerten und favorisieren geht sofort; wer selbst etwas hochladen will, legt in
-      Sekunden ein Konto an.
+      Anmeldung. Rezepte ansehen, bewerten und favorisieren geht sofort, auch als Gast; wer selbst etwas hochladen
+      will, legt in Sekunden ein Konto an.
     </p>
+    <p class="section-label">Alle Funktionen im Detail</p>
     <div class="features">
       <div class="feature">
         <h3>🧑‍🍳 Ohne Konto stöbern</h3>
-        <p>Rezepte ansehen, bewerten und favorisieren — ganz ohne Anmeldung.</p>
+        <p>Rezepte ansehen, favorisieren und mit 5 Sternen bewerten — auch als Gast, ganz ohne Anmeldung.</p>
       </div>
       <div class="feature">
-        <h3>🗂️ Über 30 Kategorien</h3>
-        <p>Von „Was Oma noch wusste" bis Fermentieren, mit automatischer Kategorie-Erkennung beim Hochladen.</p>
+        <h3>🗂️ Über 38 Kategorien</h3>
+        <p>Von „Was Oma noch wusste" bis Thermomix, Vegan und Vegetarisch — mit automatischer Kategorie-Erkennung beim Hochladen.</p>
       </div>
       <div class="feature">
-        <h3>📸 Rezept per Foto</h3>
-        <p>Statt abzutippen — auch fremdsprachige oder handschriftliche Rezepte, sogar alte Sütterlin-Schrift, automatisch ins Deutsche übersetzt.</p>
+        <h3>🍲 Thermomix-Rezepte</h3>
+        <p>Eigene Kategorie mit Rezepten inklusive Stufe, Zeit und Temperatur — von der Suppe bis zum Smoothie.</p>
+      </div>
+      <div class="feature">
+        <h3>📸 Rezept per Foto oder Link</h3>
+        <p>Statt abzutippen — auch fremdsprachige oder handschriftliche Rezepte, sogar alte Sütterlin-Schrift, automatisch übersetzt. Per Link importiert bleibt die Quelle immer sichtbar.</p>
       </div>
       <div class="feature">
         <h3>🧊 Kühlschrank-Scan</h3>
-        <p>Foto vom Kühlschrank rein, passende Rezepte aus der Datenbank raus.</p>
+        <p>Bis zu 4 Fotos — auch Vorratsschrank oder Gefrierfach — für passende Rezeptvorschläge aus der Datenbank.</p>
+      </div>
+      <div class="feature">
+        <h3>📷 Barcode-Scanner mit Bedenklichkeitsprüfung</h3>
+        <p>Produkt scannen und direkt sehen: Inhaltsstoffe, Zusatzstoffe, Nutri-Score, Allergene, Insekten-/Käferproteine sowie ob vegan oder vegetarisch.</p>
+      </div>
+      <div class="feature">
+        <h3>🛒 Einkaufsliste nach Läden sortiert</h3>
+        <p>Automatisch nach Supermarkt, dm/Rossmann und Getränkemarkt geordnet — Abteilungen lassen sich per Drag & Drop selbst anpassen.</p>
       </div>
       <div class="feature">
         <h3>🍽️ Portionsrechner</h3>
         <p>Mengen automatisch umrechnen, inklusive Kalorienschätzung pro Portion.</p>
       </div>
       <div class="feature">
-        <h3>🛒 Einkaufsliste</h3>
-        <p>Direkt aus dem Rezept erstellt — Vorhandenes einfach wegklicken.</p>
-      </div>
-      <div class="feature">
         <h3>🔒 Öffentlich oder privat</h3>
         <p>Eigene Rezepte frei wählbar, private jederzeit als PDF exportierbar.</p>
+      </div>
+      <div class="feature">
+        <h3>💬 Feedback jederzeit</h3>
+        <p>Auf jeder Seite direkt Kritik oder Wünsche über ein Formular einreichen.</p>
       </div>
       <div class="feature">
         <h3>💛 100% kostenlos</h3>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kitchen King — Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  :root {
+    --bg: #0c1224;
+    --panel: #141c33;
+    --accent: #3aa8ff;
+    --danger: #e5484d;
+    --ok: #3ecf8e;
+    --text: #f5f7fa;
+    --muted: #9aa3c0;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  a { color: var(--accent); }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+  header.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  header.top h1 { font-size: 22px; margin: 0; }
+  header.top .sub { color: var(--muted); font-size: 13px; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #041322; }
+  .btn.danger { background: rgba(229,72,77,0.15); border-color: rgba(229,72,77,0.4); color: #ff8a8d; }
+  .btn.ok { background: rgba(62,207,142,0.15); border-color: rgba(62,207,142,0.4); color: #7bf0bc; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .login-card { max-width: 380px; margin: 80px auto; }
+  .login-card h2 { margin: 0 0 6px; }
+  .login-card p.hint { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
+  input, textarea, select {
+    width: 100%;
+    background: #0f1730;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    margin-bottom: 10px;
+  }
+  textarea { min-height: 90px; resize: vertical; }
+  label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+  .error { color: #ff8a8d; font-size: 13px; margin: 8px 0 0; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .tab {
+    padding: 9px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--muted);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .tab.active { background: var(--accent); color: #041322; border-color: var(--accent); }
+  .search { margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.04em; }
+  tr:last-child td { border-bottom: none; }
+  .pill {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .pill.admin { background: rgba(58,168,255,0.15); color: var(--accent); }
+  .pill.user { background: rgba(255,255,255,0.08); color: var(--muted); }
+  .pill.banned { background: rgba(229,72,77,0.15); color: #ff8a8d; }
+  .pill.ok { background: rgba(62,207,142,0.15); color: #7bf0bc; }
+  .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 40px 16px; overflow-y: auto; z-index: 100;
+  }
+  .modal {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    padding: 24px; max-width: 560px; width: 100%;
+  }
+  .modal h3 { margin: 0 0 16px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .ing-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .ing-row input { margin-bottom: 0; }
+  .ing-row input.amount { flex: 1; }
+  .ing-row input.name { flex: 2; }
+  .muted { color: var(--muted); font-size: 12px; }
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--panel); border: 1px solid var(--border); color: var(--text);
+    padding: 10px 18px; border-radius: 10px; font-size: 13px; z-index: 200;
+  }
+  .toast.error { border-color: rgba(229,72,77,0.4); color: #ff8a8d; }
+  .hidden { display: none !important; }
+  .admin-slots { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<div id="login-screen" class="wrap">
+  <div class="login-card card">
+    <h2>🔐 Kitchen King Admin</h2>
+    <p class="hint">Nur für die 5 Admin-Konten. Anmeldung mit E-Mail und Passwort deines Kitchen-King-Kontos.</p>
+    <label for="login-email">E-Mail</label>
+    <input id="login-email" type="email" autocomplete="username" placeholder="admin@example.com">
+    <label for="login-password">Passwort</label>
+    <input id="login-password" type="password" autocomplete="current-password" placeholder="••••••••">
+    <button class="btn primary" id="login-btn" style="width:100%;justify-content:center;margin-top:8px;">Anmelden</button>
+    <p class="error hidden" id="login-error"></p>
+  </div>
+</div>
+
+<div id="app-screen" class="wrap hidden">
+  <header class="top">
+    <div>
+      <h1>Kitchen King Admin</h1>
+      <div class="sub" id="whoami"></div>
+    </div>
+    <button class="btn" id="logout-btn">Abmelden</button>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="recipes">🍽️ Rezepte</div>
+    <div class="tab" data-tab="users">👤 Konten</div>
+  </div>
+
+  <div id="tab-recipes">
+    <input class="search" id="recipe-search" type="text" placeholder="Rezept suchen…">
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Titel</th><th>Kategorie</th><th>Sichtbar</th><th></th></tr>
+        </thead>
+        <tbody id="recipe-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tab-users" class="hidden">
+    <div class="admin-slots" id="admin-slots"></div>
+    <input class="search" id="user-search" type="text" placeholder="Konto suchen (Username)…">
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Konto</th><th>Rolle</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody id="user-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script>
+const SUPABASE_URL = "https://bmoafuwdzbwxnrrmjakd.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_8cBumQrT9U3S-VC_A7X2BA_I0altm58";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentProfile = null;
+
+function showToast(msg, isError) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (isError ? ' error' : '');
+  el.textContent = msg;
+  document.getElementById('toast-root').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+function escapeHtml(s) {
+  return (s ?? '').toString()
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ---------- Auth ----------
+document.getElementById('login-btn').addEventListener('click', async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('login-error');
+  errorEl.classList.add('hidden');
+  if (!email || !password) return;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) {
+    errorEl.textContent = error.message;
+    errorEl.classList.remove('hidden');
+    return;
+  }
+  await checkAdminAndBoot(data.user.id);
+});
+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  currentProfile = null;
+  document.getElementById('app-screen').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+});
+
+async function checkAdminAndBoot(userId) {
+  const { data: profile, error } = await sb
+    .from('profiles')
+    .select('id, username, display_name, role, banned')
+    .eq('id', userId)
+    .single();
+  if (error || !profile || profile.role !== 'admin') {
+    document.getElementById('login-error').textContent = 'Dieses Konto hat keine Admin-Rechte.';
+    document.getElementById('login-error').classList.remove('hidden');
+    await sb.auth.signOut();
+    return;
+  }
+  currentProfile = profile;
+  document.getElementById('whoami').textContent = `Angemeldet als ${profile.display_name || profile.username}`;
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+  loadRecipes();
+  loadUsers();
+}
+
+// Beim Laden prüfen, ob schon eine Session besteht.
+sb.auth.getSession().then(({ data }) => {
+  if (data.session && !data.session.user.is_anonymous) {
+    checkAdminAndBoot(data.session.user.id);
+  }
+});
+
+// ---------- Tabs ----------
+document.querySelectorAll('.tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-recipes').classList.toggle('hidden', tab.dataset.tab !== 'recipes');
+    document.getElementById('tab-users').classList.toggle('hidden', tab.dataset.tab !== 'users');
+  });
+});
+
+// ---------- Rezepte ----------
+let allRecipes = [];
+let categoriesById = {};
+
+async function loadCategories() {
+  const { data } = await sb.from('categories').select('id, name');
+  categoriesById = {};
+  (data || []).forEach((c) => { categoriesById[c.id] = c.name; });
+}
+
+async function loadRecipes() {
+  await loadCategories();
+  const { data, error } = await sb
+    .from('recipes')
+    .select('id, title, description, prep_minutes, cook_minutes, servings, difficulty, category_id, instructions, is_public, source_url')
+    .order('title');
+  if (error) { showToast('Fehler beim Laden der Rezepte: ' + error.message, true); return; }
+  allRecipes = data || [];
+  renderRecipes();
+}
+
+function renderRecipes() {
+  const q = document.getElementById('recipe-search').value.trim().toLowerCase();
+  const filtered = q ? allRecipes.filter((r) => r.title.toLowerCase().includes(q)) : allRecipes;
+  const body = document.getElementById('recipe-table-body');
+  body.innerHTML = filtered.slice(0, 200).map((r) => `
+    <tr>
+      <td>${escapeHtml(r.title)}</td>
+      <td>${escapeHtml(categoriesById[r.category_id] || '—')}</td>
+      <td><span class="pill ${r.is_public ? 'ok' : 'user'}">${r.is_public ? 'Öffentlich' : 'Privat'}</span></td>
+      <td class="row-actions">
+        <button class="btn" data-edit="${r.id}">Bearbeiten</button>
+        <button class="btn danger" data-delete="${r.id}">Löschen</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="4" class="muted">Keine Rezepte gefunden.</td></tr>';
+
+  body.querySelectorAll('[data-edit]').forEach((btn) => {
+    btn.addEventListener('click', () => openRecipeModal(btn.dataset.edit));
+  });
+  body.querySelectorAll('[data-delete]').forEach((btn) => {
+    btn.addEventListener('click', () => deleteRecipe(btn.dataset.delete));
+  });
+}
+
+document.getElementById('recipe-search').addEventListener('input', renderRecipes);
+
+async function deleteRecipe(id) {
+  const recipe = allRecipes.find((r) => r.id === id);
+  if (!confirm(`"${recipe?.title}" wirklich endgültig löschen?`)) return;
+  const { error } = await sb.from('recipes').delete().eq('id', id);
+  if (error) { showToast('Löschen fehlgeschlagen: ' + error.message, true); return; }
+  showToast('Rezept gelöscht.');
+  loadRecipes();
+}
+
+async function openRecipeModal(id) {
+  const recipe = allRecipes.find((r) => r.id === id);
+  if (!recipe) return;
+  const { data: ingredients } = await sb
+    .from('recipe_ingredients')
+    .select('id, name, amount, position')
+    .eq('recipe_id', id)
+    .order('position');
+
+  const categoryOptions = Object.entries(categoriesById)
+    .map(([cid, name]) => `<option value="${cid}" ${Number(cid) === recipe.category_id ? 'selected' : ''}>${escapeHtml(name)}</option>`)
+    .join('');
+
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `
+    <div class="modal-backdrop" id="recipe-modal-backdrop">
+      <div class="modal">
+        <h3>Rezept bearbeiten</h3>
+        <label>Titel</label>
+        <input id="m-title" value="${escapeHtml(recipe.title)}">
+        <label>Beschreibung</label>
+        <textarea id="m-description">${escapeHtml(recipe.description)}</textarea>
+        <label>Kategorie</label>
+        <select id="m-category">${categoryOptions}</select>
+        <div style="display:flex; gap:8px;">
+          <div style="flex:1;"><label>Vorb. (Min.)</label><input id="m-prep" type="number" value="${recipe.prep_minutes ?? ''}"></div>
+          <div style="flex:1;"><label>Koch (Min.)</label><input id="m-cook" type="number" value="${recipe.cook_minutes ?? ''}"></div>
+          <div style="flex:1;"><label>Portionen</label><input id="m-servings" type="number" value="${recipe.servings ?? ''}"></div>
+        </div>
+        <label>Schwierigkeit</label>
+        <select id="m-difficulty">
+          <option value="easy" ${recipe.difficulty === 'easy' ? 'selected' : ''}>Einfach</option>
+          <option value="medium" ${recipe.difficulty === 'medium' ? 'selected' : ''}>Mittel</option>
+          <option value="hard" ${recipe.difficulty === 'hard' ? 'selected' : ''}>Anspruchsvoll</option>
+        </select>
+        <label>Sichtbarkeit</label>
+        <select id="m-public">
+          <option value="true" ${recipe.is_public ? 'selected' : ''}>Öffentlich</option>
+          <option value="false" ${!recipe.is_public ? 'selected' : ''}>Privat</option>
+        </select>
+        <label>Zubereitung (ein Schritt pro Zeile)</label>
+        <textarea id="m-instructions" style="min-height:140px;">${escapeHtml((recipe.instructions || []).join('\n'))}</textarea>
+        <label>Zutaten</label>
+        <div id="m-ingredients"></div>
+        <button class="btn" id="m-add-ingredient" type="button">+ Zutat</button>
+        <div class="modal-actions">
+          <button class="btn" id="m-cancel">Abbrechen</button>
+          <button class="btn primary" id="m-save">Speichern</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const ingList = document.getElementById('m-ingredients');
+  function addIngredientRow(amount, name) {
+    const row = document.createElement('div');
+    row.className = 'ing-row';
+    row.innerHTML = `
+      <input class="amount" placeholder="Menge" value="${escapeHtml(amount || '')}">
+      <input class="name" placeholder="Zutat" value="${escapeHtml(name || '')}">
+      <button class="btn danger" type="button" data-remove>✕</button>
+    `;
+    row.querySelector('[data-remove]').addEventListener('click', () => row.remove());
+    ingList.appendChild(row);
+  }
+  (ingredients || []).forEach((i) => addIngredientRow(i.amount, i.name));
+  if (!ingredients || ingredients.length === 0) addIngredientRow('', '');
+
+  document.getElementById('m-add-ingredient').addEventListener('click', () => addIngredientRow('', ''));
+  document.getElementById('m-cancel').addEventListener('click', () => { root.innerHTML = ''; });
+  document.getElementById('recipe-modal-backdrop').addEventListener('click', (e) => {
+    if (e.target.id === 'recipe-modal-backdrop') root.innerHTML = '';
+  });
+
+  document.getElementById('m-save').addEventListener('click', async () => {
+    const updated = {
+      title: document.getElementById('m-title').value.trim(),
+      description: document.getElementById('m-description').value.trim() || null,
+      category_id: Number(document.getElementById('m-category').value),
+      prep_minutes: document.getElementById('m-prep').value ? Number(document.getElementById('m-prep').value) : null,
+      cook_minutes: document.getElementById('m-cook').value ? Number(document.getElementById('m-cook').value) : null,
+      servings: document.getElementById('m-servings').value ? Number(document.getElementById('m-servings').value) : null,
+      difficulty: document.getElementById('m-difficulty').value,
+      is_public: document.getElementById('m-public').value === 'true',
+      instructions: document.getElementById('m-instructions').value.split('\n').map((s) => s.trim()).filter(Boolean),
+    };
+    const { error: updateError } = await sb.from('recipes').update(updated).eq('id', id);
+    if (updateError) { showToast('Speichern fehlgeschlagen: ' + updateError.message, true); return; }
+
+    // Zutaten komplett ersetzen: erst löschen, dann neu einfügen.
+    await sb.from('recipe_ingredients').delete().eq('recipe_id', id);
+    const rows = Array.from(ingList.querySelectorAll('.ing-row')).map((row, idx) => ({
+      recipe_id: id,
+      amount: row.querySelector('.amount').value.trim() || null,
+      name: row.querySelector('.name').value.trim(),
+      position: idx,
+    })).filter((r) => r.name);
+    if (rows.length) {
+      const { error: ingError } = await sb.from('recipe_ingredients').insert(rows);
+      if (ingError) { showToast('Zutaten speichern fehlgeschlagen: ' + ingError.message, true); return; }
+    }
+    showToast('Rezept gespeichert.');
+    root.innerHTML = '';
+    loadRecipes();
+  });
+}
+
+// ---------- Konten ----------
+let allUsers = [];
+
+async function loadUsers() {
+  const { data, error } = await sb
+    .from('profiles')
+    .select('id, username, display_name, role, banned, created_at')
+    .order('created_at', { ascending: false });
+  if (error) { showToast('Fehler beim Laden der Konten: ' + error.message, true); return; }
+  allUsers = data || [];
+  const adminCount = allUsers.filter((u) => u.role === 'admin').length;
+  document.getElementById('admin-slots').textContent = `${adminCount} von 5 Admin-Slots belegt`;
+  renderUsers();
+}
+
+function renderUsers() {
+  const q = document.getElementById('user-search').value.trim().toLowerCase();
+  const filtered = q
+    ? allUsers.filter((u) => (u.username || '').toLowerCase().includes(q) || (u.display_name || '').toLowerCase().includes(q))
+    : allUsers;
+  const adminCount = allUsers.filter((u) => u.role === 'admin').length;
+  const body = document.getElementById('user-table-body');
+  body.innerHTML = filtered.slice(0, 300).map((u) => `
+    <tr>
+      <td>${escapeHtml(u.display_name || u.username)}<br><span class="muted">@${escapeHtml(u.username)}</span></td>
+      <td><span class="pill ${u.role === 'admin' ? 'admin' : 'user'}">${u.role === 'admin' ? 'Admin' : 'Nutzer'}</span></td>
+      <td><span class="pill ${u.banned ? 'banned' : 'ok'}">${u.banned ? 'Gesperrt' : 'Aktiv'}</span></td>
+      <td class="row-actions">
+        <button class="btn ${u.banned ? 'ok' : 'danger'}" data-toggle-ban="${u.id}">${u.banned ? 'Entsperren' : 'Sperren'}</button>
+        ${u.role === 'admin'
+          ? (u.id !== currentProfile.id ? `<button class="btn" data-toggle-role="${u.id}">Admin entziehen</button>` : '')
+          : `<button class="btn" data-toggle-role="${u.id}" ${adminCount >= 5 ? 'disabled title="Alle 5 Admin-Slots belegt"' : ''}>Zu Admin machen</button>`}
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="4" class="muted">Keine Konten gefunden.</td></tr>';
+
+  body.querySelectorAll('[data-toggle-ban]').forEach((btn) => {
+    btn.addEventListener('click', () => toggleBan(btn.dataset.toggleBan));
+  });
+  body.querySelectorAll('[data-toggle-role]').forEach((btn) => {
+    btn.addEventListener('click', () => toggleRole(btn.dataset.toggleRole));
+  });
+}
+
+document.getElementById('user-search').addEventListener('input', renderUsers);
+
+async function toggleBan(id) {
+  const user = allUsers.find((u) => u.id === id);
+  if (!user) return;
+  const { error } = await sb.from('profiles').update({ banned: !user.banned }).eq('id', id);
+  if (error) { showToast('Fehler: ' + error.message, true); return; }
+  showToast(user.banned ? 'Konto entsperrt.' : 'Konto gesperrt.');
+  loadUsers();
+}
+
+async function toggleRole(id) {
+  const user = allUsers.find((u) => u.id === id);
+  if (!user) return;
+  const nextRole = user.role === 'admin' ? 'user' : 'admin';
+  if (nextRole === 'admin' && !confirm(`${user.display_name || user.username} zum Admin machen?`)) return;
+  const { error } = await sb.from('profiles').update({ role: nextRole }).eq('id', id);
+  if (error) { showToast('Fehler: ' + error.message, true); return; }
+  showToast(nextRole === 'admin' ? 'Admin-Rechte vergeben.' : 'Admin-Rechte entzogen.');
+  loadUsers();
+}
+</script>
+</body>
+</html>
