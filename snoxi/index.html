@@ -23,7 +23,6 @@
     line-height: 1.5;
   }
   header {
-    position: relative;
     max-width: 720px;
     margin: 0 auto;
     padding: 72px 24px 32px;
@@ -36,36 +35,6 @@
     box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--border);
     margin: 0 0 16px;
   }
-  .utility-block {
-    position: fixed;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 50;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-  }
-  .utility-tile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    text-decoration: none;
-    color: var(--text);
-    width: 40px;
-  }
-  .utility-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  }
-  .utility-icon svg { width: 18px; height: 18px; }
-  .utility-label { font-size: 9px; color: var(--muted); }
   .logo {
     font-size: 40px;
     font-weight: 800;
@@ -162,35 +131,8 @@
   footer .links { margin-top: 8px; }
   footer .links a { margin: 0 8px; }
 </style>
-<script data-goatcounter="https://welove80sde.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
-  <div class="utility-block">
-    <a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">
-      <div class="utility-icon" style="background:#d98c1f">
-        <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
-      </div>
-      <span class="utility-label">Home</span>
-    </a>
-    <a class="utility-tile" href="privacy.html#kontakt">
-      <div class="utility-icon" style="background:#4a90d9">
-        <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
-      </div>
-      <span class="utility-label">Mail</span>
-    </a>
-    <a class="utility-tile" href="anleitung.html">
-      <div class="utility-icon" style="background:#3d9970">
-        <svg viewBox="0 0 24 24" fill="#a8e6c1" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v2H4V4zm0 5h16v2H4V9zm0 5h10v2H4v-2zm0 5h10v2H4v-2z"/></svg>
-      </div>
-      <span class="utility-label">Anleitung</span>
-    </a>
-    <a class="utility-tile" href="privacy.html">
-      <div class="utility-icon" style="background:#6a5acd">
-        <svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>
-      </div>
-      <span class="utility-label">Datenschutz</span>
-    </a>
-  </div>
   <header>
     <img class="app-icon" src="icon.png" alt="Snoxi App-Icon" width="96" height="96">
     <p class="logo">Snoxi</p>
@@ -231,10 +173,6 @@
         <h3 data-i18n="home.feature_privacy_title">🔒 100 % privat</h3>
         <p data-i18n="home.feature_privacy_desc">Keine Cloud, kein Konto, kein Tracking — deine Fotos und Videos verlassen nie dein Gerät.</p>
       </div>
-      <div class="feature">
-        <h3 data-i18n="home.feature_whysnoxi_title">🛡️ Warum Snoxi?</h3>
-        <p data-i18n="home.feature_whysnoxi_desc">KI-Tools sind großartig — aber deine Fotos landen dafür oft auf einem fremden Server. Wer sichergehen will, dass nichts hochgeladen wird, ist mit Snoxi einfacher und günstiger unterwegs.</p>
-      </div>
     </div>
     <div class="privacy-note" data-i18n="home.privacy_note_html" data-i18n-html>
       <strong>Alles bleibt bei dir.</strong> Snoxi verarbeitet Fotos und Videos komplett lokal auf deinem Gerät — kein Konto, kein Hochladen, kein Tracking. Mehr dazu in der <a href="privacy.html" style="color:var(--accent)">Datenschutzerklärung</a>.
@@ -246,8 +184,10 @@
   <footer>
     <span data-i18n="home.footer_copyright">© 2026 Massimo — Snoxi</span>
     <div class="links">
-      <!-- Impressum-Link bewusst im Footer belassen, nicht entfernt: §5 TMG verlangt eine leicht auffindbare Anbieterkennzeichnung. -->
+      <a href="anleitung.html" data-i18n="home.footer_link_guide">Anleitung</a>
+      <a href="privacy.html" data-i18n="home.footer_link_privacy">Datenschutzerklärung</a>
       <a href="impressum.html" data-i18n="home.footer_link_impressum">Impressum</a>
+      <a href="https://x.com/Massimo_71_" target="_blank" rel="noopener" data-i18n="home.footer_link_contact">Support</a>
     </div>
   </footer>
   <script src="i18n.js"></script>
