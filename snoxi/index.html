@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title data-i18n="home.title">Snoxi — Foto- & Video-Editor</title>
 <meta name="description" data-i18n-content="home.description" content="Snoxi: schneller, unkomplizierter Foto- und Video-Editor. Filter, Sticker, Wasserzeichen, Gesichter unkenntlich machen und eine Kamera mit Live-Vorschau — alles lokal auf deinem Gerät.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0c1224;
@@ -67,8 +70,9 @@
   .utility-icon svg { width: 18px; height: 18px; }
   .utility-label { font-size: 9px; color: var(--muted); }
   .logo {
-    font-size: 40px;
-    font-weight: 800;
+    font-family: 'Space Grotesk', -apple-system, sans-serif;
+    font-size: 42px;
+    font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--text);
     margin: 0 0 12px;
@@ -116,6 +120,58 @@
     max-width: 720px;
     margin: 0 auto;
     padding: 0 24px 64px;
+  }
+  .showcase {
+    max-width: 720px;
+    margin: 56px auto 8px;
+    padding: 0 24px;
+    display: flex;
+    justify-content: center;
+  }
+  .showcase-phones {
+    display: flex;
+    align-items: flex-end;
+  }
+  .phone-frame {
+    width: 150px;
+    padding: 7px;
+    border-radius: 26px;
+    background: #1a2440;
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+  }
+  .phone-frame.center {
+    width: 168px;
+    z-index: 2;
+    box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+  }
+  .phone-frame.left { transform: rotate(-6deg) translateY(16px); margin-right: -26px; z-index: 1; }
+  .phone-frame.right { transform: rotate(6deg) translateY(16px); margin-left: -26px; z-index: 1; }
+  .phone-screen {
+    width: 100%;
+    aspect-ratio: 9 / 19.5;
+    border-radius: 19px;
+    overflow: hidden;
+    background: #000;
+    position: relative;
+  }
+  .phone-screen img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+  .phone-notch {
+    position: absolute;
+    top: 7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 38px;
+    height: 12px;
+    border-radius: 7px;
+    background: var(--bg);
+  }
+  @media (max-width: 480px) {
+    .phone-frame { width: 108px; border-radius: 20px; }
+    .phone-frame.center { width: 122px; }
+    .phone-frame.left { margin-right: -20px; }
+    .phone-frame.right { margin-left: -20px; }
+    .phone-screen { border-radius: 15px; }
   }
   .features {
     display: grid;
@@ -202,6 +258,28 @@
     </div>
     <div class="badge-nosub" data-i18n="home.badge_nosub">♾️ Kein Abo — einmal kaufen, für immer nutzen.</div>
   </header>
+  <div class="showcase">
+    <div class="showcase-phones">
+      <div class="phone-frame left">
+        <div class="phone-screen">
+          <img src="screens/shot1.jpg" alt="Snoxi Sticker-Editor" loading="lazy">
+          <div class="phone-notch"></div>
+        </div>
+      </div>
+      <div class="phone-frame center">
+        <div class="phone-screen">
+          <img src="screens/shot2.jpg" alt="Snoxi Gesicht unkenntlich machen" loading="lazy">
+          <div class="phone-notch"></div>
+        </div>
+      </div>
+      <div class="phone-frame right">
+        <div class="phone-screen">
+          <img src="screens/shot5.jpg" alt="Snoxi Filter" loading="lazy">
+          <div class="phone-notch"></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <main>
     <div class="features">
       <div class="feature">
