@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<title>Neuer Beitrag – Plattenregal</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../wireframes/styles.css">
+<link rel="stylesheet" href="./app.css">
+<style>
+  .ln-row{ display:flex; gap:10px; }
+  .ln-row .field{ flex:1; }
+  select.field{ appearance:none; }
+</style>
+</head>
+<body>
+<main class="shell">
+
+  <a href="marketplace.html" style="display:inline-flex; align-items:center; gap:6px; color:var(--text-muted); font-weight:700; font-size:13.5px; margin:30px 0 18px;">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Marktplatz
+  </a>
+  <h1 class="page-title" style="font-size:28px; margin:0 0 20px;">Neuer Beitrag</h1>
+
+  <div id="paywall" hidden class="card" style="text-align:center; padding:34px 24px;">
+    <div class="section-title" style="justify-content:center;">Nur für Plattenregal Plus</div>
+    <p class="muted" style="margin:8px 0 20px;">Beiträge im Marktplatz sind Abo-Mitgliedern vorbehalten.</p>
+    <a class="btn-primary" href="../wireframes/pricing.html" style="display:inline-flex; align-items:center; height:46px; padding:0 22px;">Zu den Preisen</a>
+  </div>
+
+  <form id="form" class="card">
+    <div class="segmented" id="kind-toggle" style="margin-bottom:14px;">
+      <div class="segmented-item active" data-kind="biete">Biete</div>
+      <div class="segmented-item" data-kind="gesucht">Suche</div>
+    </div>
+
+    <label class="field" style="display:block; margin-bottom:10px;">
+      <span class="sr-only">Aus meiner Sammlung übernehmen (optional)</span>
+      <select id="from-collection" class="field">
+        <option value="">— Ohne Vorlage —</option>
+      </select>
+    </label>
+
+    <input class="field" id="title" name="title" placeholder="Titel *" required style="margin-bottom:10px;">
+    <div class="ln-row" style="margin-bottom:10px;">
+      <input class="field" id="artist" name="artist" placeholder="Interpret">
+      <input class="field" id="format" name="format" placeholder="Format (z. B. Vinyl, LP)">
+    </div>
+    <div class="ln-row" style="margin-bottom:10px;">
+      <input class="field" id="year" name="year" type="number" placeholder="Jahr" min="1900" max="2100">
+      <input class="field" id="price" name="price" type="number" placeholder="Preis in €" min="0" step="0.5" required>
+    </div>
+    <div class="muted" id="price-hint" style="font-size:12.5px; margin:-4px 0 10px;">Pflichtfeld bei „Biete"</div>
+    <textarea class="field" id="description" name="description" placeholder="Zustand, Details …" rows="4" style="margin-bottom:14px; resize:vertical;"></textarea>
+
+    <button class="btn-primary" type="submit" style="width:100%; height:50px;" id="submit-btn">Veröffentlichen</button>
+    <div class="err" id="form-error" style="margin-top:10px;"></div>
+  </form>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="./config.js"></script>
+<script src="./js/ui.js"></script>
+<script src="./js/auth.js"></script>
+<script src="./js/db.js"></script>
+<script src="./js/marketplace.js"></script>
+<script>
+(async function () {
+  const user = await requireAuth();
+  if (!user) return;
+
+  let subscribed = false;
+  try {
+    subscribed = await fetchIsSubscribed(user.id);
+  } catch (e) {
+    // Bei Fehler vorsichtshalber sperren statt versehentlich zu öffnen.
+  }
+  if (!subscribed) {
+    document.getElementById("paywall").hidden = false;
+    document.getElementById("form").hidden = true;
+    return;
+  }
+
+  let kind = "biete";
+  const kindToggle = document.getElementById("kind-toggle");
+  const priceInput = document.getElementById("price");
+  const priceHint = document.getElementById("price-hint");
+  kindToggle.addEventListener("click", (ev) => {
+    const item = ev.target.closest(".segmented-item");
+    if (!item) return;
+    kindToggle.querySelectorAll(".segmented-item").forEach((el) => el.classList.remove("active"));
+    item.classList.add("active");
+    kind = item.dataset.kind;
+    priceInput.required = kind === "biete";
+    priceHint.textContent = kind === "biete" ? "Pflichtfeld bei „Biete\"" : "Optional – Höchstpreis, den du zahlen würdest";
+  });
+
+  let myCollection = [];
+  const select = document.getElementById("from-collection");
+  try {
+    myCollection = await fetchCollection();
+    myCollection.forEach((item) => {
+      const opt = document.createElement("option");
+      opt.value = item.id;
+      opt.textContent = [item.title, item.artist].filter(Boolean).join(" – ");
+      select.appendChild(opt);
+    });
+  } catch (e) {
+    // Sammlung konnte nicht geladen werden – Formular bleibt trotzdem nutzbar.
+  }
+
+  select.addEventListener("change", () => {
+    const item = myCollection.find((i) => i.id === select.value);
+    if (!item) return;
+    document.getElementById("title").value = item.title || "";
+    document.getElementById("artist").value = item.artist || "";
+    document.getElementById("format").value = item.format || "";
+    document.getElementById("year").value = item.year || "";
+  });
+
+  const form = document.getElementById("form");
+  const errorEl = document.getElementById("form-error");
+  const submitBtn = document.getElementById("submit-btn");
+
+  form.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    errorEl.textContent = "";
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Wird veröffentlicht …";
+
+    const selected = myCollection.find((i) => i.id === select.value);
+    const priceValue = document.getElementById("price").value;
+    const priceEuros = priceValue ? parseFloat(priceValue) : null;
+
+    try {
+      const listing = await createListing({
+        seller_id: user.id,
+        collection_item_id: selected ? selected.id : null,
+        kind,
+        title: document.getElementById("title").value.trim(),
+        artist: document.getElementById("artist").value.trim() || null,
+        format: document.getElementById("format").value.trim() || null,
+        year: document.getElementById("year").value ? parseInt(document.getElementById("year").value, 10) : null,
+        price_cents: priceEuros != null ? Math.round(priceEuros * 100) : null,
+        currency: "EUR",
+        description: document.getElementById("description").value.trim() || null,
+        cover_url: selected ? selected.cover_url : null,
+      });
+      location.href = `marketplace-listing.html?id=${encodeURIComponent(listing.id)}`;
+    } catch (e) {
+      errorEl.textContent = e.message;
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Veröffentlichen";
+    }
+  });
+})();
+</script>
+</body>
+</html>

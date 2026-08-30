@@ -1,0 +1,360 @@
+/* =====================================================================
+   Plattenregal – App-Layer
+   Liegt ÜBER wireframes/styles.css und nutzt dessen Tokens/Komponenten.
+   Hier stehen nur die Dinge, die die echten App-Seiten zusätzlich
+   brauchen: responsives Shell statt Phone-Frame, fixierte Bottom-Nav,
+   Lade-/Leerzustände, Formularfelder.
+   ===================================================================== */
+
+/* Farben kommen aus styles.css. Für Text gelten dort --accent-text und
+   --danger-ink (abgedunkelt, WCAG AA); --accent und --danger bleiben den
+   Flächen vorbehalten. */
+
+body{
+  background:
+    radial-gradient(circle at 15% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 45%),
+    radial-gradient(circle at 90% 90%, color-mix(in srgb, var(--accent-2, var(--accent)) 10%, transparent), transparent 50%),
+    var(--bg);
+  min-height:100vh;
+}
+
+/* Der Phone-Frame der Wireframes wird hier zum responsiven Shell:
+   auf dem Handy volle Breite, auf dem Desktop zentriert. */
+.shell{
+  max-width:560px;
+  margin:0 auto;
+  padding:38px 22px 130px; /* unten Platz für die fixierte Nav */
+}
+
+.skip-link{
+  position:absolute; left:-9999px; top:0;
+  background:var(--accent); color:var(--accent-ink);
+  padding:12px 20px; border-radius:0 0 var(--radius-sm) 0;
+  font-weight:800; font-size:14px; z-index:100;
+}
+.skip-link:focus{ left:0; }
+
+/* Sichtbarer Fokus – gilt für die ganze App, nie entfernen */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible, [tabindex]:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+  border-radius:6px;
+}
+
+/* ===== Kopfzeile ===== */
+.page-header{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:28px; }
+.page-header .brand{ font-size:25px; }
+.page-header .tag{
+  font-size:12px; color:var(--text-muted); font-weight:700; letter-spacing:.04em;
+  text-transform:uppercase; border:1px solid var(--border); border-radius:999px; padding:6px 13px;
+}
+
+/* ===== Karten ===== */
+.card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:24px; margin-bottom:18px; }
+.card-head{ display:flex; align-items:center; gap:14px; margin-bottom:18px; }
+.card-head .icon-badge{ width:44px; height:44px; border-radius:12px; margin-bottom:0; flex:0 0 auto; }
+.card-head-title{ font-weight:800; font-size:16.5px; }
+.card-head-sub{ font-size:12.5px; color:var(--text-muted); margin-top:1px; }
+
+/* ===== Formular ===== */
+.field{ margin-bottom:11px; }
+.field:last-of-type{ margin-bottom:0; }
+.row{ display:flex; gap:10px; margin-top:14px; }
+.row .btn-primary, .row .btn-secondary{ flex:1; height:48px; }
+.err{ color:var(--danger-ink); font-size:13px; margin-top:12px; line-height:1.5; }
+.note{ color:var(--text-muted); font-size:13px; margin-top:12px; line-height:1.5; }
+
+.btn-primary, .btn-secondary{ transition:filter .15s ease, border-color .15s ease, transform .15s ease; }
+.btn-primary:hover{ filter:brightness(1.07); }
+.btn-secondary:hover{ border-color:var(--accent); color:var(--accent); }
+.btn-primary:active, .btn-secondary:active{ transform:translateY(1px); }
+.btn-primary[disabled], .btn-secondary[disabled]{ opacity:.5; pointer-events:none; }
+.btn-secondary.small{ height:38px; padding:0 16px; font-size:13.5px; flex:0 0 auto; }
+
+/* ===== Konto-Zeile ===== */
+.user-row{ display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.user-id{ display:flex; align-items:center; gap:12px; min-width:0; }
+.user-avatar{
+  width:42px; height:42px; border-radius:999px; background:var(--accent-soft);
+  border:1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  color:var(--accent-text);
+  display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; flex:0 0 auto;
+}
+.user-email{ font-weight:700; font-size:14.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.user-label{ font-size:12px; color:var(--text-muted); }
+
+/* ===== Cover mit echtem Bild (Verlauf bleibt als Fallback darunter) ===== */
+.cover{ overflow:hidden; }
+.cover img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .25s ease; }
+.cover img.loaded{ opacity:1; }
+
+/* ===== Listenkarte ===== */
+.list-card + .list-card{ margin-top:10px; }
+.list-card .cover{ position:relative; border-radius:11px; }
+.list-card .chev{ flex:0 0 auto; }
+.list-card-title{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.list-card-sub{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+a.list-card, .list-card[role="button"]{ cursor:pointer; transition:border-color .15s ease, transform .15s ease; }
+a.list-card:hover, .list-card[role="button"]:hover{ border-color:var(--border-strong); transform:translateY(-1px); }
+
+/* ===== Zustände ===== */
+.empty-state{ text-align:center; padding:34px 14px; color:var(--text-muted); font-size:13.5px; line-height:1.6; }
+.empty-state svg{ margin:0 auto 10px; opacity:.6; }
+.empty-state .empty-title{ color:var(--text); font-weight:700; font-size:15px; margin-bottom:6px; }
+.empty-state .btn-primary{ height:46px; padding:0 22px; margin-top:18px; }
+
+@keyframes spin{ to{ transform:rotate(360deg); } }
+.spinner{
+  display:inline-block; width:13px; height:13px; border-radius:999px;
+  border:2px solid color-mix(in srgb, var(--accent) 30%, transparent); border-top-color:var(--accent);
+  animation:spin .7s linear infinite; margin-right:7px; vertical-align:-2px;
+}
+
+@keyframes shimmer{ to{ background-position:-200% 0; } }
+.skeleton{
+  background:linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 40%, var(--surface) 80%);
+  background-size:200% 100%;
+  animation:shimmer 1.3s linear infinite;
+  border-radius:11px;
+}
+.skeleton-line{ height:11px; margin-top:9px; border-radius:6px; }
+.skeleton-line.short{ width:60%; }
+
+/* ===== Suche & Filter ===== */
+.search-bar{ margin-bottom:14px; padding:0; }
+.search-bar input{
+  flex:1; min-width:0; background:none; border:none; outline:none;
+  color:var(--text); font-family:var(--font-body); font-size:14.5px;
+  padding:13px 16px 13px 0;
+}
+.search-bar input::placeholder{ color:var(--text-muted); }
+.search-bar{ padding-left:16px; }
+.search-bar:focus-within{ border-color:var(--border-strong); }
+.search-clear{
+  background:none; border:none; color:var(--text-muted); cursor:pointer;
+  padding:0 14px 0 4px; align-self:stretch; display:flex; align-items:center;
+}
+.search-clear:hover{ color:var(--text); }
+
+.chip{ background:none; font-family:var(--font-body); cursor:pointer; transition:border-color .15s ease, color .15s ease; }
+.chip:hover:not(.active){ border-color:var(--accent); color:var(--accent-text); }
+.chip .chip-count{ opacity:.65; margin-left:6px; font-variant-numeric:tabular-nums; }
+
+.toolbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin:18px 0 16px; }
+.result-count{ font-size:12.5px; color:var(--text-muted); font-weight:600; }
+.sort-select{
+  background:var(--surface); color:var(--text); border:1px solid var(--border);
+  border-radius:999px; padding:9px 14px; font-family:var(--font-body);
+  font-size:12.5px; font-weight:700; cursor:pointer;
+}
+
+/* ===== Sammlungs-Grid ===== */
+.cover-grid a, .cover-grid > div{ min-width:0; }
+.cover-grid .cover-title, .cover-grid .cover-artist{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* ===== Format-Aufschlüsselung (Home) ===== */
+.breakdown{ display:flex; flex-direction:column; gap:1px; }
+.breakdown-row{
+  display:flex; align-items:center; gap:12px; padding:14px 2px;
+  border-bottom:1px solid var(--border); font-size:14.5px; font-weight:700;
+  cursor:pointer; transition:color .15s ease;
+}
+.breakdown-row:last-child{ border-bottom:none; }
+.breakdown-row:hover{ color:var(--accent-text); }
+.breakdown-row .bar{ flex:1; height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden; }
+.breakdown-row .bar span{ display:block; height:100%; border-radius:999px; background:var(--accent); }
+.breakdown-row .num{ color:var(--text-muted); font-variant-numeric:tabular-nums; font-weight:600; min-width:26px; text-align:right; }
+
+/* ===== Fixierte Bottom-Nav ===== */
+.bottomnav{
+  position:fixed; left:0; right:0; bottom:0; z-index:40;
+  display:block; padding:12px 0 calc(14px + env(safe-area-inset-bottom));
+  background:var(--bg); /* Fallback, falls color-mix fehlt */
+  background:color-mix(in srgb, var(--bg) 94%, transparent);
+  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+}
+.bottomnav-inner{
+  max-width:560px; margin:0 auto; padding:0 16px;
+  display:flex; justify-content:space-around; align-items:center;
+}
+/* 44px+ Touch-Ziel, auch wenn das Label klein ist */
+.navitem{ min-width:58px; min-height:46px; justify-content:center; cursor:pointer; transition:color .15s ease; }
+.navitem:hover{ color:var(--text); }
+.navitem.active, .navitem.active:hover{ color:var(--accent-text); }
+.bottomnav .fab{ flex:0 0 auto; }
+
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+}
+
+/* ===== Detailseite ===== */
+.detail-shell{ padding:0 0 130px; }
+.detail-body{ padding:26px 22px 30px; }
+
+.detail-hero{
+  position:relative; width:100%; aspect-ratio:1; max-height:340px;
+  overflow:hidden; background:var(--surface-2);
+}
+.detail-hero .cover{ position:absolute; inset:0; width:100%; height:100%; border-radius:0; }
+.detail-hero .cover::after{ box-shadow:none; }
+/* Weicher Übergang von Cover zu Seitenhintergrund */
+.detail-hero::after{
+  content:""; position:absolute; left:0; right:0; bottom:0; height:90px;
+  background:linear-gradient(transparent, var(--bg));
+  pointer-events:none;
+}
+
+.detail-back{
+  position:absolute; top:18px; left:18px; z-index:2;
+  width:44px; height:44px; border-radius:999px;
+  background:rgba(255,255,255,.86); color:#1C1C22;
+  -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 14px -4px rgba(20,20,30,.30);
+  transition:transform .15s ease;
+}
+.detail-back:hover{ transform:translateX(-2px); }
+.detail-back svg{ stroke:currentColor; }
+
+.detail-title{ font-family:var(--font-display); font-style:italic; font-size:32px; line-height:1.08; margin:0 0 6px; }
+.detail-artist{ font-size:16px; color:var(--text-muted); margin-bottom:6px; }
+.detail-meta{ font-size:13px; color:var(--text-muted); margin-bottom:26px; }
+
+.link-chip{ transition:border-color .15s ease, transform .15s ease; }
+a.link-chip:hover{ border-color:var(--accent); transform:translateY(-1px); }
+.link-chip .chip-sub{ display:block; font-weight:600; font-size:12px; color:var(--text-muted); margin-top:2px; }
+.link-stack{ display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
+
+.track-row .pos{ color:var(--text-muted); font-variant-numeric:tabular-nums; margin-right:10px; }
+.track-heading{ font-weight:800; font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); padding:16px 0 6px; }
+
+.meta-grid{ display:flex; flex-direction:column; }
+.meta-row{ display:flex; justify-content:space-between; gap:16px; padding:12px 0; border-bottom:1px solid var(--border); font-size:14px; }
+.meta-row:last-child{ border-bottom:none; }
+.meta-row dt{ color:var(--text-muted); margin:0; }
+.meta-row dd{ margin:0; font-weight:700; text-align:right; overflow-wrap:anywhere; }
+
+.community-note{ text-align:center; font-size:12.5px; color:var(--text-muted); margin-top:22px; }
+
+/* Löschen: zweistufig, damit kein Fehlgriff die Platte kostet */
+.danger-zone{ margin-top:34px; border-top:1px solid var(--border); padding-top:8px; }
+.menu-item.danger{ border-bottom:none; color:var(--danger-ink); }
+.menu-item.danger svg{ stroke:currentColor; }
+.confirm-box{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:18px; }
+.confirm-box p{ margin:0 0 14px; font-size:14px; line-height:1.5; }
+.confirm-box .row{ margin-top:0; }
+.btn-danger{
+  background:var(--danger-ink); color:#fff; border:none; border-radius:var(--radius-sm);
+  font-family:var(--font-body); font-weight:700; font-size:15px; cursor:pointer;
+  transition:filter .15s ease;
+}
+.btn-danger:hover{ filter:brightness(1.07); }
+.btn-danger[disabled]{ opacity:.5; pointer-events:none; }
+
+/* ===== Hinweisbanner (z. B. Discogs-Rate-Limit) =====
+   Auffällig, aber nicht blockierend: die Seite bleibt bedienbar, der
+   Hinweis verschwindet erst, wenn die Ursache weg ist. */
+.notice{
+  display:flex; gap:12px; align-items:flex-start;
+  background:var(--accent-soft);
+  border:1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius:var(--radius-sm);
+  padding:14px 16px; margin-top:16px;
+  font-size:13.5px; line-height:1.5; color:var(--text);
+}
+/* display:flex schlägt sonst das hidden-Attribut – ohne diese Zeile
+   bleibt ein leerer Balken stehen. */
+.notice[hidden]{ display:none; }
+.notice > svg{ flex:0 0 auto; color:var(--accent-text); margin-top:1px; }
+.notice .notice-body{ min-width:0; display:flex; flex-direction:column; align-items:flex-start; }
+.notice strong{ display:block; font-weight:800; margin-bottom:2px; }
+.notice .btn-secondary{ margin-top:12px; }
+
+/* ===== Feedback-Dialog ===== */
+.feedback-dialog{
+  width:min(440px, calc(100vw - 32px));
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  background:var(--surface);
+  color:var(--text);
+  padding:26px;
+  box-shadow:0 30px 60px -24px rgba(120,86,30,.4);
+}
+.feedback-dialog::backdrop{ background:rgba(35,28,16,.45); }
+
+.feedback-title{ font-family:var(--font-display); font-style:italic; font-size:26px; margin:0 0 6px; }
+.feedback-lead{ font-size:14px; color:var(--text-muted); line-height:1.5; margin:0 0 18px; }
+
+.feedback-dialog .chip-row{ margin-bottom:16px; }
+.feedback-textarea{ resize:vertical; min-height:112px; line-height:1.5; font-family:var(--font-body); }
+.feedback-counter{ font-size:12px; color:var(--text-muted); text-align:right; margin-top:6px; font-variant-numeric:tabular-nums; }
+.feedback-dialog .err:empty{ display:none; }
+
+.feedback-done{ text-align:center; padding:8px 0 4px; }
+.feedback-done .icon-badge{ margin:0 auto 14px; }
+.feedback-done .btn-primary{ height:46px; padding:0 26px; margin-top:18px; }
+.feedback-done[hidden], .feedback-form[hidden]{ display:none; }
+
+/* Der Feedback-Eintrag steht allein – ohne Trenner nach unten */
+#konto .menu-item{ border-bottom:none; margin-top:8px; }
+
+/* =====================================================================
+   Lesbarkeit – altersgerechte Typografie und Touch-Ziele
+   ---------------------------------------------------------------------
+   Die Skala selbst steht seit der Token-Umstellung in styles.css. Hier
+   bleiben nur Klassen, die es dort nicht gibt – App-eigene Bausteine wie
+   Detailzeile, Hinweisbanner, Sortierfeld oder Sucheingabe.
+
+   Untergrenzen unverändert: kein Text unter 12px, kein Bedienelement
+   unter 44x44px. test/legibility.test.html hält sie fest.
+   ===================================================================== */
+
+/* --- Fließtext und Inhalt --------------------------------------------- */
+.card-head-title{ font-size:17px; }
+.card-head-sub{ font-size:14px; }
+.user-email{ font-size:15px; }
+.user-label{ font-size:13px; }
+.count-badge, .result-count{ font-size:13.5px; }
+
+/* --- Detailseite ------------------------------------------------------ */
+.detail-artist{ font-size:17px; }
+.detail-meta{ font-size:14px; }
+.meta-row{ font-size:15px; }
+.community-note{ font-size:13.5px; }
+.link-chip .chip-sub{ font-size:13.5px; }
+
+/* --- Scanner ---------------------------------------------------------- */
+.page-header .tag{ font-size:13px; }
+.status{ font-size:14.5px; }
+.placeholder{ font-size:14.5px; }
+.notice{ font-size:14.5px; }
+
+/* --- Bedienelemente: Größe UND Touch-Ziel ----------------------------- */
+.btn-secondary.small{ height:44px; font-size:14.5px; }
+
+.sort-select{ font-size:13.5px; min-height:44px; }
+.search-bar input{ font-size:16px; }               /* verhindert Zoom auf iOS */
+.search-clear{ min-width:44px; justify-content:center; }
+
+/* Navigationslabels bleiben kompakt, damit fünf Einträge nebeneinander
+   passen – dafür ist das Touch-Ziel großzügig. */
+
+.breakdown-row{ font-size:15px; padding:15px 2px; }
+
+.skip-link{ font-size:15px; padding:14px 20px; }
+
+/* Verlinkte Untertitel sind eigenständige Ziele, kein Fließtext */
+.card-head-sub a{ display:inline-flex; align-items:center; min-height:44px; }
+
+/* Etwas mehr Zeilenabstand im Fließtext hilft beim Lesen */
+.list-card-sub, .cover-artist, .card-head-sub, .detail-meta, .feedback-lead{ line-height:1.45; }
