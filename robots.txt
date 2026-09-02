@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /kitchen-king/admin.html
+
+Sitemap: https://driftware.online/sitemap.xml
