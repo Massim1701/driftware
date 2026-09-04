@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>80er Music</title>
+<meta name="description" content="80er Music: 80er-Jahre-Songs nach Stimmung sortiert.">
+<link rel="stylesheet" href="../shared/decades.css">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js"></script>
+<script>
+renderDecadeIndex({
+  name: '80er Music',
+  years: '1980–1989',
+  icon: '📼',
+  iconBg: 'linear-gradient(135deg, #ff2fb3, #29e2ff)',
+  tagline: 'Handverlesene 80er-Playlisten nach Stimmung — Party, Rock, Romantic und mehr.',
+  badgeText: '🚧 Projekt im Aufbau',
+  colors: {
+    bg: '#170822',
+    panel: '#241134',
+    accent: '#ff2fb3',
+    accent2: '#29e2ff',
+    text: '#fef6ff',
+    muted: '#b79ecf'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, nach Popularität und Genre/Style gefiltert und auf Stimmungs-Playlisten gemappt — bereit für den Import in Spotify, Apple Music & YouTube Music.',
+  features: [
+    { emoji: '🎉', title: 'Party', desc: 'Disco, Funk, Boogie und Hi-NRG — Stimmung sofort auf dem Punkt.' },
+    { emoji: '🎸', title: 'Rock', desc: 'Von Hard Rock bis Glam — die Gitarren-Ära der 80er.' },
+    { emoji: '💜', title: 'Romantic', desc: 'Balladen und Soft Rock für ruhige Momente.' },
+    { emoji: '🌈', title: 'Dance & Synth', desc: 'New Wave, Synth-Pop und New Romantic.' },
+    { emoji: '🎤', title: 'Hip Hop', desc: 'Die Anfänge von Rap und Electro.' },
+    { emoji: '🏝️', title: 'Chill & Reggae', desc: 'Reggae, Dub und Lovers Rock zum Runterkommen.' }
+  ]
+});
+</script>
+</body>
+</html>

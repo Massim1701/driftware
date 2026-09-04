@@ -1,0 +1,171 @@
+/* Gemeinsame Styles fuer alle Dekaden-Seiten (80er, 90er, 2000er, ...).
+   Farben kommen als CSS-Variablen von der jeweiligen Seite (siehe decades.js). */
+:root {
+  --bg: #14101c;
+  --panel: #1e1830;
+  --accent: #ff2fb3;
+  --accent2: #29e2ff;
+  --text: #fbf6ff;
+  --muted: #a99cc4;
+  --border: rgba(255,255,255,0.08);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+}
+a { color: var(--accent); }
+
+/* Utility-Block oben (Home / Mail / Datenschutz) */
+.utility-block {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+.utility-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--text);
+  width: 40px;
+}
+.utility-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.utility-icon svg { width: 18px; height: 18px; }
+.utility-label { font-size: 9px; color: var(--muted); }
+
+/* Hero-Header */
+header.decade-header {
+  position: relative;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 72px 24px 32px;
+  text-align: center;
+}
+.app-icon-hero {
+  width: 96px;
+  height: 96px;
+  border-radius: 22px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--border);
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44px;
+}
+.decade-logo {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+.decade-years {
+  display: inline-block;
+  color: var(--accent2);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  margin: 0 0 16px;
+}
+.decade-tagline {
+  color: var(--muted);
+  font-size: 18px;
+  margin: 0 0 28px;
+}
+.badges {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Themen-/Feature-Grid */
+main.decade-main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 24px 64px;
+}
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 40px 0;
+}
+.feature {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+}
+.feature h3 { margin: 0 0 8px; font-size: 16px; color: var(--text); }
+.feature p { margin: 0; color: var(--muted); font-size: 14px; }
+
+.info-note {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 24px;
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 40px;
+}
+.info-note strong { color: var(--text); }
+
+footer.decade-footer {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  border-top: 1px solid var(--border);
+}
+footer.decade-footer a { color: var(--accent); text-decoration: none; }
+footer.decade-footer .links { margin-top: 8px; }
+footer.decade-footer .links a { margin: 0 8px; }
+
+/* Impressum / Datenschutz */
+main.legal-main { max-width: 680px; margin: 0 auto; padding: 56px 24px 64px; }
+main.legal-main h1 { font-size: 28px; margin-bottom: 4px; }
+main.legal-main .stand { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+main.legal-main h2 { font-size: 18px; margin-top: 32px; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+main.legal-main p, main.legal-main ul { color: #e4dff0; }
+.back-link { display: inline-block; margin-bottom: 24px; color: var(--muted); text-decoration: none; font-size: 14px; }
+.contact-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin: 32px 0; }
+.contact-form { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.contact-form label { font-size: 13px; color: var(--muted); font-weight: 600; display: flex; flex-direction: column; gap: 6px; }
+.contact-form input, .contact-form textarea { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--text); font-family: inherit; font-size: 14px; }
+.contact-form textarea { min-height: 100px; resize: vertical; }
+.contact-form button { align-self: flex-start; background: var(--accent); color: #1a0a14; border: none; border-radius: 10px; padding: 10px 22px; font-weight: 700; font-size: 14px; cursor: pointer; }
+.contact-honey { position: absolute; left: -9999px; }
