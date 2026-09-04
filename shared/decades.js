@@ -612,6 +612,9 @@ function renderSongGrid(container, songs) {
 
 /* config: { mountBefore: CSS-Selektor im Ziel-Container, dataUrl, themes: [{key,label}], csvPrefix }
    csvPrefix dient auch als Dekaden-Schlüssel fürs DECADE_REGISTRY (70er, 80er, ...). */
+var MIX_KEY = '__mix__';
+var MIX_PER_CATEGORY = 5;
+
 function renderPlaylistGenerator(mountRoot, config) {
   var data = null;
   var currentTheme = null;
@@ -621,7 +624,24 @@ function renderPlaylistGenerator(mountRoot, config) {
   var ownDecadeKey = config.csvPrefix || null;
   var ownDecadeLabel = (DECADE_REGISTRY.filter(function (d) { return d.key === ownDecadeKey; })[0] || {}).label || 'dieser Dekade';
 
-  function currentSongs() { return (data && currentTheme) ? (data[currentTheme] || []) : []; }
+  /* Mix-Button: aus JEDER Kategorie die 5 beliebtesten Songs (Discogs-'have'-
+     Zahl als Popularitäts-Proxy, dieselbe Kennzahl wie im README erklärt). */
+  function buildMixSongs() {
+    if (!data) return [];
+    var out = [];
+    Object.keys(data).forEach(function (cat) {
+      var songs = (data[cat] || []).slice();
+      songs.sort(function (a, b) { return (b.hv || 0) - (a.hv || 0); });
+      out = out.concat(songs.slice(0, MIX_PER_CATEGORY));
+    });
+    return out;
+  }
+
+  function currentSongs() {
+    if (!data) return [];
+    if (currentTheme === MIX_KEY) return buildMixSongs();
+    return currentTheme ? (data[currentTheme] || []) : [];
+  }
 
   function asLines() {
     return currentSongs().map(function (s) { return s.a + ' - ' + s.t; }).join('\n');
@@ -735,6 +755,15 @@ function renderPlaylistGenerator(mountRoot, config) {
     '<a href="https://www.tunemymusic.com" target="_blank" rel="noopener">TuneMyMusic</a> hochladen.</p>';
 
   var buttons = section.querySelector('#gen-buttons');
+  var mixBtn = document.createElement('button');
+  mixBtn.className = 'theme-btn theme-btn-mix';
+  mixBtn.type = 'button';
+  mixBtn.textContent = '🎲 Mix – Best-of aller Genres';
+  mixBtn.title = 'Die ' + MIX_PER_CATEGORY + ' beliebtesten Songs aus jedem Genre';
+  mixBtn.dataset.key = MIX_KEY;
+  mixBtn.addEventListener('click', function () { selectTheme(MIX_KEY); });
+  buttons.appendChild(mixBtn);
+
   config.themes.forEach(function (t) {
     var btn = document.createElement('button');
     btn.className = 'theme-btn';
