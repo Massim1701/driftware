@@ -4,90 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>80er Music</title>
-<meta name="description" content="80er Music: 1397 Songs aus 1980–1989 nach Stimmung sortiert, Playlisten per Klick erstellen und exportieren.">
+<meta name="description" content="80er Music: 1397 Songs aus 1980–1989 mit Cover nach Stimmung sortiert, Playlisten per Klick erstellen und exportieren.">
 <link rel="stylesheet" href="../shared/decades.css">
-<style>
-  .generator {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 24px;
-    margin-top: 24px;
-  }
-  .generator h2 {
-    margin: 0 0 6px;
-    font-size: 19px;
-  }
-  .generator .sub {
-    color: var(--muted);
-    font-size: 13px;
-    margin: 0 0 18px;
-  }
-  .theme-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 18px;
-  }
-  .theme-btn {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 10px;
-    padding: 9px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .theme-btn.active {
-    background: var(--accent);
-    color: #1a0a14;
-    border-color: var(--accent);
-  }
-  .generator-actions {
-    display: none;
-    gap: 10px;
-    margin-bottom: 14px;
-    flex-wrap: wrap;
-  }
-  .generator-actions.visible { display: flex; }
-  .generator-actions button, .generator-actions a {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--accent2);
-    border-radius: 10px;
-    padding: 8px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    text-decoration: none;
-  }
-  .song-list {
-    max-height: 420px;
-    overflow-y: auto;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-  }
-  .song-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 9px 14px;
-    font-size: 13px;
-    border-bottom: 1px solid var(--border);
-  }
-  .song-row:last-child { border-bottom: none; }
-  .song-row .artist { color: var(--text); font-weight: 600; }
-  .song-row .title { color: var(--muted); }
-  .song-row .year { color: var(--muted); flex-shrink: 0; font-size: 12px; }
-  .song-hint {
-    color: var(--muted);
-    font-size: 12px;
-    margin-top: 12px;
-  }
-  .song-hint a { color: var(--accent2); }
-  .generator-empty { color: var(--muted); font-size: 13px; }
-</style>
 </head>
 <body>
 <div id="decade-root"></div>
@@ -108,7 +26,7 @@ renderDecadeIndex({
     text: '#fef6ff',
     muted: '#b79ecf'
   },
-  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, nach Popularität und Genre/Style gefiltert und auf Stimmungs-Playlisten gemappt — bereit für den Import in Spotify, Apple Music & YouTube Music.',
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, inklusive Cover, nach Popularität und Genre/Style gefiltert und auf Stimmungs-Playlisten gemappt — bereit für den Import in Spotify, Apple Music & YouTube Music.',
   features: [
     { emoji: '🎉', title: 'Party', desc: 'Disco, Funk, Boogie und Hi-NRG — Stimmung sofort auf dem Punkt.' },
     { emoji: '🎸', title: 'Rock', desc: 'Von Hard Rock bis Glam — die Gitarren-Ära der 80er.' },
@@ -118,134 +36,20 @@ renderDecadeIndex({
     { emoji: '🏝️', title: 'Chill & Reggae', desc: 'Reggae, Dub und Lovers Rock zum Runterkommen.' }
   ]
 });
-</script>
-<script>
-(function () {
-  var THEMES = [
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json',
+  csvPrefix: '80er',
+  themes: [
     { key: 'Party', label: '🎉 Party' },
     { key: 'Rock', label: '🎸 Rock' },
     { key: 'Romantic', label: '💜 Romantic' },
     { key: 'Dance_Synth', label: '🌈 Dance & Synth' },
     { key: 'HipHop', label: '🎤 Hip Hop' },
     { key: 'Chill_Reggae', label: '🏝️ Chill & Reggae' }
-  ];
-
-  var data = null;
-  var currentTheme = null;
-
-  function el(tag, cls, text) {
-    var e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (text !== undefined) e.textContent = text;
-    return e;
-  }
-
-  function loadData() {
-    if (data) return Promise.resolve(data);
-    return fetch('songs.json').then(function (r) { return r.json(); }).then(function (j) { data = j; return j; });
-  }
-
-  function currentSongs() {
-    return (data && currentTheme) ? data[currentTheme] : [];
-  }
-
-  function renderList() {
-    var listEl = document.getElementById('gen-list');
-    var countEl = document.getElementById('gen-count');
-    listEl.innerHTML = '';
-    var songs = currentSongs();
-    countEl.textContent = songs.length + ' Songs';
-    songs.forEach(function (s) {
-      var row = el('div', 'song-row');
-      var left = el('span', null);
-      var artist = el('span', 'artist', s.a + ' ');
-      var title = el('span', 'title', '— ' + s.t);
-      left.appendChild(artist);
-      left.appendChild(title);
-      var year = el('span', 'year', String(s.y));
-      row.appendChild(left);
-      row.appendChild(year);
-      listEl.appendChild(row);
-    });
-  }
-
-  function asLines() {
-    return currentSongs().map(function (s) { return s.a + ' - ' + s.t; }).join('\n');
-  }
-
-  function asCSV() {
-    var lines = ['Artist,Title,Year'];
-    currentSongs().forEach(function (s) {
-      var esc = function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; };
-      lines.push([esc(s.a), esc(s.t), s.y].join(','));
-    });
-    return lines.join('\n');
-  }
-
-  function selectTheme(key) {
-    currentTheme = key;
-    document.querySelectorAll('.theme-btn').forEach(function (b) {
-      b.classList.toggle('active', b.dataset.key === key);
-    });
-    document.getElementById('gen-actions').classList.add('visible');
-    loadData().then(renderList);
-  }
-
-  function buildUI() {
-    var main = document.querySelector('main.decade-main');
-    var section = el('section', 'generator');
-    section.appendChild(el('h2', null, '🎛️ Playlist-Generator'));
-    section.appendChild(el('p', 'sub', 'Thema wählen, Songs ansehen, kopieren oder als CSV exportieren.'));
-
-    var btnRow = el('div', 'theme-buttons');
-    THEMES.forEach(function (t) {
-      var btn = el('button', 'theme-btn', t.label);
-      btn.dataset.key = t.key;
-      btn.addEventListener('click', function () { selectTheme(t.key); });
-      btnRow.appendChild(btn);
-    });
-    section.appendChild(btnRow);
-
-    var actions = el('div', 'generator-actions');
-    actions.id = 'gen-actions';
-    var countSpan = el('span', 'generator-empty');
-    countSpan.id = 'gen-count';
-    actions.appendChild(countSpan);
-
-    var copyBtn = el('button', null, '📋 Liste kopieren');
-    copyBtn.addEventListener('click', function () {
-      navigator.clipboard.writeText(asLines()).then(function () {
-        copyBtn.textContent = '✅ Kopiert!';
-        setTimeout(function () { copyBtn.textContent = '📋 Liste kopieren'; }, 1500);
-      });
-    });
-    actions.appendChild(copyBtn);
-
-    var downloadLink = el('a', null, '⬇️ Als CSV exportieren');
-    downloadLink.addEventListener('click', function () {
-      var blob = new Blob([asCSV()], { type: 'text/csv;charset=utf-8;' });
-      var url = URL.createObjectURL(blob);
-      downloadLink.href = url;
-      downloadLink.download = '80er-' + (currentTheme || 'playlist') + '.csv';
-      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-    });
-    actions.appendChild(downloadLink);
-    section.appendChild(actions);
-
-    var list = el('div', 'song-list');
-    list.id = 'gen-list';
-    section.appendChild(list);
-
-    var hint = el('p', 'song-hint');
-    hint.innerHTML = 'Für den direkten Import in Spotify, Apple Music oder YouTube Music: Liste kopieren oder CSV herunterladen und bei <a href="https://soundiiz.com" target="_blank" rel="noopener">Soundiiz</a> oder <a href="https://www.tunemymusic.com" target="_blank" rel="noopener">TuneMyMusic</a> hochladen.';
-    section.appendChild(hint);
-
-    main.insertBefore(section, main.querySelector('.info-note'));
-    selectTheme('Party');
-  }
-
-  buildUI();
-})();
+  ]
+});
 </script>
 </body>
 </html>

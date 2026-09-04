@@ -135,3 +135,177 @@ function renderDecadePrivacy(cfg) {
     '</main>'
   );
 }
+
+/* ---------- Playlist-Generator (Themen-Auswahl, Cover-Kacheln, Popup) ----------
+   Wiederverwendbar fuer alle Dekaden: jede Seite ruft nur
+   renderPlaylistGenerator(mountPoint, config) auf, sobald ihre songs.json steht. */
+
+function ensureSongModal() {
+  var existing = document.getElementById('song-modal-overlay');
+  if (existing) return existing;
+  var overlay = document.createElement('div');
+  overlay.className = 'song-modal-overlay';
+  overlay.id = 'song-modal-overlay';
+  overlay.innerHTML = '' +
+    '<div class="song-modal">' +
+    '  <button class="song-modal-close" aria-label="Schließen">&times;</button>' +
+    '  <img id="song-modal-img" alt="">' +
+    '  <div class="song-modal-artist" id="song-modal-artist"></div>' +
+    '  <div class="song-modal-title" id="song-modal-title"></div>' +
+    '  <dl class="song-modal-meta" id="song-modal-meta"></dl>' +
+    '  <a class="song-modal-link" id="song-modal-link" target="_blank" rel="noopener">Auf Discogs ansehen →</a>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeSongModal(); });
+  overlay.querySelector('.song-modal-close').addEventListener('click', closeSongModal);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSongModal(); });
+  return overlay;
+}
+
+function closeSongModal() {
+  var overlay = document.getElementById('song-modal-overlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+function openSongModal(song) {
+  var overlay = ensureSongModal();
+  var img = document.getElementById('song-modal-img');
+  img.src = song.cv || song.th || '';
+  img.alt = song.a + ' – ' + song.t;
+  document.getElementById('song-modal-artist').textContent = song.a;
+  document.getElementById('song-modal-title').textContent = song.t;
+
+  var meta = document.getElementById('song-modal-meta');
+  meta.innerHTML = '';
+  var rows = [
+    ['Jahr', song.y],
+    ['Genre', song.g],
+    ['Style', song.s],
+    ['Land', song.c],
+    ['Label', song.l]
+  ];
+  rows.forEach(function (pair) {
+    if (!pair[1]) return;
+    var dt = document.createElement('dt'); dt.textContent = pair[0];
+    var dd = document.createElement('dd'); dd.textContent = pair[1];
+    meta.appendChild(dt); meta.appendChild(dd);
+  });
+
+  var link = document.getElementById('song-modal-link');
+  if (song.u) { link.href = song.u; link.style.display = ''; } else { link.style.display = 'none'; }
+
+  overlay.classList.add('open');
+}
+
+function renderSongGrid(container, songs) {
+  container.innerHTML = '';
+  songs.forEach(function (song) {
+    var tile = document.createElement('button');
+    tile.className = 'song-tile';
+    tile.type = 'button';
+
+    var img = document.createElement('img');
+    img.src = song.th || song.cv || '';
+    img.alt = song.a + ' – ' + song.t;
+    img.loading = 'lazy';
+    tile.appendChild(img);
+
+    var artist = document.createElement('span');
+    artist.className = 'song-tile-artist';
+    artist.textContent = song.a;
+    tile.appendChild(artist);
+
+    var title = document.createElement('span');
+    title.className = 'song-tile-title';
+    title.textContent = song.t;
+    tile.appendChild(title);
+
+    tile.addEventListener('click', function () { openSongModal(song); });
+    container.appendChild(tile);
+  });
+}
+
+/* config: { mountBefore: CSS-Selektor im Ziel-Container, dataUrl, themes: [{key,label}], csvPrefix } */
+function renderPlaylistGenerator(mountRoot, config) {
+  var data = null;
+  var currentTheme = null;
+
+  function currentSongs() { return (data && currentTheme) ? (data[currentTheme] || []) : []; }
+
+  function asLines() {
+    return currentSongs().map(function (s) { return s.a + ' - ' + s.t; }).join('\n');
+  }
+  function asCSV() {
+    var esc = function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; };
+    var lines = ['Artist,Title,Year,Genre,Style'];
+    currentSongs().forEach(function (s) {
+      lines.push([esc(s.a), esc(s.t), s.y, esc(s.g), esc(s.s)].join(','));
+    });
+    return lines.join('\n');
+  }
+
+  function loadData() {
+    if (data) return Promise.resolve(data);
+    return fetch(config.dataUrl).then(function (r) { return r.json(); }).then(function (j) { data = j; return j; });
+  }
+
+  function refresh() {
+    document.getElementById('gen-count').textContent = currentSongs().length + ' Songs';
+    renderSongGrid(document.getElementById('gen-grid'), currentSongs());
+  }
+
+  function selectTheme(key) {
+    currentTheme = key;
+    mountRoot.querySelectorAll('.theme-btn').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.key === key);
+    });
+    document.getElementById('gen-actions').classList.add('visible');
+    loadData().then(refresh);
+  }
+
+  var section = document.createElement('section');
+  section.className = 'generator';
+  section.innerHTML = '' +
+    '<h2>🎛️ Playlist-Generator</h2>' +
+    '<p class="sub">Thema wählen, Cover anklicken für alle Song-Infos, Liste kopieren oder exportieren.</p>' +
+    '<div class="theme-buttons" id="gen-buttons"></div>' +
+    '<div class="generator-actions" id="gen-actions">' +
+    '  <span class="generator-count" id="gen-count"></span>' +
+    '  <button id="gen-copy" type="button">📋 Liste kopieren</button>' +
+    '  <a id="gen-download" download>⬇️ Als CSV exportieren</a>' +
+    '</div>' +
+    '<div class="song-grid" id="gen-grid"></div>' +
+    '<p class="song-hint">Für den Import in Spotify, Apple Music oder YouTube Music: Liste kopieren oder CSV herunterladen und bei ' +
+    '<a href="https://soundiiz.com" target="_blank" rel="noopener">Soundiiz</a> oder ' +
+    '<a href="https://www.tunemymusic.com" target="_blank" rel="noopener">TuneMyMusic</a> hochladen.</p>';
+
+  var buttons = section.querySelector('#gen-buttons');
+  config.themes.forEach(function (t) {
+    var btn = document.createElement('button');
+    btn.className = 'theme-btn';
+    btn.type = 'button';
+    btn.textContent = t.label;
+    btn.dataset.key = t.key;
+    btn.addEventListener('click', function () { selectTheme(t.key); });
+    buttons.appendChild(btn);
+  });
+
+  var target = mountRoot.querySelector(config.mountBefore);
+  mountRoot.insertBefore(section, target || null);
+
+  section.querySelector('#gen-copy').addEventListener('click', function (e) {
+    navigator.clipboard.writeText(asLines()).then(function () {
+      e.target.textContent = '✅ Kopiert!';
+      setTimeout(function () { e.target.textContent = '📋 Liste kopieren'; }, 1500);
+    });
+  });
+  section.querySelector('#gen-download').addEventListener('click', function (e) {
+    var blob = new Blob([asCSV()], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    e.target.href = url;
+    e.target.download = (config.csvPrefix || 'playlist') + '-' + (currentTheme || 'songs') + '.csv';
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  });
+
+  selectTheme(config.themes[0].key);
+}
