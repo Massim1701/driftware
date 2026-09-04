@@ -311,6 +311,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 .song-tile:hover { transform: translateY(-2px); border-color: var(--accent); }
 .song-tile.selected { border-color: #22c55e; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35); }
+.song-tile-media { position: relative; display: block; }
 .song-tile img {
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -325,7 +326,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .song-tile-check {
   position: absolute;
   top: 6px;
-  left: 6px;
+  right: 6px;
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -348,22 +349,49 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .song-tile-info {
   position: absolute;
   top: 6px;
-  right: 6px;
-  width: 20px;
-  height: 20px;
+  left: 6px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.55);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 700;
   cursor: pointer;
   z-index: 2;
   transition: background 0.12s ease;
 }
 .song-tile-info:hover, .song-tile-info:focus-visible { background: rgba(0, 0, 0, 0.8); }
+
+.song-tile-play {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #1a0a14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  transition: transform 0.12s ease;
+}
+.song-tile-play:hover { transform: scale(1.1); }
+.song-tile-play.disabled {
+  background: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.35);
+  cursor: default;
+  box-shadow: none;
+}
 
 /* Streaming-Icons: nur im Popup, nur Symbole, Klick oeffnet die Suche beim jeweiligen Dienst */
 .streaming-row { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -453,6 +481,18 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 .song-modal-artist { font-size: 18px; font-weight: 800; color: var(--text); }
 .song-modal-title { font-size: 15px; color: var(--muted); margin-top: -8px; }
+.song-modal-play {
+  align-self: flex-start;
+  background: var(--accent);
+  color: #1a0a14;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.song-modal-play:disabled { background: var(--bg); color: var(--muted); border: 1px solid var(--border); cursor: not-allowed; }
 .song-modal-meta { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; }
 .song-modal-meta dt { color: var(--muted); }
 .song-modal-meta dd { margin: 0; color: var(--text); }
@@ -462,4 +502,90 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   font-size: 13px;
   font-weight: 700;
   text-decoration: none;
+}
+
+/* ---------- Eigener Mini-Player (unten fixiert), spielt einzelne Songs
+   oder eine ganze Genre-Playlist per YouTube IFrame API ab. Bleibt auch
+   über dem Popup sichtbar, damit man beim Stöbern weiterhören kann. ---------- */
+.mini-player {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 250;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.4);
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+}
+.mini-player.open { display: flex; }
+.mini-player-video {
+  flex: 0 0 auto;
+  width: 112px;
+  height: 63px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+}
+.mini-player-video iframe { display: block; }
+.mini-player-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mini-player-artist {
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mini-player-title {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mini-player-controls {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mini-player-controls button {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mini-player-controls button:hover { border-color: var(--accent); }
+#mini-player-toggle { background: var(--accent); color: #1a0a14; border-color: var(--accent); }
+.mini-player-close {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.08);
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+}
+.mini-player-close:hover { color: var(--text); }
+@media (max-width: 520px) {
+  .mini-player-video { width: 80px; height: 45px; }
+  .mini-player-artist, .mini-player-title { font-size: 11px; }
 }
