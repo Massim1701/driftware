@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>2010er Music</title>
-<meta name="description" content="2010er Music: 2010–2019 nach Stimmung sortiert.">
+<meta name="description" content="2010er Music: über 7500 Songs aus 2010–2019 in 20 echten Genres — von Indie Rock bis Reggaeton — mit Cover, DJ-Player und Playlisten per Klick erstellen und exportieren.">
 <link rel="stylesheet" href="../shared/decades.css?v=13">
 </head>
 <body>
@@ -12,63 +12,57 @@
 <script src="../shared/decades.js?v=11"></script>
 <script>
 renderDecadeIndex({
-  "name": "2010er Music",
-  "years": "2010–2019",
-  "icon": "🎧",
-  "iconBg": "linear-gradient(135deg, #7c5cff, #22d3ee)",
-  "tagline": "Handverlesene 2010er-Playlisten nach Stimmung — EDM, Pop, HipHop und mehr.",
-  "badgeText": "🚧 Projekt im Aufbau",
-  "colors": {
-    "bg": "#0d1117",
-    "panel": "#161b22",
-    "accent": "#7c5cff",
-    "accent2": "#22d3ee",
-    "text": "#f5f6fa",
-    "muted": "#8b93a7"
+  name: '2010er Music',
+  years: '2010–2019',
+  icon: '🎧',
+  iconBg: 'linear-gradient(135deg, #7c5cff, #22d3ee)',
+  tagline: 'Über 7500 Songs aus den 2010ern in 20 echten Genres — von Indie Rock bis Reggaeton.',
+  badgeText: '🎧 20 Genres — Playlist-Generator live',
+  colors: {
+    bg: '#0d1117',
+    panel: '#161b22',
+    accent: '#7c5cff',
+    accent2: '#22d3ee',
+    text: '#f5f6fa',
+    muted: '#8b93a7'
   },
-  "sourceNote": "Die Songs stammen aus der offenen Musikdatenbank Discogs, nach Popularität und Genre/Style gefiltert und auf Stimmungs-Playlisten gemappt — bereit für den Import in Spotify, Apple Music & YouTube Music.",
-  "features": [
-    {
-      "emoji": "🎉",
-      "title": "Party",
-      "desc": "EDM und Pop-Bangers aus der Festival-Ära."
-    },
-    {
-      "emoji": "🎸",
-      "title": "Rock",
-      "desc": "Indie Rock und Alternative aus den 2010ern."
-    },
-    {
-      "emoji": "💜",
-      "title": "Romantic",
-      "desc": "Pop-Balladen und Singer-Songwriter-Momente."
-    },
-    {
-      "emoji": "🌈",
-      "title": "Dance & Electronic",
-      "desc": "Future Bass, Tropical House und Big-Room-EDM."
-    },
-    {
-      "emoji": "🎤",
-      "title": "Hip Hop",
-      "desc": "Trap und Mumble Rap — der Sound des Jahrzehnts."
-    },
-    {
-      "emoji": "🏝️",
-      "title": "Chill & Lounge",
-      "desc": "Chillhop und Lo-Fi zum Runterkommen und Fokussieren."
-    }
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, direkt nach den einzelnen Discogs-Styles gefiltert (nicht nur groben Genres) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🎸', title: 'Indie & Alternative', desc: 'Garage-Rock-Revival, Post-Hardcore und Indie-Hymnen.' },
+    { emoji: '🇬🇧', title: 'UK Bass', desc: 'Dubstep, Grime, Drill und UK Garage aus London.' },
+    { emoji: '🥁', title: 'Trap & Hip Hop', desc: 'Der prägende Sound der Streaming-Ära.' },
+    { emoji: '🌈', title: 'EDM', desc: 'Electro, Trance, Deep & Tropical House der Festival-Jahre.' },
+    { emoji: '💫', title: 'R&B & Neo Soul', desc: 'Zwischen Chart-Sound und Underground.' },
+    { emoji: '🇵🇷', title: 'Reggaeton', desc: 'Der lateinamerikanische Boom der 2010er.' }
   ]
 });
 
-/* Eigene Genre-Daten fuer diese Dekade folgen noch — die Suche oben
-   durchsucht aber schon jetzt alle anderen Dekaden (dekadenuebergreifend),
-   und Treffer lassen sich direkt im DJ-Player abspielen. */
 renderPlaylistGenerator(document.querySelector('main.decade-main'), {
   mountBefore: '.info-note',
   dataUrl: 'songs.json',
   csvPrefix: '2010er',
-  themes: []
+  themes: [
+    { key: 'IndieRock', label: '🎸 Indie & Garage Rock' },
+    { key: 'IndiePop', label: '🎼 Indie Pop' },
+    { key: 'AlternativePostHardcore', label: '🤘 Alternative & Post-Hardcore' },
+    { key: 'PopPunkEmo', label: '🛹 Pop Punk & Emo' },
+    { key: 'MetalcoreNuMetalHardcore', label: '🔩 Metalcore, Nu Metal & Hardcore' },
+    { key: 'SynthPopSynthwave', label: '🕹️ Synth-Pop & Synthwave' },
+    { key: 'ChillwaveVaporwave', label: '🌴 Chillwave & Vaporwave' },
+    { key: 'Trance', label: '🌀 Trance' },
+    { key: 'ElectroHouse', label: '⚡ Electro House' },
+    { key: 'DeepProgTropicalHouse', label: '🏝️ Deep, Progressive & Tropical House' },
+    { key: 'DubstepFutureBass', label: '🔊 Dubstep & Future Bass' },
+    { key: 'UKBassGrimeDrill', label: '🇬🇧 UK Garage, Grime & Drill' },
+    { key: 'TrapMoombahton', label: '🥁 Trap & Moombahton' },
+    { key: 'PopRap', label: '🎤 Pop Rap' },
+    { key: 'GangstaConsciousHipHop', label: '🚗 Gangsta & Conscious Hip Hop' },
+    { key: 'RnBNeoSoul', label: '💫 R&B & Neo Soul' },
+    { key: 'Reggaeton', label: '🇵🇷 Reggaeton' },
+    { key: 'ReggaeDubAfrobeat', label: '🌍 Reggae, Dub & Afrobeat' },
+    { key: 'Folk', label: '🪕 Folk' },
+    { key: 'AmbientDowntempo', label: '🌙 Ambient & Downtempo' }
+  ]
 });
 </script>
 </body>
