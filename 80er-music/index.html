@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>80er Music</title>
-<meta name="description" content="80er Music: 1397 Songs aus 1980–1989 mit Cover nach Stimmung sortiert, Playlisten per Klick erstellen und exportieren.">
+<meta name="description" content="80er Music: über 3600 Songs aus 1980–1989 in 20 echten Genres — von Italo-Disco bis Hard Rock — mit Cover, Playlisten per Klick erstellen und exportieren.">
 <link rel="stylesheet" href="../shared/decades.css?v=2">
 </head>
 <body>
@@ -16,8 +16,8 @@ renderDecadeIndex({
   years: '1980–1989',
   icon: '📼',
   iconBg: 'linear-gradient(135deg, #ff2fb3, #29e2ff)',
-  tagline: 'Handverlesene 80er-Playlisten nach Stimmung — Party, Rock, Romantic und mehr.',
-  badgeText: '🎧 1397 Songs — Playlist-Generator live',
+  tagline: 'Über 3600 Songs aus den 80ern in 20 echten Genres — von Italo-Disco bis Hard Rock.',
+  badgeText: '🎧 20 Genres — Playlist-Generator live',
   colors: {
     bg: '#170822',
     panel: '#241134',
@@ -26,28 +26,42 @@ renderDecadeIndex({
     text: '#fef6ff',
     muted: '#b79ecf'
   },
-  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, inklusive Cover, nach Popularität und Genre/Style gefiltert und auf Stimmungs-Playlisten gemappt — bereit für den Import in Spotify, Apple Music & YouTube Music.',
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, direkt nach den einzelnen Discogs-Styles gefiltert (nicht nur groben Genres) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music.',
   features: [
-    { emoji: '🎉', title: 'Party', desc: 'Disco, Funk, Boogie und Hi-NRG — Stimmung sofort auf dem Punkt.' },
-    { emoji: '🎸', title: 'Rock', desc: 'Von Hard Rock bis Glam — die Gitarren-Ära der 80er.' },
-    { emoji: '💜', title: 'Romantic', desc: 'Balladen und Soft Rock für ruhige Momente.' },
-    { emoji: '🌈', title: 'Dance & Synth', desc: 'New Wave, Synth-Pop und New Romantic.' },
-    { emoji: '🎤', title: 'Hip Hop', desc: 'Die Anfänge von Rap und Electro.' },
-    { emoji: '🏝️', title: 'Chill & Reggae', desc: 'Reggae, Dub und Lovers Rock zum Runterkommen.' }
+    { emoji: '🇮🇹', title: 'Italo-Disco', desc: 'Der italienische Sound der 80er-Discos.' },
+    { emoji: '⚡', title: 'Hi-NRG', desc: 'Schneller, treibender Dance-Sound.' },
+    { emoji: '🖤', title: 'Post-Punk & Goth', desc: 'Düster, kantig, ikonisch.' },
+    { emoji: '🎹', title: 'Synth-Pop & New Wave', desc: 'Synthesizer prägen den Sound der Dekade.' },
+    { emoji: '🤘', title: 'Rock & Metal', desc: 'Von Hard Rock bis Heavy Metal.' },
+    { emoji: '🎤', title: 'Old School Hip Hop', desc: 'Die Anfänge von Rap und Electro.' }
   ]
 });
 
 renderPlaylistGenerator(document.querySelector('main.decade-main'), {
   mountBefore: '.info-note',
-  dataUrl: 'songs.json?v=2',
+  dataUrl: 'songs.json?v=3',
   csvPrefix: '80er',
   themes: [
-    { key: 'Party', label: '🎉 Party' },
-    { key: 'Rock', label: '🎸 Rock' },
-    { key: 'Romantic', label: '💜 Romantic' },
-    { key: 'Dance_Synth', label: '🌈 Dance & Synth' },
-    { key: 'HipHop', label: '🎤 Hip Hop' },
-    { key: 'Chill_Reggae', label: '🏝️ Chill & Reggae' }
+    { key: 'ItaloDisco', label: '🇮🇹 Italo-Disco' },
+    { key: 'HiNRG', label: '⚡ Hi-NRG' },
+    { key: 'Disco', label: '🪩 Disco' },
+    { key: 'SynthPop', label: '🎹 Synth-Pop' },
+    { key: 'NewWave', label: '🌊 New Wave' },
+    { key: 'PostPunkGoth', label: '🖤 Post-Punk & Goth' },
+    { key: 'Freestyle', label: '🌀 Freestyle' },
+    { key: 'Boogie', label: '🕺 Boogie' },
+    { key: 'Eurobeat', label: '🚀 Eurobeat' },
+    { key: 'House', label: '🏠 House & Acid House' },
+    { key: 'Electro', label: '🤖 Electro' },
+    { key: 'OldSchoolHipHop', label: '🎤 Old School Hip Hop' },
+    { key: 'FunkSoul', label: '🎷 Funk & Soul' },
+    { key: 'ReggaeDub', label: '🏝️ Reggae & Dub' },
+    { key: 'Ska', label: '🎺 Ska' },
+    { key: 'HardRockMetal', label: '🤘 Hard Rock & Metal' },
+    { key: 'Punk', label: '🔥 Punk' },
+    { key: 'Schlager', label: '🎪 Schlager' },
+    { key: 'Ballads', label: '💜 Ballads' },
+    { key: 'NewJackSwing', label: '🆕 New Jack Swing' }
   ]
 });
 </script>
