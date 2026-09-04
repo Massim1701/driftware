@@ -4,60 +4,66 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>90er Music</title>
-<meta name="description" content="90er Music: 1990–1999 nach Stimmung sortiert.">
-<link rel="stylesheet" href="../shared/decades.css">
+<meta name="description" content="90er Music: über 3900 Songs aus 1990–1999 in 22 echten Genres — von Grunge bis Eurodance — mit Cover, DJ-Player und Playlisten per Klick erstellen und exportieren.">
+<link rel="stylesheet" href="../shared/decades.css?v=5">
 </head>
 <body>
 <div id="decade-root"></div>
-<script src="../shared/decades.js"></script>
+<script src="../shared/decades.js?v=5"></script>
 <script>
 renderDecadeIndex({
-  "name": "90er Music",
-  "years": "1990–1999",
-  "icon": "📻",
-  "iconBg": "linear-gradient(135deg, #17c3b2, #ff5d73)",
-  "tagline": "Handverlesene 90er-Playlisten nach Stimmung — Grunge, Eurodance, HipHop und mehr.",
-  "badgeText": "🚧 Projekt im Aufbau",
-  "colors": {
-    "bg": "#0a1614",
-    "panel": "#10221e",
-    "accent": "#17c3b2",
-    "accent2": "#ff5d73",
-    "text": "#f2fffb",
-    "muted": "#7fa79d"
+  name: '90er Music',
+  years: '1990–1999',
+  icon: '📻',
+  iconBg: 'linear-gradient(135deg, #17c3b2, #ff5d73)',
+  tagline: 'Über 3900 Songs aus den 90ern in 22 echten Genres — von Grunge bis Eurodance.',
+  badgeText: '🎧 22 Genres — Playlist-Generator live',
+  colors: {
+    bg: '#0a1614',
+    panel: '#10221e',
+    accent: '#17c3b2',
+    accent2: '#ff5d73',
+    text: '#f2fffb',
+    muted: '#7fa79d'
   },
-  "sourceNote": "Die Songs stammen aus der offenen Musikdatenbank Discogs, nach Popularität und Genre/Style gefiltert und auf Stimmungs-Playlisten gemappt — bereit für den Import in Spotify, Apple Music & YouTube Music.",
-  "features": [
-    {
-      "emoji": "🎉",
-      "title": "Party",
-      "desc": "Eurodance und Dance-Pop — die großen Clubhits der 90er."
-    },
-    {
-      "emoji": "🎸",
-      "title": "Rock & Grunge",
-      "desc": "Grunge, Alternative Rock und Britpop."
-    },
-    {
-      "emoji": "💜",
-      "title": "Romantic",
-      "desc": "R&B-Balladen und Soft Rock für ruhige Momente."
-    },
-    {
-      "emoji": "🌈",
-      "title": "Dance & Electronic",
-      "desc": "Techno, House und die frühe Rave-Kultur."
-    },
-    {
-      "emoji": "🎤",
-      "title": "Hip Hop",
-      "desc": "Golden Era Hip Hop und G-Funk."
-    },
-    {
-      "emoji": "🏝️",
-      "title": "Chill & Reggae",
-      "desc": "Reggae, Dancehall und Trip-Hop zum Runterkommen."
-    }
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, direkt nach den einzelnen Discogs-Styles gefiltert (nicht nur groben Genres) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🎸', title: 'Grunge & Britpop', desc: 'Seattle-Sound und britische Gitarren-Hymnen.' },
+    { emoji: '🇪🇺', title: 'Eurodance', desc: 'Die großen Clubhits der 90er.' },
+    { emoji: '🥁', title: 'Jungle & Drum\'n\'Bass', desc: 'Breakbeats in Höchstgeschwindigkeit.' },
+    { emoji: '🌀', title: 'Techno, House & Trance', desc: 'Die Rave-Kultur der 90er.' },
+    { emoji: '🎤', title: 'Gangsta Rap & G-Funk', desc: 'Westcoast-HipHop der goldenen Ära.' },
+    { emoji: '🔩', title: 'Nu Metal & Emo', desc: 'Die härtere, emotionalere Seite der Dekade.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: '90er',
+  themes: [
+    { key: 'Grunge', label: '🎸 Grunge' },
+    { key: 'Britpop', label: '🇬🇧 Britpop' },
+    { key: 'Eurodance', label: '🇪🇺 Eurodance' },
+    { key: 'TripHop', label: '🌫️ Trip Hop' },
+    { key: 'GangstaGFunk', label: '🚗 Gangsta & G-Funk' },
+    { key: 'JungleDnB', label: '🥁 Jungle & Drum\'n\'Bass' },
+    { key: 'BigBeat', label: '💥 Big Beat' },
+    { key: 'Techno', label: '🔌 Techno' },
+    { key: 'House', label: '🏠 House' },
+    { key: 'DeepProgHouse', label: '🌊 Deep & Progressive House' },
+    { key: 'Trance', label: '🌀 Trance' },
+    { key: 'NewJackSwing', label: '🆕 New Jack Swing' },
+    { key: 'RnBSwing', label: '💫 R&B & Swing' },
+    { key: 'PopPunk', label: '🛹 Pop Punk' },
+    { key: 'NuMetal', label: '🔩 Nu Metal' },
+    { key: 'SkaPunk', label: '🎺 Ska & Ska Punk' },
+    { key: 'Dancehall', label: '🇯🇲 Dancehall' },
+    { key: 'AlternativeRock', label: '🎧 Alternative Rock' },
+    { key: 'HardcoreHappy', label: '⚡ Hardcore & Happy Hardcore' },
+    { key: 'Downtempo', label: '🌙 Downtempo' },
+    { key: 'IndieRock', label: '🎼 Indie Rock' },
+    { key: 'Emo', label: '💔 Emo' }
   ]
 });
 </script>
