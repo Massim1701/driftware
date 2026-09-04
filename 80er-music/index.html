@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>80er Music</title>
 <meta name="description" content="80er Music: 1397 Songs aus 1980–1989 mit Cover nach Stimmung sortiert, Playlisten per Klick erstellen und exportieren.">
-<link rel="stylesheet" href="../shared/decades.css">
+<link rel="stylesheet" href="../shared/decades.css?v=2">
 </head>
 <body>
 <div id="decade-root"></div>
-<script src="../shared/decades.js"></script>
+<script src="../shared/decades.js?v=2"></script>
 <script>
 renderDecadeIndex({
   name: '80er Music',
@@ -39,7 +39,7 @@ renderDecadeIndex({
 
 renderPlaylistGenerator(document.querySelector('main.decade-main'), {
   mountBefore: '.info-note',
-  dataUrl: 'songs.json',
+  dataUrl: 'songs.json?v=2',
   csvPrefix: '80er',
   themes: [
     { key: 'Party', label: '🎉 Party' },
