@@ -4,71 +4,70 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>2020er Music</title>
-<meta name="description" content="2020er Music: 2020–heute nach Stimmung sortiert.">
-<link rel="stylesheet" href="../shared/decades.css?v=14">
+<meta name="description" content="2020er Music: über 9000 Songs ab 2020 in 25 echten Genres — von Hyperpop bis Amapiano — mit Cover, DJ-Player und Playlisten per Klick erstellen und exportieren.">
+<link rel="stylesheet" href="../shared/decades.css?v=15">
 </head>
 <body>
 <div id="decade-root"></div>
-<script src="../shared/decades.js?v=11"></script>
+<script src="../shared/decades.js?v=12"></script>
 <script>
 renderDecadeIndex({
-  "name": "2020er Music",
-  "years": "2020–heute",
-  "icon": "🌍",
-  "iconBg": "linear-gradient(135deg, #ff4d6d, #ffd166)",
-  "tagline": "Handverlesene 2020er-Playlisten nach Stimmung — Hyperpop, Afrobeats, Bedroom-Pop und mehr.",
-  "badgeText": "🚧 Projekt im Aufbau",
-  "colors": {
-    "bg": "#120a1f",
-    "panel": "#1c1230",
-    "accent": "#ff4d6d",
-    "accent2": "#ffd166",
-    "text": "#fff5f7",
-    "muted": "#b98fae"
+  name: '2020er Music',
+  years: '2020–heute',
+  icon: '🌍',
+  iconBg: 'linear-gradient(135deg, #ff4d6d, #ffd166)',
+  tagline: 'Über 9000 Songs ab 2020 in 25 echten Genres — von Hyperpop bis Amapiano.',
+  badgeText: '🎧 25 Genres — Playlist-Generator live',
+  colors: {
+    bg: '#12080d',
+    panel: '#1d1017',
+    accent: '#ff4d6d',
+    accent2: '#ffd166',
+    text: '#fdf4f6',
+    muted: '#b79aa4'
   },
-  "sourceNote": "Die Songs stammen aus der offenen Musikdatenbank Discogs, nach Popularität und Genre/Style gefiltert und auf Stimmungs-Playlisten gemappt — bereit für den Import in Spotify, Apple Music & YouTube Music.",
-  "features": [
-    {
-      "emoji": "🎉",
-      "title": "Party",
-      "desc": "Afrobeats und Pop-Bangers der aktuellen Charts."
-    },
-    {
-      "emoji": "🎸",
-      "title": "Rock",
-      "desc": "Pop-Punk-Revival und Alternative der 2020er."
-    },
-    {
-      "emoji": "💜",
-      "title": "Romantic",
-      "desc": "Bedroom-Pop und R&B für ruhige Momente."
-    },
-    {
-      "emoji": "🌈",
-      "title": "Dance & Electronic",
-      "desc": "Hyperpop und moderne Dance-Pop-Produktionen."
-    },
-    {
-      "emoji": "🎤",
-      "title": "Hip Hop",
-      "desc": "Drill und die aktuelle Rap-Generation."
-    },
-    {
-      "emoji": "🏝️",
-      "title": "Chill & Lounge",
-      "desc": "Lo-Fi und Bedroom-Chill zum Runterkommen."
-    }
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, direkt nach den einzelnen Discogs-Styles gefiltert (nicht nur groben Genres) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '💊', title: 'Hyperpop & Vaporwave', desc: 'Der überdrehte Internet-Sound des Jahrzehnts.' },
+    { emoji: '🥁', title: 'Trap, Phonk & Drill', desc: 'Vom TikTok-Phonk bis zur UK Drill.' },
+    { emoji: '🏠', title: 'House & Techno', desc: 'Der Club ist zurück — Tech, Deep und Minimal.' },
+    { emoji: '🌍', title: 'Afro & Amapiano', desc: 'Afrobeat, Dub und der Amapiano-Boom.' },
+    { emoji: '🇰🇷', title: 'K-Pop & J-Pop', desc: 'Asiens Pop erobert die globalen Charts.' },
+    { emoji: '🌙', title: 'Lo-Fi & Ambient', desc: 'Beats zum Lernen, Chillen und Fokussieren.' }
   ]
 });
 
-/* Eigene Genre-Daten fuer diese Dekade folgen noch — die Suche oben
-   durchsucht aber schon jetzt alle anderen Dekaden (dekadenuebergreifend),
-   und Treffer lassen sich direkt im DJ-Player abspielen. */
 renderPlaylistGenerator(document.querySelector('main.decade-main'), {
   mountBefore: '.info-note',
   dataUrl: 'songs.json',
   csvPrefix: '2020er',
-  themes: []
+  themes: [
+    { key: 'IndieRock', label: '🎸 Indie Rock & Shoegaze' },
+    { key: 'IndiePop', label: '🎼 Indie Pop' },
+    { key: 'AlternativePostPunk', label: '🤘 Alternative & Post-Punk' },
+    { key: 'PopPunkEmo', label: '🛹 Pop Punk, Emo & Post-Hardcore' },
+    { key: 'MetalcoreHardcore', label: '🔩 Metalcore & Hardcore' },
+    { key: 'HyperpopVaporwave', label: '💊 Hyperpop, Vaporwave & Chillwave' },
+    { key: 'SynthPopSynthwave', label: '🕹️ Synth-Pop & Synthwave' },
+    { key: 'Techno', label: '⚙️ Techno & Minimal' },
+    { key: 'House', label: '🏠 House, Tech & Deep House' },
+    { key: 'TranceHardDance', label: '🌀 Trance & Hard Dance' },
+    { key: 'DrumNBass', label: '🥁 Drum’n’Bass, Jungle & Breakbeat' },
+    { key: 'DubstepFutureBass', label: '🔊 Dubstep & Future Bass' },
+    { key: 'UKBassGrimeDrill', label: '🇬🇧 UK Garage, Grime & Drill' },
+    { key: 'TrapPhonk', label: '🚨 Trap, Phonk & Jersey Club' },
+    { key: 'CloudEmoRap', label: '☁️ Cloud & Emo Rap' },
+    { key: 'PopRap', label: '🎤 Pop Rap' },
+    { key: 'HipHopBoomBap', label: '🎧 Hip Hop & Boom Bap' },
+    { key: 'RnBNeoSoul', label: '💫 R&B & Neo Soul' },
+    { key: 'LatinReggaeton', label: '🇵🇷 Reggaeton, Latin & Dancehall' },
+    { key: 'ReggaeDubAfro', label: '🌍 Reggae, Dub & Amapiano' },
+    { key: 'DiscoNuDisco', label: '🪩 Disco & Nu-Disco' },
+    { key: 'AsiaPop', label: '🇰🇷 K-Pop, J-Pop & City Pop' },
+    { key: 'AmbientLoFi', label: '🌙 Ambient, Lo-Fi & Downtempo' },
+    { key: 'FolkCountry', label: '🪕 Folk & Country' },
+    { key: 'Electro', label: '⚡ Electro' }
+  ]
 });
 </script>
 </body>
