@@ -319,7 +319,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .song-tile-check {
   position: absolute;
   top: 6px;
-  left: 6px;
+  right: 6px;
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -342,7 +342,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .song-tile-info {
   position: absolute;
   top: 6px;
-  right: 6px;
+  left: 6px;
   width: 20px;
   height: 20px;
   border-radius: 50%;
