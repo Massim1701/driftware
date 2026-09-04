@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dekaden Music — Driftware</title>
+<meta name="description" content="Songs nach Jahrzehnt und Stimmung sortiert — Playlisten von den 70ern bis heute, bereit für Spotify, Apple Music & YouTube Music.">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c1224;
+    --panel: #141c33;
+    --accent: #3aa8ff;
+    --text: #f5f7fa;
+    --muted: #9aa3c0;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  .utility-block {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+  .utility-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    text-decoration: none;
+    color: var(--text);
+    width: 40px;
+  }
+  .utility-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .utility-icon svg { width: 18px; height: 18px; }
+  .utility-label { font-size: 9px; color: var(--muted); }
+  header {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 88px 24px 24px;
+    text-align: center;
+  }
+  .logo {
+    font-family: 'Space Grotesk', -apple-system, sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0 0 8px;
+  }
+  .tagline {
+    color: var(--muted);
+    font-size: 16px;
+    margin: 0;
+  }
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+  }
+  .decades-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  @media (max-width: 720px) {
+    .decades-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 460px) {
+    .decades-grid { grid-template-columns: 1fr; }
+  }
+  .decade-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 22px;
+    text-decoration: none;
+    color: var(--text);
+    position: relative;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .decade-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.16); }
+  .decade-card-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(58,168,255,0.14);
+    border: 1px solid rgba(58,168,255,0.35);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 20px;
+  }
+  .decade-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+  }
+  .decade-name {
+    font-family: 'Space Grotesk', -apple-system, sans-serif;
+    font-weight: 600;
+    font-size: 17px;
+  }
+  .decade-years { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: 0.03em; }
+  .decade-desc { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 0; }
+  footer {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+  <div class="utility-block">
+    <a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">
+      <div class="utility-icon" style="background:#d98c1f">
+        <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
+      </div>
+      <span class="utility-label">Home</span>
+    </a>
+  </div>
+  <header>
+    <p class="logo">Dekaden Music</p>
+    <p class="tagline">Songs nach Jahrzehnt und Stimmung sortiert — von den 70ern bis heute.</p>
+  </header>
+  <main>
+    <div class="decades-grid" id="decades-container"></div>
+  </main>
+  <footer>
+    &copy; 2026 Massimo — Dekaden Music
+    <div><a href="/impressum.html">Impressum</a></div>
+  </footer>
+
+  <script>
+    var DECADES = [
+      { href: '70er-music/', icon: '🕺', bg: 'linear-gradient(135deg, #e8871e, #f7c948)', name: '70er Music', years: '1970–1979', desc: 'Disco, Rock, Soul und mehr.' },
+      { href: '80er-music/', icon: '📼', bg: 'linear-gradient(135deg, #ff2fb3, #29e2ff)', name: '80er Music', years: '1980–1989', desc: 'Party, Rock, Romantic und mehr.' },
+      { href: '90er-music/', icon: '📻', bg: 'linear-gradient(135deg, #17c3b2, #ff5d73)', name: '90er Music', years: '1990–1999', desc: 'Grunge, Eurodance, HipHop und mehr.' },
+      { href: '2000er-music/', icon: '💽', bg: 'linear-gradient(135deg, #4fc3f7, #c0c9d6)', name: '2000er Music', years: '2000–2009', desc: 'Pop-Punk, R&B, Electro-Pop und mehr.' },
+      { href: '2010er-music/', icon: '🎧', bg: 'linear-gradient(135deg, #7c5cff, #22d3ee)', name: '2010er Music', years: '2010–2019', desc: 'EDM, Pop, HipHop und mehr.' },
+      { href: '2020er-music/', icon: '🌍', bg: 'linear-gradient(135deg, #ff4d6d, #ffd166)', name: '2020er Music', years: '2020–heute', desc: 'Hyperpop, Afrobeats, Bedroom-Pop und mehr.' }
+    ];
+
+    var container = document.getElementById('decades-container');
+    DECADES.forEach(function (d) {
+      var a = document.createElement('a');
+      a.className = 'decade-card';
+      a.href = '/' + d.href;
+
+      var badge = document.createElement('span');
+      badge.className = 'decade-card-badge';
+      badge.textContent = 'In Arbeit';
+      a.appendChild(badge);
+
+      var icon = document.createElement('div');
+      icon.className = 'decade-icon';
+      icon.style.background = d.bg;
+      icon.textContent = d.icon;
+      a.appendChild(icon);
+
+      var years = document.createElement('span');
+      years.className = 'decade-years';
+      years.textContent = d.years;
+      a.appendChild(years);
+
+      var name = document.createElement('span');
+      name.className = 'decade-name';
+      name.textContent = d.name;
+      a.appendChild(name);
+
+      var desc = document.createElement('p');
+      desc.className = 'decade-desc';
+      desc.textContent = d.desc;
+      a.appendChild(desc);
+
+      container.appendChild(a);
+    });
+  </script>
+</body>
+</html>
