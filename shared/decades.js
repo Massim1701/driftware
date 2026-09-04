@@ -13,6 +13,7 @@ function applyPalette(colors) {
 var HOME_SVG = '<svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>';
 var MAIL_SVG = '<svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>';
 var LOCK_SVG = '<svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>';
+var GRID_SVG = '<svg viewBox="0 0 24 24" fill="#8fe3c7" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/></svg>';
 
 function utilityBlockHTML(mailHref) {
   return '' +
@@ -20,6 +21,10 @@ function utilityBlockHTML(mailHref) {
     '  <a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">' +
     '    <div class="utility-icon" style="background:#d98c1f">' + HOME_SVG + '</div>' +
     '    <span class="utility-label">Home</span>' +
+    '  </a>' +
+    '  <a class="utility-tile" href="/dekaden/" aria-label="Zurück zur Dekaden-Übersicht">' +
+    '    <div class="utility-icon" style="background:#1c8f6f">' + GRID_SVG + '</div>' +
+    '    <span class="utility-label">Dekaden</span>' +
     '  </a>' +
     '  <a class="utility-tile" href="' + mailHref + '">' +
     '    <div class="utility-icon" style="background:#4a90d9">' + MAIL_SVG + '</div>' +
