@@ -345,18 +345,23 @@ function fetchDecadeSongs(entry) {
     .catch(function () { otherDecadeDataCache[entry.key] = null; return null; });
 }
 
-function checkOtherDecades(query, ownKey) {
-  var q = normalizeText(query);
+/* Sucht in ALLEN anderen Dekaden (nicht nur als Fallback) und liefert die
+   Treffer direkt mit — jeder Song wird mit _decade (Dekaden-Schluessel)
+   markiert, damit er im Grid als Herkunfts-Badge angezeigt werden kann. */
+function searchAllDecades(query, ownKey) {
   var others = DECADE_REGISTRY.filter(function (d) { return d.key !== ownKey; });
   return Promise.all(others.map(function (d) {
     return fetchDecadeSongs(d).then(function (songs) {
-      if (!songs) return null;
-      var found = songs.some(function (s) {
-        return normalizeText(s.a).indexOf(q) !== -1 || normalizeText(s.t).indexOf(q) !== -1;
-      });
-      return found ? d : null;
+      if (!songs) return [];
+      var matched = searchSongs(songs, query);
+      matched.forEach(function (s) { s._decade = d.key; });
+      return matched;
     });
-  })).then(function (results) { return results.filter(Boolean); });
+  })).then(function (results) {
+    var out = [];
+    results.forEach(function (r) { out = out.concat(r); });
+    return out;
+  });
 }
 
 /* ---------- Eigener DJ-Player: zwei Plattenspieler (Deck A/B) nebeneinander
@@ -818,6 +823,15 @@ function renderSongGrid(container, songs) {
     img.alt = song.a + ' – ' + song.t;
     img.loading = 'lazy';
     media.appendChild(img);
+
+    /* Nur bei dekadenuebergreifenden Suchergebnissen gesetzt (song._decade) —
+       zeigt, aus welcher Dekade der Treffer stammt. */
+    if (song._decade) {
+      var decadeBadge = document.createElement('span');
+      decadeBadge.className = 'song-tile-decade';
+      decadeBadge.textContent = song._decade;
+      media.appendChild(decadeBadge);
+    }
     tile.appendChild(media);
 
     var artist = document.createElement('span');
@@ -898,7 +912,10 @@ function renderPlaylistGenerator(mountRoot, config) {
 
   function loadData() {
     if (data) return Promise.resolve(data);
-    return fetch(config.dataUrl).then(function (r) { return r.json(); }).then(function (j) { data = j; return j; });
+    return fetch(config.dataUrl)
+      .then(function (r) { if (!r.ok) throw new Error('no data'); return r.json(); })
+      .then(function (j) { data = j; return j; })
+      .catch(function () { data = {}; return data; });
   }
 
   function refresh() {
@@ -932,49 +949,69 @@ function renderPlaylistGenerator(mountRoot, config) {
     if (!query) {
       hintEl.hidden = true;
       hintEl.innerHTML = '';
-      refresh();
+      if (config.themes && config.themes.length) { refresh(); } else { showEmptyState(); }
       return;
     }
 
     mountRoot.querySelectorAll('.theme-btn').forEach(function (b) { b.classList.remove('active'); });
     document.getElementById('gen-actions').classList.add('visible');
 
+    hintEl.hidden = false;
+    hintEl.innerHTML = 'Durchsuche alle Dekaden …';
+    countEl.textContent = '';
+    gridEl.innerHTML = '';
+
+    /* Suche laeuft jetzt immer dekadenuebergreifend: eigene Dekade (falls
+       vorhanden) + alle anderen werden parallel durchsucht und als ein
+       gemeinsames Ergebnis-Grid angezeigt, jeder Treffer mit Dekaden-Badge. */
     loadData().then(function () {
-      if (myToken !== searchToken) return;
+      if (myToken !== searchToken) return [];
       if (!allSongsFlat) allSongsFlat = flattenSongs(data);
-      var results = searchSongs(allSongsFlat, query);
-      renderSongGrid(gridEl, results);
-      countEl.textContent = results.length + (results.length === 1 ? ' Treffer für „' : ' Treffer für „') + query + '“';
-
-      if (results.length > 0) {
-        hintEl.hidden = true;
-        hintEl.innerHTML = '';
-        return;
-      }
-
-      hintEl.hidden = false;
-      hintEl.innerHTML = 'Suche in anderen Dekaden …';
-      checkOtherDecades(query, ownDecadeKey).then(function (hits) {
+      var ownResults = searchSongs(allSongsFlat, query);
+      ownResults.forEach(function (s) { s._decade = ownDecadeKey; });
+      return searchAllDecades(query, ownDecadeKey).then(function (otherResults) {
         if (myToken !== searchToken) return;
-        if (!hits.length) {
-          hintEl.innerHTML = 'Keine Treffer – auch nicht in anderen Dekaden.';
+        var combined = ownResults.concat(otherResults);
+        renderSongGrid(gridEl, combined);
+        countEl.textContent = combined.length + (combined.length === 1 ? ' Treffer für „' : ' Treffer für „') + query + '“';
+
+        if (!combined.length) {
+          hintEl.innerHTML = 'Keine Treffer in irgendeiner Dekade.';
           return;
         }
-        hintEl.innerHTML = '💡 Nicht in ' + ownDecadeLabel + ', aber gefunden in: ' +
-          hits.map(function (d) {
-            return '<a href="' + d.page + '?q=' + encodeURIComponent(query) + '">' + d.label + '</a>';
-          }).join(', ');
+        if (!otherResults.length) {
+          hintEl.hidden = true;
+          hintEl.innerHTML = '';
+          return;
+        }
+        var seenDecades = {};
+        var otherLabels = [];
+        otherResults.forEach(function (s) {
+          if (seenDecades[s._decade]) return;
+          seenDecades[s._decade] = true;
+          var entry = DECADE_REGISTRY.filter(function (d) { return d.key === s._decade; })[0];
+          if (entry) otherLabels.push('<a href="' + entry.page + '?q=' + encodeURIComponent(query) + '">' + entry.label + '</a>');
+        });
+        hintEl.innerHTML = '🔎 Treffer auch in: ' + otherLabels.join(', ');
       });
     });
+  }
+
+  function showEmptyState() {
+    document.getElementById('gen-count').textContent = '';
+    document.getElementById('gen-actions').classList.remove('visible');
+    document.getElementById('gen-grid').innerHTML =
+      '<p class="song-hint">Für ' + ownDecadeLabel + ' sind noch keine eigenen Genres hinterlegt. ' +
+      'Die Suche oben durchsucht aber schon alle anderen Dekaden — Treffer lassen sich direkt im Player abspielen.</p>';
   }
 
   var section = document.createElement('section');
   section.className = 'generator';
   section.innerHTML = '' +
     '<h2>🎛️ Playlist-Generator</h2>' +
-    '<p class="sub">Songs anklicken für einen grünen Haken, ⓘ zeigt alle Song-Infos, 🔍 durchsucht ' + ownDecadeLabel + '. Auswahl direkt an deinen Streaming-Dienst senden.</p>' +
+    '<p class="sub">Songs anklicken für einen grünen Haken, ⓘ zeigt alle Song-Infos, 🔍 durchsucht alle Dekaden. Auswahl direkt an deinen Streaming-Dienst senden.</p>' +
     '<div class="search-box">' +
-    '  <input type="search" id="gen-search" class="search-input" placeholder="🔍 Song oder Künstler in ' + ownDecadeLabel + ' suchen …" autocomplete="off">' +
+    '  <input type="search" id="gen-search" class="search-input" placeholder="🔍 Song oder Künstler suchen — alle Dekaden …" autocomplete="off">' +
     '</div>' +
     '<p class="search-hint" id="gen-search-hint" hidden></p>' +
     '<div class="theme-buttons" id="gen-buttons"></div>' +
@@ -996,24 +1033,26 @@ function renderPlaylistGenerator(mountRoot, config) {
     '<a href="https://www.tunemymusic.com" target="_blank" rel="noopener">TuneMyMusic</a> hochladen.</p>';
 
   var buttons = section.querySelector('#gen-buttons');
-  var mixBtn = document.createElement('button');
-  mixBtn.className = 'theme-btn theme-btn-mix';
-  mixBtn.type = 'button';
-  mixBtn.textContent = '🎲 Mix – Best-of aller Genres';
-  mixBtn.title = 'Die ' + MIX_PER_CATEGORY + ' beliebtesten Songs aus jedem Genre';
-  mixBtn.dataset.key = MIX_KEY;
-  mixBtn.addEventListener('click', function () { selectTheme(MIX_KEY); });
-  buttons.appendChild(mixBtn);
+  if (config.themes && config.themes.length) {
+    var mixBtn = document.createElement('button');
+    mixBtn.className = 'theme-btn theme-btn-mix';
+    mixBtn.type = 'button';
+    mixBtn.textContent = '🎲 Mix – Best-of aller Genres';
+    mixBtn.title = 'Die ' + MIX_PER_CATEGORY + ' beliebtesten Songs aus jedem Genre';
+    mixBtn.dataset.key = MIX_KEY;
+    mixBtn.addEventListener('click', function () { selectTheme(MIX_KEY); });
+    buttons.appendChild(mixBtn);
 
-  config.themes.forEach(function (t) {
-    var btn = document.createElement('button');
-    btn.className = 'theme-btn';
-    btn.type = 'button';
-    btn.textContent = t.label;
-    btn.dataset.key = t.key;
-    btn.addEventListener('click', function () { selectTheme(t.key); });
-    buttons.appendChild(btn);
-  });
+    config.themes.forEach(function (t) {
+      var btn = document.createElement('button');
+      btn.className = 'theme-btn';
+      btn.type = 'button';
+      btn.textContent = t.label;
+      btn.dataset.key = t.key;
+      btn.addEventListener('click', function () { selectTheme(t.key); });
+      buttons.appendChild(btn);
+    });
+  }
 
   var target = mountRoot.querySelector(config.mountBefore);
   mountRoot.insertBefore(section, target || null);
@@ -1050,7 +1089,11 @@ function renderPlaylistGenerator(mountRoot, config) {
     setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
   });
 
-  selectTheme(config.themes[0].key);
+  if (config.themes && config.themes.length) {
+    selectTheme(config.themes[0].key);
+  } else {
+    showEmptyState();
+  }
 
   try {
     var incomingQuery = new URLSearchParams(location.search).get('q');

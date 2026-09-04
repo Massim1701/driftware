@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>2020er Music</title>
 <meta name="description" content="2020er Music: 2020–heute nach Stimmung sortiert.">
-<link rel="stylesheet" href="../shared/decades.css">
+<link rel="stylesheet" href="../shared/decades.css?v=8">
 </head>
 <body>
 <div id="decade-root"></div>
-<script src="../shared/decades.js"></script>
+<script src="../shared/decades.js?v=7"></script>
 <script>
 renderDecadeIndex({
   "name": "2020er Music",
@@ -59,6 +59,16 @@ renderDecadeIndex({
       "desc": "Lo-Fi und Bedroom-Chill zum Runterkommen."
     }
   ]
+});
+
+/* Eigene Genre-Daten fuer diese Dekade folgen noch — die Suche oben
+   durchsucht aber schon jetzt alle anderen Dekaden (dekadenuebergreifend),
+   und Treffer lassen sich direkt im DJ-Player abspielen. */
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json',
+  csvPrefix: '2020er',
+  themes: []
 });
 </script>
 </body>
