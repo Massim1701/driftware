@@ -213,6 +213,86 @@ function streamingLinksHTML(song) {
   }).join('');
 }
 
+/* Auswahl (grüner Haken) + bevorzugter Dienst, damit "Senden" ohne Umweg über
+   Kopieren/CSV direkt beim Streaming-Anbieter landet. Modul-weit, nicht pro
+   Theme: eine Auswahl kann Songs aus mehreren Themen der Seite sammeln. */
+var PREFERRED_SERVICE_KEY = 'driftware-preferred-streaming';
+var preferredService = null;
+try { preferredService = localStorage.getItem(PREFERRED_SERVICE_KEY); } catch (e) {}
+var selectedSongs = {};
+
+function songId(song) { return song.u || (song.a + '␟' + song.t); }
+function isSongSelected(song) { return Object.prototype.hasOwnProperty.call(selectedSongs, songId(song)); }
+
+function toggleSongSelected(song, tileEl) {
+  var id = songId(song);
+  if (selectedSongs[id]) { delete selectedSongs[id]; } else { selectedSongs[id] = song; }
+  tileEl.classList.toggle('selected', !!selectedSongs[id]);
+  updateSendPanel();
+}
+
+function preferredServiceObj() {
+  return STREAMING_SERVICES.filter(function (s) { return s.key === preferredService; })[0] || null;
+}
+
+function updateSendPanel() {
+  var sendBtn = document.getElementById('gen-send');
+  var clearBtn = document.getElementById('gen-send-clear');
+  if (!sendBtn) return;
+  var count = Object.keys(selectedSongs).length;
+  var svc = preferredServiceObj();
+  sendBtn.disabled = count === 0 || !svc;
+  if (count === 0) {
+    sendBtn.textContent = 'Auswahl senden';
+  } else if (!svc) {
+    sendBtn.textContent = count + (count === 1 ? ' Song ausgewählt – Dienst wählen' : ' Songs ausgewählt – Dienst wählen');
+  } else {
+    sendBtn.textContent = count + (count === 1 ? ' Song an ' : ' Songs an ') + svc.label + ' senden';
+  }
+  if (clearBtn) clearBtn.hidden = count === 0;
+}
+
+function renderProviderPicker(container) {
+  container.innerHTML = STREAMING_SERVICES.map(function (svc) {
+    return '' +
+      '<button type="button" class="provider-btn' + (svc.key === preferredService ? ' active' : '') + '" ' +
+      'data-key="' + svc.key + '" title="' + svc.label + '" aria-label="' + svc.label + ' als bevorzugten Dienst wählen" ' +
+      'style="background:' + svc.color + '">' +
+      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">' + svc.icon + '</svg>' +
+      '</button>';
+  }).join('');
+  container.querySelectorAll('.provider-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      preferredService = btn.dataset.key;
+      try { localStorage.setItem(PREFERRED_SERVICE_KEY, preferredService); } catch (e) {}
+      container.querySelectorAll('.provider-btn').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.key === preferredService);
+      });
+      updateSendPanel();
+    });
+  });
+}
+
+function sendSelection() {
+  var svc = preferredServiceObj();
+  var songs = Object.keys(selectedSongs).map(function (id) { return selectedSongs[id]; });
+  if (!svc || !songs.length) return;
+  if (songs.length > 8 && !confirm(
+    'Jeder Song öffnet einen eigenen Tab direkt bei ' + svc.label + ' (keine Sammel-Playlist möglich ohne Login beim Anbieter). ' +
+    'Das sind ' + songs.length + ' neue Tabs. Fortfahren?'
+  )) return;
+  songs.forEach(function (song) {
+    var q = encodeURIComponent(song.a + ' ' + song.t);
+    window.open(svc.url(q), '_blank', 'noopener');
+  });
+}
+
+function clearSelection() {
+  selectedSongs = {};
+  document.querySelectorAll('.song-tile.selected').forEach(function (t) { t.classList.remove('selected'); });
+  updateSendPanel();
+}
+
 function closeSongModal() {
   var overlay = document.getElementById('song-modal-overlay');
   if (overlay) overlay.classList.remove('open');
@@ -254,8 +334,27 @@ function renderSongGrid(container, songs) {
   container.innerHTML = '';
   songs.forEach(function (song) {
     var tile = document.createElement('button');
-    tile.className = 'song-tile';
+    tile.className = 'song-tile' + (isSongSelected(song) ? ' selected' : '');
     tile.type = 'button';
+    tile.setAttribute('aria-pressed', isSongSelected(song) ? 'true' : 'false');
+
+    var check = document.createElement('span');
+    check.className = 'song-tile-check';
+    check.textContent = '✓';
+    check.setAttribute('aria-hidden', 'true');
+    tile.appendChild(check);
+
+    var info = document.createElement('span');
+    info.className = 'song-tile-info';
+    info.textContent = 'ⓘ';
+    info.setAttribute('role', 'button');
+    info.setAttribute('tabindex', '0');
+    info.setAttribute('aria-label', 'Songdetails: ' + song.a + ' – ' + song.t);
+    info.addEventListener('click', function (e) { e.stopPropagation(); openSongModal(song); });
+    info.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); openSongModal(song); }
+    });
+    tile.appendChild(info);
 
     var img = document.createElement('img');
     img.src = song.th || song.cv || '';
@@ -273,7 +372,10 @@ function renderSongGrid(container, songs) {
     title.textContent = song.t;
     tile.appendChild(title);
 
-    tile.addEventListener('click', function () { openSongModal(song); });
+    tile.addEventListener('click', function () {
+      toggleSongSelected(song, tile);
+      tile.setAttribute('aria-pressed', isSongSelected(song) ? 'true' : 'false');
+    });
     container.appendChild(tile);
   });
 }
@@ -320,8 +422,14 @@ function renderPlaylistGenerator(mountRoot, config) {
   section.className = 'generator';
   section.innerHTML = '' +
     '<h2>🎛️ Playlist-Generator</h2>' +
-    '<p class="sub">Thema wählen, Cover anklicken für alle Song-Infos, Liste kopieren oder exportieren.</p>' +
+    '<p class="sub">Songs anklicken für einen grünen Haken, ⓘ zeigt alle Song-Infos. Auswahl direkt an deinen Streaming-Dienst senden.</p>' +
     '<div class="theme-buttons" id="gen-buttons"></div>' +
+    '<div class="send-panel">' +
+    '  <span class="send-panel-label">Dein Dienst:</span>' +
+    '  <div class="provider-picker" id="gen-provider-picker"></div>' +
+    '  <button class="send-btn" id="gen-send" type="button" disabled>Auswahl senden</button>' +
+    '  <button class="send-clear" id="gen-send-clear" type="button" hidden>Auswahl leeren</button>' +
+    '</div>' +
     '<div class="generator-actions" id="gen-actions">' +
     '  <span class="generator-count" id="gen-count"></span>' +
     '  <button id="gen-copy" type="button">📋 Liste kopieren</button>' +
@@ -345,6 +453,11 @@ function renderPlaylistGenerator(mountRoot, config) {
 
   var target = mountRoot.querySelector(config.mountBefore);
   mountRoot.insertBefore(section, target || null);
+
+  renderProviderPicker(section.querySelector('#gen-provider-picker'));
+  section.querySelector('#gen-send').addEventListener('click', sendSelection);
+  section.querySelector('#gen-send-clear').addEventListener('click', clearSelection);
+  updateSendPanel();
 
   section.querySelector('#gen-copy').addEventListener('click', function (e) {
     navigator.clipboard.writeText(asLines()).then(function () {
