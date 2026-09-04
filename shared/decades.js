@@ -148,11 +148,12 @@ function ensureSongModal() {
   overlay.id = 'song-modal-overlay';
   overlay.innerHTML = '' +
     '<div class="song-modal">' +
-    '  <button class="song-modal-close" aria-label="Schließen">&times;</button>' +
+    '  <button class="song-modal-close" aria-label="Schließen"><span class="song-modal-close-x">&times;</span></button>' +
     '  <img id="song-modal-img" alt="">' +
     '  <div class="song-modal-artist" id="song-modal-artist"></div>' +
     '  <div class="song-modal-title" id="song-modal-title"></div>' +
     '  <dl class="song-modal-meta" id="song-modal-meta"></dl>' +
+    '  <div class="streaming-row" id="song-modal-streaming"></div>' +
     '  <a class="song-modal-link" id="song-modal-link" target="_blank" rel="noopener">Auf Discogs ansehen →</a>' +
     '</div>';
   document.body.appendChild(overlay);
@@ -160,6 +161,56 @@ function ensureSongModal() {
   overlay.querySelector('.song-modal-close').addEventListener('click', closeSongModal);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSongModal(); });
   return overlay;
+}
+
+var STREAMING_SERVICES = [
+  {
+    key: 'spotify',
+    label: 'Spotify',
+    color: '#1DB954',
+    icon: '<path d="M6.3 9.8c3.6-1 7.7-1 11.3.5" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M6.8 12.7c3.1-.8 6.2-.8 9.3.3" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M7.3 15.5c2.4-.6 4.8-.6 7.1.2" stroke="#fff" stroke-width="1.3" fill="none" stroke-linecap="round"/>',
+    url: function (q) { return 'https://open.spotify.com/search/' + q; }
+  },
+  {
+    key: 'apple',
+    label: 'Apple Music',
+    color: '#fa233b',
+    icon: '<path d="M15.3 6.3v7.9a2.5 2.5 0 1 0 1.4 2.24V9.75l-5.4 1.2v4.75a2.5 2.5 0 1 0 1.4 2.24V8.1l2.6-.6z" fill="#fff"/>',
+    url: function (q) { return 'https://music.apple.com/de/search?term=' + q; }
+  },
+  {
+    key: 'ytmusic',
+    label: 'YouTube Music',
+    color: '#ff0000',
+    icon: '<circle cx="12" cy="12" r="6.2" fill="#fff"/><path d="M10.3 9.4 15 12l-4.7 2.6z" fill="#ff0000"/>',
+    url: function (q) { return 'https://music.youtube.com/search?q=' + q; }
+  },
+  {
+    key: 'deezer',
+    label: 'Deezer',
+    color: '#a238ff',
+    icon: '<rect x="5.7" y="14" width="2.3" height="4" rx="0.6" fill="#fff"/><rect x="9.1" y="11.3" width="2.3" height="6.7" rx="0.6" fill="#fff"/><rect x="12.5" y="8.6" width="2.3" height="9.4" rx="0.6" fill="#fff"/><rect x="15.9" y="6" width="2.3" height="12" rx="0.6" fill="#fff"/>',
+    url: function (q) { return 'https://www.deezer.com/search/' + q; }
+  },
+  {
+    key: 'amazon',
+    label: 'Amazon Music',
+    color: '#00a8e1',
+    icon: '<circle cx="12" cy="9.8" r="2.9" fill="#fff"/><rect x="10.7" y="9.8" width="1.6" height="6.2" rx="0.8" fill="#fff"/><path d="M6.8 17.2c2.3 1.7 8.1 1.7 10.4 0" stroke="#fff" stroke-width="1.3" fill="none" stroke-linecap="round"/>',
+    url: function (q) { return 'https://music.amazon.de/search/' + q; }
+  }
+];
+
+function streamingLinksHTML(song) {
+  var q = encodeURIComponent(song.a + ' ' + song.t);
+  return STREAMING_SERVICES.map(function (svc) {
+    return '' +
+      '<a class="streaming-icon" href="' + svc.url(q) + '" target="_blank" rel="noopener" ' +
+      'title="' + svc.label + '" aria-label="' + svc.label + ' – nach ' + song.a + ' – ' + song.t + ' suchen" ' +
+      'style="background:' + svc.color + '" onclick="event.stopPropagation()">' +
+      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">' + svc.icon + '</svg>' +
+      '</a>';
+  }).join('');
 }
 
 function closeSongModal() {
@@ -191,6 +242,8 @@ function openSongModal(song) {
     meta.appendChild(dt); meta.appendChild(dd);
   });
 
+  document.getElementById('song-modal-streaming').innerHTML = streamingLinksHTML(song);
+
   var link = document.getElementById('song-modal-link');
   if (song.u) { link.href = song.u; link.style.display = ''; } else { link.style.display = 'none'; }
 
@@ -200,6 +253,9 @@ function openSongModal(song) {
 function renderSongGrid(container, songs) {
   container.innerHTML = '';
   songs.forEach(function (song) {
+    var wrap = document.createElement('div');
+    wrap.className = 'song-tile-wrap';
+
     var tile = document.createElement('button');
     tile.className = 'song-tile';
     tile.type = 'button';
@@ -221,7 +277,14 @@ function renderSongGrid(container, songs) {
     tile.appendChild(title);
 
     tile.addEventListener('click', function () { openSongModal(song); });
-    container.appendChild(tile);
+    wrap.appendChild(tile);
+
+    var streaming = document.createElement('div');
+    streaming.className = 'streaming-row streaming-row-tile';
+    streaming.innerHTML = streamingLinksHTML(song);
+    wrap.appendChild(streaming);
+
+    container.appendChild(wrap);
   });
 }
 
