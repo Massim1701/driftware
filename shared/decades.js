@@ -391,8 +391,8 @@ function escapeHtml(s) {
 }
 
 var DECKS = {
-  A: { player: null, queue: [], index: -1, isPlaying: false, song: null },
-  B: { player: null, queue: [], index: -1, isPlaying: false, song: null }
+  A: { player: null, queue: [], index: -1, isPlaying: false, song: null, rate: 1 },
+  B: { player: null, queue: [], index: -1, isPlaying: false, song: null, rate: 1 }
 };
 var nextLoadDeck = 'A';
 var crossfaderValue = 50; /* 0 = nur Deck A hörbar, 100 = nur Deck B */
@@ -449,15 +449,29 @@ function renderMixHistoryList() {
   });
 }
 
+var PITCH_RATES = [1.5, 1.25, 1, 0.75, 0.5];
+function pitchButtonsHTML(key) {
+  return PITCH_RATES.map(function (rate) {
+    var pct = Math.round((rate - 1) * 100);
+    var label = (pct > 0 ? '+' : '') + pct + '%';
+    return '<button type="button" class="dj-pitch-btn' + (rate === 1 ? ' active' : '') + '" data-rate="' + rate + '" aria-label="Deck ' + key + ': Pitch ' + label + '">' + label + '</button>';
+  }).join('');
+}
 function deckHTML(key) {
   return '' +
     '<div class="dj-deck" id="deck-' + key + '">' +
     '  <div class="dj-deck-label">Deck ' + key + '</div>' +
-    '  <div class="dj-vinyl" id="deck-' + key + '-drop">' +
-    '    <div class="dj-vinyl-disc" id="deck-' + key + '-disc">' +
-    '      <div class="dj-vinyl-video" id="deck-' + key + '-mount"></div>' +
+    '  <div class="dj-deck-top">' +
+    '    <div class="dj-vinyl" id="deck-' + key + '-drop">' +
+    '      <div class="dj-vinyl-disc" id="deck-' + key + '-disc">' +
+    '        <div class="dj-vinyl-video" id="deck-' + key + '-mount"></div>' +
+    '      </div>' +
+    '      <div class="dj-vinyl-hint">Song hierher ziehen</div>' +
     '    </div>' +
-    '    <div class="dj-vinyl-hint">Song hierher ziehen</div>' +
+    '    <div class="dj-pitch">' +
+    '      <div class="dj-pitch-display" id="deck-' + key + '-pitch-display">PITCH 0%</div>' +
+    '      <div class="dj-pitch-btns" id="deck-' + key + '-pitch-btns">' + pitchButtonsHTML(key) + '</div>' +
+    '    </div>' +
     '  </div>' +
     '  <div class="dj-deck-info">' +
     '    <strong id="deck-' + key + '-artist">–</strong>' +
@@ -516,9 +530,19 @@ function ensureDjPlayer() {
       if (!raw) return;
       try {
         var song = JSON.parse(raw);
-        loadSongToDeck(song, key, lastGridSongs);
+        /* Reingezogene Songs starten nicht automatisch — erst Pitch
+           einstellen, dann per ▶️ am Deck starten. */
+        loadSongToDeck(song, key, lastGridSongs, false);
       } catch (err) {}
     });
+    var pitchBtns = bar.querySelector('#deck-' + key + '-pitch-btns');
+    if (pitchBtns) {
+      Array.prototype.forEach.call(pitchBtns.querySelectorAll('.dj-pitch-btn'), function (btn) {
+        btn.addEventListener('click', function () {
+          setDeckPitch(key, parseFloat(btn.getAttribute('data-rate')));
+        });
+      });
+    }
   });
 
   bar.querySelector('#dj-close').addEventListener('click', function () {
@@ -563,6 +587,30 @@ function applyCrossfaderVolumes() {
   if (DECKS.B.player && DECKS.B.player.setVolume) { try { DECKS.B.player.setVolume(volB); } catch (e) {} }
 }
 
+/* Pitch/Tempo eines Decks setzen — wirkt ueber die YouTube IFrame API
+   (setPlaybackRate), die nur feste Stufen kennt (0.5/0.75/1/1.25/1.5x).
+   Eine feine Vinyl-Pitch-Regelung wie bei echten Plattenspielern ist
+   darueber technisch nicht moeglich, daher rechteckige Stufen-Buttons
+   statt eines stufenlosen Reglers. */
+function setDeckPitch(key, rate) {
+  var deck = DECKS[key];
+  deck.rate = rate;
+  if (deck.player && deck.player.setPlaybackRate) {
+    try { deck.player.setPlaybackRate(rate); } catch (e) {}
+  }
+  var display = document.getElementById('deck-' + key + '-pitch-display');
+  if (display) {
+    var pct = Math.round((rate - 1) * 100);
+    display.textContent = 'PITCH ' + (pct > 0 ? '+' : '') + pct + '%';
+  }
+  var btnWrap = document.getElementById('deck-' + key + '-pitch-btns');
+  if (btnWrap) {
+    Array.prototype.forEach.call(btnWrap.querySelectorAll('.dj-pitch-btn'), function (b) {
+      b.classList.toggle('active', parseFloat(b.getAttribute('data-rate')) === rate);
+    });
+  }
+}
+
 function updateDeckInfoUI(key) {
   var deck = DECKS[key];
   var artistEl = document.getElementById('deck-' + key + '-artist');
@@ -591,7 +639,8 @@ function onDeckStateChange(key) {
   };
 }
 
-function playDeckSong(key, song) {
+function playDeckSong(key, song, autoplay) {
+  if (autoplay === undefined) autoplay = true;
   var deck = DECKS[key];
   deck.song = song;
   updateDeckInfoUI(key);
@@ -601,16 +650,24 @@ function playDeckSong(key, song) {
 
   function start() {
     if (deck.player && deck.player.loadVideoById) {
-      deck.player.loadVideoById(song.yt);
-      deck.player.playVideo();
+      if (autoplay) {
+        deck.player.loadVideoById(song.yt);
+      } else {
+        deck.player.cueVideoById(song.yt);
+      }
+      try { deck.player.setPlaybackRate(deck.rate || 1); } catch (e) {}
     } else {
       deck.player = new YT.Player('deck-' + key + '-mount', {
         width: '100%',
         height: '100%',
         videoId: song.yt,
-        playerVars: { rel: 0, playsinline: 1 },
+        playerVars: { rel: 0, playsinline: 1, autoplay: autoplay ? 1 : 0 },
         events: {
-          onReady: function (e) { e.target.playVideo(); applyCrossfaderVolumes(); },
+          onReady: function (e) {
+            try { e.target.setPlaybackRate(deck.rate || 1); } catch (err) {}
+            if (autoplay) { e.target.playVideo(); }
+            applyCrossfaderVolumes();
+          },
           onStateChange: onDeckStateChange(key),
           onError: function () { deckStep(key, 1); }
         }
@@ -623,14 +680,14 @@ function playDeckSong(key, song) {
 /* Song (per Klick, Drag&Drop oder Mix-Verlauf) auf ein bestimmtes Deck
    laden — die restliche sichtbare Liste (Genre/Suche) wird die Warteschlange
    dieses Decks, damit ⏮/⏭ am Deck weiter durch dieselbe Liste läuft. */
-function loadSongToDeck(song, key, contextSongs) {
+function loadSongToDeck(song, key, contextSongs, autoplay) {
   if (!song || !song.yt) { alert('Für diesen Song wurde noch kein passendes YouTube-Video gefunden.'); return; }
   var deck = DECKS[key];
   var withVideo = (contextSongs || [song]).filter(function (s) { return !!s.yt; });
   deck.queue = withVideo.length ? withVideo : [song];
   var idx = deck.queue.indexOf(song);
   deck.index = idx === -1 ? 0 : idx;
-  playDeckSong(key, deck.queue[deck.index]);
+  playDeckSong(key, deck.queue[deck.index], autoplay);
   nextLoadDeck = (key === 'A') ? 'B' : 'A';
 }
 
