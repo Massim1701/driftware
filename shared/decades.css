@@ -649,6 +649,19 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   box-shadow: 0 0 0 3px #0a0a0a, 0 0 0 4px rgba(255,255,255,0.15);
 }
 .dj-vinyl-video iframe { width: 100%; height: 100%; display: block; pointer-events: none; }
+.dj-vinyl-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.dj-vinyl-disc.playing .dj-vinyl-ring {
+  animation: dj-spin 2.6s linear infinite;
+}
+@keyframes dj-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 .dj-vinyl-dot {
   position: absolute;
   top: 10px;
@@ -700,6 +713,15 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 240px;
+}
+.dj-deck-remaining {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  min-height: 14px;
 }
 
 .dj-deck-controls { display: flex; align-items: center; gap: 8px; }

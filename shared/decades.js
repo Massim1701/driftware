@@ -406,7 +406,7 @@ function deckHTML(key) {
     '    <div class="dj-vinyl" id="deck-' + key + '-drop">' +
     '      <div class="dj-vinyl-disc" id="deck-' + key + '-disc">' +
     '        <div class="dj-vinyl-video" id="deck-' + key + '-mount"></div>' +
-    '        <span class="dj-vinyl-dot" aria-hidden="true"></span>' +
+    '        <div class="dj-vinyl-ring" aria-hidden="true"><span class="dj-vinyl-dot"></span></div>' +
     '      </div>' +
     '      <div class="dj-vinyl-hint">Song hierher ziehen</div>' +
     '    </div>' +
@@ -420,6 +420,7 @@ function deckHTML(key) {
     '  <div class="dj-deck-info">' +
     '    <strong id="deck-' + key + '-artist">–</strong>' +
     '    <span id="deck-' + key + '-title">Kein Song geladen</span>' +
+    '    <span class="dj-deck-remaining" id="deck-' + key + '-remaining"></span>' +
     '  </div>' +
     '  <div class="dj-deck-controls">' +
     '    <button type="button" id="deck-' + key + '-prev" aria-label="Deck ' + key + ': voriger Song">⏮</button>' +
@@ -558,6 +559,35 @@ function onDeckStateChange(key) {
     updateDeckInfoUI(key);
   };
 }
+
+/* Restzeit-Anzeige (Minuten:Sekunden bis Songende) pro Deck, laeuft per
+   Intervall alle 500ms unabhaengig von Play/Pause-Events, da die YouTube
+   IFrame API keine "timeupdate"-Events feuert. */
+function formatRemaining(seconds) {
+  if (!isFinite(seconds) || seconds < 0) seconds = 0;
+  var m = Math.floor(seconds / 60);
+  var s = Math.floor(seconds % 60);
+  return '-' + m + ':' + (s < 10 ? '0' : '') + s;
+}
+function updateRemainingTime() {
+  ['A', 'B'].forEach(function (key) {
+    var deck = DECKS[key];
+    var el = document.getElementById('deck-' + key + '-remaining');
+    if (!el) return;
+    if (deck.isPlaying && deck.player && deck.player.getDuration) {
+      try {
+        var dur = deck.player.getDuration();
+        var cur = deck.player.getCurrentTime();
+        if (dur > 0) {
+          el.textContent = formatRemaining(dur - cur);
+          return;
+        }
+      } catch (e) {}
+    }
+    el.textContent = '';
+  });
+}
+setInterval(updateRemainingTime, 500);
 
 /* Autoplay ist standardmaessig AUS: ein geladener Song startet nicht von
    selbst, damit sich vorher (bei Bedarf) der Pitch einstellen laesst.
