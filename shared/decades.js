@@ -253,9 +253,6 @@ function openSongModal(song) {
 function renderSongGrid(container, songs) {
   container.innerHTML = '';
   songs.forEach(function (song) {
-    var wrap = document.createElement('div');
-    wrap.className = 'song-tile-wrap';
-
     var tile = document.createElement('button');
     tile.className = 'song-tile';
     tile.type = 'button';
@@ -277,14 +274,7 @@ function renderSongGrid(container, songs) {
     tile.appendChild(title);
 
     tile.addEventListener('click', function () { openSongModal(song); });
-    wrap.appendChild(tile);
-
-    var streaming = document.createElement('div');
-    streaming.className = 'streaming-row streaming-row-tile';
-    streaming.innerHTML = streamingLinksHTML(song);
-    wrap.appendChild(streaming);
-
-    container.appendChild(wrap);
+    container.appendChild(tile);
   });
 }
 
