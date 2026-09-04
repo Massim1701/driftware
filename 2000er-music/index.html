@@ -4,60 +4,61 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>2000er Music</title>
-<meta name="description" content="2000er Music: 2000–2009 nach Stimmung sortiert.">
-<link rel="stylesheet" href="../shared/decades.css">
+<meta name="description" content="2000er Music: über 4400 Songs aus 2000–2009 in 17 echten Genres — von Indie Rock bis Reggaeton — mit Cover, DJ-Player und Playlisten per Klick erstellen und exportieren.">
+<link rel="stylesheet" href="../shared/decades.css?v=7">
 </head>
 <body>
 <div id="decade-root"></div>
-<script src="../shared/decades.js"></script>
+<script src="../shared/decades.js?v=6"></script>
 <script>
 renderDecadeIndex({
-  "name": "2000er Music",
-  "years": "2000–2009",
-  "icon": "💽",
-  "iconBg": "linear-gradient(135deg, #4fc3f7, #c0c9d6)",
-  "tagline": "Handverlesene 2000er-Playlisten nach Stimmung — Pop-Punk, R&B, Electro-Pop und mehr.",
-  "badgeText": "🚧 Projekt im Aufbau",
-  "colors": {
-    "bg": "#0b1220",
-    "panel": "#121b30",
-    "accent": "#4fc3f7",
-    "accent2": "#c0c9d6",
-    "text": "#f2f7fc",
-    "muted": "#93a3bd"
+  name: '2000er Music',
+  years: '2000–2009',
+  icon: '💽',
+  iconBg: 'linear-gradient(135deg, #4fc3f7, #c0c9d6)',
+  tagline: 'Über 4400 Songs aus den 2000ern in 17 echten Genres — von Indie Rock bis Reggaeton.',
+  badgeText: '🎧 17 Genres — Playlist-Generator live',
+  colors: {
+    bg: '#0b1220',
+    panel: '#121b30',
+    accent: '#4fc3f7',
+    accent2: '#c0c9d6',
+    text: '#f2f7fc',
+    muted: '#93a3bd'
   },
-  "sourceNote": "Die Songs stammen aus der offenen Musikdatenbank Discogs, nach Popularität und Genre/Style gefiltert und auf Stimmungs-Playlisten gemappt — bereit für den Import in Spotify, Apple Music & YouTube Music.",
-  "features": [
-    {
-      "emoji": "🎉",
-      "title": "Party",
-      "desc": "Electro-Pop und Dance-Hits der Nullerjahre."
-    },
-    {
-      "emoji": "🎸",
-      "title": "Rock",
-      "desc": "Pop-Punk und Nu-Metal — die Warped-Tour-Ära."
-    },
-    {
-      "emoji": "💜",
-      "title": "Romantic",
-      "desc": "R&B-Balladen und Pop-Romantik."
-    },
-    {
-      "emoji": "🌈",
-      "title": "Dance & Electronic",
-      "desc": "Electro-House und die ersten Blog-House-Hits."
-    },
-    {
-      "emoji": "🎤",
-      "title": "Hip Hop",
-      "desc": "Mainstream-Rap und Crunk aus den Nullerjahren."
-    },
-    {
-      "emoji": "🏝️",
-      "title": "Chill & Reggae",
-      "desc": "Reggaeton, Dancehall und Chillout zum Runterkommen."
-    }
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, direkt nach den einzelnen Discogs-Styles gefiltert (nicht nur groben Genres) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🎸', title: 'Indie & Alternative', desc: 'Garage-Rock-Revival, Post-Hardcore und Indie-Hymnen.' },
+    { emoji: '🇪🇺', title: 'Eurodance & Trance', desc: 'Die großen Clubhits der frühen Nullerjahre.' },
+    { emoji: '🔊', title: 'Dubstep & UK Garage', desc: 'Die Geburt des UK Bass in London.' },
+    { emoji: '🥤', title: 'Crunk & Dirty South', desc: 'Der Süden übernimmt den HipHop.' },
+    { emoji: '💫', title: 'R&B & Neo Soul', desc: 'Zwischen Chart-Sound und Underground.' },
+    { emoji: '🛹', title: 'Pop Punk & Emo', desc: 'Die Warped-Tour- und MySpace-Ära.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: '2000er',
+  themes: [
+    { key: 'IndieRock', label: '🎼 Indie & Garage Rock' },
+    { key: 'AlternativeRock', label: '🎸 Alternative & Post-Hardcore' },
+    { key: 'PopPunk', label: '🛹 Pop Punk' },
+    { key: 'Emo', label: '💔 Emo' },
+    { key: 'NuMetalHardcore', label: '🔩 Nu Metal & Hardcore' },
+    { key: 'SynthPop', label: '🕹️ Synth-Pop & Electroclash' },
+    { key: 'Eurodance', label: '🇪🇺 Eurodance & Happy Hardcore' },
+    { key: 'Trance', label: '🌀 Trance' },
+    { key: 'ElectroHouse', label: '⚡ Electro House' },
+    { key: 'ProgTechHouse', label: '🏠 Progressive & Tech House' },
+    { key: 'Downtempo', label: '🌙 Downtempo' },
+    { key: 'DubstepGrime', label: '🔊 Dubstep, Grime & UK Garage' },
+    { key: 'CrunkTrapSnap', label: '🥤 Crunk, Trap & Snap' },
+    { key: 'GangstaGFunk', label: '🚗 Gangsta Rap' },
+    { key: 'PopRap', label: '🎤 Pop Rap' },
+    { key: 'RnBNeoSoul', label: '💫 R&B & Neo Soul' },
+    { key: 'Reggaeton', label: '🇵🇷 Reggaeton' }
   ]
 });
 </script>
