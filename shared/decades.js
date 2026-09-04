@@ -321,7 +321,11 @@ function searchSongs(list, query) {
   var seen = {};
   var out = [];
   list.forEach(function (s) {
-    if (normalizeText(s.a).indexOf(q) === -1 && normalizeText(s.t).indexOf(q) === -1) return;
+    var hit = normalizeText(s.a).indexOf(q) !== -1 ||
+      normalizeText(s.t).indexOf(q) !== -1 ||
+      normalizeText(s.g).indexOf(q) !== -1 ||
+      normalizeText(s.s).indexOf(q) !== -1;
+    if (!hit) return;
     var id = songId(s);
     if (seen[id]) return;
     seen[id] = true;
@@ -466,7 +470,7 @@ function ensureDjPlayer() {
   bar.id = 'dj-player';
   bar.innerHTML = '' +
     '<div class="search-box dj-search-box">' +
-    '  <input type="search" id="gen-search" class="search-input" placeholder="🔍 Song oder Künstler suchen — alle Dekaden …" autocomplete="off">' +
+    '  <input type="search" id="gen-search" class="search-input" placeholder="🔍 Song, Künstler oder Genre suchen — alle Dekaden …" autocomplete="off">' +
     '</div>' +
     '<p class="search-hint" id="gen-search-hint" hidden></p>' +
     '<div class="dj-decks">' +
@@ -788,11 +792,12 @@ function renderSongGrid(container, songs) {
     var title = document.createElement('span');
     title.className = 'song-tile-title';
     title.appendChild(document.createTextNode(song.t));
-    if (song.y) {
-      var yearEl = document.createElement('em');
-      yearEl.className = 'song-tile-year';
-      yearEl.textContent = ' (' + song.y + ')';
-      title.appendChild(yearEl);
+    var meta = [song.y, song.s || song.g].filter(Boolean).join(' · ');
+    if (meta) {
+      var metaEl = document.createElement('em');
+      metaEl.className = 'song-tile-year';
+      metaEl.textContent = ' (' + meta + ')';
+      title.appendChild(metaEl);
     }
     text.appendChild(title);
 
