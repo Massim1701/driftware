@@ -504,10 +504,12 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   text-decoration: none;
 }
 
-/* ---------- Eigener Mini-Player (unten fixiert), spielt einzelne Songs
-   oder eine ganze Genre-Playlist per YouTube IFrame API ab. Bleibt auch
-   über dem Popup sichtbar, damit man beim Stöbern weiterhören kann. ---------- */
-.mini-player {
+/* ---------- Eigener DJ-Player: zwei Plattenspieler (Deck A/B) + Crossfader,
+   unten fixiert. Songs per Klick auf ▶ oder per Drag&Drop auf ein Deck
+   laden. Bleibt auch über dem Popup sichtbar. Alles Gespielte landet
+   zusätzlich im "Mein Mix"-Verlauf (Button rechts, Panel klappt darüber
+   auf). ---------- */
+.dj-player {
   display: none;
   position: fixed;
   left: 0;
@@ -517,48 +519,116 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   background: var(--panel);
   border-top: 1px solid var(--border);
   box-shadow: 0 -8px 24px rgba(0,0,0,0.4);
+  padding: 14px 20px 16px;
+}
+.dj-player.open { display: block; }
+.dj-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.08);
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 2;
+}
+.dj-close:hover { color: var(--text); }
+
+.dj-decks {
+  display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 14px;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
 }
-.mini-player.open { display: flex; }
-.mini-player-video {
-  flex: 0 0 auto;
-  width: 112px;
-  height: 63px;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #000;
-}
-.mini-player-video iframe { display: block; }
-.mini-player-info {
-  flex: 1 1 auto;
-  min-width: 0;
+.dj-deck {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 8px;
+  width: 210px;
 }
-.mini-player-artist {
+.dj-deck-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.dj-vinyl {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  border-radius: 50%;
+}
+.dj-vinyl.drag-over { box-shadow: 0 0 0 3px var(--accent); }
+.dj-vinyl-disc {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle at center, #111 0px, #111 2px, #1c1c1c 3px, #111 4px),
+    radial-gradient(circle at 35% 30%, #333, #0a0a0a 70%);
+  box-shadow: 0 10px 26px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dj-vinyl-disc.spinning { animation: dj-spin 2.4s linear infinite; }
+@keyframes dj-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.dj-vinyl-video {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 0 0 3px #0a0a0a, 0 0 0 4px rgba(255,255,255,0.15);
+}
+.dj-vinyl-video iframe { width: 100%; height: 100%; display: block; }
+.dj-vinyl-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 20px;
+  font-size: 11px;
+  color: var(--muted);
+  background: rgba(0,0,0,0.4);
+  border-radius: 50%;
+  opacity: 1;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.dj-deck-loaded .dj-vinyl-hint { opacity: 0; }
+
+.dj-deck-info { text-align: center; min-height: 32px; }
+.dj-deck-info strong {
+  display: block;
   font-size: 13px;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 200px;
 }
-.mini-player-title {
-  font-size: 12px;
+.dj-deck-info span {
+  display: block;
+  font-size: 11px;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 200px;
 }
-.mini-player-controls {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.mini-player-controls button {
+
+.dj-deck-controls { display: flex; align-items: center; gap: 8px; }
+.dj-deck-controls button {
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -571,21 +641,102 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   align-items: center;
   justify-content: center;
 }
-.mini-player-controls button:hover { border-color: var(--accent); }
-#mini-player-toggle { background: var(--accent); color: #1a0a14; border-color: var(--accent); }
-.mini-player-close {
-  flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255,255,255,0.08);
-  color: var(--muted);
+.dj-deck-controls button:hover { border-color: var(--accent); }
+.dj-deck-controls button[id$="-toggle"] {
+  background: var(--accent);
+  color: #1a0a14;
+  border-color: var(--accent);
+  width: 40px;
+  height: 40px;
   font-size: 16px;
+}
+
+.dj-crossfader { display: flex; align-items: center; gap: 8px; }
+.dj-crossfader-label { font-size: 12px; font-weight: 800; color: var(--muted); }
+#dj-crossfader { width: 140px; accent-color: var(--accent); }
+
+.dj-mix-btn {
+  display: block;
+  margin: 14px auto 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--accent2);
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
 }
-.mini-player-close:hover { color: var(--text); }
-@media (max-width: 520px) {
-  .mini-player-video { width: 80px; height: 45px; }
-  .mini-player-artist, .mini-player-title { font-size: 11px; }
+.dj-mix-btn:hover { border-color: var(--accent2); }
+
+.dj-mix-panel {
+  position: absolute;
+  right: 20px;
+  bottom: 100%;
+  margin-bottom: 10px;
+  width: 300px;
+  max-height: 360px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.45);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.dj-mix-panel-head {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dj-mix-panel-head strong { font-size: 13px; color: var(--text); }
+.dj-mix-panel-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.dj-mix-panel-actions button {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--accent2);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.dj-mix-list {
+  overflow-y: auto;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dj-mix-empty { color: var(--muted); font-size: 12px; padding: 12px; text-align: center; }
+.dj-mix-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 6px 8px;
+  cursor: pointer;
+  text-align: left;
+}
+.dj-mix-item:hover { border-color: var(--accent); }
+.dj-mix-item img { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: var(--panel); }
+.dj-mix-item-info { display: flex; flex-direction: column; min-width: 0; }
+.dj-mix-item-info strong { font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dj-mix-item-info span { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Song-Kacheln sind draggable, wenn sie ein Video haben (siehe decades.js) */
+.song-tile[draggable="true"] { cursor: grab; }
+.song-tile.dragging { opacity: 0.4; }
+
+@media (max-width: 640px) {
+  .dj-decks { gap: 14px; }
+  .dj-deck { width: 42%; min-width: 140px; }
+  .dj-vinyl { width: 110px; height: 110px; }
+  .dj-vinyl-video { width: 50px; height: 50px; }
+  .dj-crossfader { width: 100%; justify-content: center; order: 5; margin-top: 4px; }
+  .dj-mix-panel { left: 10px; right: 10px; width: auto; }
 }

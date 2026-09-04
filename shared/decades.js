@@ -359,18 +359,15 @@ function checkOtherDecades(query, ownKey) {
   })).then(function (results) { return results.filter(Boolean); });
 }
 
-/* ---------- Eigener Player: einzelner Song oder ganze Playlist direkt auf
-   der Seite, statt nur Links zu Streaming-Diensten. Nutzt die offizielle
-   YouTube IFrame Player API (offiziell erlaubtes Embed, YouTube bleibt als
-   Quelle sichtbar, Player-Funktionalität wird nicht verändert/entfernt).
-   Ein einziger YT.Player wird wiederverwendet; beim Songwechsel wird nur
-   die Video-ID neu geladen (kein Iframe-Neuaufbau pro Track). ---------- */
+/* ---------- Eigener DJ-Player: zwei Plattenspieler (Deck A/B) nebeneinander
+   mit Crossfader für Überblendungen. Songs per Klick oder per Drag&Drop auf
+   ein Deck laden. Nutzt die offizielle YouTube IFrame Player API (offiziell
+   erlaubtes Embed, YouTube bleibt als Quelle sichtbar, Player-Funktionalität
+   wird nicht verändert/entfernt — nur optisch als rundes Vinyl-Label
+   eingekreist). Alles, was ein Deck abspielt, landet zusätzlich im
+   "Mein Mix"-Verlauf (localStorage), um den Mix später erneut zu hören. */
 var ytApiLoading = false;
 var ytApiReady = false;
-var ytPlayerObj = null;
-var ytQueue = [];
-var ytQueueIndex = -1;
-var ytIsPlaying = false;
 
 function loadYouTubeAPI(onReady) {
   if (ytApiReady && window.YT && window.YT.Player) { onReady(); return; }
@@ -387,119 +384,288 @@ function loadYouTubeAPI(onReady) {
   document.head.appendChild(tag);
 }
 
-function ensureMiniPlayer() {
-  var existing = document.getElementById('mini-player');
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+var DECKS = {
+  A: { player: null, queue: [], index: -1, isPlaying: false, song: null },
+  B: { player: null, queue: [], index: -1, isPlaying: false, song: null }
+};
+var nextLoadDeck = 'A';
+var crossfaderValue = 50; /* 0 = nur Deck A hörbar, 100 = nur Deck B */
+
+var MIX_HISTORY_KEY = 'driftware-mix-history';
+var MIX_HISTORY_MAX = 300;
+var mixHistory = [];
+try {
+  var storedMixHistory = localStorage.getItem(MIX_HISTORY_KEY);
+  if (storedMixHistory) mixHistory = JSON.parse(storedMixHistory) || [];
+} catch (e) { mixHistory = []; }
+
+function saveMixHistory() {
+  try { localStorage.setItem(MIX_HISTORY_KEY, JSON.stringify(mixHistory.slice(-MIX_HISTORY_MAX))); } catch (e) {}
+}
+
+function updateMixCount() {
+  var el = document.getElementById('dj-mix-count');
+  if (el) el.textContent = mixHistory.length;
+}
+
+function logToMixHistory(song, deckKey) {
+  if (!song) return;
+  mixHistory.push({
+    a: song.a, t: song.t, y: song.y, cv: song.cv, th: song.th, u: song.u, yt: song.yt,
+    deck: deckKey, ts: Date.now()
+  });
+  if (mixHistory.length > MIX_HISTORY_MAX) mixHistory = mixHistory.slice(-MIX_HISTORY_MAX);
+  saveMixHistory();
+  updateMixCount();
+  var panel = document.getElementById('dj-mix-panel');
+  if (panel && !panel.hidden) renderMixHistoryList();
+}
+
+function renderMixHistoryList() {
+  var list = document.getElementById('mix-history-list');
+  if (!list) return;
+  updateMixCount();
+  if (!mixHistory.length) {
+    list.innerHTML = '<p class="dj-mix-empty">Noch nichts gespielt — leg einen Song auf ein Deck.</p>';
+    return;
+  }
+  var items = mixHistory.slice().reverse();
+  list.innerHTML = '';
+  items.forEach(function (song) {
+    var row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'dj-mix-item';
+    row.innerHTML = '' +
+      '<img src="' + (song.th || song.cv || '') + '" alt="" loading="lazy">' +
+      '<span class="dj-mix-item-info"><strong>' + escapeHtml(song.a) + '</strong><span>' + escapeHtml(song.t) + '</span></span>';
+    row.addEventListener('click', function () { loadSongToDeck(song, nextLoadDeck, mixHistory); });
+    list.appendChild(row);
+  });
+}
+
+function deckHTML(key) {
+  return '' +
+    '<div class="dj-deck" id="deck-' + key + '">' +
+    '  <div class="dj-deck-label">Deck ' + key + '</div>' +
+    '  <div class="dj-vinyl" id="deck-' + key + '-drop">' +
+    '    <div class="dj-vinyl-disc" id="deck-' + key + '-disc">' +
+    '      <div class="dj-vinyl-video" id="deck-' + key + '-mount"></div>' +
+    '    </div>' +
+    '    <div class="dj-vinyl-hint">Song hierher ziehen</div>' +
+    '  </div>' +
+    '  <div class="dj-deck-info">' +
+    '    <strong id="deck-' + key + '-artist">–</strong>' +
+    '    <span id="deck-' + key + '-title">Kein Song geladen</span>' +
+    '  </div>' +
+    '  <div class="dj-deck-controls">' +
+    '    <button type="button" id="deck-' + key + '-prev" aria-label="Deck ' + key + ': voriger Song">⏮</button>' +
+    '    <button type="button" id="deck-' + key + '-toggle" aria-label="Deck ' + key + ': abspielen/pause">▶️</button>' +
+    '    <button type="button" id="deck-' + key + '-next" aria-label="Deck ' + key + ': nächster Song">⏭</button>' +
+    '  </div>' +
+    '</div>';
+}
+
+function ensureDjPlayer() {
+  var existing = document.getElementById('dj-player');
   if (existing) return existing;
   var bar = document.createElement('div');
-  bar.className = 'mini-player';
-  bar.id = 'mini-player';
+  bar.className = 'dj-player';
+  bar.id = 'dj-player';
   bar.innerHTML = '' +
-    '<div class="mini-player-video" id="yt-player-mount"></div>' +
-    '<div class="mini-player-info">' +
-    '  <strong class="mini-player-artist" id="mini-player-artist"></strong>' +
-    '  <span class="mini-player-title" id="mini-player-title"></span>' +
+    '<button type="button" class="dj-close" id="dj-close" aria-label="Player schließen">&times;</button>' +
+    '<div class="dj-decks">' +
+    deckHTML('A') +
+    '<div class="dj-crossfader">' +
+    '  <span class="dj-crossfader-label">A</span>' +
+    '  <input type="range" id="dj-crossfader" min="0" max="100" value="50" aria-label="Crossfader zwischen Deck A und Deck B">' +
+    '  <span class="dj-crossfader-label">B</span>' +
     '</div>' +
-    '<div class="mini-player-controls">' +
-    '  <button type="button" id="mini-player-prev" aria-label="Vorheriger Song">⏮</button>' +
-    '  <button type="button" id="mini-player-toggle" aria-label="Abspielen/Pause">⏸</button>' +
-    '  <button type="button" id="mini-player-next" aria-label="Nächster Song">⏭</button>' +
+    deckHTML('B') +
     '</div>' +
-    '<button type="button" class="mini-player-close" id="mini-player-close" aria-label="Player schließen">&times;</button>';
+    '<button type="button" class="dj-mix-btn" id="dj-mix-toggle">🎚️ Mein Mix (<span id="dj-mix-count">0</span>)</button>' +
+    '<div class="dj-mix-panel" id="dj-mix-panel" hidden>' +
+    '  <div class="dj-mix-panel-head">' +
+    '    <strong>Mein Mix – zuletzt gespielt</strong>' +
+    '    <div class="dj-mix-panel-actions">' +
+    '      <button type="button" id="dj-mix-play-all">▶️ Nochmal hören</button>' +
+    '      <button type="button" id="dj-mix-clear">🗑️ Leeren</button>' +
+    '      <button type="button" id="dj-mix-close">Schließen</button>' +
+    '    </div>' +
+    '  </div>' +
+    '  <div class="dj-mix-list" id="mix-history-list"></div>' +
+    '</div>';
   document.body.appendChild(bar);
-  bar.querySelector('#mini-player-prev').addEventListener('click', ytPrev);
-  bar.querySelector('#mini-player-next').addEventListener('click', ytNext);
-  bar.querySelector('#mini-player-toggle').addEventListener('click', ytTogglePlay);
-  bar.querySelector('#mini-player-close').addEventListener('click', ytClosePlayer);
+
+  ['A', 'B'].forEach(function (key) {
+    bar.querySelector('#deck-' + key + '-toggle').addEventListener('click', function () { deckTogglePlay(key); });
+    bar.querySelector('#deck-' + key + '-prev').addEventListener('click', function () { deckStep(key, -1); });
+    bar.querySelector('#deck-' + key + '-next').addEventListener('click', function () { deckStep(key, 1); });
+    var dropzone = bar.querySelector('#deck-' + key + '-drop');
+    dropzone.addEventListener('dragover', function (e) { e.preventDefault(); dropzone.classList.add('drag-over'); });
+    dropzone.addEventListener('dragleave', function () { dropzone.classList.remove('drag-over'); });
+    dropzone.addEventListener('drop', function (e) {
+      e.preventDefault();
+      dropzone.classList.remove('drag-over');
+      var raw = e.dataTransfer.getData('application/json');
+      if (!raw) return;
+      try {
+        var song = JSON.parse(raw);
+        loadSongToDeck(song, key, lastGridSongs);
+      } catch (err) {}
+    });
+  });
+
+  bar.querySelector('#dj-close').addEventListener('click', function () {
+    ['A', 'B'].forEach(function (key) { deckPause(key); });
+    bar.classList.remove('open');
+  });
+
+  var fader = bar.querySelector('#dj-crossfader');
+  fader.addEventListener('input', function () {
+    crossfaderValue = parseInt(fader.value, 10);
+    applyCrossfaderVolumes();
+  });
+
+  bar.querySelector('#dj-mix-toggle').addEventListener('click', function () {
+    var panel = document.getElementById('dj-mix-panel');
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) renderMixHistoryList();
+  });
+  bar.querySelector('#dj-mix-close').addEventListener('click', function () {
+    document.getElementById('dj-mix-panel').hidden = true;
+  });
+  bar.querySelector('#dj-mix-clear').addEventListener('click', function () {
+    if (!confirm('Mix-Verlauf wirklich leeren?')) return;
+    mixHistory = [];
+    saveMixHistory();
+    renderMixHistoryList();
+  });
+  bar.querySelector('#dj-mix-play-all').addEventListener('click', function () {
+    var withVideo = mixHistory.filter(function (s) { return !!s.yt; });
+    if (!withVideo.length) return;
+    loadSongToDeck(withVideo[withVideo.length - 1], nextLoadDeck, withVideo.slice().reverse());
+  });
+
+  updateMixCount();
   return bar;
 }
 
-function ytClosePlayer() {
-  var bar = document.getElementById('mini-player');
-  if (bar) bar.classList.remove('open');
-  if (ytPlayerObj && ytPlayerObj.pauseVideo) { try { ytPlayerObj.pauseVideo(); } catch (e) {} }
-  ytIsPlaying = false;
-  ytQueue = [];
-  ytQueueIndex = -1;
+function applyCrossfaderVolumes() {
+  var volA = Math.round(100 - crossfaderValue);
+  var volB = Math.round(crossfaderValue);
+  if (DECKS.A.player && DECKS.A.player.setVolume) { try { DECKS.A.player.setVolume(volA); } catch (e) {} }
+  if (DECKS.B.player && DECKS.B.player.setVolume) { try { DECKS.B.player.setVolume(volB); } catch (e) {} }
 }
 
-function ytTogglePlay() {
-  if (!ytPlayerObj) return;
-  if (ytIsPlaying) { ytPlayerObj.pauseVideo(); } else { ytPlayerObj.playVideo(); }
+function updateDeckInfoUI(key) {
+  var deck = DECKS[key];
+  var artistEl = document.getElementById('deck-' + key + '-artist');
+  var titleEl = document.getElementById('deck-' + key + '-title');
+  if (artistEl) artistEl.textContent = deck.song ? deck.song.a : '–';
+  if (titleEl) titleEl.textContent = deck.song ? deck.song.t : 'Kein Song geladen';
+  var discEl = document.getElementById('deck-' + key + '-disc');
+  if (discEl) discEl.classList.toggle('spinning', !!deck.isPlaying);
+  var deckEl = document.getElementById('deck-' + key);
+  if (deckEl) deckEl.classList.toggle('dj-deck-loaded', !!deck.song);
+  var toggleBtn = document.getElementById('deck-' + key + '-toggle');
+  if (toggleBtn) toggleBtn.textContent = deck.isPlaying ? '⏸' : '▶️';
 }
 
-function ytUpdateInfo(song) {
-  var a = document.getElementById('mini-player-artist');
-  var t = document.getElementById('mini-player-title');
-  if (a) a.textContent = song.a;
-  if (t) t.textContent = song.t;
+function onDeckStateChange(key) {
+  return function (e) {
+    var deck = DECKS[key];
+    if (e.data === YT.PlayerState.PLAYING) {
+      deck.isPlaying = true;
+    } else if (e.data === YT.PlayerState.PAUSED) {
+      deck.isPlaying = false;
+    } else if (e.data === YT.PlayerState.ENDED) {
+      deckStep(key, 1);
+    }
+    updateDeckInfoUI(key);
+  };
 }
 
-function onYtStateChange(e) {
-  var toggle = document.getElementById('mini-player-toggle');
-  if (e.data === YT.PlayerState.PLAYING) {
-    ytIsPlaying = true;
-    if (toggle) toggle.textContent = '⏸';
-  } else if (e.data === YT.PlayerState.PAUSED) {
-    ytIsPlaying = false;
-    if (toggle) toggle.textContent = '▶️';
-  } else if (e.data === YT.PlayerState.ENDED) {
-    ytNext();
-  }
-}
-
-function ytPlayIndex(index) {
-  if (index < 0 || index >= ytQueue.length) return;
-  ytQueueIndex = index;
-  var song = ytQueue[index];
-  ytUpdateInfo(song);
-  var bar = ensureMiniPlayer();
+function playDeckSong(key, song) {
+  var deck = DECKS[key];
+  deck.song = song;
+  updateDeckInfoUI(key);
+  logToMixHistory(song, key);
+  var bar = ensureDjPlayer();
   bar.classList.add('open');
 
-  function startPlayback() {
-    if (ytPlayerObj && ytPlayerObj.loadVideoById) {
-      ytPlayerObj.loadVideoById(song.yt);
+  function start() {
+    if (deck.player && deck.player.loadVideoById) {
+      deck.player.loadVideoById(song.yt);
+      deck.player.playVideo();
     } else {
-      ytPlayerObj = new YT.Player('yt-player-mount', {
-        width: '112',
-        height: '63',
+      deck.player = new YT.Player('deck-' + key + '-mount', {
+        width: '100%',
+        height: '100%',
         videoId: song.yt,
         playerVars: { rel: 0, playsinline: 1 },
         events: {
-          onReady: function (e) { e.target.playVideo(); },
-          onStateChange: onYtStateChange,
-          onError: function () { ytNext(); }
+          onReady: function (e) { e.target.playVideo(); applyCrossfaderVolumes(); },
+          onStateChange: onDeckStateChange(key),
+          onError: function () { deckStep(key, 1); }
         }
       });
     }
   }
-  loadYouTubeAPI(startPlayback);
+  loadYouTubeAPI(start);
 }
 
-function ytNext() {
-  if (ytQueueIndex + 1 < ytQueue.length) { ytPlayIndex(ytQueueIndex + 1); } else { ytClosePlayer(); }
+/* Song (per Klick, Drag&Drop oder Mix-Verlauf) auf ein bestimmtes Deck
+   laden — die restliche sichtbare Liste (Genre/Suche) wird die Warteschlange
+   dieses Decks, damit ⏮/⏭ am Deck weiter durch dieselbe Liste läuft. */
+function loadSongToDeck(song, key, contextSongs) {
+  if (!song || !song.yt) { alert('Für diesen Song wurde noch kein passendes YouTube-Video gefunden.'); return; }
+  var deck = DECKS[key];
+  var withVideo = (contextSongs || [song]).filter(function (s) { return !!s.yt; });
+  deck.queue = withVideo.length ? withVideo : [song];
+  var idx = deck.queue.indexOf(song);
+  deck.index = idx === -1 ? 0 : idx;
+  playDeckSong(key, deck.queue[deck.index]);
+  nextLoadDeck = (key === 'A') ? 'B' : 'A';
 }
-function ytPrev() {
-  if (ytQueueIndex > 0) ytPlayIndex(ytQueueIndex - 1);
+
+function deckStep(key, dir) {
+  var deck = DECKS[key];
+  var newIndex = deck.index + dir;
+  if (newIndex < 0 || newIndex >= deck.queue.length) return;
+  deck.index = newIndex;
+  playDeckSong(key, deck.queue[newIndex]);
+}
+
+function deckTogglePlay(key) {
+  var deck = DECKS[key];
+  if (!deck.player) return;
+  if (deck.isPlaying) { deck.player.pauseVideo(); } else { deck.player.playVideo(); }
+}
+
+function deckPause(key) {
+  var deck = DECKS[key];
+  if (deck.player && deck.player.pauseVideo) { try { deck.player.pauseVideo(); } catch (e) {} }
 }
 
 /* Einzelnen Song abspielen, im Kontext der aktuell sichtbaren Liste (Genre
-   oder Suchergebnis) — so läuft nach dem Song automatisch der nächste aus
-   derselben Liste weiter. */
+   oder Suchergebnis) — landet abwechselnd auf Deck A/B, damit sich der
+   nächste Klick sauber überblenden lässt. */
 function playSongInContext(song, contextSongs) {
-  var withVideo = (contextSongs || [song]).filter(function (s) { return !!s.yt; });
-  if (!withVideo.length) { alert('Für diesen Song wurde noch kein passendes YouTube-Video gefunden.'); return; }
-  var startIdx = withVideo.indexOf(song);
-  if (startIdx === -1) startIdx = 0;
-  ytQueue = withVideo;
-  ytPlayIndex(startIdx);
+  loadSongToDeck(song, nextLoadDeck, contextSongs);
 }
 
-/* Ganze aktuelle Auswahl (Genre-Playlist) von vorne durchspielen. */
+/* Ganze aktuelle Auswahl (Genre-Playlist) von vorne auf das nächste freie
+   Deck laden. */
 function playAllCurrent(songs) {
   var withVideo = (songs || []).filter(function (s) { return !!s.yt; });
   if (!withVideo.length) { alert('Für diese Auswahl wurde noch kein passendes YouTube-Video gefunden.'); return; }
-  ytQueue = withVideo;
-  ytPlayIndex(0);
+  loadSongToDeck(withVideo[0], nextLoadDeck, withVideo);
 }
 
 function closeSongModal() {
@@ -611,6 +777,19 @@ function renderSongGrid(container, songs) {
       toggleSongSelected(song, tile);
       tile.setAttribute('aria-pressed', isSongSelected(song) ? 'true' : 'false');
     });
+
+    if (song.yt) {
+      tile.draggable = true;
+      tile.addEventListener('dragstart', function (e) {
+        try {
+          e.dataTransfer.setData('application/json', JSON.stringify(song));
+          e.dataTransfer.effectAllowed = 'copy';
+        } catch (err) {}
+        tile.classList.add('dragging');
+      });
+      tile.addEventListener('dragend', function () { tile.classList.remove('dragging'); });
+    }
+
     container.appendChild(tile);
   });
 }
