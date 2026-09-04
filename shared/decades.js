@@ -398,6 +398,29 @@ var nextLoadDeck = 'A';
 var crossfaderValue = 50; /* 0 = nur Deck A hörbar, 100 = nur Deck B */
 var masterVolume = 80; /* Gesamtlautstärke, 0-100, skaliert beide Decks zusaetzlich zum Crossfader */
 
+/* Verlauf bereits gespielter Songs (global, seitenweit — es gibt nur einen
+   Player pro Seite). Ein Song wird beim Start des tatsaechlichen Abspielens
+   eingetragen (nicht schon beim Laden), und nur einmal pro Ladevorgang
+   (deck.historyLogged verhindert Duplikate durch Pause/Resume). */
+var playHistory = [];
+function logPlayHistory(song) {
+  if (!song) return;
+  playHistory.unshift({ a: song.a, t: song.t });
+  if (playHistory.length > 30) playHistory.length = 30;
+  renderPlayHistory();
+}
+function renderPlayHistory() {
+  var list = document.getElementById('gen-history-list');
+  if (!list) return;
+  if (!playHistory.length) {
+    list.innerHTML = '<li class="gen-history-empty">Noch nichts gespielt.</li>';
+    return;
+  }
+  list.innerHTML = playHistory.map(function (h) {
+    return '<li><strong>' + escapeHtml(h.t) + '</strong><span>' + escapeHtml(h.a) + '</span></li>';
+  }).join('');
+}
+
 function deckHTML(key) {
   return '' +
     '<div class="dj-deck" id="deck-' + key + '">' +
@@ -551,6 +574,7 @@ function onDeckStateChange(key) {
     var deck = DECKS[key];
     if (e.data === YT.PlayerState.PLAYING) {
       deck.isPlaying = true;
+      if (!deck.historyLogged) { logPlayHistory(deck.song); deck.historyLogged = true; }
     } else if (e.data === YT.PlayerState.PAUSED) {
       deck.isPlaying = false;
     } else if (e.data === YT.PlayerState.ENDED) {
@@ -599,6 +623,7 @@ function playDeckSong(key, song, autoplay) {
   if (autoplay === undefined) autoplay = false;
   var deck = DECKS[key];
   deck.song = song;
+  deck.historyLogged = false;
   updateDeckInfoUI(key);
   var bar = ensureDjPlayer();
 
@@ -1003,7 +1028,13 @@ function renderPlaylistGenerator(mountRoot, config) {
     '  <button id="gen-copy" type="button">📋 Liste kopieren</button>' +
     '  <a id="gen-download" download>⬇️ Als CSV exportieren</a>' +
     '</div>' +
-    '<div class="song-grid" id="gen-grid"></div>' +
+    '<div class="generator-body">' +
+    '  <div class="song-grid" id="gen-grid"></div>' +
+    '  <aside class="gen-history">' +
+    '    <h3>🕘 Zuletzt gespielt</h3>' +
+    '    <ul id="gen-history-list"><li class="gen-history-empty">Noch nichts gespielt.</li></ul>' +
+    '  </aside>' +
+    '</div>' +
     '<p class="song-hint">Für den Import in Spotify, Apple Music oder YouTube Music: Liste kopieren oder CSV herunterladen und bei ' +
     '<a href="https://soundiiz.com" target="_blank" rel="noopener">Soundiiz</a> oder ' +
     '<a href="https://www.tunemymusic.com" target="_blank" rel="noopener">TuneMyMusic</a> hochladen.</p>';
