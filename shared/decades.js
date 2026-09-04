@@ -293,6 +293,65 @@ function clearSelection() {
   updateSendPanel();
 }
 
+/* Suche bleibt in der eigenen Dekade. Kein Treffer dort? Dann leise in den
+   anderen Dekaden nachschauen (eigene songs.json je Dekade, lazy geladen und
+   gecacht) und per 💡-Hinweis auf die richtige Dekade verlinken. */
+var DECADE_REGISTRY = [
+  { key: '70er', label: '70er Music', page: '/70er-music/index.html', dataUrl: '/70er-music/songs.json' },
+  { key: '80er', label: '80er Music', page: '/80er-music/index.html', dataUrl: '/80er-music/songs.json' },
+  { key: '90er', label: '90er Music', page: '/90er-music/index.html', dataUrl: '/90er-music/songs.json' },
+  { key: '2000er', label: '2000er Music', page: '/2000er-music/index.html', dataUrl: '/2000er-music/songs.json' },
+  { key: '2010er', label: '2010er Music', page: '/2010er-music/index.html', dataUrl: '/2010er-music/songs.json' },
+  { key: '2020er', label: '2020er Music', page: '/2020er-music/index.html', dataUrl: '/2020er-music/songs.json' }
+];
+var otherDecadeDataCache = {};
+
+function normalizeText(s) { return (s || '').toString().toLowerCase(); }
+
+function flattenSongs(dataObj) {
+  var out = [];
+  Object.keys(dataObj || {}).forEach(function (k) { (dataObj[k] || []).forEach(function (s) { out.push(s); }); });
+  return out;
+}
+
+function searchSongs(list, query) {
+  var q = normalizeText(query);
+  var seen = {};
+  var out = [];
+  list.forEach(function (s) {
+    if (normalizeText(s.a).indexOf(q) === -1 && normalizeText(s.t).indexOf(q) === -1) return;
+    var id = songId(s);
+    if (seen[id]) return;
+    seen[id] = true;
+    out.push(s);
+  });
+  return out;
+}
+
+function fetchDecadeSongs(entry) {
+  if (Object.prototype.hasOwnProperty.call(otherDecadeDataCache, entry.key)) {
+    return Promise.resolve(otherDecadeDataCache[entry.key]);
+  }
+  return fetch(entry.dataUrl)
+    .then(function (r) { if (!r.ok) throw new Error('no data'); return r.json(); })
+    .then(function (json) { var flat = flattenSongs(json); otherDecadeDataCache[entry.key] = flat; return flat; })
+    .catch(function () { otherDecadeDataCache[entry.key] = null; return null; });
+}
+
+function checkOtherDecades(query, ownKey) {
+  var q = normalizeText(query);
+  var others = DECADE_REGISTRY.filter(function (d) { return d.key !== ownKey; });
+  return Promise.all(others.map(function (d) {
+    return fetchDecadeSongs(d).then(function (songs) {
+      if (!songs) return null;
+      var found = songs.some(function (s) {
+        return normalizeText(s.a).indexOf(q) !== -1 || normalizeText(s.t).indexOf(q) !== -1;
+      });
+      return found ? d : null;
+    });
+  })).then(function (results) { return results.filter(Boolean); });
+}
+
 function closeSongModal() {
   var overlay = document.getElementById('song-modal-overlay');
   if (overlay) overlay.classList.remove('open');
@@ -380,10 +439,16 @@ function renderSongGrid(container, songs) {
   });
 }
 
-/* config: { mountBefore: CSS-Selektor im Ziel-Container, dataUrl, themes: [{key,label}], csvPrefix } */
+/* config: { mountBefore: CSS-Selektor im Ziel-Container, dataUrl, themes: [{key,label}], csvPrefix }
+   csvPrefix dient auch als Dekaden-Schlüssel fürs DECADE_REGISTRY (70er, 80er, ...). */
 function renderPlaylistGenerator(mountRoot, config) {
   var data = null;
   var currentTheme = null;
+  var allSongsFlat = null;
+  var searchDebounceHandle = null;
+  var searchToken = 0;
+  var ownDecadeKey = config.csvPrefix || null;
+  var ownDecadeLabel = (DECADE_REGISTRY.filter(function (d) { return d.key === ownDecadeKey; })[0] || {}).label || 'dieser Dekade';
 
   function currentSongs() { return (data && currentTheme) ? (data[currentTheme] || []) : []; }
 
@@ -409,8 +474,16 @@ function renderPlaylistGenerator(mountRoot, config) {
     renderSongGrid(document.getElementById('gen-grid'), currentSongs());
   }
 
+  function clearSearchUI() {
+    var input = document.getElementById('gen-search');
+    if (input) input.value = '';
+    var hintEl = document.getElementById('gen-search-hint');
+    if (hintEl) { hintEl.hidden = true; hintEl.innerHTML = ''; }
+  }
+
   function selectTheme(key) {
     currentTheme = key;
+    clearSearchUI();
     mountRoot.querySelectorAll('.theme-btn').forEach(function (b) {
       b.classList.toggle('active', b.dataset.key === key);
     });
@@ -418,11 +491,60 @@ function renderPlaylistGenerator(mountRoot, config) {
     loadData().then(refresh);
   }
 
+  function runSearch(query) {
+    var hintEl = document.getElementById('gen-search-hint');
+    var countEl = document.getElementById('gen-count');
+    var gridEl = document.getElementById('gen-grid');
+    var myToken = ++searchToken;
+
+    if (!query) {
+      hintEl.hidden = true;
+      hintEl.innerHTML = '';
+      refresh();
+      return;
+    }
+
+    mountRoot.querySelectorAll('.theme-btn').forEach(function (b) { b.classList.remove('active'); });
+    document.getElementById('gen-actions').classList.add('visible');
+
+    loadData().then(function () {
+      if (myToken !== searchToken) return;
+      if (!allSongsFlat) allSongsFlat = flattenSongs(data);
+      var results = searchSongs(allSongsFlat, query);
+      renderSongGrid(gridEl, results);
+      countEl.textContent = results.length + (results.length === 1 ? ' Treffer für „' : ' Treffer für „') + query + '“';
+
+      if (results.length > 0) {
+        hintEl.hidden = true;
+        hintEl.innerHTML = '';
+        return;
+      }
+
+      hintEl.hidden = false;
+      hintEl.innerHTML = 'Suche in anderen Dekaden …';
+      checkOtherDecades(query, ownDecadeKey).then(function (hits) {
+        if (myToken !== searchToken) return;
+        if (!hits.length) {
+          hintEl.innerHTML = 'Keine Treffer – auch nicht in anderen Dekaden.';
+          return;
+        }
+        hintEl.innerHTML = '💡 Nicht in ' + ownDecadeLabel + ', aber gefunden in: ' +
+          hits.map(function (d) {
+            return '<a href="' + d.page + '?q=' + encodeURIComponent(query) + '">' + d.label + '</a>';
+          }).join(', ');
+      });
+    });
+  }
+
   var section = document.createElement('section');
   section.className = 'generator';
   section.innerHTML = '' +
     '<h2>🎛️ Playlist-Generator</h2>' +
-    '<p class="sub">Songs anklicken für einen grünen Haken, ⓘ zeigt alle Song-Infos. Auswahl direkt an deinen Streaming-Dienst senden.</p>' +
+    '<p class="sub">Songs anklicken für einen grünen Haken, ⓘ zeigt alle Song-Infos, 🔍 durchsucht ' + ownDecadeLabel + '. Auswahl direkt an deinen Streaming-Dienst senden.</p>' +
+    '<div class="search-box">' +
+    '  <input type="search" id="gen-search" class="search-input" placeholder="🔍 Song oder Künstler in ' + ownDecadeLabel + ' suchen …" autocomplete="off">' +
+    '</div>' +
+    '<p class="search-hint" id="gen-search-hint" hidden></p>' +
     '<div class="theme-buttons" id="gen-buttons"></div>' +
     '<div class="send-panel">' +
     '  <span class="send-panel-label">Dein Dienst:</span>' +
@@ -459,6 +581,16 @@ function renderPlaylistGenerator(mountRoot, config) {
   section.querySelector('#gen-send-clear').addEventListener('click', clearSelection);
   updateSendPanel();
 
+  var searchInput = section.querySelector('#gen-search');
+  searchInput.addEventListener('input', function () {
+    clearTimeout(searchDebounceHandle);
+    var val = searchInput.value.trim();
+    searchDebounceHandle = setTimeout(function () { runSearch(val); }, 250);
+  });
+  searchInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { searchInput.value = ''; clearTimeout(searchDebounceHandle); runSearch(''); }
+  });
+
   section.querySelector('#gen-copy').addEventListener('click', function (e) {
     navigator.clipboard.writeText(asLines()).then(function () {
       e.target.textContent = '✅ Kopiert!';
@@ -474,4 +606,9 @@ function renderPlaylistGenerator(mountRoot, config) {
   });
 
   selectTheme(config.themes[0].key);
+
+  try {
+    var incomingQuery = new URLSearchParams(location.search).get('q');
+    if (incomingQuery) { searchInput.value = incomingQuery; runSearch(incomingQuery); }
+  } catch (e) {}
 }

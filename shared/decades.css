@@ -181,6 +181,24 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .generator h2 { margin: 0 0 6px; font-size: 19px; }
 .generator .sub { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
 
+/* Suche bleibt in der Dekade; 💡-Hinweis verlinkt auf andere Dekaden bei Treffer dort */
+.search-box { margin-bottom: 10px; }
+.search-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus { outline: none; border-color: var(--accent); }
+.search-hint { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+.search-hint a { color: var(--accent2); font-weight: 700; text-decoration: none; }
+.search-hint a:hover { text-decoration: underline; }
+
 .theme-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .theme-btn {
   background: var(--bg);
