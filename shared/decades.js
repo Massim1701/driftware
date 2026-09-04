@@ -406,6 +406,7 @@ function deckHTML(key) {
     '    <div class="dj-vinyl" id="deck-' + key + '-drop">' +
     '      <div class="dj-vinyl-disc" id="deck-' + key + '-disc">' +
     '        <div class="dj-vinyl-video" id="deck-' + key + '-mount"></div>' +
+    '        <span class="dj-vinyl-dot" aria-hidden="true"></span>' +
     '      </div>' +
     '      <div class="dj-vinyl-hint">Song hierher ziehen</div>' +
     '    </div>' +
@@ -534,6 +535,10 @@ function updateDeckInfoUI(key) {
   var titleEl = document.getElementById('deck-' + key + '-title');
   if (artistEl) artistEl.textContent = deck.song ? deck.song.a : '–';
   if (titleEl) titleEl.textContent = deck.song ? deck.song.t : 'Kein Song geladen';
+  var discEl = document.getElementById('deck-' + key + '-disc');
+  /* Weisser Punkt auf der Scheibe zeigt, ob gerade abgespielt wird —
+     die Scheibe selbst dreht sich nicht mehr (siehe weiter unten). */
+  if (discEl) discEl.classList.toggle('playing', !!deck.isPlaying);
   var deckEl = document.getElementById('deck-' + key);
   if (deckEl) deckEl.classList.toggle('dj-deck-loaded', !!deck.song);
   var toggleBtn = document.getElementById('deck-' + key + '-toggle');
@@ -727,7 +732,13 @@ function renderSongGrid(container, songs) {
 
     var title = document.createElement('span');
     title.className = 'song-tile-title';
-    title.textContent = song.t;
+    title.appendChild(document.createTextNode(song.t));
+    if (song.y) {
+      var yearEl = document.createElement('em');
+      yearEl.className = 'song-tile-year';
+      yearEl.textContent = ' (' + song.y + ')';
+      title.appendChild(yearEl);
+    }
     text.appendChild(title);
 
     var artist = document.createElement('span');
