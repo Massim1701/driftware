@@ -152,6 +152,7 @@ function ensureSongModal() {
     '  <img id="song-modal-img" alt="">' +
     '  <div class="song-modal-artist" id="song-modal-artist"></div>' +
     '  <div class="song-modal-title" id="song-modal-title"></div>' +
+    '  <button type="button" class="song-modal-play" id="song-modal-play">▶️ Song abspielen</button>' +
     '  <dl class="song-modal-meta" id="song-modal-meta"></dl>' +
     '  <div class="streaming-row" id="song-modal-streaming"></div>' +
     '  <a class="song-modal-link" id="song-modal-link" target="_blank" rel="noopener">Auf Discogs ansehen →</a>' +
@@ -220,6 +221,7 @@ var PREFERRED_SERVICE_KEY = 'driftware-preferred-streaming';
 var preferredService = null;
 try { preferredService = localStorage.getItem(PREFERRED_SERVICE_KEY); } catch (e) {}
 var selectedSongs = {};
+var lastGridSongs = [];
 
 function songId(song) { return song.u || (song.a + '␟' + song.t); }
 function isSongSelected(song) { return Object.prototype.hasOwnProperty.call(selectedSongs, songId(song)); }
@@ -352,6 +354,149 @@ function checkOtherDecades(query, ownKey) {
   })).then(function (results) { return results.filter(Boolean); });
 }
 
+/* ---------- Eigener Player: einzelner Song oder ganze Playlist direkt auf
+   der Seite, statt nur Links zu Streaming-Diensten. Nutzt die offizielle
+   YouTube IFrame Player API (offiziell erlaubtes Embed, YouTube bleibt als
+   Quelle sichtbar, Player-Funktionalität wird nicht verändert/entfernt).
+   Ein einziger YT.Player wird wiederverwendet; beim Songwechsel wird nur
+   die Video-ID neu geladen (kein Iframe-Neuaufbau pro Track). ---------- */
+var ytApiLoading = false;
+var ytApiReady = false;
+var ytPlayerObj = null;
+var ytQueue = [];
+var ytQueueIndex = -1;
+var ytIsPlaying = false;
+
+function loadYouTubeAPI(onReady) {
+  if (ytApiReady && window.YT && window.YT.Player) { onReady(); return; }
+  var prevCb = window.onYouTubeIframeAPIReady;
+  window.onYouTubeIframeAPIReady = function () {
+    ytApiReady = true;
+    if (typeof prevCb === 'function') prevCb();
+    onReady();
+  };
+  if (ytApiLoading) return;
+  ytApiLoading = true;
+  var tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+}
+
+function ensureMiniPlayer() {
+  var existing = document.getElementById('mini-player');
+  if (existing) return existing;
+  var bar = document.createElement('div');
+  bar.className = 'mini-player';
+  bar.id = 'mini-player';
+  bar.innerHTML = '' +
+    '<div class="mini-player-video" id="yt-player-mount"></div>' +
+    '<div class="mini-player-info">' +
+    '  <strong class="mini-player-artist" id="mini-player-artist"></strong>' +
+    '  <span class="mini-player-title" id="mini-player-title"></span>' +
+    '</div>' +
+    '<div class="mini-player-controls">' +
+    '  <button type="button" id="mini-player-prev" aria-label="Vorheriger Song">⏮</button>' +
+    '  <button type="button" id="mini-player-toggle" aria-label="Abspielen/Pause">⏸</button>' +
+    '  <button type="button" id="mini-player-next" aria-label="Nächster Song">⏭</button>' +
+    '</div>' +
+    '<button type="button" class="mini-player-close" id="mini-player-close" aria-label="Player schließen">&times;</button>';
+  document.body.appendChild(bar);
+  bar.querySelector('#mini-player-prev').addEventListener('click', ytPrev);
+  bar.querySelector('#mini-player-next').addEventListener('click', ytNext);
+  bar.querySelector('#mini-player-toggle').addEventListener('click', ytTogglePlay);
+  bar.querySelector('#mini-player-close').addEventListener('click', ytClosePlayer);
+  return bar;
+}
+
+function ytClosePlayer() {
+  var bar = document.getElementById('mini-player');
+  if (bar) bar.classList.remove('open');
+  if (ytPlayerObj && ytPlayerObj.pauseVideo) { try { ytPlayerObj.pauseVideo(); } catch (e) {} }
+  ytIsPlaying = false;
+  ytQueue = [];
+  ytQueueIndex = -1;
+}
+
+function ytTogglePlay() {
+  if (!ytPlayerObj) return;
+  if (ytIsPlaying) { ytPlayerObj.pauseVideo(); } else { ytPlayerObj.playVideo(); }
+}
+
+function ytUpdateInfo(song) {
+  var a = document.getElementById('mini-player-artist');
+  var t = document.getElementById('mini-player-title');
+  if (a) a.textContent = song.a;
+  if (t) t.textContent = song.t;
+}
+
+function onYtStateChange(e) {
+  var toggle = document.getElementById('mini-player-toggle');
+  if (e.data === YT.PlayerState.PLAYING) {
+    ytIsPlaying = true;
+    if (toggle) toggle.textContent = '⏸';
+  } else if (e.data === YT.PlayerState.PAUSED) {
+    ytIsPlaying = false;
+    if (toggle) toggle.textContent = '▶️';
+  } else if (e.data === YT.PlayerState.ENDED) {
+    ytNext();
+  }
+}
+
+function ytPlayIndex(index) {
+  if (index < 0 || index >= ytQueue.length) return;
+  ytQueueIndex = index;
+  var song = ytQueue[index];
+  ytUpdateInfo(song);
+  var bar = ensureMiniPlayer();
+  bar.classList.add('open');
+
+  function startPlayback() {
+    if (ytPlayerObj && ytPlayerObj.loadVideoById) {
+      ytPlayerObj.loadVideoById(song.yt);
+    } else {
+      ytPlayerObj = new YT.Player('yt-player-mount', {
+        width: '112',
+        height: '63',
+        videoId: song.yt,
+        playerVars: { rel: 0, playsinline: 1 },
+        events: {
+          onReady: function (e) { e.target.playVideo(); },
+          onStateChange: onYtStateChange,
+          onError: function () { ytNext(); }
+        }
+      });
+    }
+  }
+  loadYouTubeAPI(startPlayback);
+}
+
+function ytNext() {
+  if (ytQueueIndex + 1 < ytQueue.length) { ytPlayIndex(ytQueueIndex + 1); } else { ytClosePlayer(); }
+}
+function ytPrev() {
+  if (ytQueueIndex > 0) ytPlayIndex(ytQueueIndex - 1);
+}
+
+/* Einzelnen Song abspielen, im Kontext der aktuell sichtbaren Liste (Genre
+   oder Suchergebnis) — so läuft nach dem Song automatisch der nächste aus
+   derselben Liste weiter. */
+function playSongInContext(song, contextSongs) {
+  var withVideo = (contextSongs || [song]).filter(function (s) { return !!s.yt; });
+  if (!withVideo.length) { alert('Für diesen Song wurde noch kein passendes YouTube-Video gefunden.'); return; }
+  var startIdx = withVideo.indexOf(song);
+  if (startIdx === -1) startIdx = 0;
+  ytQueue = withVideo;
+  ytPlayIndex(startIdx);
+}
+
+/* Ganze aktuelle Auswahl (Genre-Playlist) von vorne durchspielen. */
+function playAllCurrent(songs) {
+  var withVideo = (songs || []).filter(function (s) { return !!s.yt; });
+  if (!withVideo.length) { alert('Für diese Auswahl wurde noch kein passendes YouTube-Video gefunden.'); return; }
+  ytQueue = withVideo;
+  ytPlayIndex(0);
+}
+
 function closeSongModal() {
   var overlay = document.getElementById('song-modal-overlay');
   if (overlay) overlay.classList.remove('open');
@@ -381,6 +526,13 @@ function openSongModal(song) {
     meta.appendChild(dt); meta.appendChild(dd);
   });
 
+  var playBtn = document.getElementById('song-modal-play');
+  if (playBtn) {
+    playBtn.disabled = !song.yt;
+    playBtn.textContent = song.yt ? '▶️ Song abspielen' : '▶️ Kein Video gefunden';
+    playBtn.onclick = song.yt ? function () { playSongInContext(song, lastGridSongs); } : null;
+  }
+
   document.getElementById('song-modal-streaming').innerHTML = streamingLinksHTML(song);
 
   var link = document.getElementById('song-modal-link');
@@ -390,6 +542,7 @@ function openSongModal(song) {
 }
 
 function renderSongGrid(container, songs) {
+  lastGridSongs = songs;
   container.innerHTML = '';
   songs.forEach(function (song) {
     var tile = document.createElement('button');
@@ -397,11 +550,14 @@ function renderSongGrid(container, songs) {
     tile.type = 'button';
     tile.setAttribute('aria-pressed', isSongSelected(song) ? 'true' : 'false');
 
+    var media = document.createElement('span');
+    media.className = 'song-tile-media';
+
     var check = document.createElement('span');
     check.className = 'song-tile-check';
     check.textContent = '✓';
     check.setAttribute('aria-hidden', 'true');
-    tile.appendChild(check);
+    media.appendChild(check);
 
     var info = document.createElement('span');
     info.className = 'song-tile-info';
@@ -413,13 +569,28 @@ function renderSongGrid(container, songs) {
     info.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); openSongModal(song); }
     });
-    tile.appendChild(info);
+    media.appendChild(info);
+
+    var play = document.createElement('span');
+    play.className = 'song-tile-play' + (song.yt ? '' : ' disabled');
+    play.innerHTML = '▶';
+    play.setAttribute('role', 'button');
+    play.setAttribute('tabindex', song.yt ? '0' : '-1');
+    play.setAttribute('aria-label', song.yt ? ('Abspielen: ' + song.a + ' – ' + song.t) : 'Kein Video gefunden');
+    if (song.yt) {
+      play.addEventListener('click', function (e) { e.stopPropagation(); playSongInContext(song, songs); });
+      play.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); playSongInContext(song, songs); }
+      });
+    }
+    media.appendChild(play);
 
     var img = document.createElement('img');
     img.src = song.th || song.cv || '';
     img.alt = song.a + ' – ' + song.t;
     img.loading = 'lazy';
-    tile.appendChild(img);
+    media.appendChild(img);
+    tile.appendChild(media);
 
     var artist = document.createElement('span');
     artist.className = 'song-tile-artist';
@@ -554,6 +725,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     '</div>' +
     '<div class="generator-actions" id="gen-actions">' +
     '  <span class="generator-count" id="gen-count"></span>' +
+    '  <button id="gen-play-all" type="button">▶️ Playlist abspielen</button>' +
     '  <button id="gen-copy" type="button">📋 Liste kopieren</button>' +
     '  <a id="gen-download" download>⬇️ Als CSV exportieren</a>' +
     '</div>' +
@@ -591,6 +763,9 @@ function renderPlaylistGenerator(mountRoot, config) {
     if (e.key === 'Escape') { searchInput.value = ''; clearTimeout(searchDebounceHandle); runSearch(''); }
   });
 
+  section.querySelector('#gen-play-all').addEventListener('click', function () {
+    playAllCurrent(currentSongs());
+  });
   section.querySelector('#gen-copy').addEventListener('click', function (e) {
     navigator.clipboard.writeText(asLines()).then(function () {
       e.target.textContent = '✅ Kopiert!';
