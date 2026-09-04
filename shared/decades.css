@@ -16,9 +16,10 @@ body {
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
-  /* Der DJ-Player ist jetzt immer sichtbar (fest am unteren Rand) — Platz
-     lassen, damit Footer/Inhalt nicht darunter verschwinden. */
-  padding-bottom: 400px;
+  /* Der DJ-Player steht als feste Spalte rechts — Platz lassen, damit
+     Inhalt/Footer nicht darunter verschwinden. Auf schmalen Screens
+     wandert er zurueck an den unteren Rand (siehe Media-Queries). */
+  padding-right: 380px;
 }
 a { color: var(--accent); }
 
@@ -543,35 +544,34 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .dj-player {
   display: block;
   position: fixed;
-  left: 0;
+  top: 0;
   right: 0;
   bottom: 0;
+  width: 360px;
+  overflow-y: auto;
   z-index: 250;
-  background: linear-gradient(180deg, var(--panel) 0%, var(--bg) 130%);
-  border-top: 1px solid var(--border);
-  box-shadow: 0 -8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
-  padding: 10px 20px 12px;
+  background: linear-gradient(200deg, var(--panel) 0%, var(--bg) 130%);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04);
+  padding: 14px 16px 18px;
 }
 .dj-player::before {
   content: "";
   position: absolute;
   top: 0;
+  bottom: 0;
   left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+  width: 2px;
+  background: linear-gradient(180deg, transparent, var(--accent), var(--accent2), transparent);
   opacity: 0.7;
 }
-.dj-search-box { margin: 0 auto 8px; max-width: 480px; }
-.dj-player .search-hint { margin: 0 auto 6px; max-width: 480px; }
+.dj-search-box { margin: 0 0 8px; max-width: none; }
+.dj-player .search-hint { margin: 0 0 6px; max-width: none; }
 .dj-decks {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-evenly;
-  gap: 24px;
-  flex-wrap: wrap;
-  max-width: 1360px;
-  margin: 0 auto;
+  gap: 14px;
 }
 .dj-deck {
   display: flex;
@@ -798,7 +798,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 14px 26px;
+  width: 100%;
+  padding: 12px 16px;
   background:
     repeating-linear-gradient(115deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 3px),
     linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
@@ -844,6 +845,44 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 /* Song-Kacheln sind draggable, wenn sie ein Video haben (siehe decades.js) */
 .song-tile[draggable="true"] { cursor: grab; }
 .song-tile.dragging { opacity: 0.4; }
+
+/* Unter 1100px ist rechts kein Platz fuer eine 360px-Spalte — der Player
+   klappt dort zurueck in die klassische Leiste am unteren Rand. */
+@media (max-width: 1100px) {
+  body { padding-right: 0; padding-bottom: 400px; }
+  .dj-player {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-height: 60vh;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+    padding: 10px 20px 12px;
+  }
+  .dj-player::before {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: auto;
+    width: auto;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+  }
+  .dj-decks {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    gap: 24px;
+    max-width: 1360px;
+    margin: 0 auto;
+  }
+  .dj-master { width: auto; }
+  .dj-search-box { margin: 0 auto 8px; max-width: 480px; }
+  .dj-player .search-hint { margin: 0 auto 6px; max-width: 480px; }
+}
 
 @media (max-width: 640px) {
   .dj-decks { gap: 10px; }
