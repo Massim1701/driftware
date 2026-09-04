@@ -4,60 +4,61 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>70er Music</title>
-<meta name="description" content="70er Music: 1970–1979 nach Stimmung sortiert.">
-<link rel="stylesheet" href="../shared/decades.css">
+<meta name="description" content="70er Music: über 3200 Songs aus 1970–1979 in 17 echten Genres — von Disco bis Krautrock — mit Cover, Playlisten per Klick erstellen und exportieren.">
+<link rel="stylesheet" href="../shared/decades.css?v=2">
 </head>
 <body>
 <div id="decade-root"></div>
-<script src="../shared/decades.js"></script>
+<script src="../shared/decades.js?v=2"></script>
 <script>
 renderDecadeIndex({
-  "name": "70er Music",
-  "years": "1970–1979",
-  "icon": "🕺",
-  "iconBg": "linear-gradient(135deg, #e8871e, #f7c948)",
-  "tagline": "Handverlesene 70er-Playlisten nach Stimmung — Disco, Rock, Soul und mehr.",
-  "badgeText": "🚧 Projekt im Aufbau",
-  "colors": {
-    "bg": "#1f1207",
-    "panel": "#2c1c0f",
-    "accent": "#e8871e",
-    "accent2": "#f7c948",
-    "text": "#fff6ea",
-    "muted": "#c9a479"
+  name: '70er Music',
+  years: '1970–1979',
+  icon: '🕺',
+  iconBg: 'linear-gradient(135deg, #e8871e, #f7c948)',
+  tagline: 'Über 3200 Songs aus den 70ern in 17 echten Genres — von Disco bis Krautrock.',
+  badgeText: '🎧 17 Genres — Playlist-Generator live',
+  colors: {
+    bg: '#1f1207',
+    panel: '#2c1c0f',
+    accent: '#e8871e',
+    accent2: '#f7c948',
+    text: '#fff6ea',
+    muted: '#c9a479'
   },
-  "sourceNote": "Die Songs stammen aus der offenen Musikdatenbank Discogs, nach Popularität und Genre/Style gefiltert und auf Stimmungs-Playlisten gemappt — bereit für den Import in Spotify, Apple Music & YouTube Music.",
-  "features": [
-    {
-      "emoji": "🎉",
-      "title": "Party",
-      "desc": "Disco, Funk und Soul — der Sound der Tanzfläche."
-    },
-    {
-      "emoji": "🎸",
-      "title": "Rock",
-      "desc": "Classic Rock und Prog Rock aus dem goldenen Jahrzehnt der Gitarre."
-    },
-    {
-      "emoji": "💜",
-      "title": "Romantic",
-      "desc": "Soul-Balladen und Soft Rock für ruhige Momente."
-    },
-    {
-      "emoji": "🌈",
-      "title": "Funk & Groove",
-      "desc": "Funk, Boogie und die Anfänge der Dance-Kultur."
-    },
-    {
-      "emoji": "🎤",
-      "title": "Hip Hop",
-      "desc": "Die allerersten Anfänge von Hip Hop in New York."
-    },
-    {
-      "emoji": "🏝️",
-      "title": "Chill & Reggae",
-      "desc": "Reggae in seiner Blütezeit — zum Runterkommen."
-    }
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, direkt nach den einzelnen Discogs-Styles gefiltert (nicht nur groben Genres) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music.',
+  features: [
+    { emoji: '🪩', title: 'Disco', desc: 'Der Sound der Tanzfläche.' },
+    { emoji: '🇩🇪', title: 'Krautrock', desc: 'Deutschlands experimenteller Beitrag zum Rock.' },
+    { emoji: '✨', title: 'Glam Rock', desc: 'Glitzer, Plateauschuhe, große Hooks.' },
+    { emoji: '🎼', title: 'Prog Rock', desc: 'Konzeptalben und lange Songstrukturen.' },
+    { emoji: '🔥', title: 'Punk', desc: 'Schnell, laut, drei Akkorde.' },
+    { emoji: '🎷', title: 'Funk & Soul', desc: 'Groove und Gefühl aus den 70ern.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: '70er',
+  themes: [
+    { key: 'Disco', label: '🪩 Disco' },
+    { key: 'FunkSoul', label: '🎷 Funk & Soul' },
+    { key: 'GlamRock', label: '✨ Glam Rock' },
+    { key: 'ProgRock', label: '🎼 Prog Rock' },
+    { key: 'Krautrock', label: '🇩🇪 Krautrock' },
+    { key: 'Punk', label: '🔥 Punk' },
+    { key: 'NewWavePostPunk', label: '🖤 New Wave & Post-Punk' },
+    { key: 'HardRockMetal', label: '🤘 Hard Rock & Metal' },
+    { key: 'ClassicRock', label: '🎸 Classic Rock' },
+    { key: 'FolkRock', label: '🌾 Folk Rock' },
+    { key: 'BluesSouthernRock', label: '🎻 Blues & Southern Rock' },
+    { key: 'ReggaeDub', label: '🏝️ Reggae & Dub' },
+    { key: 'Ska', label: '🎺 Ska' },
+    { key: 'SoftRock', label: '💜 Soft Rock' },
+    { key: 'Boogie', label: '🕺 Boogie' },
+    { key: 'Schlager', label: '🎪 Schlager' },
+    { key: 'Europop', label: '🌍 Europop' }
   ]
 });
 </script>
