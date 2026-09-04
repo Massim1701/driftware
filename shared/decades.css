@@ -246,7 +246,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 
 /* Streaming-Icons: nur Symbole, Klick oeffnet die Suche beim jeweiligen Dienst */
 .streaming-row { display: flex; flex-wrap: wrap; gap: 6px; }
-.streaming-row-tile { justify-content: center; }
+.streaming-row-tile { justify-content: center; gap: 5px; }
 .streaming-icon {
   width: 22px;
   height: 22px;
@@ -256,9 +256,25 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   justify-content: center;
   box-shadow: 0 1px 3px rgba(0,0,0,0.3);
   flex-shrink: 0;
-  transition: transform 0.12s ease;
+  transition: transform 0.12s ease, filter 0.12s ease, opacity 0.12s ease, box-shadow 0.12s ease;
 }
 .streaming-icon:hover { transform: translateY(-1px) scale(1.06); }
+
+/* In der Grid-Kachel gedaempft (nicht "bunt"), volle Markenfarbe erst bei Hover/Fokus */
+.streaming-row-tile .streaming-icon {
+  width: 18px;
+  height: 18px;
+  filter: grayscale(0.8) saturate(0.4);
+  opacity: 0.55;
+  box-shadow: none;
+}
+.streaming-row-tile .streaming-icon svg { width: 11px; height: 11px; }
+.streaming-row-tile .streaming-icon:hover,
+.streaming-row-tile .streaming-icon:focus-visible {
+  filter: none;
+  opacity: 1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
 .streaming-icon svg { width: 14px; height: 14px; }
 .song-modal .streaming-row .streaming-icon { width: 30px; height: 30px; }
 .song-modal .streaming-row .streaming-icon svg { width: 18px; height: 18px; }
