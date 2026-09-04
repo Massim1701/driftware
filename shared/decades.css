@@ -879,29 +879,80 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
     max-width: 1360px;
     margin: 0 auto;
   }
-  .dj-master { width: auto; }
+  .dj-deck { width: 46%; }
+  .dj-vinyl { width: 150px; height: 150px; }
+  .dj-vinyl-video { width: 124px; height: 124px; }
+  .dj-master { width: 100%; order: 5; margin-top: 4px; }
+  .dj-crossfader, .dj-volume { justify-content: center; }
   .dj-search-box { margin: 0 auto 8px; max-width: 480px; }
   .dj-player .search-hint { margin: 0 auto 6px; max-width: 480px; }
 }
 
 @media (max-width: 640px) {
-  .dj-decks { gap: 10px; }
-  .dj-deck { width: 44%; min-width: 150px; }
-  .dj-vinyl { width: 130px; height: 130px; }
-  .dj-vinyl-video { width: 108px; height: 108px; }
-  .dj-pitch { width: 40px; }
-  .dj-pitch-display { font-size: 8px; padding: 3px 1px; }
-  .dj-pitch-slider { width: 80px; }
-  .dj-master { width: 100%; order: 5; margin-top: 4px; }
+  /* Kopfbereich: auf dem Handy soll nicht der halbe erste Screen aus
+     Icon + Ueberschrift bestehen. */
+  .decade-hero { padding: 24px 16px 18px; }
+  .app-icon-hero { width: 62px; height: 62px; border-radius: 16px; font-size: 30px; margin-bottom: 12px; }
+  .decade-logo { font-size: 27px; margin-bottom: 6px; }
+  .decade-years { font-size: 12px; margin-bottom: 10px; }
+  .decade-tagline { font-size: 14px; margin-bottom: 16px; }
+  .badge { font-size: 12px; padding: 9px 14px; }
+  /* Auf dem Handy nicht mitscrollen lassen — sonst liegt der Block
+     staendig ueber dem Seiteninhalt. */
+  .utility-block { position: absolute; top: 10px; gap: 8px; }
+  .utility-icon { width: 34px; height: 34px; }
+  .utility-icon svg { width: 15px; height: 15px; }
+  .utility-label { font-size: 8px; }
+  main.decade-main { padding: 0 12px 32px; }
+  .generator { padding: 16px 12px; }
+  .generator h2 { font-size: 17px; }
+  .generator .sub { font-size: 12px; margin-bottom: 12px; }
+  .theme-btn { font-size: 12px; padding: 7px 11px; }
+
+  /* Songliste: volle Breite nutzen, Zeilen etwas luftiger antippbar */
+  .song-tile { padding: 5px 6px; }
+  .song-tile-text { max-width: none; flex: 1; }
+  .song-grid { max-height: 60vh; }
+  .gen-history ul { max-height: 160px; }
+
+  /* Player: deutlich kleiner, damit er nicht den halben Bildschirm frisst */
+  .dj-player { padding: 8px 10px 10px; max-height: 46vh; }
+  .dj-decks { gap: 8px; align-items: flex-start; }
+  .dj-deck { width: 48%; min-width: 0; gap: 2px; }
+  .dj-deck-label { font-size: 9px; }
+  .dj-deck-top { gap: 6px; }
+  .dj-vinyl { width: 84px; height: 84px; }
+  .dj-vinyl-video { width: 68px; height: 68px; }
+  .dj-vinyl-hint { font-size: 9px; padding: 0 10px; }
+  .dj-vinyl-dot { width: 6px; height: 6px; top: 6px; }
+  .dj-pitch { width: 34px; }
+  .dj-pitch-display { font-size: 7px; padding: 2px 1px; }
+  .dj-pitch-slider-wrap { min-height: 58px; }
+  .dj-pitch-slider { width: 56px; }
+  .dj-deck-info { min-height: 20px; }
+  .dj-deck-info strong { font-size: 11px; max-width: 150px; }
+  .dj-deck-info span { font-size: 10px; max-width: 150px; }
+  .dj-deck-remaining { font-size: 10px; margin-top: 1px; }
+  .dj-deck-controls { gap: 6px; }
+  .dj-deck-controls button { width: 28px; height: 28px; font-size: 11px; }
+  .dj-deck-controls button[id$="-toggle"] { width: 34px; height: 34px; font-size: 13px; }
+  .dj-master { width: 100%; order: 5; margin-top: 2px; padding: 6px 12px; gap: 6px; }
   .dj-crossfader { width: 100%; justify-content: center; }
   .dj-volume { width: 100%; justify-content: center; }
-  .dj-search-box { max-width: none; }
-  body { padding-bottom: 680px; }
+  #dj-crossfader, #dj-master-volume { width: 62%; }
+  .dj-search-box { max-width: none; margin-bottom: 6px; }
+  /* 16px verhindert, dass iOS beim Antippen ins Feld hineinzoomt */
+  .dj-search-box .search-input { font-size: 16px; padding: 9px 12px; }
+  body { padding-bottom: 300px; }
 }
 
 @media (max-width: 900px) {
-  .generator-body { flex-direction: column; }
-  .song-grid { max-width: none; }
-  .gen-history { width: 100%; }
+  /* Gestapelt statt nebeneinander. align-items muss hier von flex-start
+     auf stretch wechseln: sonst richtet sich die Spaltenbreite nach der
+     laengsten Songzeile statt nach dem Bildschirm — die Seite wird dann
+     breiter als das Handy-Display. */
+  .generator-body { flex-direction: column; align-items: stretch; }
+  .song-grid { max-width: none; width: 100%; box-sizing: border-box; }
+  .gen-history { width: 100%; box-sizing: border-box; }
   .gen-history ul { max-height: 220px; }
 }

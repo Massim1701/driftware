@@ -462,6 +462,31 @@ function deckHTML(key) {
    sie beim Nutzen des Players immer erreichbar bleibt. Die Leiste ist
    von Anfang an sichtbar (kein Ein-/Ausblenden mehr, kein X zum
    Schließen) — Suche muss jederzeit zugaenglich sein. */
+/* Der Player steht auf breiten Screens als Spalte rechts, darunter als
+   Leiste am unteren Rand. Wie hoch diese Leiste ist, haengt vom Inhalt ab
+   (geladene Songtitel, Umbrueche) — deshalb wird der Freiraum unter dem
+   Seiteninhalt hier gemessen statt in der CSS geraten. Sonst verschwindet
+   auf Tablets der untere Teil der Seite hinter dem Player. */
+function syncPlayerSpacing() {
+  var bar = document.getElementById('dj-player');
+  if (!bar) return;
+  if (window.innerWidth <= 1100) {
+    document.body.style.paddingBottom = (bar.offsetHeight + 12) + 'px';
+  } else {
+    document.body.style.paddingBottom = '';
+  }
+}
+var spacingHandle = null;
+function queuePlayerSpacing() {
+  if (spacingHandle) return;
+  spacingHandle = window.requestAnimationFrame(function () {
+    spacingHandle = null;
+    syncPlayerSpacing();
+  });
+}
+window.addEventListener('resize', queuePlayerSpacing);
+window.addEventListener('orientationchange', queuePlayerSpacing);
+
 function ensureDjPlayer() {
   var existing = document.getElementById('dj-player');
   if (existing) return existing;
@@ -527,6 +552,7 @@ function ensureDjPlayer() {
     applyCrossfaderVolumes();
   });
 
+  queuePlayerSpacing();
   return bar;
 }
 
@@ -571,6 +597,7 @@ function updateDeckInfoUI(key) {
   if (deckEl) deckEl.classList.toggle('dj-deck-loaded', !!deck.song);
   var toggleBtn = document.getElementById('deck-' + key + '-toggle');
   if (toggleBtn) toggleBtn.textContent = deck.isPlaying ? '⏸' : '▶️';
+  queuePlayerSpacing();
 }
 
 function onDeckStateChange(key) {
