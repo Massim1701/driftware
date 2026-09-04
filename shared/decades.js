@@ -59,10 +59,6 @@ function renderDecadeIndex(cfg) {
 
   document.body.insertAdjacentHTML('afterbegin', utilityBlockHTML('privacy.html#kontakt'));
 
-  var featuresHTML = (cfg.features || []).map(function (f) {
-    return '<div class="feature"><h3>' + f.emoji + ' ' + f.title + '</h3><p>' + f.desc + '</p></div>';
-  }).join('');
-
   var main = document.getElementById('decade-root');
   main.insertAdjacentHTML('beforeend', '' +
     '<header class="decade-header">' +
@@ -73,7 +69,6 @@ function renderDecadeIndex(cfg) {
     '  <div class="badges"><span class="badge">' + cfg.badgeText + '</span></div>' +
     '</header>' +
     '<main class="decade-main">' +
-    '  <div class="features">' + featuresHTML + '</div>' +
     '  <div class="info-note"><strong>Woher kommen die Songs?</strong> ' + cfg.sourceNote + '</div>' +
     '</main>' +
     '<footer class="decade-footer">' +
@@ -401,67 +396,8 @@ var DECKS = {
 };
 var nextLoadDeck = 'A';
 var crossfaderValue = 50; /* 0 = nur Deck A hörbar, 100 = nur Deck B */
+var masterVolume = 80; /* Gesamtlautstärke, 0-100, skaliert beide Decks zusaetzlich zum Crossfader */
 
-var MIX_HISTORY_KEY = 'driftware-mix-history';
-var MIX_HISTORY_MAX = 300;
-var mixHistory = [];
-try {
-  var storedMixHistory = localStorage.getItem(MIX_HISTORY_KEY);
-  if (storedMixHistory) mixHistory = JSON.parse(storedMixHistory) || [];
-} catch (e) { mixHistory = []; }
-
-function saveMixHistory() {
-  try { localStorage.setItem(MIX_HISTORY_KEY, JSON.stringify(mixHistory.slice(-MIX_HISTORY_MAX))); } catch (e) {}
-}
-
-function updateMixCount() {
-  var el = document.getElementById('dj-mix-count');
-  if (el) el.textContent = mixHistory.length;
-}
-
-function logToMixHistory(song, deckKey) {
-  if (!song) return;
-  mixHistory.push({
-    a: song.a, t: song.t, y: song.y, cv: song.cv, th: song.th, u: song.u, yt: song.yt,
-    deck: deckKey, ts: Date.now()
-  });
-  if (mixHistory.length > MIX_HISTORY_MAX) mixHistory = mixHistory.slice(-MIX_HISTORY_MAX);
-  saveMixHistory();
-  updateMixCount();
-  var panel = document.getElementById('dj-mix-panel');
-  if (panel && !panel.hidden) renderMixHistoryList();
-}
-
-function renderMixHistoryList() {
-  var list = document.getElementById('mix-history-list');
-  if (!list) return;
-  updateMixCount();
-  if (!mixHistory.length) {
-    list.innerHTML = '<p class="dj-mix-empty">Noch nichts gespielt — leg einen Song auf ein Deck.</p>';
-    return;
-  }
-  var items = mixHistory.slice().reverse();
-  list.innerHTML = '';
-  items.forEach(function (song) {
-    var row = document.createElement('button');
-    row.type = 'button';
-    row.className = 'dj-mix-item';
-    row.innerHTML = '' +
-      '<img src="' + (song.th || song.cv || '') + '" alt="" loading="lazy">' +
-      '<span class="dj-mix-item-info"><strong>' + escapeHtml(song.a) + '</strong><span>' + escapeHtml(song.t) + '</span></span>';
-    row.addEventListener('click', function () { loadSongToDeck(song, nextLoadDeck, mixHistory); });
-    list.appendChild(row);
-  });
-}
-
-var PITCH_RATES = [1.5, 1.25, 1, 0.75, 0.5];
-function pitchButtonsHTML(key) {
-  return PITCH_RATES.map(function (rate) {
-    var pct = Math.round((rate - 1) * 100);
-    var label = (pct > 0 ? '+' : '') + pct + '%';
-    return '<button type="button" class="dj-pitch-btn' + (rate === 1 ? ' active' : '') + '" data-rate="' + rate + '" aria-label="Deck ' + key + ': Pitch ' + label + '">' + label + '</button>';
-  }).join('');
-}
 function deckHTML(key) {
   return '' +
     '<div class="dj-deck" id="deck-' + key + '">' +
@@ -475,7 +411,9 @@ function deckHTML(key) {
     '    </div>' +
     '    <div class="dj-pitch">' +
     '      <div class="dj-pitch-display" id="deck-' + key + '-pitch-display">PITCH 0%</div>' +
-    '      <div class="dj-pitch-btns" id="deck-' + key + '-pitch-btns">' + pitchButtonsHTML(key) + '</div>' +
+    '      <div class="dj-pitch-slider-wrap">' +
+    '        <input type="range" class="dj-pitch-slider" id="deck-' + key + '-pitch" min="-50" max="50" step="25" value="0" aria-label="Deck ' + key + ': Pitch">' +
+    '      </div>' +
     '    </div>' +
     '  </div>' +
     '  <div class="dj-deck-info">' +
@@ -490,34 +428,36 @@ function deckHTML(key) {
     '</div>';
 }
 
+/* Suche + Player sind jetzt untrennbar: die Suche lebt oben in dieser
+   fest-positionierten Leiste (statt weiter oben im Seiteninhalt), damit
+   sie beim Nutzen des Players immer erreichbar bleibt. Die Leiste ist
+   von Anfang an sichtbar (kein Ein-/Ausblenden mehr, kein X zum
+   Schließen) — Suche muss jederzeit zugaenglich sein. */
 function ensureDjPlayer() {
   var existing = document.getElementById('dj-player');
   if (existing) return existing;
   var bar = document.createElement('div');
-  bar.className = 'dj-player';
+  bar.className = 'dj-player open';
   bar.id = 'dj-player';
   bar.innerHTML = '' +
-    '<button type="button" class="dj-close" id="dj-close" aria-label="Player schließen">&times;</button>' +
+    '<div class="search-box dj-search-box">' +
+    '  <input type="search" id="gen-search" class="search-input" placeholder="🔍 Song oder Künstler suchen — alle Dekaden …" autocomplete="off">' +
+    '</div>' +
+    '<p class="search-hint" id="gen-search-hint" hidden></p>' +
     '<div class="dj-decks">' +
     deckHTML('A') +
-    '<div class="dj-crossfader">' +
-    '  <span class="dj-crossfader-label">A</span>' +
-    '  <input type="range" id="dj-crossfader" min="0" max="100" value="50" aria-label="Crossfader zwischen Deck A und Deck B">' +
-    '  <span class="dj-crossfader-label">B</span>' +
+    '<div class="dj-master">' +
+    '  <div class="dj-crossfader">' +
+    '    <span class="dj-crossfader-label">A</span>' +
+    '    <input type="range" id="dj-crossfader" min="0" max="100" value="50" aria-label="Crossfader zwischen Deck A und Deck B">' +
+    '    <span class="dj-crossfader-label">B</span>' +
+    '  </div>' +
+    '  <div class="dj-volume">' +
+    '    <span class="dj-volume-label">🔊</span>' +
+    '    <input type="range" id="dj-master-volume" min="0" max="100" value="80" aria-label="Gesamtlautstärke">' +
+    '  </div>' +
     '</div>' +
     deckHTML('B') +
-    '</div>' +
-    '<button type="button" class="dj-mix-btn" id="dj-mix-toggle">🎚️ Mein Mix (<span id="dj-mix-count">0</span>)</button>' +
-    '<div class="dj-mix-panel" id="dj-mix-panel" hidden>' +
-    '  <div class="dj-mix-panel-head">' +
-    '    <strong>Mein Mix – zuletzt gespielt</strong>' +
-    '    <div class="dj-mix-panel-actions">' +
-    '      <button type="button" id="dj-mix-play-all">▶️ Nochmal hören</button>' +
-    '      <button type="button" id="dj-mix-clear">🗑️ Leeren</button>' +
-    '      <button type="button" id="dj-mix-close">Schließen</button>' +
-    '    </div>' +
-    '  </div>' +
-    '  <div class="dj-mix-list" id="mix-history-list"></div>' +
     '</div>';
   document.body.appendChild(bar);
 
@@ -535,24 +475,15 @@ function ensureDjPlayer() {
       if (!raw) return;
       try {
         var song = JSON.parse(raw);
-        /* Reingezogene Songs starten nicht automatisch — erst Pitch
-           einstellen, dann per ▶️ am Deck starten. */
         loadSongToDeck(song, key, lastGridSongs, false);
       } catch (err) {}
     });
-    var pitchBtns = bar.querySelector('#deck-' + key + '-pitch-btns');
-    if (pitchBtns) {
-      Array.prototype.forEach.call(pitchBtns.querySelectorAll('.dj-pitch-btn'), function (btn) {
-        btn.addEventListener('click', function () {
-          setDeckPitch(key, parseFloat(btn.getAttribute('data-rate')));
-        });
+    var pitchSlider = bar.querySelector('#deck-' + key + '-pitch');
+    if (pitchSlider) {
+      pitchSlider.addEventListener('input', function () {
+        setDeckPitch(key, 1 + parseInt(pitchSlider.value, 10) / 100);
       });
     }
-  });
-
-  bar.querySelector('#dj-close').addEventListener('click', function () {
-    ['A', 'B'].forEach(function (key) { deckPause(key); });
-    bar.classList.remove('open');
   });
 
   var fader = bar.querySelector('#dj-crossfader');
@@ -561,59 +492,40 @@ function ensureDjPlayer() {
     applyCrossfaderVolumes();
   });
 
-  bar.querySelector('#dj-mix-toggle').addEventListener('click', function () {
-    var panel = document.getElementById('dj-mix-panel');
-    panel.hidden = !panel.hidden;
-    if (!panel.hidden) renderMixHistoryList();
-  });
-  bar.querySelector('#dj-mix-close').addEventListener('click', function () {
-    document.getElementById('dj-mix-panel').hidden = true;
-  });
-  bar.querySelector('#dj-mix-clear').addEventListener('click', function () {
-    if (!confirm('Mix-Verlauf wirklich leeren?')) return;
-    mixHistory = [];
-    saveMixHistory();
-    renderMixHistoryList();
-  });
-  bar.querySelector('#dj-mix-play-all').addEventListener('click', function () {
-    var withVideo = mixHistory.filter(function (s) { return !!s.yt; });
-    if (!withVideo.length) return;
-    loadSongToDeck(withVideo[withVideo.length - 1], nextLoadDeck, withVideo.slice().reverse());
+  var volumeInput = bar.querySelector('#dj-master-volume');
+  volumeInput.addEventListener('input', function () {
+    masterVolume = parseInt(volumeInput.value, 10);
+    applyCrossfaderVolumes();
   });
 
-  updateMixCount();
   return bar;
 }
 
 function applyCrossfaderVolumes() {
-  var volA = Math.round(100 - crossfaderValue);
-  var volB = Math.round(crossfaderValue);
+  var scale = masterVolume / 100;
+  var volA = Math.round((100 - crossfaderValue) * scale);
+  var volB = Math.round(crossfaderValue * scale);
   if (DECKS.A.player && DECKS.A.player.setVolume) { try { DECKS.A.player.setVolume(volA); } catch (e) {} }
   if (DECKS.B.player && DECKS.B.player.setVolume) { try { DECKS.B.player.setVolume(volB); } catch (e) {} }
 }
 
 /* Pitch/Tempo eines Decks setzen — wirkt ueber die YouTube IFrame API
    (setPlaybackRate), die nur feste Stufen kennt (0.5/0.75/1/1.25/1.5x).
-   Eine feine Vinyl-Pitch-Regelung wie bei echten Plattenspielern ist
-   darueber technisch nicht moeglich, daher rechteckige Stufen-Buttons
-   statt eines stufenlosen Reglers. */
+   Der Regler ist deshalb auf genau diese 5 Stufen genastet (step=25),
+   damit die Anzeige immer zu dem passt, was tatsächlich zu hören ist. */
 function setDeckPitch(key, rate) {
   var deck = DECKS[key];
   deck.rate = rate;
   if (deck.player && deck.player.setPlaybackRate) {
     try { deck.player.setPlaybackRate(rate); } catch (e) {}
   }
+  var pct = Math.round((rate - 1) * 100);
   var display = document.getElementById('deck-' + key + '-pitch-display');
   if (display) {
-    var pct = Math.round((rate - 1) * 100);
     display.textContent = 'PITCH ' + (pct > 0 ? '+' : '') + pct + '%';
   }
-  var btnWrap = document.getElementById('deck-' + key + '-pitch-btns');
-  if (btnWrap) {
-    Array.prototype.forEach.call(btnWrap.querySelectorAll('.dj-pitch-btn'), function (b) {
-      b.classList.toggle('active', parseFloat(b.getAttribute('data-rate')) === rate);
-    });
-  }
+  var slider = document.getElementById('deck-' + key + '-pitch');
+  if (slider && parseInt(slider.value, 10) !== pct) { slider.value = pct; }
 }
 
 function updateDeckInfoUI(key) {
@@ -622,8 +534,6 @@ function updateDeckInfoUI(key) {
   var titleEl = document.getElementById('deck-' + key + '-title');
   if (artistEl) artistEl.textContent = deck.song ? deck.song.a : '–';
   if (titleEl) titleEl.textContent = deck.song ? deck.song.t : 'Kein Song geladen';
-  var discEl = document.getElementById('deck-' + key + '-disc');
-  if (discEl) discEl.classList.toggle('spinning', !!deck.isPlaying);
   var deckEl = document.getElementById('deck-' + key);
   if (deckEl) deckEl.classList.toggle('dj-deck-loaded', !!deck.song);
   var toggleBtn = document.getElementById('deck-' + key + '-toggle');
@@ -638,20 +548,24 @@ function onDeckStateChange(key) {
     } else if (e.data === YT.PlayerState.PAUSED) {
       deck.isPlaying = false;
     } else if (e.data === YT.PlayerState.ENDED) {
-      deckStep(key, 1);
+      deckStep(key, 1, true);
     }
     updateDeckInfoUI(key);
   };
 }
 
+/* Autoplay ist standardmaessig AUS: ein geladener Song startet nicht von
+   selbst, damit sich vorher (bei Bedarf) der Pitch einstellen laesst.
+   Manuell per ▶️ am Deck starten. Ausnahme: deckStep() beim automatischen
+   Weiterspringen (Song zu Ende, oder ⏮/⏭ waehrend das Deck laeuft) — das
+   ist kein neues 'Laden' durch den Nutzer, sondern die Fortsetzung eines
+   laufenden Sets. */
 function playDeckSong(key, song, autoplay) {
-  if (autoplay === undefined) autoplay = true;
+  if (autoplay === undefined) autoplay = false;
   var deck = DECKS[key];
   deck.song = song;
   updateDeckInfoUI(key);
-  logToMixHistory(song, key);
   var bar = ensureDjPlayer();
-  bar.classList.add('open');
 
   function start() {
     if (deck.player && deck.player.loadVideoById) {
@@ -674,7 +588,7 @@ function playDeckSong(key, song, autoplay) {
             applyCrossfaderVolumes();
           },
           onStateChange: onDeckStateChange(key),
-          onError: function () { deckStep(key, 1); }
+          onError: function () { deckStep(key, 1, true); }
         }
       });
     }
@@ -682,26 +596,39 @@ function playDeckSong(key, song, autoplay) {
   loadYouTubeAPI(start);
 }
 
-/* Song (per Klick, Drag&Drop oder Mix-Verlauf) auf ein bestimmtes Deck
-   laden — die restliche sichtbare Liste (Genre/Suche) wird die Warteschlange
-   dieses Decks, damit ⏮/⏭ am Deck weiter durch dieselbe Liste läuft. */
+/* Song (per Klick, Drag&Drop oder Suche) auf ein bestimmtes Deck laden —
+   die restliche sichtbare Liste (Genre/Suche) wird die Warteschlange
+   dieses Decks, damit ⏮/⏭ am Deck weiter durch dieselbe Liste läuft.
+   Der Abgleich mit der Warteschlange laeuft ueber songId() statt
+   Objekt-Referenz: ein per Drag&Drop uebergebener Song kommt aus
+   JSON.parse() und ist nie referenzgleich mit dem Original-Objekt aus
+   der Liste — mit indexOf() waere das immer -1 und es haette immer den
+   ERSTEN Song der Liste geladen, egal welcher gezogen wurde. */
 function loadSongToDeck(song, key, contextSongs, autoplay) {
   if (!song || !song.yt) { alert('Für diesen Song wurde noch kein passendes YouTube-Video gefunden.'); return; }
   var deck = DECKS[key];
   var withVideo = (contextSongs || [song]).filter(function (s) { return !!s.yt; });
   deck.queue = withVideo.length ? withVideo : [song];
-  var idx = deck.queue.indexOf(song);
-  deck.index = idx === -1 ? 0 : idx;
+  var wantedId = songId(song);
+  var idx = -1;
+  for (var i = 0; i < deck.queue.length; i++) {
+    if (songId(deck.queue[i]) === wantedId) { idx = i; break; }
+  }
+  if (idx === -1) {
+    deck.queue = [song].concat(deck.queue);
+    idx = 0;
+  }
+  deck.index = idx;
   playDeckSong(key, deck.queue[deck.index], autoplay);
   nextLoadDeck = (key === 'A') ? 'B' : 'A';
 }
 
-function deckStep(key, dir) {
+function deckStep(key, dir, autoplay) {
   var deck = DECKS[key];
   var newIndex = deck.index + dir;
   if (newIndex < 0 || newIndex >= deck.queue.length) return;
   deck.index = newIndex;
-  playDeckSong(key, deck.queue[newIndex]);
+  playDeckSong(key, deck.queue[newIndex], autoplay === undefined ? true : autoplay);
 }
 
 function deckTogglePlay(key) {
@@ -715,15 +642,15 @@ function deckPause(key) {
   if (deck.player && deck.player.pauseVideo) { try { deck.player.pauseVideo(); } catch (e) {} }
 }
 
-/* Einzelnen Song abspielen, im Kontext der aktuell sichtbaren Liste (Genre
-   oder Suchergebnis) — landet abwechselnd auf Deck A/B, damit sich der
-   nächste Klick sauber überblenden lässt. */
+/* Einzelnen Song laden, im Kontext der aktuell sichtbaren Liste (Genre
+   oder Suchergebnis) — landet abwechselnd auf Deck A/B. Startet nicht
+   automatisch (siehe playDeckSong). */
 function playSongInContext(song, contextSongs) {
   loadSongToDeck(song, nextLoadDeck, contextSongs);
 }
 
 /* Ganze aktuelle Auswahl (Genre-Playlist) von vorne auf das nächste freie
-   Deck laden. */
+   Deck laden. Startet nicht automatisch (siehe playDeckSong). */
 function playAllCurrent(songs) {
   var withVideo = (songs || []).filter(function (s) { return !!s.yt; });
   if (!withVideo.length) { alert('Für diese Auswahl wurde noch kein passendes YouTube-Video gefunden.'); return; }
@@ -774,6 +701,9 @@ function openSongModal(song) {
   overlay.classList.add('open');
 }
 
+/* Song-Liste: eine Zeile pro Song, Titel zuerst und fett, Interpret
+   darunter/daneben klein. Icons (Info/Play/Haken) sind eine normale
+   Reihe am rechten Rand statt Overlays auf einem großen Cover. */
 function renderSongGrid(container, songs) {
   lastGridSongs = songs;
   container.innerHTML = '';
@@ -785,12 +715,39 @@ function renderSongGrid(container, songs) {
 
     var media = document.createElement('span');
     media.className = 'song-tile-media';
+    var img = document.createElement('img');
+    img.src = song.th || song.cv || '';
+    img.alt = song.a + ' – ' + song.t;
+    img.loading = 'lazy';
+    media.appendChild(img);
+    tile.appendChild(media);
 
-    var check = document.createElement('span');
-    check.className = 'song-tile-check';
-    check.textContent = '✓';
-    check.setAttribute('aria-hidden', 'true');
-    media.appendChild(check);
+    var text = document.createElement('span');
+    text.className = 'song-tile-text';
+
+    var title = document.createElement('span');
+    title.className = 'song-tile-title';
+    title.textContent = song.t;
+    text.appendChild(title);
+
+    var artist = document.createElement('span');
+    artist.className = 'song-tile-artist';
+    artist.textContent = song.a;
+    text.appendChild(artist);
+
+    tile.appendChild(text);
+
+    /* Nur bei dekadenuebergreifenden Suchergebnissen gesetzt (song._decade) —
+       zeigt, aus welcher Dekade der Treffer stammt. */
+    if (song._decade) {
+      var decadeBadge = document.createElement('span');
+      decadeBadge.className = 'song-tile-decade';
+      decadeBadge.textContent = song._decade;
+      tile.appendChild(decadeBadge);
+    }
+
+    var icons = document.createElement('span');
+    icons.className = 'song-tile-icons';
 
     var info = document.createElement('span');
     info.className = 'song-tile-info';
@@ -802,7 +759,7 @@ function renderSongGrid(container, songs) {
     info.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); openSongModal(song); }
     });
-    media.appendChild(info);
+    icons.appendChild(info);
 
     var play = document.createElement('span');
     play.className = 'song-tile-play' + (song.yt ? '' : ' disabled');
@@ -816,33 +773,15 @@ function renderSongGrid(container, songs) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); playSongInContext(song, songs); }
       });
     }
-    media.appendChild(play);
+    icons.appendChild(play);
 
-    var img = document.createElement('img');
-    img.src = song.th || song.cv || '';
-    img.alt = song.a + ' – ' + song.t;
-    img.loading = 'lazy';
-    media.appendChild(img);
+    var check = document.createElement('span');
+    check.className = 'song-tile-check';
+    check.textContent = '✓';
+    check.setAttribute('aria-hidden', 'true');
+    icons.appendChild(check);
 
-    /* Nur bei dekadenuebergreifenden Suchergebnissen gesetzt (song._decade) —
-       zeigt, aus welcher Dekade der Treffer stammt. */
-    if (song._decade) {
-      var decadeBadge = document.createElement('span');
-      decadeBadge.className = 'song-tile-decade';
-      decadeBadge.textContent = song._decade;
-      media.appendChild(decadeBadge);
-    }
-    tile.appendChild(media);
-
-    var artist = document.createElement('span');
-    artist.className = 'song-tile-artist';
-    artist.textContent = song.a;
-    tile.appendChild(artist);
-
-    var title = document.createElement('span');
-    title.className = 'song-tile-title';
-    title.textContent = song.t;
-    tile.appendChild(title);
+    tile.appendChild(icons);
 
     tile.addEventListener('click', function () {
       toggleSongSelected(song, tile);
@@ -1009,11 +948,7 @@ function renderPlaylistGenerator(mountRoot, config) {
   section.className = 'generator';
   section.innerHTML = '' +
     '<h2>🎛️ Playlist-Generator</h2>' +
-    '<p class="sub">Songs anklicken für einen grünen Haken, ⓘ zeigt alle Song-Infos, 🔍 durchsucht alle Dekaden. Auswahl direkt an deinen Streaming-Dienst senden.</p>' +
-    '<div class="search-box">' +
-    '  <input type="search" id="gen-search" class="search-input" placeholder="🔍 Song oder Künstler suchen — alle Dekaden …" autocomplete="off">' +
-    '</div>' +
-    '<p class="search-hint" id="gen-search-hint" hidden></p>' +
+    '<p class="sub">Songs anklicken für einen grünen Haken, ⓘ zeigt alle Song-Infos. Die Suche dazu steht oben im Player. Auswahl direkt an deinen Streaming-Dienst senden.</p>' +
     '<div class="theme-buttons" id="gen-buttons"></div>' +
     '<div class="send-panel">' +
     '  <span class="send-panel-label">Dein Dienst:</span>' +
@@ -1023,7 +958,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     '</div>' +
     '<div class="generator-actions" id="gen-actions">' +
     '  <span class="generator-count" id="gen-count"></span>' +
-    '  <button id="gen-play-all" type="button">▶️ Playlist abspielen</button>' +
+    '  <button id="gen-play-all" type="button">➕ Playlist auf Deck laden</button>' +
     '  <button id="gen-copy" type="button">📋 Liste kopieren</button>' +
     '  <a id="gen-download" download>⬇️ Als CSV exportieren</a>' +
     '</div>' +
@@ -1062,7 +997,11 @@ function renderPlaylistGenerator(mountRoot, config) {
   section.querySelector('#gen-send-clear').addEventListener('click', clearSelection);
   updateSendPanel();
 
-  var searchInput = section.querySelector('#gen-search');
+  /* Suchfeld lebt im DJ-Player (fest positioniert, immer erreichbar) —
+     ensureDjPlayer() baut es bei Bedarf jetzt schon auf, statt erst beim
+     ersten Songstart. */
+  ensureDjPlayer();
+  var searchInput = document.getElementById('gen-search');
   searchInput.addEventListener('input', function () {
     clearTimeout(searchDebounceHandle);
     var val = searchInput.value.trim();
