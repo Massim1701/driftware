@@ -118,7 +118,7 @@ main.decade-main {
 }
 .features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 16px;
   margin: 40px 0;
 }
@@ -128,7 +128,7 @@ main.decade-main {
   border-radius: 16px;
   padding: 20px;
 }
-.feature h3 { margin: 0 0 8px; font-size: 16px; color: var(--text); }
+.feature h3 { margin: 0 0 8px; font-size: 15px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .feature p { margin: 0; color: var(--muted); font-size: 14px; }
 
 .info-note {
