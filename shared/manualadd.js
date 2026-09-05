@@ -247,7 +247,7 @@
       ? '<button type="button" class="manualadd-autosave" id="manualadd-autosave">📁 Autosave einrichten</button>'
       : '<button type="button" class="manualadd-export" id="manualadd-export">Als JSON kopieren</button>';
     panel.innerHTML =
-      '<button type="button" class="manualadd-toggle" id="manualadd-toggle">🔍 Song nicht gefunden</button>' +
+      '<button type="button" class="manualadd-toggle" id="manualadd-toggle">🔍 Song nicht gefunden?</button>' +
       '<div class="manualadd-body" id="manualadd-body" hidden>' +
       '  <p class="manualadd-hint">Interpret + Titel eintragen, auf YouTube suchen, den Link des richtigen Videos hier einfügen.</p>' +
       '  <input type="text" class="manualadd-input" id="manualadd-artist" placeholder="Interpret">' +
@@ -267,7 +267,7 @@
   function injectStyles() {
     var style = document.createElement('style');
     style.textContent =
-      '.manualadd-panel{display:inline-block;margin:0 0 4px 8px;font-family:inherit;font-size:13px;vertical-align:top;}' +
+      '.manualadd-panel{display:inline-block;margin:10px 0 4px 0;font-family:inherit;font-size:13px;vertical-align:top;}' +
       '.manualadd-toggle{background:#1c1c24;color:#f0e9ff;border:1px solid #4a4460;border-radius:8px;padding:8px 12px;cursor:pointer;}' +
       '.manualadd-body{margin-top:8px;background:#1c1c24;border:1px solid #4a4460;border-radius:10px;padding:12px;width:300px;color:#e6e0f5;box-shadow:0 8px 24px rgba(0,0,0,.4);}' +
       '.manualadd-hint{margin:0 0 8px;font-size:12px;opacity:.8;line-height:1.4;}' +

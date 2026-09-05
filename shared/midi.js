@@ -176,7 +176,7 @@
   function injectStyles() {
     var style = document.createElement('style');
     style.textContent =
-      '.dj-midi-panel{display:inline-block;margin:10px 0 4px;font-family:inherit;font-size:13px;}' +
+      '.dj-midi-panel{display:inline-block;margin:10px 8px 4px 0;font-family:inherit;font-size:13px;vertical-align:top;}' +
       '.dj-midi-toggle{background:#1c1c24;color:#f0e9ff;border:1px solid #4a4460;border-radius:8px;padding:8px 12px;cursor:pointer;}' +
       '.dj-midi-toggle:disabled{opacity:.5;cursor:not-allowed;}' +
       '.dj-midi-body{margin-top:8px;background:#1c1c24;border:1px solid #4a4460;border-radius:10px;padding:12px;width:280px;color:#e6e0f5;box-shadow:0 8px 24px rgba(0,0,0,.4);}' +
