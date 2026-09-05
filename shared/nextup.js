@@ -40,8 +40,13 @@
     });
   }
 
-  function songLine(s, marker, current) {
-    return '<li class="gen-queue-item' + (current ? ' gen-queue-current' : '') + '">' +
+  function songLine(s, marker, kind) {
+    // kind: "upcoming" (gruen), "current" (Highlight-Hintergrund), "history" (rot)
+    var cls = 'gen-queue-item';
+    if (kind === 'current') cls += ' gen-queue-current';
+    else if (kind === 'upcoming') cls += ' gen-queue-upcoming';
+    else if (kind === 'history') cls += ' gen-queue-history';
+    return '<li class="' + cls + '">' +
       '<span class="gen-queue-num">' + marker + '</span>' +
       '<span class="gen-queue-text"><strong>' + escapeHtml(s.t) + '</strong><span>' + escapeHtml(s.a) + '</span></span></li>';
   }
@@ -83,9 +88,9 @@
     }
 
     var html = '';
-    html += upcomingTopDown.map(function (s) { return songLine(s, '+', false); }).join('');
-    if (current) html += songLine(current, '▶', true);
-    html += history.map(function (s) { return songLine(s, '−', false); }).join('');
+    html += upcomingTopDown.map(function (s) { return songLine(s, '+', 'upcoming'); }).join('');
+    if (current) html += songLine(current, '▶', 'current');
+    html += history.map(function (s) { return songLine(s, '−', 'history'); }).join('');
     listEl.innerHTML = html;
   }
 
@@ -98,9 +103,13 @@
       '.gen-queue-text{display:flex;flex-direction:column;overflow:hidden;}' +
       '.gen-queue-text strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
       '.gen-queue-text span{opacity:.65;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
-      '.gen-queue-current{background:rgba(34,197,94,.15);}' +
-      '.gen-queue-current .gen-queue-num{opacity:1;color:#22c55e;}' +
-      '.gen-queue-current strong{color:#22c55e;}' +
+      '.gen-queue-upcoming .gen-queue-num{opacity:1;color:#22c55e;}' +
+      '.gen-queue-upcoming strong{color:#22c55e;}' +
+      '.gen-queue-history .gen-queue-num{opacity:1;color:#ef4444;}' +
+      '.gen-queue-history strong{color:#ef4444;}' +
+      '.gen-queue-current{background:rgba(255,255,255,.1);}' +
+      '.gen-queue-current .gen-queue-num{opacity:1;color:#fff;}' +
+      '.gen-queue-current strong{color:#fff;}' +
       '.gen-queue-empty{opacity:.6;font-size:12px;padding:4px 6px;}';
     document.head.appendChild(style);
   }
