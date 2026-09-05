@@ -243,12 +243,22 @@
   function buildPanel() {
     var panel = document.createElement('div');
     panel.className = 'manualadd-panel';
+    panel.innerHTML = '<button type="button" class="manualadd-toggle" id="manualadd-toggle">🔍 Song nicht gefunden?</button>';
+    return panel;
+  }
+
+  function buildModal() {
     var autosaveBtnHtml = HAS_FS_ACCESS
       ? '<button type="button" class="manualadd-autosave" id="manualadd-autosave">📁 Autosave einrichten</button>'
       : '<button type="button" class="manualadd-export" id="manualadd-export">Als JSON kopieren</button>';
-    panel.innerHTML =
-      '<button type="button" class="manualadd-toggle" id="manualadd-toggle">🔍 Song nicht gefunden?</button>' +
-      '<div class="manualadd-body" id="manualadd-body" hidden>' +
+    var backdrop = document.createElement('div');
+    backdrop.className = 'manualadd-backdrop';
+    backdrop.id = 'manualadd-backdrop';
+    backdrop.hidden = true;
+    backdrop.innerHTML =
+      '<div class="manualadd-modal" role="dialog" aria-modal="true">' +
+      '  <button type="button" class="manualadd-close" id="manualadd-close" aria-label="Schließen">✕</button>' +
+      '  <h3>Song nicht gefunden</h3>' +
       '  <p class="manualadd-hint">Interpret + Titel eintragen, auf YouTube suchen, den Link des richtigen Videos hier einfügen.</p>' +
       '  <input type="text" class="manualadd-input" id="manualadd-artist" placeholder="Interpret">' +
       '  <input type="text" class="manualadd-input" id="manualadd-title" placeholder="Titel">' +
@@ -261,7 +271,7 @@
       '  ' + autosaveBtnHtml +
       '  <p class="manualadd-autosave-status"></p>' +
       '</div>';
-    return panel;
+    return backdrop;
   }
 
   function injectStyles() {
@@ -269,13 +279,16 @@
     style.textContent =
       '.manualadd-panel{display:inline-block;margin:10px 0 4px 0;font-family:inherit;font-size:13px;vertical-align:top;}' +
       '.manualadd-toggle{background:#1c1c24;color:#f0e9ff;border:1px solid #4a4460;border-radius:8px;padding:8px 12px;cursor:pointer;}' +
-      '.manualadd-body{margin-top:8px;background:#1c1c24;border:1px solid #4a4460;border-radius:10px;padding:12px;width:300px;color:#e6e0f5;box-shadow:0 8px 24px rgba(0,0,0,.4);}' +
+      '.manualadd-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;box-sizing:border-box;}' +
+      '.manualadd-modal{position:relative;background:#1c1c24;border:1px solid #4a4460;border-radius:12px;padding:16px;width:320px;max-width:100%;max-height:85vh;overflow-y:auto;color:#e6e0f5;box-shadow:0 16px 48px rgba(0,0,0,.5);}' +
+      '.manualadd-modal h3{margin:0 0 8px;font-size:15px;}' +
+      '.manualadd-close{position:absolute;top:10px;right:10px;background:transparent;border:none;color:#b3a5c2;cursor:pointer;font-size:16px;line-height:1;padding:4px;}' +
       '.manualadd-hint{margin:0 0 8px;font-size:12px;opacity:.8;line-height:1.4;}' +
       '.manualadd-input{display:block;width:100%;box-sizing:border-box;margin-bottom:6px;padding:6px 8px;background:#141419;border:1px solid #4a4460;border-radius:6px;color:#f0e9ff;font-size:12px;}' +
       '.manualadd-search{width:100%;margin-bottom:10px;background:#332f47;color:#fff;border:1px solid #5a527a;border-radius:6px;padding:6px 8px;cursor:pointer;font-size:12px;}' +
       '.manualadd-add{width:100%;margin-bottom:4px;background:#22c55e;color:#0c1a10;border:none;border-radius:6px;padding:7px 8px;cursor:pointer;font-size:12px;font-weight:600;}' +
       '.manualadd-error{color:#ff8a8a;font-size:11px;margin:4px 0;}' +
-      '.manualadd-body h4{font-size:11px;opacity:.7;margin:12px 0 6px;font-weight:600;}' +
+      '.manualadd-modal h4{font-size:11px;opacity:.7;margin:12px 0 6px;font-weight:600;}' +
       '.manualadd-list{list-style:none;margin:0 0 8px;padding:0;max-height:160px;overflow-y:auto;}' +
       '.manualadd-empty{opacity:.6;font-size:12px;padding:4px 0;}' +
       '.manualadd-item{display:flex;align-items:center;gap:6px;padding:4px 0;border-top:1px solid rgba(255,255,255,.08);}' +
@@ -304,31 +317,40 @@
     panelEl = buildPanel();
     anchor.insertAdjacentElement('afterend', panelEl);
 
-    listEl = panelEl.querySelector('#manualadd-list');
-    autosaveStatusEl = panelEl.querySelector('.manualadd-autosave-status');
+    var modalEl = buildModal();
+    document.body.appendChild(modalEl);
+
+    listEl = modalEl.querySelector('#manualadd-list');
+    autosaveStatusEl = modalEl.querySelector('.manualadd-autosave-status');
     renderList();
     restoreAutosaveHandle();
 
     var toggleBtn = panelEl.querySelector('#manualadd-toggle');
-    var body = panelEl.querySelector('#manualadd-body');
-    toggleBtn.addEventListener('click', function () {
-      body.hidden = !body.hidden;
+    function openModal() { modalEl.hidden = false; }
+    function closeModal() { modalEl.hidden = true; }
+    toggleBtn.addEventListener('click', openModal);
+    modalEl.querySelector('#manualadd-close').addEventListener('click', closeModal);
+    modalEl.addEventListener('click', function (ev) {
+      if (ev.target === modalEl) closeModal(); /* Klick auf Backdrop, nicht aufs Modal selbst */
+    });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && !modalEl.hidden) closeModal();
     });
 
-    panelEl.querySelector('#manualadd-search').addEventListener('click', function () {
-      var a = panelEl.querySelector('#manualadd-artist').value.trim();
-      var t = panelEl.querySelector('#manualadd-title').value.trim();
+    modalEl.querySelector('#manualadd-search').addEventListener('click', function () {
+      var a = modalEl.querySelector('#manualadd-artist').value.trim();
+      var t = modalEl.querySelector('#manualadd-title').value.trim();
       if (!a && !t) return;
       var q = encodeURIComponent((a + ' ' + t).trim());
       window.open('https://www.youtube.com/results?search_query=' + q, 'driftware-yt-search', 'noopener,width=480,height=640,left=200,top=100');
     });
 
-    panelEl.querySelector('#manualadd-add').addEventListener('click', function () {
-      var errorEl = panelEl.querySelector('#manualadd-error');
+    modalEl.querySelector('#manualadd-add').addEventListener('click', function () {
+      var errorEl = modalEl.querySelector('#manualadd-error');
       errorEl.hidden = true;
-      var a = panelEl.querySelector('#manualadd-artist').value.trim();
-      var t = panelEl.querySelector('#manualadd-title').value.trim();
-      var link = panelEl.querySelector('#manualadd-link').value.trim();
+      var a = modalEl.querySelector('#manualadd-artist').value.trim();
+      var t = modalEl.querySelector('#manualadd-title').value.trim();
+      var link = modalEl.querySelector('#manualadd-link').value.trim();
       var ytId = extractYoutubeId(link);
       if (!a || !t) {
         errorEl.textContent = 'Bitte Interpret und Titel eintragen.';
@@ -341,9 +363,9 @@
         return;
       }
       addEntry(a, t, ytId);
-      panelEl.querySelector('#manualadd-artist').value = '';
-      panelEl.querySelector('#manualadd-title').value = '';
-      panelEl.querySelector('#manualadd-link').value = '';
+      modalEl.querySelector('#manualadd-artist').value = '';
+      modalEl.querySelector('#manualadd-title').value = '';
+      modalEl.querySelector('#manualadd-link').value = '';
     });
 
     listEl.addEventListener('click', function (ev) {
@@ -353,7 +375,7 @@
       else if (removeBtn) removeEntry(parseInt(removeBtn.dataset.i, 10));
     });
 
-    var autosaveBtn = panelEl.querySelector('#manualadd-autosave');
+    var autosaveBtn = modalEl.querySelector('#manualadd-autosave');
     if (autosaveBtn) autosaveBtn.addEventListener('click', function () {
       if (fileHandle) {
         fileHandle.requestPermission({ mode: 'readwrite' }).then(function (perm) {
@@ -363,7 +385,7 @@
         setupAutosave();
       }
     });
-    var exportBtn = panelEl.querySelector('#manualadd-export');
+    var exportBtn = modalEl.querySelector('#manualadd-export');
     if (exportBtn) exportBtn.addEventListener('click', exportEntriesToClipboard);
   }
 
