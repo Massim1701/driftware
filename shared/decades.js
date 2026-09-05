@@ -401,6 +401,7 @@ var DECKS = {
 var nextLoadDeck = 'A';
 var crossfaderValue = 50; /* 0 = nur Deck A hörbar, 100 = nur Deck B */
 var masterVolume = 80; /* Gesamtlautstärke, 0-100, skaliert beide Decks zusaetzlich zum Crossfader */
+var autoFadeEnabled = true; /* Autofade-Button: automatisches Überblenden an/aus, siehe maybeStartAutoCrossfade */
 
 /* Verlauf bereits gespielter Songs (global, seitenweit — es gibt nur einen
    Player pro Seite). Ein Song wird beim Start des tatsaechlichen Abspielens
@@ -555,6 +556,18 @@ function ensureDjPlayer() {
     applyCrossfaderVolumes();
   });
 
+  var autoFadeBtn = bar.querySelector('#dj-autofade-toggle');
+  autoFadeBtn.addEventListener('click', function () {
+    autoFadeEnabled = !autoFadeEnabled;
+    autoFadeBtn.classList.toggle('active', autoFadeEnabled);
+    autoFadeBtn.setAttribute('aria-pressed', autoFadeEnabled ? 'true' : 'false');
+    autoFadeBtn.textContent = autoFadeEnabled ? '🔄 Autofade An' : '🔄 Autofade Aus';
+    if (!autoFadeEnabled && activeAutoFade) {
+      clearInterval(activeAutoFade.intervalId);
+      activeAutoFade = null;
+    }
+  });
+
   queuePlayerSpacing();
   return bar;
 }
@@ -642,7 +655,7 @@ function onDeckStateChange(key) {
       if (activeAutoFade && activeAutoFade.fromKey === key) {
         finishAutoCrossfade();
       } else if (!tryGaplessHandoff(key)) {
-        deckStep(key, 1, true);
+        advanceAlternating(key);
       }
     }
     updateDeckInfoUI(key);
@@ -730,6 +743,36 @@ function tryGaplessHandoff(key) {
   return true;
 }
 
+/* Fallback, wenn beim Songende noch kein fertiges Preload auf dem anderen
+   Deck bereitliegt (z.B. sehr kurzer Song, oder das Preload war noch am
+   Puffern): trotzdem IMMER das jeweils andere Deck fuer den naechsten Song
+   uebernehmen, nie zweimal hintereinander dasselbe Deck -- so alternieren
+   A und B garantiert bei jedem Songwechsel, auch ohne den nahtlosen
+   Handoff. Das eigentliche Ein-/Ausblenden (Auto/Manuell) kommt separat.
+   Gibt true zurueck, wenn ein naechster Song vorhanden war und uebernommen
+   wurde, sonst false (Ende der Warteschlange). */
+function advanceAlternating(key) {
+  var finished = DECKS[key];
+  var otherKey = key === 'A' ? 'B' : 'A';
+  var other = DECKS[otherKey];
+  var nextIdx = finished.index + 1;
+  if (nextIdx < 0 || nextIdx >= finished.queue.length) return false;
+  var nextSong = finished.queue[nextIdx];
+  if (!nextSong || !nextSong.yt) return false;
+
+  other.queue = finished.queue;
+  other.index = nextIdx;
+  playDeckSong(otherKey, nextSong, true);
+
+  finished.song = null;
+  finished.queue = [];
+  finished.index = -1;
+  finished.isPlaying = false;
+  updateDeckInfoUI(key);
+
+  return true;
+}
+
 /* Automatisches Überblenden statt hartem Schnitt: 5 Sekunden vor Songende
    beginnt das bereits vorgeladene andere Deck einzufaden, waehrend das
    endende Deck ausfadet (Crossfader wandert in dieser Zeit automatisch von
@@ -752,7 +795,7 @@ function bpmsCompatible(bpmA, bpmB) {
 }
 
 function maybeStartAutoCrossfade(key, remaining) {
-  if (activeAutoFade) return;
+  if (!autoFadeEnabled || activeAutoFade) return;
   var deck = DECKS[key];
   var otherKey = key === 'A' ? 'B' : 'A';
   var other = DECKS[otherKey];
