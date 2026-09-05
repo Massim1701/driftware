@@ -507,6 +507,8 @@ function ensureDjPlayer() {
     '    <input type="range" id="dj-crossfader" min="0" max="100" value="50" aria-label="Crossfader zwischen Deck A und Deck B">' +
     '    <span class="dj-crossfader-label">B</span>' +
     '  </div>' +
+    '  <button type="button" id="dj-autofade-toggle" class="dj-autofade-toggle active" aria-pressed="true" ' +
+    '    title="Automatisches Überblenden 5s vor Songende (nur bei passenden BPM) an/aus">🔄 Autofade An</button>' +
     '  <div class="dj-volume">' +
     '    <span class="dj-volume-label">🔊</span>' +
     '    <input type="range" id="dj-master-volume" min="0" max="100" value="80" aria-label="Gesamtlautstärke">' +
@@ -881,6 +883,12 @@ function playDeckSong(key, song, autoplay) {
         deck.player.cueVideoById(song.yt);
       }
       try { deck.player.setPlaybackRate(deck.rate || 1); } catch (e) {}
+      // Ein wiederverwendeter Player kann von einem frueheren Vorladen
+      // (maybePreloadNext) noch stumm geschaltet sein (setVolume(0)) --
+      // ohne diesen Reset bliebe das Deck lautlos, bis der Nutzer zufaellig
+      // den Crossfader/die Lautstaerke anfasst und dadurch applyCrossfaderVolumes()
+      // erneut auslaest.
+      applyCrossfaderVolumes();
     } else {
       deck.player = new YT.Player('deck-' + key + '-mount', {
         width: '100%',
