@@ -152,7 +152,6 @@
 
   function buildPanel() {
     var panel = document.createElement('div');
-    panel.className = 'dj-midi-panel';
     panel.innerHTML =
       '<button type="button" class="dj-midi-toggle" id="dj-midi-toggle">🎛️ MIDI-Controller</button>' +
       '<div class="dj-midi-body" id="dj-midi-body" hidden>' +
