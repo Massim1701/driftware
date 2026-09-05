@@ -1,11 +1,16 @@
-/* "Als nächstes"-Anzeige neben "Zuletzt gespielt" im Playlist-Generator.
-   Reine Anzeige (keine Klicks/Interaktion), zeigt bis zu 10 kommende Songs
-   aus der Warteschlange des aktuell aktiven Decks. Eigenstaendige Datei
-   (wie midi.js/continuity.js) -- liest nur die globalen DECKS aus
+/* Kombinierte Verlauf/Warteschlange-Liste im Playlist-Generator, oberhalb
+   von "Zuletzt gespielt" (nicht daneben). Reine Anzeige (keine Klicks/
+   Interaktion): zeigt ein festes Fenster von bis zu 5 zuletzt gespielten
+   Songs, dann den aktuellen Song hervorgehoben, dann bis zu 5 kommende
+   Songs -- die Hervorhebung bleibt also immer an derselben Stelle in der
+   Liste, die Liste selbst "rutscht" mit jedem neuen Song um eine Position
+   weiter (aeltester Verlaufs-Eintrag faellt raus, naechster Song fuer
+   Warteschlange kommt nach). Eigenstaendige Datei (wie midi.js/
+   continuity.js) -- liest nur die globalen DECKS/playHistory aus
    decades.js per Polling, keine Aenderung an decades.js/.css noetig. */
 
 (function () {
-  var MAX_ITEMS = 10;
+  var WINDOW_SIZE = 5; // je 5 zurueck und 5 vor dem aktuellen Song
   var POLL_MS = 1000;
   var listEl = null;
   var lastSignature = null;
@@ -27,52 +32,72 @@
     });
   }
 
+  function songLine(s, marker, current) {
+    return '<li class="' + (current ? 'gen-queue-current' : '') + '">' +
+      '<span class="gen-queue-num">' + marker + '</span>' +
+      '<span class="gen-queue-text"><strong>' + escapeHtml(s.t) + '</strong><span>' + escapeHtml(s.a) + '</span></span></li>';
+  }
+
   function render() {
     if (!listEl) return;
     var deck = pickActiveDeck();
+    var current = deck ? deck.song : null;
+
+    // Letzte 5 gespielte Songs, chronologisch (aeltester zuerst) -- playHistory
+    // (globale Var aus decades.js) ist unshift-basiert, also neuester zuerst.
+    var history = (typeof window.playHistory !== 'undefined' ? window.playHistory : [])
+      .slice(0, WINDOW_SIZE).slice().reverse();
+
     var upcoming = [];
     if (deck && deck.queue && deck.index > -1) {
-      upcoming = deck.queue.slice(deck.index + 1, deck.index + 1 + MAX_ITEMS);
+      upcoming = deck.queue.slice(deck.index + 1, deck.index + 1 + WINDOW_SIZE);
     }
 
-    var signature = upcoming.map(function (s) { return s.a + '|' + s.t; }).join(',');
+    var signature = history.map(function (s) { return s.a + s.t; }).join(',') + '||' +
+      (current ? current.a + current.t : '') + '||' +
+      upcoming.map(function (s) { return s.a + s.t; }).join(',');
     if (signature === lastSignature) return; // nichts geaendert, kein unnoetiges Neuzeichnen
     lastSignature = signature;
 
-    if (!upcoming.length) {
-      listEl.innerHTML = '<li class="gen-nextup-empty">Nichts in der Warteschlange.</li>';
+    if (!current && !history.length && !upcoming.length) {
+      listEl.innerHTML = '<li class="gen-queue-empty">Nichts geladen.</li>';
       return;
     }
-    listEl.innerHTML = upcoming.map(function (s, i) {
-      return '<li><span class="gen-nextup-num">' + (i + 1) + '</span>' +
-        '<span class="gen-nextup-text"><strong>' + escapeHtml(s.t) + '</strong><span>' + escapeHtml(s.a) + '</span></span></li>';
-    }).join('');
+
+    var html = '';
+    html += history.map(function (s) { return songLine(s, '−', false); }).join('');
+    if (current) html += songLine(current, '▶', true);
+    html += upcoming.map(function (s) { return songLine(s, '+', false); }).join('');
+    listEl.innerHTML = html;
   }
 
   function injectStyles() {
     var style = document.createElement('style');
     style.textContent =
-      '.gen-nextup{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 14px;flex:1 1 220px;max-width:280px;}' +
-      '.gen-nextup h3{margin:0 0 8px;font-size:14px;display:flex;align-items:center;gap:6px;}' +
-      '.gen-nextup h3 svg{width:16px;height:16px;}' +
-      '.gen-nextup ul{list-style:none;margin:0;padding:0;max-height:260px;overflow-y:auto;}' +
-      '.gen-nextup li{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-top:1px solid rgba(255,255,255,.06);font-size:12px;}' +
-      '.gen-nextup li:first-child{border-top:none;}' +
-      '.gen-nextup-num{opacity:.5;flex:0 0 auto;min-width:14px;}' +
-      '.gen-nextup-text{display:flex;flex-direction:column;overflow:hidden;}' +
-      '.gen-nextup-text strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
-      '.gen-nextup-text span{opacity:.65;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
-      '.gen-nextup-empty{opacity:.6;font-size:12px;padding:4px 0;}';
+      '.gen-queue-panel{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 14px;margin-bottom:14px;}' +
+      '.gen-queue-panel h3{margin:0 0 8px;font-size:14px;display:flex;align-items:center;gap:6px;}' +
+      '.gen-queue-panel h3 svg{width:16px;height:16px;}' +
+      '.gen-queue-panel ul{list-style:none;margin:0;padding:0;max-height:280px;overflow-y:auto;}' +
+      '.gen-queue-panel li{display:flex;align-items:baseline;gap:8px;padding:5px 6px;border-top:1px solid rgba(255,255,255,.06);font-size:12px;border-radius:6px;}' +
+      '.gen-queue-panel li:first-child{border-top:none;}' +
+      '.gen-queue-num{opacity:.5;flex:0 0 auto;min-width:16px;text-align:center;}' +
+      '.gen-queue-text{display:flex;flex-direction:column;overflow:hidden;}' +
+      '.gen-queue-text strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
+      '.gen-queue-text span{opacity:.65;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
+      '.gen-queue-current{background:rgba(34,197,94,.15);border-top:none !important;}' +
+      '.gen-queue-current .gen-queue-num{opacity:1;color:#22c55e;}' +
+      '.gen-queue-current strong{color:#22c55e;}' +
+      '.gen-queue-empty{opacity:.6;font-size:12px;padding:4px 0;}';
     document.head.appendChild(style);
   }
 
   function init() {
-    var history = document.querySelector('.gen-history');
-    if (!history) {
+    var body = document.querySelector('.generator-body');
+    if (!body) {
       window.setTimeout(init, 500); // Generator noch nicht gerendert
       return;
     }
-    if (document.querySelector('.gen-nextup')) return; // schon initialisiert
+    if (document.querySelector('.gen-queue-panel')) return; // schon initialisiert
 
     injectStyles();
 
@@ -80,14 +105,14 @@
       ? window.NEXT_SVG
       : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5v14l11-7z"/></svg>';
 
-    var aside = document.createElement('aside');
-    aside.className = 'gen-nextup';
-    aside.innerHTML =
-      '<h3>' + nextIconSvg + ' Als nächstes</h3>' +
-      '<ul id="gen-nextup-list"><li class="gen-nextup-empty">Nichts in der Warteschlange.</li></ul>';
-    history.insertAdjacentElement('afterend', aside);
+    var panel = document.createElement('div');
+    panel.className = 'gen-queue-panel';
+    panel.innerHTML =
+      '<h3>' + nextIconSvg + ' Verlauf & Warteschlange</h3>' +
+      '<ul id="gen-queue-list"><li class="gen-queue-empty">Nichts geladen.</li></ul>';
+    body.insertAdjacentElement('beforebegin', panel);
 
-    listEl = document.getElementById('gen-nextup-list');
+    listEl = document.getElementById('gen-queue-list');
     render();
     setInterval(render, POLL_MS);
   }
