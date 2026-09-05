@@ -635,7 +635,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 6px;
 }
 .dj-deck {
   display: flex;
