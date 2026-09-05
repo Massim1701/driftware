@@ -254,7 +254,7 @@
       '  <input type="text" class="manualadd-input" id="manualadd-title" placeholder="Titel">' +
       '  <button type="button" class="manualadd-search" id="manualadd-search">Auf YouTube suchen</button>' +
       '  <input type="text" class="manualadd-input" id="manualadd-link" placeholder="YouTube-Link oder Video-ID">' +
-      '  <button type="button" class="manualadd-add" id="manualadd-add">Hinzufügen &amp; abspielen</button>' +
+      '  <button type="button" class="manualadd-add" id="manualadd-add">Zur Liste hinzufügen</button>' +
       '  <p class="manualadd-error" id="manualadd-error" hidden></p>' +
       '  <h4>Manuell hinzugefügt (Ohne Genre, dieser Browser)</h4>' +
       '  <ul class="manualadd-list" id="manualadd-list"></ul>' +
@@ -341,7 +341,6 @@
         return;
       }
       addEntry(a, t, ytId);
-      playEntry(loadEntries().length - 1);
       panelEl.querySelector('#manualadd-artist').value = '';
       panelEl.querySelector('#manualadd-title').value = '';
       panelEl.querySelector('#manualadd-link').value = '';
