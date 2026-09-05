@@ -280,6 +280,7 @@
       '.manualadd-panel{display:inline-block;margin:10px 0 4px 0;font-family:inherit;font-size:13px;vertical-align:top;}' +
       '.manualadd-toggle{background:#1c1c24;color:#f0e9ff;border:1px solid #4a4460;border-radius:8px;padding:8px 12px;cursor:pointer;}' +
       '.manualadd-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;box-sizing:border-box;}' +
+      '.manualadd-backdrop[hidden]{display:none;}' +
       '.manualadd-modal{position:relative;background:#1c1c24;border:1px solid #4a4460;border-radius:12px;padding:16px;width:320px;max-width:100%;max-height:85vh;overflow-y:auto;color:#e6e0f5;box-shadow:0 16px 48px rgba(0,0,0,.5);}' +
       '.manualadd-modal h3{margin:0 0 8px;font-size:15px;}' +
       '.manualadd-close{position:absolute;top:10px;right:10px;background:transparent;border:none;color:#b3a5c2;cursor:pointer;font-size:16px;line-height:1;padding:4px;}' +
