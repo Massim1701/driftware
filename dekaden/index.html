@@ -71,6 +71,12 @@
     font-size: 16px;
     margin: 0;
   }
+  .ambient-heading {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 40px 0 16px;
+  }
   main {
     max-width: 900px;
     margin: 0 auto;
@@ -162,6 +168,8 @@
   </header>
   <main>
     <div class="decades-grid" id="decades-container"></div>
+    <h2 class="ambient-heading">Ambiente — nach Stimmung</h2>
+    <div class="decades-grid" id="ambients-container"></div>
   </main>
   <footer>
     &copy; 2026 Massimo — Ultimate Music Master
@@ -178,40 +186,49 @@
       { href: '2020er-music/', icon: '🌍', bg: 'linear-gradient(135deg, #ff4d6d, #ffd166)', name: '2020er Music', years: '2020–heute', desc: 'Hyperpop, Phonk, Amapiano und mehr.', live: true }
     ];
 
-    var container = document.getElementById('decades-container');
-    DECADES.forEach(function (d) {
-      var a = document.createElement('a');
-      a.className = 'decade-card';
-      a.href = '/' + d.href;
+    var AMBIENTS = [
+      { href: 'chillhouse-music/', icon: '🌇', bg: 'linear-gradient(135deg, #ff8a5c, #3ec6b8)', name: 'Chill House', years: 'Alle Jahrzehnte', desc: 'Deep House, Ambient House, Nu-Disco, Lounge & Balearic.', live: true }
+    ];
 
-      var badge = document.createElement('span');
-      badge.className = 'decade-card-badge' + (d.live ? ' live' : '');
-      badge.textContent = d.live ? '🟢 Online' : 'In Arbeit';
-      a.appendChild(badge);
+    function renderCards(list, containerId) {
+      var container = document.getElementById(containerId);
+      list.forEach(function (d) {
+        var a = document.createElement('a');
+        a.className = 'decade-card';
+        a.href = '/' + d.href;
 
-      var icon = document.createElement('div');
-      icon.className = 'decade-icon';
-      icon.style.background = d.bg;
-      icon.textContent = d.icon;
-      a.appendChild(icon);
+        var badge = document.createElement('span');
+        badge.className = 'decade-card-badge' + (d.live ? ' live' : '');
+        badge.textContent = d.live ? '🟢 Online' : 'In Arbeit';
+        a.appendChild(badge);
 
-      var years = document.createElement('span');
-      years.className = 'decade-years';
-      years.textContent = d.years;
-      a.appendChild(years);
+        var icon = document.createElement('div');
+        icon.className = 'decade-icon';
+        icon.style.background = d.bg;
+        icon.textContent = d.icon;
+        a.appendChild(icon);
 
-      var name = document.createElement('span');
-      name.className = 'decade-name';
-      name.textContent = d.name;
-      a.appendChild(name);
+        var years = document.createElement('span');
+        years.className = 'decade-years';
+        years.textContent = d.years;
+        a.appendChild(years);
 
-      var desc = document.createElement('p');
-      desc.className = 'decade-desc';
-      desc.textContent = d.desc;
-      a.appendChild(desc);
+        var name = document.createElement('span');
+        name.className = 'decade-name';
+        name.textContent = d.name;
+        a.appendChild(name);
 
-      container.appendChild(a);
-    });
+        var desc = document.createElement('p');
+        desc.className = 'decade-desc';
+        desc.textContent = d.desc;
+        a.appendChild(desc);
+
+        container.appendChild(a);
+      });
+    }
+
+    renderCards(DECADES, 'decades-container');
+    renderCards(AMBIENTS, 'ambients-container');
   </script>
 </body>
 </html>

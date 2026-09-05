@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chill House</title>
+<meta name="description" content="Chill House: über 2400 Deep-House-, Ambient-House-, Nu-Disco- und Lounge-Songs aus allen Jahrzehnten — zum Entspannen, Arbeiten oder als Sunset-Soundtrack, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=18">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=14"></script>
+<script>
+renderDecadeIndex({
+  name: 'Chill House',
+  years: 'Alle Jahrzehnte',
+  icon: '🌇',
+  iconBg: 'linear-gradient(135deg, #ff8a5c, #3ec6b8)',
+  tagline: 'Über 2400 Deep-House-, Ambient-House-, Nu-Disco- und Lounge-Perlen aus allen Jahrzehnten — zum Entspannen, Arbeiten oder als Sunset-Soundtrack.',
+  badgeText: '🎧 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#0e1a22',
+    panel: '#152731',
+    accent: '#ff8a5c',
+    accent2: '#3ec6b8',
+    text: '#f4faf9',
+    muted: '#87a3a3'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (Deep House, Ambient House, Nu-Disco, Lounge & Balearic) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🌊', title: 'Deep House', desc: 'Warme Bässe, entspannter Groove.' },
+    { emoji: '🎐', title: 'Ambient House', desc: 'Atmosphärisch, fast schwerelos.' },
+    { emoji: '🪩', title: 'Nu-Disco', desc: 'Discoglanz im Chill-Tempo.' },
+    { emoji: '🍹', title: 'Lounge & Balearic', desc: 'Ibiza-Sonnenuntergang-Sound.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'ChillHouse',
+  themes: [
+    { key: 'DeepHouse', label: '🌊 Deep House' },
+    { key: 'AmbientHouse', label: '🎐 Ambient House' },
+    { key: 'NuDisco', label: '🪩 Nu-Disco' },
+    { key: 'LoungeBalearic', label: '🍹 Lounge & Balearic' }
+  ]
+});
+</script>
+</body>
+</html>
