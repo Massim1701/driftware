@@ -512,11 +512,6 @@ function ensureDjPlayer() {
   bar.className = 'dj-player open';
   bar.id = 'dj-player';
   bar.innerHTML = '' +
-    '<div class="search-box dj-search-box">' +
-    '  <span class="search-box-icon">' + SEARCH_SVG + '</span>' +
-    '  <input type="search" id="gen-search" class="search-input" placeholder="Song, Künstler oder Genre suchen — alle Dekaden …" autocomplete="off">' +
-    '</div>' +
-    '<p class="search-hint" id="gen-search-hint" hidden></p>' +
     '<div class="dj-decks">' +
     deckHTML('A') +
     '<div class="dj-master">' +
@@ -1437,7 +1432,14 @@ function renderPlaylistGenerator(mountRoot, config) {
   section.className = 'generator';
   section.innerHTML = '' +
     '<h2>🎛️ Playlist-Generator</h2>' +
-    '<p class="sub">Songs anklicken für einen grünen Haken, ⓘ zeigt alle Song-Infos. Die Suche dazu steht oben im Player. Auswahl direkt an deinen Streaming-Dienst senden.</p>' +
+    '<p class="sub">Songs anklicken für einen grünen Haken, ⓘ zeigt alle Song-Infos. Auswahl direkt an deinen Streaming-Dienst senden.</p>' +
+    '<div class="generator-search">' +
+    '  <div class="search-box">' +
+    '    <span class="search-box-icon">' + SEARCH_SVG + '</span>' +
+    '    <input type="search" id="gen-search" class="search-input" placeholder="Song, Künstler oder Genre suchen — alle Dekaden …" autocomplete="off">' +
+    '  </div>' +
+    '  <p class="search-hint" id="gen-search-hint" hidden></p>' +
+    '</div>' +
     '<div class="theme-buttons" id="gen-buttons"></div>' +
     '<div class="send-panel">' +
     '  <span class="send-panel-label">Dein Dienst:</span>' +

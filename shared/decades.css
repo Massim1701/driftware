@@ -227,6 +227,15 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .search-hint a { color: var(--accent2); font-weight: 700; text-decoration: none; }
 .search-hint a:hover { text-decoration: underline; }
 
+.generator-search {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.generator-search .search-box { margin-bottom: 0; }
+.generator-search .search-hint { margin: 6px 0 0; }
 .theme-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .theme-btn {
   background: var(--bg);
@@ -622,8 +631,6 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   background: linear-gradient(180deg, transparent, var(--accent), var(--accent2), transparent);
   opacity: 0.7;
 }
-.dj-search-box { margin: 0 0 8px; max-width: none; }
-.dj-player .search-hint { margin: 0 0 6px; max-width: none; }
 .dj-decks {
   display: flex;
   flex-direction: column;
@@ -992,8 +999,6 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   .dj-master { width: 100%; order: 5; margin-top: 2px; padding: 7px 12px; gap: 6px; }
   .dj-crossfader, .dj-volume { justify-content: center; }
   .dj-autofade-toggle { padding: 4px 10px; }
-  .dj-search-box { margin: 0 auto 6px; max-width: 480px; }
-  .dj-player .search-hint { margin: 0 auto 4px; max-width: 480px; }
 }
 
 @media (max-width: 640px) {
@@ -1052,9 +1057,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   .dj-volume { width: 100%; justify-content: center; }
   #dj-crossfader, #dj-master-volume { width: 62%; }
   .dj-autofade-toggle { font-size: 10px; padding: 4px 10px; }
-  .dj-search-box { max-width: none; margin-bottom: 6px; }
   /* 16px verhindert, dass iOS beim Antippen ins Feld hineinzoomt */
-  .dj-search-box .search-input { font-size: 16px; padding: 9px 12px 9px 34px; }
+  .generator-search .search-input { font-size: 16px; padding: 9px 12px 9px 34px; }
   body { padding-bottom: 300px; }
 }
 
