@@ -1,14 +1,21 @@
-/* Kombinierte Verlauf/Warteschlange-Liste im Playlist-Generator, oberhalb
-   von "Zuletzt gespielt" (nicht daneben). Reine Anzeige (keine Klicks/
-   Interaktion). Reihenfolge von oben nach unten: bis zu 5 kommende Songs
-   (am weitesten entfernter zuerst, naechster direkt ueber dem Highlight),
-   dann der aktuelle Song hervorgehoben, dann bis zu 5 zuletzt gespielte
-   Songs (zuletzt gespielter direkt darunter, aeltere weiter unten). Die
-   Hervorhebung bleibt also immer an derselben Stelle in der Liste, die
-   Liste selbst "rutscht" mit jedem neuen Song um eine Position weiter.
-   Eigenstaendige Datei (wie midi.js/continuity.js) -- liest nur die
-   globalen DECKS/playHistory aus decades.js per Polling, keine Aenderung
-   an decades.js/.css noetig. */
+/* Ersetzt den Inhalt der bestehenden "Zuletzt gespielt"-Box (".gen-history",
+   aus decades.js) durch EINE kombinierte Verlauf/Warteschlange-Liste --
+   an genau derselben Stelle/Groesse, keine zweite Box, keine Luecke.
+   Reine Anzeige (keine Klicks/Interaktion). Reihenfolge von oben nach
+   unten: bis zu 5 kommende Songs (am weitesten entfernter zuerst, naechster
+   direkt ueber dem Highlight), dann der aktuelle Song hervorgehoben, dann
+   bis zu 5 zuletzt gespielte Songs (zuletzt gespielter direkt darunter,
+   aeltere weiter unten). Die Hervorhebung bleibt also immer an derselben
+   Stelle in der Liste, die Liste selbst "rutscht" mit jedem neuen Song um
+   eine Position weiter.
+
+   Technisch: die urspruengliche Liste (ID "gen-history-list") wird durch
+   eine eigene ID ersetzt -- decades.js' renderPlayHistory() findet sein
+   Element dann nicht mehr (hat bereits einen Null-Check eingebaut) und
+   schreibt einfach nichts mehr dort hinein, kein Konflikt. Eigenstaendige
+   Datei (wie midi.js/continuity.js) -- liest nur die globalen DECKS/
+   playHistory aus decades.js per Polling, keine Aenderung an
+   decades.js/.css noetig. */
 
 (function () {
   var WINDOW_SIZE = 5; // je 5 zurueck und 5 vor dem aktuellen Song
@@ -34,7 +41,7 @@
   }
 
   function songLine(s, marker, current) {
-    return '<li class="' + (current ? 'gen-queue-current' : '') + '">' +
+    return '<li class="gen-queue-item' + (current ? ' gen-queue-current' : '') + '">' +
       '<span class="gen-queue-num">' + marker + '</span>' +
       '<span class="gen-queue-text"><strong>' + escapeHtml(s.t) + '</strong><span>' + escapeHtml(s.a) + '</span></span></li>';
   }
@@ -80,30 +87,26 @@
   function injectStyles() {
     var style = document.createElement('style');
     style.textContent =
-      '.gen-queue-panel{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 14px;margin-bottom:14px;}' +
-      '.gen-queue-panel h3{margin:0 0 8px;font-size:14px;display:flex;align-items:center;gap:6px;}' +
-      '.gen-queue-panel h3 svg{width:16px;height:16px;}' +
-      '.gen-queue-panel ul{list-style:none;margin:0;padding:0;max-height:280px;overflow-y:auto;}' +
-      '.gen-queue-panel li{display:flex;align-items:baseline;gap:8px;padding:5px 6px;border-top:1px solid rgba(255,255,255,.06);font-size:12px;border-radius:6px;}' +
-      '.gen-queue-panel li:first-child{border-top:none;}' +
+      '.gen-history ul{max-height:none;}' +
+      '.gen-queue-item{display:flex;align-items:baseline;gap:8px;padding:5px 6px;border-radius:6px;}' +
       '.gen-queue-num{opacity:.5;flex:0 0 auto;min-width:16px;text-align:center;}' +
       '.gen-queue-text{display:flex;flex-direction:column;overflow:hidden;}' +
       '.gen-queue-text strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
       '.gen-queue-text span{opacity:.65;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
-      '.gen-queue-current{background:rgba(34,197,94,.15);border-top:none !important;}' +
+      '.gen-queue-current{background:rgba(34,197,94,.15);}' +
       '.gen-queue-current .gen-queue-num{opacity:1;color:#22c55e;}' +
       '.gen-queue-current strong{color:#22c55e;}' +
-      '.gen-queue-empty{opacity:.6;font-size:12px;padding:4px 0;}';
+      '.gen-queue-empty{opacity:.6;font-size:12px;padding:4px 6px;}';
     document.head.appendChild(style);
   }
 
   function init() {
-    var body = document.querySelector('.generator-body');
-    if (!body) {
+    var nativeHistory = document.querySelector('.gen-history');
+    if (!nativeHistory) {
       window.setTimeout(init, 500); // Generator noch nicht gerendert
       return;
     }
-    if (document.querySelector('.gen-queue-panel')) return; // schon initialisiert
+    if (document.getElementById('gen-queue-list')) return; // schon initialisiert
 
     injectStyles();
 
@@ -111,19 +114,14 @@
       ? window.NEXT_SVG
       : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5v14l11-7z"/></svg>';
 
-    var panel = document.createElement('div');
-    panel.className = 'gen-queue-panel';
-    panel.innerHTML =
+    // Original-Inhalt (Ueberschrift "Zuletzt gespielt" + #gen-history-list)
+    // komplett ersetzen -- dieselbe Box, dieselbe Position/Groesse, nur der
+    // Inhalt wird zu unserer kombinierten Liste. decades.js' eigene
+    // renderPlayHistory() findet "#gen-history-list" danach nicht mehr und
+    // tut nichts mehr (hat einen Null-Check), kein Konflikt.
+    nativeHistory.innerHTML =
       '<h3>' + nextIconSvg + ' Verlauf & Warteschlange</h3>' +
       '<ul id="gen-queue-list"><li class="gen-queue-empty">Nichts geladen.</li></ul>';
-    body.insertAdjacentElement('beforebegin', panel);
-
-    // Die urspruengliche "Zuletzt gespielt"-Box (aus decades.js) zeigt
-    // dieselbe Information bereits doppelt an -- ausblenden statt zwei
-    // getrennte Listen zu haben. decades.js selbst bleibt unangetastet,
-    // sie schreibt weiter unsichtbar in den Hintergrund.
-    var nativeHistory = document.querySelector('.gen-history');
-    if (nativeHistory) nativeHistory.style.display = 'none';
 
     listEl = document.getElementById('gen-queue-list');
     render();
