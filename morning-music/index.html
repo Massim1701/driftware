@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morning</title>
+<meta name="description" content="Morning: Folk, Acoustic, Indie Folk und Bossa Nova aus allen Jahrzehnten — sanfter Sound zum Wachwerden und in den Tag starten, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=18">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=16"></script>
+<script>
+renderDecadeIndex({
+  name: 'Morning',
+  years: 'Alle Jahrzehnte',
+  icon: '☀️',
+  iconBg: 'linear-gradient(135deg, #ffd97a, #ff9a76)',
+  tagline: 'Folk, Acoustic, Indie Folk und Bossa Nova aus allen Jahrzehnten — sanfter Sound zum Wachwerden und in den Tag starten.',
+  badgeText: '☀️ 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#1c1710',
+    panel: '#2a2318',
+    accent: '#ffd97a',
+    accent2: '#ff9a76',
+    text: '#fff8ec',
+    muted: '#b8a888'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (Folk, Acoustic, Indie Folk, Bossa Nova) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🎸', title: 'Folk', desc: 'Warme Gitarren, ehrliche Texte.' },
+    { emoji: '🌿', title: 'Acoustic', desc: 'Unplugged, reduziert, echt.' },
+    { emoji: '🍃', title: 'Indie Folk', desc: 'Zeitgenössisch und zurückhaltend.' },
+    { emoji: '☕', title: 'Bossa Nova', desc: 'Brasilianische Leichtigkeit.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'Morning',
+  themes: [
+    { key: 'Folk', label: 'Folk' },
+    { key: 'Acoustic', label: 'Acoustic' },
+    { key: 'IndieFolk', label: 'Indie Folk' },
+    { key: 'BossaNova', label: 'Bossa Nova' }
+  ]
+});
+</script>
+</body>
+</html>
