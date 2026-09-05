@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ballermann</title>
+<meta name="description" content="Ballermann: Mallorca-Party-Schlager von Mickie Krause, Jürgen Drews, DJ Ötzi, Mia Julia & mehr — mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=18">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=16"></script>
+<script>
+renderDecadeIndex({
+  name: 'Ballermann',
+  years: 'Alle Jahrzehnte',
+  icon: '🍹',
+  iconBg: 'linear-gradient(135deg, #ffb703, #fb8500)',
+  tagline: 'Mallorca-Party-Schlager von Mickie Krause, Jürgen Drews, DJ Ötzi, Mia Julia und mehr — Bierkönig-Stimmung pur.',
+  badgeText: '🍹 Mallorca-Hits — Playlist-Generator live',
+  colors: {
+    bg: '#1f2a3d',
+    panel: '#2b3a54',
+    accent: '#ffb703',
+    accent2: '#fb8500',
+    text: '#fef6e4',
+    muted: '#a9b8d0'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, kuratiert nach den bekanntesten Mallorca-Party-Künstlern — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '☀️', title: 'Mallorca-Stars', desc: 'Mickie Krause, Jürgen Drews, DJ Ötzi.' },
+    { emoji: '🍺', title: 'Bierkönig-Hits', desc: 'Sommer, Sonne, Ballermann.' },
+    { emoji: '🎤', title: 'Malle-Party', desc: 'Von Klassikern bis neuen Anthems.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'Ballermann',
+  themes: [
+    { key: 'Ballermann', label: 'Ballermann' }
+  ]
+});
+</script>
+</body>
+</html>
