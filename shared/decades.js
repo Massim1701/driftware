@@ -809,7 +809,7 @@ function advanceAlternating(key) {
    (Zeitdehnung exakt auf die Ziel-BPM) ist mit der YouTube-IFrame-API nicht
    moeglich, da setPlaybackRate nur die festen Stufen 0.5/0.75/1/1.25/1.5
    kennt — zu grob fuer eine Feinanpassung im niedrigen BPM-Bereich. */
-var CROSSFADE_LEAD_SECONDS = 5;
+var CROSSFADE_LEAD_SECONDS = 10;
 var QUICK_HANDOFF_SECONDS = 1.2;
 var activeAutoFade = null;
 
