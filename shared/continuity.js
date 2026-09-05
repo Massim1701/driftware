@@ -74,19 +74,40 @@
     window.DECKS[RESUME_DECK].index = 0;
     window.playDeckSong(RESUME_DECK, song, true);
 
-    if (state.elapsed > 2) {
-      var attempts = 0;
-      var seekTimer = setInterval(function () {
-        attempts++;
-        var deck = window.DECKS[RESUME_DECK];
-        if (deck.player && typeof deck.player.seekTo === 'function') {
-          try { deck.player.seekTo(state.elapsed, true); } catch (e) {}
-          clearInterval(seekTimer);
-        } else if (attempts > 20) { // ~6s Timeout, dann aufgeben (spielt trotzdem ab, nur von vorn)
-          clearInterval(seekTimer);
+    /* Chrome/Edge blockieren unmuted Autoplay, wenn kein frisches User-Gesture
+       auf DIESER Seite vorliegt (der Klick war ja auf der VORHERIGEN Seite,
+       zaehlt nach einer echten Navigation nicht mehr) -- deshalb blieb der
+       Player nach einem Dekaden-/Ambient-Wechsel bisher einfach stumm/stehen.
+       Fallback: nach kurzer Wartezeit pruefen, ob wirklich abgespielt wird
+       (State 1); falls nicht, stumm schalten + erneut starten (stumme
+       Wiedergabe per Skript ist OHNE Gesture erlaubt), und sobald sie laeuft,
+       automatisch wieder entstummen (Lautstaerke-/Mute-Aenderung an bereits
+       laufendem Video braucht KEIN Gesture mehr). */
+    var attempts = 0;
+    var seeked = false;
+    var mutedFallbackTried = false;
+    var pollTimer = setInterval(function () {
+      attempts++;
+      var deck = window.DECKS[RESUME_DECK];
+      var player = deck.player;
+      if (player && typeof player.getPlayerState === 'function') {
+        if (!seeked && state.elapsed > 2 && typeof player.seekTo === 'function') {
+          try { player.seekTo(state.elapsed, true); } catch (e) {}
+          seeked = true;
         }
-      }, 300);
-    }
+        var pState = player.getPlayerState();
+        if (!mutedFallbackTried && attempts >= 4 && pState !== 1 && pState !== 3) {
+          mutedFallbackTried = true;
+          try { player.mute(); player.playVideo(); } catch (e) {}
+        } else if (mutedFallbackTried && pState === 1) {
+          try { player.unMute(); } catch (e) {}
+          clearInterval(pollTimer);
+        } else if (!mutedFallbackTried && pState === 1 && seeked) {
+          clearInterval(pollTimer); // normales Autoplay hat funktioniert
+        }
+      }
+      if (attempts > 20) clearInterval(pollTimer); // ~6s Timeout, dann aufgeben
+    }, 300);
   }
 
   function init() {
