@@ -118,6 +118,13 @@
       '<ul id="gen-queue-list"><li class="gen-queue-empty">Nichts geladen.</li></ul>';
     body.insertAdjacentElement('beforebegin', panel);
 
+    // Die urspruengliche "Zuletzt gespielt"-Box (aus decades.js) zeigt
+    // dieselbe Information bereits doppelt an -- ausblenden statt zwei
+    // getrennte Listen zu haben. decades.js selbst bleibt unangetastet,
+    // sie schreibt weiter unsichtbar in den Hintergrund.
+    var nativeHistory = document.querySelector('.gen-history');
+    if (nativeHistory) nativeHistory.style.display = 'none';
+
     listEl = document.getElementById('gen-queue-list');
     render();
     setInterval(render, POLL_MS);
