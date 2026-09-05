@@ -4,16 +4,21 @@
    sofort auf Deck geladen/abspielbar UND in einer eigenen kleinen Liste
    "Manuell hinzugefuegt (Ohne Genre)" gesammelt (localStorage, pro Seite).
 
-   Kein Backend/Datenbank auf einer GitHub-Pages-Seite moeglich -- die
-   Eintraege landen deshalb zunaechst NUR lokal im Browser (localStorage),
-   nicht in der echten songs.json. Ueber den Button "Export" laesst sich
-   die gesammelte Liste als JSON kopieren, die dann (wie bisher bei
-   NDW/Reclassify) per Merge-Skript dauerhaft in die "Ohne Genre"-Kategorie
-   der jeweiligen songs.json uebernommen werden kann.
+   Kein Backend auf einer GitHub-Pages-Seite moeglich -- ABER: per File
+   System Access API (Chrome/Edge) kann der Nutzer EINMALIG eine lokale
+   Datei auswaehlen ("Automatisch speichern"); danach schreibt JEDER neue
+   Song automatisch (ohne weiteren Klick/Export) in diese Datei, seitenweit
+   ueber alle Dekaden-/Ambient-Seiten hinweg (Berechtigung wird per
+   IndexedDB gemerkt, kein erneuter Dialog noetig, sofern der Browser die
+   Berechtigung noch kennt). Diese Datei kann direkt aus dem Projektordner
+   heraus dauerhaft per Merge-Skript in die jeweilige songs.json uebernommen
+   werden -- kein manuelles Kopieren/Einfuegen mehr.
+
+   Fallback fuer Browser ohne File System Access API (Safari/Firefox):
+   Button "Als JSON kopieren" wie bisher (Zwischenablage).
 
    Eigenstaendige Datei (wie midi.js/continuity.js/nextup.js) -- liest nur
-   window.playDeckSong/window.nextLoadDeck-Aequivalent (Deck A per Default),
-   keine Aenderung an decades.js noetig. */
+   window.playDeckSong etc. aus decades.js, keine Aenderung dort noetig. */
 
 (function () {
   var STORAGE_PREFIX = 'driftware-manualadd-';
@@ -22,9 +27,12 @@
     return m ? m[1] : 'unbekannt';
   })();
   var STORAGE_KEY = STORAGE_PREFIX + pageKey;
+  var HAS_FS_ACCESS = typeof window.showSaveFilePicker === 'function';
 
   var panelEl = null;
   var listEl = null;
+  var autosaveStatusEl = null;
+  var fileHandle = null; /* seitenweite Auto-Speicher-Datei, sobald gewaehlt/wiederhergestellt */
 
   function loadEntries() {
     try {
@@ -59,6 +67,116 @@
     return m ? m[1] : null;
   }
 
+  /* ---- IndexedDB: FileSystemFileHandle seitenweit (originweit) merken,
+     damit die Auto-Speicherung nur EINMAL pro Browser eingerichtet werden
+     muss, nicht pro Dekaden-Seite. ---- */
+  var DB_NAME = 'driftware-manualadd-db';
+  var STORE_NAME = 'handles';
+  var HANDLE_KEY = 'autosave-file';
+
+  function openDb() {
+    return new Promise(function (resolve, reject) {
+      var req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = function () {
+        req.result.createObjectStore(STORE_NAME);
+      };
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+
+  function idbGet(key) {
+    return openDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(STORE_NAME, 'readonly');
+        var req = tx.objectStore(STORE_NAME).get(key);
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error); };
+      });
+    });
+  }
+
+  function idbSet(key, value) {
+    return openDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).put(value, key);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    });
+  }
+
+  function setAutosaveStatus(text) {
+    if (autosaveStatusEl) autosaveStatusEl.textContent = text;
+  }
+
+  /* Schreibt ALLE bisher (auf JEDER Dekaden-Seite) manuell hinzugefuegten
+     Songs gesammelt in die eine gewaehlte Autosave-Datei -- Format:
+     { "80er": [...], "ballermann": [...], ... } je Seiten-Key. So landet
+     alles in EINER Datei, unabhaengig davon, auf welcher Seite gerade
+     etwas hinzugefuegt wird. */
+  function writeAutosaveFile() {
+    if (!fileHandle) return Promise.resolve();
+    return fileHandle.queryPermission({ mode: 'readwrite' }).then(function (perm) {
+      if (perm !== 'granted') throw new Error('no-permission');
+      return fileHandle.getFile();
+    }).then(function (file) {
+      return file.text().catch(function () { return '{}'; });
+    }).then(function (text) {
+      var all;
+      try { all = JSON.parse(text); } catch (e) { all = {}; }
+      if (!all || typeof all !== 'object') all = {};
+      all[pageKey] = loadEntries().map(function (e) {
+        return { a: e.a, t: e.t, yt: e.yt };
+      });
+      return fileHandle.createWritable().then(function (writable) {
+        return writable.write(JSON.stringify(all, null, 2)).then(function () {
+          return writable.close();
+        });
+      });
+    }).then(function () {
+      setAutosaveStatus('Automatisch gespeichert ✓');
+    }).catch(function (err) {
+      if (err && err.message === 'no-permission') {
+        setAutosaveStatus('Zugriff auf Autosave-Datei fehlt -- bitte neu einrichten.');
+        fileHandle = null;
+      } else {
+        setAutosaveStatus('Autosave fehlgeschlagen (Datei verschoben/gelöscht?).');
+      }
+    });
+  }
+
+  function restoreAutosaveHandle() {
+    if (!HAS_FS_ACCESS) return;
+    idbGet(HANDLE_KEY).then(function (handle) {
+      if (!handle) return;
+      return handle.queryPermission({ mode: 'readwrite' }).then(function (perm) {
+        if (perm === 'granted') {
+          fileHandle = handle;
+          setAutosaveStatus('Automatische Speicherung aktiv (' + (handle.name || 'Datei') + ').');
+        } else {
+          setAutosaveStatus('Automatische Speicherung eingerichtet -- Klick auf "Autosave" bestätigt den Zugriff erneut.');
+        }
+      });
+    }).catch(function () {});
+  }
+
+  function setupAutosave() {
+    if (!HAS_FS_ACCESS) return;
+    window.showSaveFilePicker({
+      suggestedName: 'driftware-manuelle-songs.json',
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
+    }).then(function (handle) {
+      fileHandle = handle;
+      idbSet(HANDLE_KEY, handle);
+      setAutosaveStatus('Automatische Speicherung aktiv (' + (handle.name || 'Datei') + ').');
+      return writeAutosaveFile();
+    }).catch(function (err) {
+      if (err && err.name !== 'AbortError') setAutosaveStatus('Einrichtung abgebrochen/fehlgeschlagen.');
+    });
+  }
+
   function renderList() {
     var entries = loadEntries();
     if (!listEl) return;
@@ -80,6 +198,7 @@
     entries.push({ a: a, t: t, yt: ytId, g: 'Ohne', addedAt: Date.now() });
     saveEntries(entries);
     renderList();
+    if (fileHandle) writeAutosaveFile();
   }
 
   function removeEntry(i) {
@@ -87,6 +206,7 @@
     entries.splice(i, 1);
     saveEntries(entries);
     renderList();
+    if (fileHandle) writeAutosaveFile();
   }
 
   function playEntry(i) {
@@ -102,7 +222,8 @@
     window.playDeckSong(deckKey, song, true);
   }
 
-  function exportEntries() {
+  /* Fallback fuer Browser ohne File System Access API (Safari/Firefox). */
+  function exportEntriesToClipboard() {
     var entries = loadEntries();
     var json = JSON.stringify(entries.map(function (e) {
       return { a: e.a, t: e.t, yt: e.yt };
@@ -115,16 +236,16 @@
     ta.select();
     try { document.execCommand('copy'); } catch (e) {}
     document.body.removeChild(ta);
-    var status = panelEl.querySelector('.manualadd-export-status');
-    if (status) {
-      status.textContent = entries.length + ' Song(s) als JSON in die Zwischenablage kopiert.';
-      window.setTimeout(function () { status.textContent = ''; }, 4000);
-    }
+    setAutosaveStatus(entries.length + ' Song(s) als JSON in die Zwischenablage kopiert.');
+    window.setTimeout(function () { setAutosaveStatus(''); }, 4000);
   }
 
   function buildPanel() {
     var panel = document.createElement('div');
     panel.className = 'manualadd-panel';
+    var autosaveBtnHtml = HAS_FS_ACCESS
+      ? '<button type="button" class="manualadd-autosave" id="manualadd-autosave">📁 Autosave einrichten</button>'
+      : '<button type="button" class="manualadd-export" id="manualadd-export">Als JSON kopieren</button>';
     panel.innerHTML =
       '<button type="button" class="manualadd-toggle" id="manualadd-toggle">🔍 Song nicht gefunden</button>' +
       '<div class="manualadd-body" id="manualadd-body" hidden>' +
@@ -135,10 +256,10 @@
       '  <input type="text" class="manualadd-input" id="manualadd-link" placeholder="YouTube-Link oder Video-ID">' +
       '  <button type="button" class="manualadd-add" id="manualadd-add">Hinzufügen &amp; abspielen</button>' +
       '  <p class="manualadd-error" id="manualadd-error" hidden></p>' +
-      '  <h4>Manuell hinzugefügt (Ohne Genre, nur dieser Browser)</h4>' +
+      '  <h4>Manuell hinzugefügt (Ohne Genre, dieser Browser)</h4>' +
       '  <ul class="manualadd-list" id="manualadd-list"></ul>' +
-      '  <button type="button" class="manualadd-export" id="manualadd-export">Als JSON exportieren (für dauerhafte Übernahme)</button>' +
-      '  <p class="manualadd-export-status"></p>' +
+      '  ' + autosaveBtnHtml +
+      '  <p class="manualadd-autosave-status"></p>' +
       '</div>';
     return panel;
   }
@@ -163,8 +284,8 @@
       '.manualadd-text strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;}' +
       '.manualadd-text span{opacity:.65;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;}' +
       '.manualadd-play,.manualadd-remove{background:transparent;border:1px solid #5a527a;border-radius:5px;color:#e6e0f5;cursor:pointer;font-size:11px;padding:2px 6px;flex:0 0 auto;}' +
-      '.manualadd-export{width:100%;background:transparent;color:#b3a5c2;border:1px solid #5a527a;border-radius:6px;padding:6px 8px;cursor:pointer;font-size:11px;}' +
-      '.manualadd-export-status{font-size:11px;opacity:.75;margin:6px 0 0;min-height:14px;}';
+      '.manualadd-autosave,.manualadd-export{width:100%;background:transparent;color:#b3a5c2;border:1px solid #5a527a;border-radius:6px;padding:6px 8px;cursor:pointer;font-size:11px;}' +
+      '.manualadd-autosave-status{font-size:11px;opacity:.75;margin:6px 0 0;min-height:14px;}';
     document.head.appendChild(style);
   }
 
@@ -184,7 +305,9 @@
     anchor.insertAdjacentElement('afterend', panelEl);
 
     listEl = panelEl.querySelector('#manualadd-list');
+    autosaveStatusEl = panelEl.querySelector('.manualadd-autosave-status');
     renderList();
+    restoreAutosaveHandle();
 
     var toggleBtn = panelEl.querySelector('#manualadd-toggle');
     var body = panelEl.querySelector('#manualadd-body');
@@ -231,7 +354,18 @@
       else if (removeBtn) removeEntry(parseInt(removeBtn.dataset.i, 10));
     });
 
-    panelEl.querySelector('#manualadd-export').addEventListener('click', exportEntries);
+    var autosaveBtn = panelEl.querySelector('#manualadd-autosave');
+    if (autosaveBtn) autosaveBtn.addEventListener('click', function () {
+      if (fileHandle) {
+        fileHandle.requestPermission({ mode: 'readwrite' }).then(function (perm) {
+          if (perm === 'granted') writeAutosaveFile();
+        });
+      } else {
+        setupAutosave();
+      }
+    });
+    var exportBtn = panelEl.querySelector('#manualadd-export');
+    if (exportBtn) exportBtn.addEventListener('click', exportEntriesToClipboard);
   }
 
   if (document.readyState === 'loading') {
