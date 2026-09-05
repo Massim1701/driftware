@@ -1128,6 +1128,7 @@ var MIX_PER_CATEGORY = 5;
 function renderPlaylistGenerator(mountRoot, config) {
   var data = null;
   var currentTheme = null;
+  var mixSongsCache = null;
   var allSongsFlat = null;
   var searchDebounceHandle = null;
   var searchToken = 0;
@@ -1147,9 +1148,26 @@ function renderPlaylistGenerator(mountRoot, config) {
     return out;
   }
 
+  /* Reihenfolge des Mixes wird bei jeder Auswahl neu gemischt (siehe
+     selectTheme, das mixSongsCache zuruecksetzt), bleibt aber innerhalb
+     dieser einen Auswahl stabil — sonst wuerden Grid, CSV-Export und
+     "Playlist auf Deck laden" bei jedem currentSongs()-Aufruf jeweils neu
+     (und unterschiedlich) gemischt. */
+  function shuffled(list) {
+    var out = list.slice();
+    for (var i = out.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+    }
+    return out;
+  }
+
   function currentSongs() {
     if (!data) return [];
-    if (currentTheme === MIX_KEY) return buildMixSongs();
+    if (currentTheme === MIX_KEY) {
+      if (!mixSongsCache) mixSongsCache = shuffled(buildMixSongs());
+      return mixSongsCache;
+    }
     return currentTheme ? (data[currentTheme] || []) : [];
   }
 
@@ -1187,6 +1205,7 @@ function renderPlaylistGenerator(mountRoot, config) {
 
   function selectTheme(key) {
     currentTheme = key;
+    if (key === MIX_KEY) mixSongsCache = null;
     clearSearchUI();
     mountRoot.querySelectorAll('.theme-btn').forEach(function (b) {
       b.classList.toggle('active', b.dataset.key === key);
