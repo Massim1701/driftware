@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dinner Party</title>
+<meta name="description" content="Dinner Party: über 2600 Disco-, Funk-, Boogie- und Nu-Disco-Songs aus allen Jahrzehnten — eleganter Sound für Dinner, Gäste und den Abend danach, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=18">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=14"></script>
+<script>
+renderDecadeIndex({
+  name: 'Dinner Party',
+  years: 'Alle Jahrzehnte',
+  icon: '🥂',
+  iconBg: 'linear-gradient(135deg, #c9a227, #7a1f3d)',
+  tagline: 'Über 2600 Disco-, Funk-, Boogie- und Nu-Disco-Klassiker aus allen Jahrzehnten — eleganter Sound für Dinner, Gäste und den Abend danach.',
+  badgeText: '🥂 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#1a1016',
+    panel: '#241620',
+    accent: '#c9a227',
+    accent2: '#7a1f3d',
+    text: '#faf3e8',
+    muted: '#a98a95'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (Disco, Funk, Boogie, Nu-Disco) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🪩', title: 'Disco', desc: 'Glitzernde Vier-Viertel-Grooves.' },
+    { emoji: '🎷', title: 'Funk', desc: 'Fette Bläser, tighte Bässe.' },
+    { emoji: '🕺', title: 'Boogie', desc: 'Der elegantere Disco-Nachfolger.' },
+    { emoji: '✨', title: 'Nu-Disco', desc: 'Modernes Disco-Revival.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'DinnerParty',
+  themes: [
+    { key: 'Disco', label: '🪩 Disco' },
+    { key: 'Funk', label: '🎷 Funk' },
+    { key: 'Boogie', label: '🕺 Boogie' },
+    { key: 'NuDisco', label: '✨ Nu-Disco' }
+  ]
+});
+</script>
+</body>
+</html>
