@@ -320,7 +320,7 @@
       var t = panelEl.querySelector('#manualadd-title').value.trim();
       if (!a && !t) return;
       var q = encodeURIComponent((a + ' ' + t).trim());
-      window.open('https://www.youtube.com/results?search_query=' + q, '_blank', 'noopener');
+      window.open('https://www.youtube.com/results?search_query=' + q, 'driftware-yt-search', 'noopener,width=480,height=640,left=200,top=100');
     });
 
     panelEl.querySelector('#manualadd-add').addEventListener('click', function () {
