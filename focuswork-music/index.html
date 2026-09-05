@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Focus & Work</title>
+<meta name="description" content="Focus & Work: Ambient, Downtempo, Lo-Fi und IDM aus allen Jahrzehnten — dezenter Sound für konzentriertes Arbeiten, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=18">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=14"></script>
+<script>
+renderDecadeIndex({
+  name: 'Focus & Work',
+  years: 'Alle Jahrzehnte',
+  icon: '🧠',
+  iconBg: 'linear-gradient(135deg, #4a6fa5, #2e3a59)',
+  tagline: 'Ambient, Downtempo, Lo-Fi und IDM aus allen Jahrzehnten — dezenter Sound für konzentriertes Arbeiten, ohne abzulenken.',
+  badgeText: '🧠 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#0c1420',
+    panel: '#131f30',
+    accent: '#5aa9e6',
+    accent2: '#7d89b0',
+    text: '#eef3fb',
+    muted: '#7d8aa3'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (Ambient, Downtempo, Lo-Fi, IDM) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🌫️', title: 'Ambient', desc: 'Weite Klangflächen, kein Beat-Zwang.' },
+    { emoji: '🌙', title: 'Downtempo', desc: 'Ruhiger Groove im Hintergrund.' },
+    { emoji: '📼', title: 'Lo-Fi', desc: 'Warmer, leicht verrauschter Sound.' },
+    { emoji: '🔬', title: 'IDM', desc: 'Kopflastig, aber nie aufdringlich.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'FocusWork',
+  themes: [
+    { key: 'Ambient', label: '🌫️ Ambient' },
+    { key: 'Downtempo', label: '🌙 Downtempo' },
+    { key: 'LoFi', label: '📼 Lo-Fi' },
+    { key: 'IDM', label: '🔬 IDM' }
+  ]
+});
+</script>
+</body>
+</html>
