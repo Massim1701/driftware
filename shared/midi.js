@@ -176,7 +176,7 @@
   function injectStyles() {
     var style = document.createElement('style');
     style.textContent =
-      '.dj-midi-panel{position:fixed;right:16px;bottom:16px;z-index:9999;font-family:inherit;font-size:13px;}' +
+      '.dj-midi-panel{display:inline-block;margin:10px 0 4px;font-family:inherit;font-size:13px;}' +
       '.dj-midi-toggle{background:#1c1c24;color:#f0e9ff;border:1px solid #4a4460;border-radius:8px;padding:8px 12px;cursor:pointer;}' +
       '.dj-midi-toggle:disabled{opacity:.5;cursor:not-allowed;}' +
       '.dj-midi-body{margin-top:8px;background:#1c1c24;border:1px solid #4a4460;border-radius:10px;padding:12px;width:280px;color:#e6e0f5;box-shadow:0 8px 24px rgba(0,0,0,.4);}' +
@@ -194,11 +194,13 @@
   }
 
   function init() {
-    var host = document.getElementById('dj-player');
-    if (!host) {
-      // Player ist noch nicht gerendert (Timing der renderDecadeIndex-
-      // Ausfuehrung) -- kurz erneut versuchen statt Feature stillschweigend
-      // wegzulassen.
+    // Haengt sich an die Beschreibung des Playlist-Generators (".generator
+    // .sub"), NICHT mehr als fixiertes Overlay auf dem Player -- das
+    // ueberdeckte vorher die Deck-Buttons (Prev/Play/Next). Sowohl Player als
+    // auch Playlist-Generator werden erst nach dem initialen renderDecadeIndex/
+    // renderPlaylistGenerator-Aufruf ins DOM gehaengt, daher der Retry.
+    var anchor = document.querySelector('.generator .sub');
+    if (!anchor) {
       window.setTimeout(init, 500);
       return;
     }
@@ -215,12 +217,12 @@
         '<button type="button" class="dj-midi-toggle" disabled>🎛️ MIDI-Controller (nicht unterstützt)</button>' +
         '<div class="dj-midi-unsupported" hidden></div>';
       panelEl.title = 'Web MIDI wird nur von Chrome/Edge unterstützt, nicht von diesem Browser.';
-      document.body.appendChild(panelEl);
+      anchor.insertAdjacentElement('afterend', panelEl);
       return;
     }
 
     panelEl.appendChild(buildPanel());
-    document.body.appendChild(panelEl);
+    anchor.insertAdjacentElement('afterend', panelEl);
 
     TARGETS.forEach(function (t) {
       statusEls[t.key] = panelEl.querySelector('[data-status="' + t.key + '"]');
