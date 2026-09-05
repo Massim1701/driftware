@@ -1,13 +1,14 @@
 /* Kombinierte Verlauf/Warteschlange-Liste im Playlist-Generator, oberhalb
    von "Zuletzt gespielt" (nicht daneben). Reine Anzeige (keine Klicks/
-   Interaktion): zeigt ein festes Fenster von bis zu 5 zuletzt gespielten
-   Songs, dann den aktuellen Song hervorgehoben, dann bis zu 5 kommende
-   Songs -- die Hervorhebung bleibt also immer an derselben Stelle in der
-   Liste, die Liste selbst "rutscht" mit jedem neuen Song um eine Position
-   weiter (aeltester Verlaufs-Eintrag faellt raus, naechster Song fuer
-   Warteschlange kommt nach). Eigenstaendige Datei (wie midi.js/
-   continuity.js) -- liest nur die globalen DECKS/playHistory aus
-   decades.js per Polling, keine Aenderung an decades.js/.css noetig. */
+   Interaktion). Reihenfolge von oben nach unten: bis zu 5 kommende Songs
+   (am weitesten entfernter zuerst, naechster direkt ueber dem Highlight),
+   dann der aktuelle Song hervorgehoben, dann bis zu 5 zuletzt gespielte
+   Songs (zuletzt gespielter direkt darunter, aeltere weiter unten). Die
+   Hervorhebung bleibt also immer an derselben Stelle in der Liste, die
+   Liste selbst "rutscht" mit jedem neuen Song um eine Position weiter.
+   Eigenstaendige Datei (wie midi.js/continuity.js) -- liest nur die
+   globalen DECKS/playHistory aus decades.js per Polling, keine Aenderung
+   an decades.js/.css noetig. */
 
 (function () {
   var WINDOW_SIZE = 5; // je 5 zurueck und 5 vor dem aktuellen Song
@@ -43,19 +44,24 @@
     var deck = pickActiveDeck();
     var current = deck ? deck.song : null;
 
-    // Letzte 5 gespielte Songs, chronologisch (aeltester zuerst) -- playHistory
-    // (globale Var aus decades.js) ist unshift-basiert, also neuester zuerst.
+    // Zuletzt gespielte Songs, neuester zuerst (playHistory aus decades.js ist
+    // bereits unshift-basiert = neuester zuerst) -- der zuletzt gespielte
+    // Song landet direkt UNTER dem aktuellen, aeltere weiter unten.
     var history = (typeof window.playHistory !== 'undefined' ? window.playHistory : [])
-      .slice(0, WINDOW_SIZE).slice().reverse();
+      .slice(0, WINDOW_SIZE);
 
     var upcoming = [];
     if (deck && deck.queue && deck.index > -1) {
       upcoming = deck.queue.slice(deck.index + 1, deck.index + 1 + WINDOW_SIZE);
     }
+    // Oben in der Liste soll der naechste Song (direkt nach dem aktuellen)
+    // am naehesten am Highlight stehen -- also umgekehrte Reihenfolge, der
+    // am weitesten entfernte kommende Song ganz oben.
+    var upcomingTopDown = upcoming.slice().reverse();
 
-    var signature = history.map(function (s) { return s.a + s.t; }).join(',') + '||' +
+    var signature = upcoming.map(function (s) { return s.a + s.t; }).join(',') + '||' +
       (current ? current.a + current.t : '') + '||' +
-      upcoming.map(function (s) { return s.a + s.t; }).join(',');
+      history.map(function (s) { return s.a + s.t; }).join(',');
     if (signature === lastSignature) return; // nichts geaendert, kein unnoetiges Neuzeichnen
     lastSignature = signature;
 
@@ -65,9 +71,9 @@
     }
 
     var html = '';
-    html += history.map(function (s) { return songLine(s, '−', false); }).join('');
+    html += upcomingTopDown.map(function (s) { return songLine(s, '+', false); }).join('');
     if (current) html += songLine(current, '▶', true);
-    html += upcoming.map(function (s) { return songLine(s, '+', false); }).join('');
+    html += history.map(function (s) { return songLine(s, '−', false); }).join('');
     listEl.innerHTML = html;
   }
 
