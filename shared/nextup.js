@@ -54,8 +54,13 @@
     // Zuletzt gespielte Songs, neuester zuerst (playHistory aus decades.js ist
     // bereits unshift-basiert = neuester zuerst) -- der zuletzt gespielte
     // Song landet direkt UNTER dem aktuellen, aeltere weiter unten.
+    // playHistory[0] ist immer der GERADE gestartete Song selbst (wird beim
+    // Start des Abspielens eingetragen, siehe logPlayHistory in decades.js)
+    // -- also identisch mit "current". Fuer den Verlauf ab Index 1 lesen,
+    // sonst taucht der aktuelle Song doppelt auf (als Highlight UND als
+    // erster Verlaufseintrag).
     var history = (typeof window.playHistory !== 'undefined' ? window.playHistory : [])
-      .slice(0, WINDOW_SIZE);
+      .slice(1, 1 + WINDOW_SIZE);
 
     var upcoming = [];
     if (deck && deck.queue && deck.index > -1) {
