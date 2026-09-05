@@ -395,8 +395,8 @@ function escapeHtml(s) {
 }
 
 var DECKS = {
-  A: { player: null, queue: [], index: -1, isPlaying: false, song: null, rate: 1 },
-  B: { player: null, queue: [], index: -1, isPlaying: false, song: null, rate: 1 }
+  A: { player: null, queue: [], index: -1, isPlaying: false, song: null, rate: 1, preloadedFor: null },
+  B: { player: null, queue: [], index: -1, isPlaying: false, song: null, rate: 1, preloadedFor: null }
 };
 var nextLoadDeck = 'A';
 var crossfaderValue = 50; /* 0 = nur Deck A hörbar, 100 = nur Deck B */
@@ -606,13 +606,95 @@ function onDeckStateChange(key) {
     if (e.data === YT.PlayerState.PLAYING) {
       deck.isPlaying = true;
       if (!deck.historyLogged) { logPlayHistory(deck.song); deck.historyLogged = true; }
+      maybePreloadNext(key);
     } else if (e.data === YT.PlayerState.PAUSED) {
       deck.isPlaying = false;
     } else if (e.data === YT.PlayerState.ENDED) {
-      deckStep(key, 1, true);
+      if (!tryGaplessHandoff(key)) { deckStep(key, 1, true); }
     }
     updateDeckInfoUI(key);
   };
+}
+
+/* Vorausschauendes Puffern: waehrend ein Deck spielt, wird der naechste
+   Song der Warteschlange stumm auf das ANDERE Deck geladen (nicht
+   abgespielt), sofern dieses gerade unbenutzt ist. So ist beim Songende
+   kein Nachladen mehr noetig — die 1-2s Ladeluecke zwischen zwei Songs
+   entfaellt, weil beide Player-Instanzen bereits laufen/gepuffert sind.
+   Betrifft nur den Normalfall (Playlist durchspielen mit nur einem aktiv
+   genutzten Deck); ist das zweite Deck bereits belegt, greift dieses
+   Vorladen bewusst nicht ein. */
+function maybePreloadNext(key) {
+  var deck = DECKS[key];
+  var otherKey = key === 'A' ? 'B' : 'A';
+  var other = DECKS[otherKey];
+  if (other.song || other.isPlaying) return;
+  var nextIdx = deck.index + 1;
+  if (nextIdx < 0 || nextIdx >= deck.queue.length) return;
+  var nextSong = deck.queue[nextIdx];
+  if (!nextSong || !nextSong.yt) return;
+  var wantedId = songId(nextSong);
+  if (other.preloadedFor === wantedId) return;
+  other.preloadedFor = wantedId;
+  ensureDjPlayer();
+  function cue() {
+    if (other.preloadedFor !== wantedId) return; /* zwischenzeitlich ueberholt */
+    if (other.player && other.player.cueVideoById) {
+      try { other.player.setVolume(0); } catch (e) {}
+      try { other.player.cueVideoById(nextSong.yt); } catch (e) {}
+    } else if (!other.player) {
+      other.player = new YT.Player('deck-' + otherKey + '-mount', {
+        width: '100%',
+        height: '100%',
+        videoId: nextSong.yt,
+        playerVars: { rel: 0, playsinline: 1, autoplay: 0 },
+        events: {
+          onReady: function (e) { try { e.target.setVolume(0); } catch (err) {} },
+          onStateChange: onDeckStateChange(otherKey),
+          onError: function () { other.preloadedFor = null; }
+        }
+      });
+    }
+  }
+  loadYouTubeAPI(cue);
+}
+
+/* Beim Songende pruefen, ob der naechste Song bereits stumm auf dem
+   anderen Deck bereitliegt (siehe maybePreloadNext) — wenn ja, sofort
+   nahtlos dorthin umschalten statt neu zu laden/zu puffern. Gibt true
+   zurueck bei erfolgreichem Handoff, sonst false (dann laeuft der
+   normale deckStep()-Pfad weiter). */
+function tryGaplessHandoff(key) {
+  var finished = DECKS[key];
+  var otherKey = key === 'A' ? 'B' : 'A';
+  var other = DECKS[otherKey];
+  var nextIdx = finished.index + 1;
+  if (nextIdx < 0 || nextIdx >= finished.queue.length) return false;
+  var nextSong = finished.queue[nextIdx];
+  if (!nextSong || !other.player || !other.preloadedFor || other.preloadedFor !== songId(nextSong)) return false;
+
+  other.queue = finished.queue;
+  other.index = nextIdx;
+  other.song = nextSong;
+  other.historyLogged = false;
+  other.preloadedFor = null;
+
+  crossfaderValue = (otherKey === 'A') ? 0 : 100;
+  var fader = document.getElementById('dj-crossfader');
+  if (fader) fader.value = crossfaderValue;
+  applyCrossfaderVolumes();
+  try { other.player.setPlaybackRate(other.rate || 1); } catch (e) {}
+  try { other.player.playVideo(); } catch (e) {}
+  updateDeckInfoUI(otherKey);
+
+  finished.song = null;
+  finished.queue = [];
+  finished.index = -1;
+  finished.isPlaying = false;
+  updateDeckInfoUI(key);
+
+  maybePreloadNext(otherKey);
+  return true;
 }
 
 /* Restzeit-Anzeige (Minuten:Sekunden bis Songende) pro Deck, laeuft per
