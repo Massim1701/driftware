@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workout & Running</title>
+<meta name="description" content="Workout & Running: Hi NRG, Eurodance, Drum'n'Bass und Progressive House aus allen Jahrzehnten — treibender Sound zum Joggen und Training, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=18">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=16"></script>
+<script>
+renderDecadeIndex({
+  name: 'Workout & Running',
+  years: 'Alle Jahrzehnte',
+  icon: '🏃',
+  iconBg: 'linear-gradient(135deg, #ff3b3b, #ffb703)',
+  tagline: 'Hi NRG, Eurodance, Drum\'n\'Bass und Progressive House aus allen Jahrzehnten — treibender Sound zum Joggen, Training und Pushen.',
+  badgeText: '🏃 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#1a0a0a',
+    panel: '#2a1010',
+    accent: '#ff3b3b',
+    accent2: '#ffb703',
+    text: '#fff5f0',
+    muted: '#c98a7a'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (Hi NRG, Eurodance, Drum\'n\'Bass, Progressive House) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '⚡', title: 'Hi NRG', desc: 'Pulsierender 80er-Antrieb.' },
+    { emoji: '🇪🇺', title: 'Eurodance', desc: 'Maximale Energie, große Hooks.' },
+    { emoji: '🥁', title: 'Drum\'n\'Bass', desc: 'Schnelle Breakbeats, hohes Tempo.' },
+    { emoji: '🌊', title: 'Progressive House', desc: 'Stetig steigende Energie.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'Workout',
+  themes: [
+    { key: 'HiNRG', label: '⚡ Hi NRG' },
+    { key: 'Eurodance', label: '🇪🇺 Eurodance' },
+    { key: 'DrumAndBass', label: '🥁 Drum\'n\'Bass' },
+    { key: 'ProgressiveHouse', label: '🌊 Progressive House' }
+  ]
+});
+</script>
+</body>
+</html>
