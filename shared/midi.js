@@ -122,6 +122,20 @@
     });
   }
 
+  function disconnectAll() {
+    if (midiAccess) {
+      try {
+        midiAccess.inputs.forEach(function (input) {
+          input.onmidimessage = null;
+        });
+        midiAccess.onstatechange = null;
+      } catch (e) {}
+    }
+    midiAccess = null;
+    learningKey = null;
+    if (panelEl) updateLearnButtons();
+  }
+
   function updateStatusUI(key) {
     if (statusEls[key]) statusEls[key].textContent = formatMapping(map[key]);
   }
@@ -154,6 +168,7 @@
         );
       }).join('') +
       '  </div>' +
+      '  <button type="button" class="dj-midi-disconnect" id="dj-midi-disconnect">MIDI trennen</button>' +
       '</div>';
     return panel;
   }
@@ -172,6 +187,8 @@
       '.dj-midi-status{font-size:11px;opacity:.7;white-space:nowrap;}' +
       '.dj-midi-learn{background:#332f47;color:#fff;border:1px solid #5a527a;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;}' +
       '.dj-midi-learn.midi-learning{background:#e63946;border-color:#e63946;}' +
+      '.dj-midi-disconnect{margin-top:10px;width:100%;background:transparent;color:#ff8a8a;border:1px solid #7a3a3a;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;}' +
+      '.dj-midi-disconnect:hover{background:rgba(230,57,70,.15);}' +
       '.dj-midi-unsupported{font-size:12px;opacity:.75;padding:8px 12px;}';
     document.head.appendChild(style);
   }
@@ -234,6 +251,13 @@
         learningKey = btn.dataset.learn;
         updateLearnButtons();
       });
+    });
+
+    var disconnectBtn = panelEl.querySelector('#dj-midi-disconnect');
+    disconnectBtn.addEventListener('click', function () {
+      disconnectAll();
+      toggleBtn.textContent = '🎛️ MIDI-Controller';
+      body.hidden = true;
     });
   }
 
