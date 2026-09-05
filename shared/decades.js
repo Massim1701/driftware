@@ -31,6 +31,17 @@ var DOWNLOAD_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 var CLOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>';
 var CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>';
 
+/* Driftware-Logo: Vinyl-Ring + Label-Punkt + "Drift"-Schwung, feste
+   Marken-Farben (nicht die pro-Dekade --accent-Variable, bewusst flache
+   Farben statt Gradient-<defs> — die ID waere bei mehreren gleichzeitig
+   eingefuegten Kopien (Deck A + B) nicht eindeutig). Platzhalter im Deck,
+   wenn fuer einen Song kein YouTube-Video existiert (siehe playDeckSong). */
+var DRIFTWARE_LOGO_SVG = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">' +
+  '<circle cx="12" cy="12" r="9.5" fill="none" stroke="#ff2fb3" stroke-width="1.4"/>' +
+  '<circle cx="12" cy="12" r="3" fill="#29e2ff"/>' +
+  '<path d="M3.5 15.5c3.5-5 13.5-5 17 0" fill="none" stroke="#ff2fb3" stroke-width="1.4" stroke-linecap="round"/>' +
+  '</svg>';
+
 function utilityBlockHTML(mailHref) {
   return '' +
     '<div class="utility-block">' +
@@ -930,6 +941,19 @@ function playDeckSong(key, song, autoplay) {
   updateDeckInfoUI(key);
   var bar = ensureDjPlayer();
 
+  /* Kein YouTube-Video fuer diesen Song gefunden — statt den Ladevorgang
+     abzulehnen (frueher: alert()), wird der Song trotzdem als "geladen"
+     angezeigt (Titel/Artist/BPM, ⏮/⏭ funktionieren weiter durch die
+     Liste), nur die Vinyl-Scheibe zeigt statt eines Players unser Logo. */
+  if (!song.yt) {
+    if (deck.player) { try { deck.player.destroy(); } catch (e) {} deck.player = null; }
+    var mount = document.getElementById('deck-' + key + '-mount');
+    if (mount) mount.innerHTML = '<div class="dj-vinyl-video-logo">' + DRIFTWARE_LOGO_SVG + '</div>';
+    deck.isPlaying = false;
+    updateDeckInfoUI(key);
+    return;
+  }
+
   function start() {
     if (deck.player && deck.player.loadVideoById) {
       if (autoplay) {
@@ -974,7 +998,7 @@ function playDeckSong(key, song, autoplay) {
    der Liste — mit indexOf() waere das immer -1 und es haette immer den
    ERSTEN Song der Liste geladen, egal welcher gezogen wurde. */
 function loadSongToDeck(song, key, contextSongs, autoplay) {
-  if (!song || !song.yt) { alert('Für diesen Song wurde noch kein passendes YouTube-Video gefunden.'); return; }
+  if (!song) return;
   var deck = DECKS[key];
   var withVideo = (contextSongs || [song]).filter(function (s) { return !!s.yt; });
   deck.queue = withVideo.length ? withVideo : [song];
@@ -1166,17 +1190,18 @@ function renderSongGrid(container, songs) {
       tile.setAttribute('aria-pressed', isSongSelected(song) ? 'true' : 'false');
     });
 
-    if (song.yt) {
-      tile.draggable = true;
-      tile.addEventListener('dragstart', function (e) {
-        try {
-          e.dataTransfer.setData('application/json', JSON.stringify(song));
-          e.dataTransfer.effectAllowed = 'copy';
-        } catch (err) {}
-        tile.classList.add('dragging');
-      });
-      tile.addEventListener('dragend', function () { tile.classList.remove('dragging'); });
-    }
+    /* Auch ohne Video ziehbar (zeigt dann unser Logo auf dem Deck statt
+       eines Players, siehe playDeckSong) — nur der Klick-Play-Button
+       bleibt bei fehlendem Video deaktiviert. */
+    tile.draggable = true;
+    tile.addEventListener('dragstart', function (e) {
+      try {
+        e.dataTransfer.setData('application/json', JSON.stringify(song));
+        e.dataTransfer.effectAllowed = 'copy';
+      } catch (err) {}
+      tile.classList.add('dragging');
+    });
+    tile.addEventListener('dragend', function () { tile.classList.remove('dragging'); });
 
     container.appendChild(tile);
   });
