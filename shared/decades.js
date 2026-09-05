@@ -448,6 +448,7 @@ function deckHTML(key) {
     '    <strong id="deck-' + key + '-artist">–</strong>' +
     '    <span id="deck-' + key + '-title">Kein Song geladen</span>' +
     '    <span class="dj-deck-remaining" id="deck-' + key + '-remaining"></span>' +
+    '    <span class="dj-deck-bpm" id="deck-' + key + '-bpm"></span>' +
     '  </div>' +
     '  <div class="dj-deck-controls">' +
     '    <button type="button" id="deck-' + key + '-prev" aria-label="Deck ' + key + ': voriger Song">⏮</button>' +
@@ -597,7 +598,33 @@ function updateDeckInfoUI(key) {
   if (deckEl) deckEl.classList.toggle('dj-deck-loaded', !!deck.song);
   var toggleBtn = document.getElementById('deck-' + key + '-toggle');
   if (toggleBtn) toggleBtn.textContent = deck.isPlaying ? '⏸' : '▶️';
+  var bpmEl = document.getElementById('deck-' + key + '-bpm');
+  if (bpmEl) bpmEl.textContent = (deck.song && deck.song.bpm) ? '🎵 ' + deck.song.bpm + ' BPM' : '';
   queuePlayerSpacing();
+  refreshMixableHighlight();
+}
+
+/* Mix-Hilfe ±10 BPM: sobald auf einem Deck ein Song mit bekanntem bpm
+   liegt, werden in der sichtbaren Songliste alle Songs markiert, deren
+   bpm innerhalb von ±10 des geladenen Songs liegt (Prinzip wie bei
+   BPM-Studio-artiger DJ-Software — harmonisch mixbares Tempo). Ohne
+   geladenen Song mit bpm (oder ohne bpm am Song selbst) keine Markierung. */
+function activeDeckBpms() {
+  var bpms = [];
+  ['A', 'B'].forEach(function (key) {
+    var song = DECKS[key].song;
+    if (song && song.bpm) bpms.push(song.bpm);
+  });
+  return bpms;
+}
+
+function refreshMixableHighlight() {
+  var deckBpms = activeDeckBpms();
+  document.querySelectorAll('.song-tile').forEach(function (tile) {
+    var bpm = parseInt(tile.dataset.songBpm, 10);
+    var mixable = !isNaN(bpm) && deckBpms.some(function (b) { return Math.abs(bpm - b) <= 10; });
+    tile.classList.toggle('song-tile-mixable', mixable);
+  });
 }
 
 function onDeckStateChange(key) {
@@ -610,7 +637,11 @@ function onDeckStateChange(key) {
     } else if (e.data === YT.PlayerState.PAUSED) {
       deck.isPlaying = false;
     } else if (e.data === YT.PlayerState.ENDED) {
-      if (!tryGaplessHandoff(key)) { deckStep(key, 1, true); }
+      if (activeAutoFade && activeAutoFade.fromKey === key) {
+        finishAutoCrossfade();
+      } else if (!tryGaplessHandoff(key)) {
+        deckStep(key, 1, true);
+      }
     }
     updateDeckInfoUI(key);
   };
@@ -697,6 +728,106 @@ function tryGaplessHandoff(key) {
   return true;
 }
 
+/* Automatisches Überblenden statt hartem Schnitt: 5 Sekunden vor Songende
+   beginnt das bereits vorgeladene andere Deck einzufaden, waehrend das
+   endende Deck ausfadet (Crossfader wandert in dieser Zeit automatisch von
+   der aktuellen Position zur Gegenseite). Die "Intelligenz" dahinter ist
+   dieselbe ±10-BPM-Schwelle wie bei der "mixbar"-Markierung im Grid
+   (siehe refreshMixableHighlight): passen die Tempi der beiden Songs
+   zusammen, laeuft der volle, sanfte 5s-Übergang; passen sie NICHT zusammen
+   (oder fehlt einem der Songs die BPM), wuerde ein langer Übergang zwei
+   unpassende Rhythmen gleichzeitig hoerbar machen — deshalb dann nur ein
+   kurzer 1,2s-Wechsel statt eines ausgedehnten Blends. Ein echtes Beatmatching
+   (Zeitdehnung exakt auf die Ziel-BPM) ist mit der YouTube-IFrame-API nicht
+   moeglich, da setPlaybackRate nur die festen Stufen 0.5/0.75/1/1.25/1.5
+   kennt — zu grob fuer eine Feinanpassung im niedrigen BPM-Bereich. */
+var CROSSFADE_LEAD_SECONDS = 5;
+var QUICK_HANDOFF_SECONDS = 1.2;
+var activeAutoFade = null;
+
+function bpmsCompatible(bpmA, bpmB) {
+  return !!bpmA && !!bpmB && Math.abs(bpmA - bpmB) <= 10;
+}
+
+function maybeStartAutoCrossfade(key, remaining) {
+  if (activeAutoFade) return;
+  var deck = DECKS[key];
+  var otherKey = key === 'A' ? 'B' : 'A';
+  var other = DECKS[otherKey];
+  var nextIdx = deck.index + 1;
+  if (nextIdx < 0 || nextIdx >= deck.queue.length) return;
+  var nextSong = deck.queue[nextIdx];
+  if (!nextSong || !other.player || !other.preloadedFor || other.preloadedFor !== songId(nextSong)) return;
+
+  var compatible = bpmsCompatible(deck.song && deck.song.bpm, nextSong.bpm);
+  var leadTime = compatible ? CROSSFADE_LEAD_SECONDS : QUICK_HANDOFF_SECONDS;
+  if (remaining > leadTime) return;
+
+  startAutoCrossfade(key, otherKey, nextIdx, nextSong, Math.max(remaining, 0.5));
+}
+
+function startAutoCrossfade(fromKey, toKey, nextIdx, nextSong, durationSeconds) {
+  var from = DECKS[fromKey];
+  var to = DECKS[toKey];
+
+  to.queue = from.queue;
+  to.index = nextIdx;
+  to.song = nextSong;
+  to.historyLogged = false;
+  to.preloadedFor = null;
+
+  try { to.player.setPlaybackRate(to.rate || 1); } catch (e) {}
+  try { to.player.playVideo(); } catch (e) {}
+  updateDeckInfoUI(toKey);
+
+  var startFader = crossfaderValue;
+  var targetFader = (toKey === 'A') ? 0 : 100;
+  var startTime = Date.now();
+  var durationMs = durationSeconds * 1000;
+  var faderEl = document.getElementById('dj-crossfader');
+
+  activeAutoFade = {
+    fromKey: fromKey,
+    toKey: toKey,
+    intervalId: setInterval(function () {
+      var t = Math.min(1, (Date.now() - startTime) / durationMs);
+      crossfaderValue = Math.round(startFader + (targetFader - startFader) * t);
+      if (faderEl) faderEl.value = crossfaderValue;
+      applyCrossfaderVolumes();
+      if (t >= 1) finishAutoCrossfade();
+    }, 100)
+  };
+}
+
+/* Greift der Nutzer waehrend eines laufenden Auto-Crossfades manuell ein
+   (neuen Song laden, Deck pausieren), wird der automatische Übergang
+   abgebrochen statt im Hintergrund weiterzulaufen und den Crossfader gegen
+   die manuelle Aktion zu ziehen. */
+function cancelActiveAutoFade(key) {
+  if (!activeAutoFade) return;
+  if (activeAutoFade.fromKey !== key && activeAutoFade.toKey !== key) return;
+  clearInterval(activeAutoFade.intervalId);
+  activeAutoFade = null;
+}
+
+function finishAutoCrossfade() {
+  if (!activeAutoFade) return;
+  var fromKey = activeAutoFade.fromKey;
+  var toKey = activeAutoFade.toKey;
+  clearInterval(activeAutoFade.intervalId);
+  activeAutoFade = null;
+
+  var from = DECKS[fromKey];
+  try { from.player.pauseVideo(); } catch (e) {}
+  from.song = null;
+  from.queue = [];
+  from.index = -1;
+  from.isPlaying = false;
+  updateDeckInfoUI(fromKey);
+
+  maybePreloadNext(toKey);
+}
+
 /* Restzeit-Anzeige (Minuten:Sekunden bis Songende) pro Deck, laeuft per
    Intervall alle 500ms unabhaengig von Play/Pause-Events, da die YouTube
    IFrame API keine "timeupdate"-Events feuert. */
@@ -717,6 +848,7 @@ function updateRemainingTime() {
         var cur = deck.player.getCurrentTime();
         if (dur > 0) {
           el.textContent = formatRemaining(dur - cur);
+          maybeStartAutoCrossfade(key, dur - cur);
           return;
         }
       } catch (e) {}
@@ -734,6 +866,7 @@ setInterval(updateRemainingTime, 500);
    laufenden Sets. */
 function playDeckSong(key, song, autoplay) {
   if (autoplay === undefined) autoplay = false;
+  cancelActiveAutoFade(key);
   var deck = DECKS[key];
   deck.song = song;
   deck.historyLogged = false;
@@ -807,11 +940,12 @@ function deckStep(key, dir, autoplay) {
 function deckTogglePlay(key) {
   var deck = DECKS[key];
   if (!deck.player) return;
-  if (deck.isPlaying) { deck.player.pauseVideo(); } else { deck.player.playVideo(); }
+  if (deck.isPlaying) { cancelActiveAutoFade(key); deck.player.pauseVideo(); } else { deck.player.playVideo(); }
 }
 
 function deckPause(key) {
   var deck = DECKS[key];
+  cancelActiveAutoFade(key);
   if (deck.player && deck.player.pauseVideo) { try { deck.player.pauseVideo(); } catch (e) {} }
 }
 
@@ -885,6 +1019,7 @@ function renderSongGrid(container, songs) {
     tile.className = 'song-tile' + (isSongSelected(song) ? ' selected' : '');
     tile.type = 'button';
     tile.setAttribute('aria-pressed', isSongSelected(song) ? 'true' : 'false');
+    if (song.bpm) tile.dataset.songBpm = song.bpm;
 
     var media = document.createElement('span');
     media.className = 'song-tile-media';
@@ -982,6 +1117,7 @@ function renderSongGrid(container, songs) {
 
     container.appendChild(tile);
   });
+  refreshMixableHighlight();
 }
 
 /* config: { mountBefore: CSS-Selektor im Ziel-Container, dataUrl, themes: [{key,label}], csvPrefix }

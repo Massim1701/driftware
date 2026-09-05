@@ -339,6 +339,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 .song-tile:hover { border-color: var(--accent); background: rgba(255,255,255,0.03); }
 .song-tile.selected { border-color: #22c55e; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35); }
+.song-tile.song-tile-mixable { border-color: #f5a623; box-shadow: 0 0 0 1px rgba(245, 166, 35, 0.45); }
+.song-tile.song-tile-mixable.selected { border-color: #22c55e; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35), 0 0 0 4px rgba(245, 166, 35, 0.4); }
 .song-tile-media { position: relative; flex-shrink: 0; width: 34px; height: 34px; }
 .song-tile img {
   width: 34px;
@@ -768,6 +770,14 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   color: var(--accent);
   min-height: 14px;
 }
+.dj-deck-bpm {
+  display: block;
+  margin-top: 1px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #f5a623;
+  min-height: 13px;
+}
 
 .dj-deck-controls { display: flex; align-items: center; gap: 8px; }
 .dj-deck-controls button {
@@ -933,6 +943,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   .dj-deck-info strong { font-size: 11px; max-width: 150px; }
   .dj-deck-info span { font-size: 10px; max-width: 150px; }
   .dj-deck-remaining { font-size: 10px; margin-top: 1px; }
+  .dj-deck-bpm { font-size: 9px; }
   .dj-deck-controls { gap: 6px; }
   .dj-deck-controls button { width: 28px; height: 28px; font-size: 11px; }
   .dj-deck-controls button[id$="-toggle"] { width: 34px; height: 34px; font-size: 13px; }
