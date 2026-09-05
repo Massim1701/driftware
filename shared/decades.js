@@ -15,6 +15,22 @@ var MAIL_SVG = '<svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org
 var LOCK_SVG = '<svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>';
 var GRID_SVG = '<svg viewBox="0 0 24 24" fill="#8fe3c7" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/></svg>';
 
+/* Player-Bediensymbole: dezente Linien-/Flaechen-Icons statt Emoji, gleicher
+   Grund wie bei den Genre-Kacheln (siehe THEME_ICON_PATHS weiter unten). */
+var PLAY_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+var PAUSE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+var PREV_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6z"/><path d="M20 5v14l-11-7z"/></svg>';
+var NEXT_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2z"/><path d="M4 5v14l11-7z"/></svg>';
+var SEARCH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-5-5"/></svg>';
+var REFRESH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5.3M4 20v-5h5"/></svg>';
+var SPEAKER_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg>';
+var NOTE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="7" cy="18" r="3"/><path d="M10 18V4l9-2v13"/><circle cx="16" cy="17" r="3"/></svg>';
+var PLUS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+var COPY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="12" height="14" rx="1.5"/><path d="M8 20h9a1.5 1.5 0 0 0 1.5-1.5V8"/></svg>';
+var DOWNLOAD_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>';
+var CLOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>';
+var CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>';
+
 function utilityBlockHTML(mailHref) {
   return '' +
     '<div class="utility-block">' +
@@ -152,7 +168,7 @@ function ensureSongModal() {
     '  <img id="song-modal-img" alt="">' +
     '  <div class="song-modal-artist" id="song-modal-artist"></div>' +
     '  <div class="song-modal-title" id="song-modal-title"></div>' +
-    '  <button type="button" class="song-modal-play" id="song-modal-play">▶️ Song abspielen</button>' +
+    '  <button type="button" class="song-modal-play" id="song-modal-play">' + PLAY_SVG + ' Song abspielen</button>' +
     '  <dl class="song-modal-meta" id="song-modal-meta"></dl>' +
     '  <div class="streaming-row" id="song-modal-streaming"></div>' +
     '  <a class="song-modal-link" id="song-modal-link" target="_blank" rel="noopener">Auf Discogs ansehen →</a>' +
@@ -452,9 +468,9 @@ function deckHTML(key) {
     '    <span class="dj-deck-bpm" id="deck-' + key + '-bpm"></span>' +
     '  </div>' +
     '  <div class="dj-deck-controls">' +
-    '    <button type="button" id="deck-' + key + '-prev" aria-label="Deck ' + key + ': voriger Song">⏮</button>' +
-    '    <button type="button" id="deck-' + key + '-toggle" aria-label="Deck ' + key + ': abspielen/pause">▶️</button>' +
-    '    <button type="button" id="deck-' + key + '-next" aria-label="Deck ' + key + ': nächster Song">⏭</button>' +
+    '    <button type="button" id="deck-' + key + '-prev" aria-label="Deck ' + key + ': voriger Song">' + PREV_SVG + '</button>' +
+    '    <button type="button" id="deck-' + key + '-toggle" aria-label="Deck ' + key + ': abspielen/pause">' + PLAY_SVG + '</button>' +
+    '    <button type="button" id="deck-' + key + '-next" aria-label="Deck ' + key + ': nächster Song">' + NEXT_SVG + '</button>' +
     '  </div>' +
     '</div>';
 }
@@ -497,7 +513,8 @@ function ensureDjPlayer() {
   bar.id = 'dj-player';
   bar.innerHTML = '' +
     '<div class="search-box dj-search-box">' +
-    '  <input type="search" id="gen-search" class="search-input" placeholder="🔍 Song, Künstler oder Genre suchen — alle Dekaden …" autocomplete="off">' +
+    '  <span class="search-box-icon">' + SEARCH_SVG + '</span>' +
+    '  <input type="search" id="gen-search" class="search-input" placeholder="Song, Künstler oder Genre suchen — alle Dekaden …" autocomplete="off">' +
     '</div>' +
     '<p class="search-hint" id="gen-search-hint" hidden></p>' +
     '<div class="dj-decks">' +
@@ -509,9 +526,9 @@ function ensureDjPlayer() {
     '    <span class="dj-crossfader-label">B</span>' +
     '  </div>' +
     '  <button type="button" id="dj-autofade-toggle" class="dj-autofade-toggle active" aria-pressed="true" ' +
-    '    title="Automatisches Überblenden 5s vor Songende (nur bei passenden BPM) an/aus">🔄 Autofade An</button>' +
+    '    title="Automatisches Überblenden 5s vor Songende (nur bei passenden BPM) an/aus">' + REFRESH_SVG + ' Autofade An</button>' +
     '  <div class="dj-volume">' +
-    '    <span class="dj-volume-label">🔊</span>' +
+    '    <span class="dj-volume-label">' + SPEAKER_SVG + '</span>' +
     '    <input type="range" id="dj-master-volume" min="0" max="100" value="80" aria-label="Gesamtlautstärke">' +
     '  </div>' +
     '</div>' +
@@ -561,7 +578,7 @@ function ensureDjPlayer() {
     autoFadeEnabled = !autoFadeEnabled;
     autoFadeBtn.classList.toggle('active', autoFadeEnabled);
     autoFadeBtn.setAttribute('aria-pressed', autoFadeEnabled ? 'true' : 'false');
-    autoFadeBtn.textContent = autoFadeEnabled ? '🔄 Autofade An' : '🔄 Autofade Aus';
+    autoFadeBtn.innerHTML = REFRESH_SVG + (autoFadeEnabled ? ' Autofade An' : ' Autofade Aus');
     if (!autoFadeEnabled && activeAutoFade) {
       clearInterval(activeAutoFade.intervalId);
       activeAutoFade = null;
@@ -612,9 +629,9 @@ function updateDeckInfoUI(key) {
   var deckEl = document.getElementById('deck-' + key);
   if (deckEl) deckEl.classList.toggle('dj-deck-loaded', !!deck.song);
   var toggleBtn = document.getElementById('deck-' + key + '-toggle');
-  if (toggleBtn) toggleBtn.textContent = deck.isPlaying ? '⏸' : '▶️';
+  if (toggleBtn) toggleBtn.innerHTML = deck.isPlaying ? PAUSE_SVG : PLAY_SVG;
   var bpmEl = document.getElementById('deck-' + key + '-bpm');
-  if (bpmEl) bpmEl.textContent = (deck.song && deck.song.bpm) ? '🎵 ' + deck.song.bpm + ' BPM' : '';
+  if (bpmEl) bpmEl.innerHTML = (deck.song && deck.song.bpm) ? NOTE_SVG + ' ' + deck.song.bpm + ' BPM' : '';
   queuePlayerSpacing();
   refreshMixableHighlight();
 }
@@ -1047,7 +1064,7 @@ function openSongModal(song) {
   var playBtn = document.getElementById('song-modal-play');
   if (playBtn) {
     playBtn.disabled = !song.yt;
-    playBtn.textContent = song.yt ? '▶️ Song abspielen' : '▶️ Kein Video gefunden';
+    playBtn.innerHTML = PLAY_SVG + (song.yt ? ' Song abspielen' : ' Kein Video gefunden');
     playBtn.onclick = song.yt ? function () { playSongInContext(song, lastGridSongs); } : null;
   }
 
@@ -1169,6 +1186,92 @@ function renderSongGrid(container, songs) {
     container.appendChild(tile);
   });
   refreshMixableHighlight();
+}
+
+/* Genre-Kacheln zeigen dezente Linien-Icons statt Emoji (Emoji wirken auf
+   dieser Seite zu verspielt/kindlich). Ein kleines Set an Icon-"Familien"
+   deckt alle Genres über alle Dekaden/Ambient-Seiten ab (THEME_KEY_ICON
+   ordnet jeden Themen-Key einer Familie zu, THEME_ICON_PATHS liefert die
+   SVG-Pfade dazu) — mehrere verwandte Genres teilen sich bewusst dasselbe
+   Icon, statt für jede Wortkombination ein eigenes zu brauchen. */
+var THEME_ICON_PATHS = {
+  guitar: '<path d="M6 4v13.5a2.5 2.5 0 1 0 1.5 2.3V8l9-2v9.5a2.5 2.5 0 1 0 1.5 2.3V4l-12 2z"/>',
+  metal: '<path d="M13 2 5 14h5l-1 8 9-12h-5l1-8z"/>',
+  punk: '<path d="M4 20 7 6l2 7 3-9 3 9 2-7 3 14"/>',
+  cloud: '<path d="M7 18a4 4 0 0 1-1-7.9 5.5 5.5 0 0 1 10.6-2A4.5 4.5 0 0 1 17 18H7z"/>',
+  house: '<path d="M4 11 12 4l8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/><path d="M10 20v-5h4v5"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  heart: '<path d="M12 20s-7-4.35-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 5c-2.5 4.65-9.5 9-9.5 9z"/>',
+  pulse: '<path d="M2 12h4l2-7 4 14 3-10 2 3h5"/>',
+  vinyl: '<circle cx="9" cy="15" r="6"/><circle cx="9" cy="15" r="1.3"/><path d="M15 5v11.5a2.5 2.5 0 1 1-1.5-2.3V7z"/>',
+  banjo: '<circle cx="8" cy="16" r="5"/><path d="M8 11V3"/><path d="M8 4l6 2M8 7l6 1.5"/>',
+  drum: '<ellipse cx="12" cy="6.5" rx="7" ry="3"/><path d="M5 6.5v9a7 3 0 0 0 14 0v-9"/>',
+  palm: '<path d="M4 15c2-4 4-6 8-6s6 2 8 6"/><path d="M12 9v13"/>',
+  star: '<path d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 17l-5.6 3.1 1.4-6.3L3 9.5l6.4-.6z"/>',
+  disco: '<path d="M12 2v3"/><circle cx="12" cy="13" r="7"/><path d="M5 13h14M12 6v14M7.5 8.5l9 9M16.5 8.5l-9 9"/>',
+  bass: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="0.8"/>',
+  rocket: '<path d="M12 2c3 2.2 5 6 5 10 0 2-1 3.8-2 5l-1-3-2 2-2-2-1 3c-1-1.2-2-3-2-5 0-4 2-7.8 5-10z"/><circle cx="12" cy="10" r="1.4"/><path d="M9 17l-1.5 3.5M15 17l1.5 3.5"/>',
+  mic: '<rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v4M8 22h8"/>',
+  boombox: '<rect x="3" y="9" width="18" height="10" rx="2"/><circle cx="8" cy="14" r="2.3"/><circle cx="16" cy="14" r="2.3"/><path d="M8 9V6.5A2.5 2.5 0 0 1 10.5 4h3A2.5 2.5 0 0 1 16 6.5V9"/>',
+  chip: '<rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5M5.5 5.5l3 3M18.5 5.5l-3 3M5.5 18.5l3-3M18.5 18.5l-3-3"/>',
+  tape: '<rect x="3" y="6" width="18" height="12" rx="1.5"/><circle cx="8" cy="12" r="2.3"/><circle cx="16" cy="12" r="2.3"/><path d="M10.5 12h3"/>',
+  cocktail: '<path d="M4 4h16L12 12 4 4z"/><path d="M12 12v6"/><path d="M8.5 18h7"/>',
+  wave: '<path d="M2 10c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/><path d="M2 16c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/>',
+  synth: '<rect x="3" y="6" width="18" height="12" rx="1.2"/><path d="M7 6v7M11 6v7M15 6v7"/>',
+  horn: '<path d="M3 10h9l4-3v10l-4-3H3z"/><circle cx="18.5" cy="14" r="2.3"/>',
+  folder: '<path d="M3 6.5a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-11z"/>',
+  dice: '<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3"/><circle cx="16" cy="8" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="8" cy="16" r="1.3"/><circle cx="16" cy="16" r="1.3"/>',
+  radio: '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V6l8-2v6"/><circle cx="9" cy="15" r="1.8"/><circle cx="15" cy="15" r="1.8"/>',
+  headphones: '<path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="3" y="13" width="4" height="7" rx="1.5"/><rect x="17" y="13" width="4" height="7" rx="1.5"/>',
+  sunset: '<circle cx="12" cy="12" r="4"/><path d="M2 18h20"/><path d="M5 15l1.5-1.5M19 15l-1.5-1.5M12 6V4M7 8l-1-1M17 8l1-1"/>',
+  brain: '<path d="M9 3a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 5.5 1.5V4.5A3 3 0 0 0 9 3z"/><path d="M15 3a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-5.5 1.5V4.5A3 3 0 0 1 15 3z"/>',
+  runner: '<circle cx="14" cy="4" r="1.8"/><path d="M9 21l2-5 3-2-1-5-4 2-1 4"/><path d="M11 14l4 1 3 4"/>',
+  wineGlass: '<path d="M7 3h10l-1 6a4 4 0 0 1-8 0L7 3z"/><path d="M12 13v6M8.5 19h7"/>'
+};
+
+/* Hero-Icon oben auf jeder Seite + Icon im Badge daneben nutzen dieselbe
+   Pfad-Bibliothek wie die Genre-Kacheln, nur ohne den Kachel-Wrapper. Wird
+   auch direkt aus den Seiten-Configs (icon:/badgeText:) aufgerufen, da
+   decades.js vor dem Inline-Config-Script geladen wird. */
+function rawIconSVG(iconName) {
+  var paths = THEME_ICON_PATHS[iconName];
+  if (!paths) return '';
+  return '<svg viewBox="0 0 24 24" aria-hidden="true">' + paths + '</svg>';
+}
+
+var THEME_KEY_ICON = {
+  AlternativePostHardcore: 'metal', AlternativePostPunk: 'punk', AlternativeRock: 'guitar',
+  Ambient: 'cloud', AmbientDowntempo: 'cloud', AmbientHouse: 'house', AmbientLoFi: 'cloud',
+  AsiaPop: 'globe', Ballads: 'heart', BigBeat: 'pulse', BluesSouthernRock: 'guitar',
+  Boogie: 'vinyl', Britpop: 'globe', ChillwaveVaporwave: 'cloud', ClassicRock: 'guitar',
+  CloudEmoRap: 'cloud', ContemporaryRnB: 'vinyl', Country: 'banjo', CrunkTrapSnap: 'drum',
+  Dancehall: 'palm', DancePop: 'star', DeepHouse: 'house', DeepProgHouse: 'house',
+  DeepProgTropicalHouse: 'house', Disco: 'disco', DiscoNuDisco: 'disco', Downtempo: 'cloud',
+  DrumAndBass: 'drum', DrumNBass: 'drum', DubstepFutureBass: 'bass', DubstepGrime: 'bass',
+  Electro: 'pulse', ElectroHouse: 'house', Emo: 'heart', Eurobeat: 'rocket', Eurodance: 'globe',
+  Europop: 'globe', Folk: 'banjo', FolkCountry: 'banjo', FolkRock: 'guitar', Freestyle: 'pulse',
+  Funk: 'vinyl', FunkSoul: 'vinyl', GangstaConsciousHipHop: 'mic', GangstaGFunk: 'mic',
+  GlamRock: 'guitar', Grunge: 'guitar', HardcoreHappy: 'pulse', HardRockMetal: 'metal',
+  HiNRG: 'pulse', HipHopBoomBap: 'boombox', House: 'house', HyperpopVaporwave: 'cloud',
+  IDM: 'chip', IndiePop: 'guitar', IndieRock: 'guitar', ItaloDisco: 'disco', JungleDnB: 'drum',
+  KPop: 'globe', Krautrock: 'globe', LatinReggaeton: 'palm', LoFi: 'tape',
+  LoungeBalearic: 'cocktail', MetalcoreHardcore: 'metal', MetalcoreNuMetalHardcore: 'metal',
+  NewJackSwing: 'boombox', NewWave: 'wave', NewWavePostPunk: 'wave', NuDisco: 'disco',
+  NuMetal: 'metal', NuMetalHardcore: 'metal', Ohne: 'folder', OldSchoolHipHop: 'boombox',
+  PopCharts: 'star', PopPunk: 'punk', PopPunkEmo: 'punk', PopRap: 'mic', PopRock: 'star',
+  PostPunkGoth: 'punk', ProgressiveHouse: 'house', ProgRock: 'guitar', ProgTechHouse: 'house',
+  Punk: 'punk', ReggaeDub: 'palm', ReggaeDubAfro: 'palm', ReggaeDubAfrobeat: 'palm',
+  Reggaeton: 'palm', RnBNeoSoul: 'vinyl', RnBSwing: 'vinyl', RockArenaAOR: 'guitar',
+  RockClassic: 'guitar', Schlager: 'star', Ska: 'horn', SkaPunk: 'horn', SoftRock: 'cocktail',
+  SynthPop: 'synth', SynthPopSynthwave: 'synth', Techno: 'pulse', Trance: 'pulse',
+  TranceHardDance: 'pulse', TrapMoombahton: 'drum', TrapPhonk: 'drum', TripHop: 'cloud',
+  UKBassGrimeDrill: 'bass', Soul: 'vinyl', NeoSoul: 'vinyl', AcidJazz: 'horn', SmoothJazz: 'cocktail'
+};
+
+function themeIconHTML(iconName) {
+  var paths = THEME_ICON_PATHS[iconName];
+  if (!paths) return '';
+  return '<span class="theme-btn-icon"><svg viewBox="0 0 24 24" aria-hidden="true">' + paths + '</svg></span>';
 }
 
 /* config: { mountBefore: CSS-Selektor im Ziel-Container, dataUrl, themes: [{key,label}], csvPrefix }
@@ -1317,7 +1420,7 @@ function renderPlaylistGenerator(mountRoot, config) {
           var entry = DECADE_REGISTRY.filter(function (d) { return d.key === s._decade; })[0];
           if (entry) otherLabels.push('<a href="' + entry.page + '?q=' + encodeURIComponent(query) + '">' + entry.label + '</a>');
         });
-        hintEl.innerHTML = '🔎 Treffer auch in: ' + otherLabels.join(', ');
+        hintEl.innerHTML = '<span class="hint-icon">' + SEARCH_SVG + '</span> Treffer auch in: ' + otherLabels.join(', ');
       });
     });
   }
@@ -1344,14 +1447,14 @@ function renderPlaylistGenerator(mountRoot, config) {
     '</div>' +
     '<div class="generator-actions" id="gen-actions">' +
     '  <span class="generator-count" id="gen-count"></span>' +
-    '  <button id="gen-play-all" type="button">➕ Playlist auf Deck laden</button>' +
-    '  <button id="gen-copy" type="button">📋 Liste kopieren</button>' +
-    '  <a id="gen-download" download>⬇️ Als CSV exportieren</a>' +
+    '  <button id="gen-play-all" type="button">' + PLUS_SVG + ' Playlist auf Deck laden</button>' +
+    '  <button id="gen-copy" type="button">' + COPY_SVG + ' Liste kopieren</button>' +
+    '  <a id="gen-download" download>' + DOWNLOAD_SVG + ' Als CSV exportieren</a>' +
     '</div>' +
     '<div class="generator-body">' +
     '  <div class="song-grid" id="gen-grid"></div>' +
     '  <aside class="gen-history">' +
-    '    <h3>🕘 Zuletzt gespielt</h3>' +
+    '    <h3>' + CLOCK_SVG + ' Zuletzt gespielt</h3>' +
     '    <ul id="gen-history-list"><li class="gen-history-empty">Noch nichts gespielt.</li></ul>' +
     '  </aside>' +
     '</div>' +
@@ -1364,7 +1467,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     var mixBtn = document.createElement('button');
     mixBtn.className = 'theme-btn theme-btn-mix';
     mixBtn.type = 'button';
-    mixBtn.textContent = '🎲 Mix – Best-of aller Genres';
+    mixBtn.innerHTML = themeIconHTML('dice') + '<span>Mix – Best-of aller Genres</span>';
     mixBtn.title = 'Die ' + MIX_PER_CATEGORY + ' beliebtesten Songs aus jedem Genre';
     mixBtn.dataset.key = MIX_KEY;
     mixBtn.addEventListener('click', function () { selectTheme(MIX_KEY); });
@@ -1374,7 +1477,7 @@ function renderPlaylistGenerator(mountRoot, config) {
       var btn = document.createElement('button');
       btn.className = 'theme-btn';
       btn.type = 'button';
-      btn.textContent = t.label;
+      btn.innerHTML = themeIconHTML(THEME_KEY_ICON[t.key]) + '<span>' + escapeHtml(t.label) + '</span>';
       btn.dataset.key = t.key;
       btn.addEventListener('click', function () { selectTheme(t.key); });
       buttons.appendChild(btn);
@@ -1407,16 +1510,18 @@ function renderPlaylistGenerator(mountRoot, config) {
     playAllCurrent(currentSongs());
   });
   section.querySelector('#gen-copy').addEventListener('click', function (e) {
+    var btn = e.currentTarget;
     navigator.clipboard.writeText(asLines()).then(function () {
-      e.target.textContent = '✅ Kopiert!';
-      setTimeout(function () { e.target.textContent = '📋 Liste kopieren'; }, 1500);
+      btn.innerHTML = CHECK_SVG + ' Kopiert!';
+      setTimeout(function () { btn.innerHTML = COPY_SVG + ' Liste kopieren'; }, 1500);
     });
   });
   section.querySelector('#gen-download').addEventListener('click', function (e) {
+    var link = e.currentTarget;
     var blob = new Blob([asCSV()], { type: 'text/csv;charset=utf-8;' });
     var url = URL.createObjectURL(blob);
-    e.target.href = url;
-    e.target.download = (config.csvPrefix || 'playlist') + '-' + (currentTheme || 'songs') + '.csv';
+    link.href = url;
+    link.download = (config.csvPrefix || 'playlist') + '-' + (currentTheme || 'songs') + '.csv';
     setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
   });
 

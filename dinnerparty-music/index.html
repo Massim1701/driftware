@@ -14,10 +14,10 @@
 renderDecadeIndex({
   name: 'Dinner Party',
   years: 'Alle Jahrzehnte',
-  icon: '🥂',
+  icon: rawIconSVG('cocktail'),
   iconBg: 'linear-gradient(135deg, #c9a227, #7a1f3d)',
   tagline: 'Über 2600 Disco-, Funk-, Boogie- und Nu-Disco-Klassiker aus allen Jahrzehnten — eleganter Sound für Dinner, Gäste und den Abend danach.',
-  badgeText: '🥂 4 Stimmungs-Genres — Playlist-Generator live',
+  badgeText: rawIconSVG('cocktail') + ' 4 Stimmungs-Genres — Playlist-Generator live',
   colors: {
     bg: '#1a1016',
     panel: '#241620',
@@ -40,10 +40,10 @@ renderPlaylistGenerator(document.querySelector('main.decade-main'), {
   dataUrl: 'songs.json?v=1',
   csvPrefix: 'DinnerParty',
   themes: [
-    { key: 'Disco', label: '🪩 Disco' },
-    { key: 'Funk', label: '🎷 Funk' },
-    { key: 'Boogie', label: '🕺 Boogie' },
-    { key: 'NuDisco', label: '✨ Nu-Disco' }
+    { key: 'Disco', label: 'Disco' },
+    { key: 'Funk', label: 'Funk' },
+    { key: 'Boogie', label: 'Boogie' },
+    { key: 'NuDisco', label: 'Nu-Disco' }
   ]
 });
 </script>

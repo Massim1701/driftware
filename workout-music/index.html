@@ -14,10 +14,10 @@
 renderDecadeIndex({
   name: 'Workout & Running',
   years: 'Alle Jahrzehnte',
-  icon: '🏃',
+  icon: rawIconSVG('runner'),
   iconBg: 'linear-gradient(135deg, #ff3b3b, #ffb703)',
   tagline: 'Hi NRG, Eurodance, Drum\'n\'Bass und Progressive House aus allen Jahrzehnten — treibender Sound zum Joggen, Training und Pushen.',
-  badgeText: '🏃 4 Stimmungs-Genres — Playlist-Generator live',
+  badgeText: rawIconSVG('runner') + ' 4 Stimmungs-Genres — Playlist-Generator live',
   colors: {
     bg: '#1a0a0a',
     panel: '#2a1010',
@@ -40,10 +40,10 @@ renderPlaylistGenerator(document.querySelector('main.decade-main'), {
   dataUrl: 'songs.json?v=1',
   csvPrefix: 'Workout',
   themes: [
-    { key: 'HiNRG', label: '⚡ Hi NRG' },
-    { key: 'Eurodance', label: '🇪🇺 Eurodance' },
-    { key: 'DrumAndBass', label: '🥁 Drum\'n\'Bass' },
-    { key: 'ProgressiveHouse', label: '🌊 Progressive House' }
+    { key: 'HiNRG', label: 'Hi NRG' },
+    { key: 'Eurodance', label: 'Eurodance' },
+    { key: 'DrumAndBass', label: 'Drum\'n\'Bass' },
+    { key: 'ProgressiveHouse', label: 'Progressive House' }
   ]
 });
 </script>

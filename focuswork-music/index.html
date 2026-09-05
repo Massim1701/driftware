@@ -14,10 +14,10 @@
 renderDecadeIndex({
   name: 'Focus & Work',
   years: 'Alle Jahrzehnte',
-  icon: '🧠',
+  icon: rawIconSVG('brain'),
   iconBg: 'linear-gradient(135deg, #4a6fa5, #2e3a59)',
   tagline: 'Ambient, Downtempo, Lo-Fi und IDM aus allen Jahrzehnten — dezenter Sound für konzentriertes Arbeiten, ohne abzulenken.',
-  badgeText: '🧠 4 Stimmungs-Genres — Playlist-Generator live',
+  badgeText: rawIconSVG('brain') + ' 4 Stimmungs-Genres — Playlist-Generator live',
   colors: {
     bg: '#0c1420',
     panel: '#131f30',
@@ -40,10 +40,10 @@ renderPlaylistGenerator(document.querySelector('main.decade-main'), {
   dataUrl: 'songs.json?v=1',
   csvPrefix: 'FocusWork',
   themes: [
-    { key: 'Ambient', label: '🌫️ Ambient' },
-    { key: 'Downtempo', label: '🌙 Downtempo' },
-    { key: 'LoFi', label: '📼 Lo-Fi' },
-    { key: 'IDM', label: '🔬 IDM' }
+    { key: 'Ambient', label: 'Ambient' },
+    { key: 'Downtempo', label: 'Downtempo' },
+    { key: 'LoFi', label: 'Lo-Fi' },
+    { key: 'IDM', label: 'IDM' }
   ]
 });
 </script>

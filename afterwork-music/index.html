@@ -14,10 +14,10 @@
 renderDecadeIndex({
   name: 'Afterwork',
   years: 'Alle Jahrzehnte',
-  icon: '🍷',
+  icon: rawIconSVG('wineGlass'),
   iconBg: 'linear-gradient(135deg, #b5651d, #3d2b56)',
   tagline: 'Soul, Neo Soul, Acid Jazz und Smooth Jazz aus allen Jahrzehnten — der perfekte Sound für den Feierabend, das erste Glas und den Übergang in den Abend.',
-  badgeText: '🍷 4 Stimmungs-Genres — Playlist-Generator live',
+  badgeText: rawIconSVG('wineGlass') + ' 4 Stimmungs-Genres — Playlist-Generator live',
   colors: {
     bg: '#160f1a',
     panel: '#231a29',
@@ -40,10 +40,10 @@ renderPlaylistGenerator(document.querySelector('main.decade-main'), {
   dataUrl: 'songs.json?v=1',
   csvPrefix: 'Afterwork',
   themes: [
-    { key: 'Soul', label: '🎙️ Soul' },
-    { key: 'NeoSoul', label: '✨ Neo Soul' },
-    { key: 'AcidJazz', label: '🎷 Acid Jazz' },
-    { key: 'SmoothJazz', label: '🥃 Smooth Jazz' }
+    { key: 'Soul', label: 'Soul' },
+    { key: 'NeoSoul', label: 'Neo Soul' },
+    { key: 'AcidJazz', label: 'Acid Jazz' },
+    { key: 'SmoothJazz', label: 'Smooth Jazz' }
   ]
 });
 </script>

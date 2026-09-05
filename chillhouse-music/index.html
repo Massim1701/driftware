@@ -14,10 +14,10 @@
 renderDecadeIndex({
   name: 'Chill House',
   years: 'Alle Jahrzehnte',
-  icon: '🌇',
+  icon: rawIconSVG('sunset'),
   iconBg: 'linear-gradient(135deg, #ff8a5c, #3ec6b8)',
   tagline: 'Über 2400 Deep-House-, Ambient-House-, Nu-Disco- und Lounge-Perlen aus allen Jahrzehnten — zum Entspannen, Arbeiten oder als Sunset-Soundtrack.',
-  badgeText: '🎧 4 Stimmungs-Genres — Playlist-Generator live',
+  badgeText: rawIconSVG('headphones') + ' 4 Stimmungs-Genres — Playlist-Generator live',
   colors: {
     bg: '#0e1a22',
     panel: '#152731',
@@ -40,10 +40,10 @@ renderPlaylistGenerator(document.querySelector('main.decade-main'), {
   dataUrl: 'songs.json?v=1',
   csvPrefix: 'ChillHouse',
   themes: [
-    { key: 'DeepHouse', label: '🌊 Deep House' },
-    { key: 'AmbientHouse', label: '🎐 Ambient House' },
-    { key: 'NuDisco', label: '🪩 Nu-Disco' },
-    { key: 'LoungeBalearic', label: '🍹 Lounge & Balearic' }
+    { key: 'DeepHouse', label: 'Deep House' },
+    { key: 'AmbientHouse', label: 'Ambient House' },
+    { key: 'NuDisco', label: 'Nu-Disco' },
+    { key: 'LoungeBalearic', label: 'Lounge & Balearic' }
   ]
 });
 </script>
