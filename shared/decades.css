@@ -852,6 +852,27 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .dj-volume { display: flex; align-items: center; gap: 8px; }
 .dj-volume-label { font-size: 14px; }
 
+.dj-autofade-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
+}
+.dj-autofade-toggle.active {
+  border-color: #f5a623;
+  color: #f5a623;
+  background: rgba(245, 166, 35, 0.12);
+}
+.dj-autofade-toggle:hover { border-color: var(--accent); }
+
 /* Song-Kacheln sind draggable, wenn sie ein Video haben (siehe decades.js) */
 .song-tile[draggable="true"] { cursor: grab; }
 .song-tile.dragging { opacity: 0.4; }
@@ -951,6 +972,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   .dj-crossfader { width: 100%; justify-content: center; }
   .dj-volume { width: 100%; justify-content: center; }
   #dj-crossfader, #dj-master-volume { width: 62%; }
+  .dj-autofade-toggle { font-size: 10px; padding: 4px 10px; }
   .dj-search-box { max-width: none; margin-bottom: 6px; }
   /* 16px verhindert, dass iOS beim Antippen ins Feld hineinzoomt */
   .dj-search-box .search-input { font-size: 16px; padding: 9px 12px; }
