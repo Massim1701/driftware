@@ -1,0 +1,242 @@
+/* Button "Song nicht gefunden" neben dem MIDI-Button. Oeffnet ein kleines
+   Formular: Interpret + Titel eintragen, per Klick eine YouTube-Suche in
+   neuem Tab oeffnen, den gefundenen Link zurueck einfuegen -> Song wird
+   sofort auf Deck geladen/abspielbar UND in einer eigenen kleinen Liste
+   "Manuell hinzugefuegt (Ohne Genre)" gesammelt (localStorage, pro Seite).
+
+   Kein Backend/Datenbank auf einer GitHub-Pages-Seite moeglich -- die
+   Eintraege landen deshalb zunaechst NUR lokal im Browser (localStorage),
+   nicht in der echten songs.json. Ueber den Button "Export" laesst sich
+   die gesammelte Liste als JSON kopieren, die dann (wie bisher bei
+   NDW/Reclassify) per Merge-Skript dauerhaft in die "Ohne Genre"-Kategorie
+   der jeweiligen songs.json uebernommen werden kann.
+
+   Eigenstaendige Datei (wie midi.js/continuity.js/nextup.js) -- liest nur
+   window.playDeckSong/window.nextLoadDeck-Aequivalent (Deck A per Default),
+   keine Aenderung an decades.js noetig. */
+
+(function () {
+  var STORAGE_PREFIX = 'driftware-manualadd-';
+  var pageKey = (function () {
+    var m = location.pathname.match(/\/([a-z0-9]+)-music\//i);
+    return m ? m[1] : 'unbekannt';
+  })();
+  var STORAGE_KEY = STORAGE_PREFIX + pageKey;
+
+  var panelEl = null;
+  var listEl = null;
+
+  function loadEntries() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveEntries(entries) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    } catch (e) {}
+  }
+
+  function escapeHtml(s) {
+    return (s || '').replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  /* Akzeptiert volle YouTube-URL (watch?v=, youtu.be/, shorts/) oder direkt
+     eine nackte 11-stellige Video-ID. */
+  function extractYoutubeId(input) {
+    if (!input) return null;
+    input = input.trim();
+    var m = input.match(/[?&]v=([A-Za-z0-9_-]{11})/) ||
+      input.match(/youtu\.be\/([A-Za-z0-9_-]{11})/) ||
+      input.match(/\/shorts\/([A-Za-z0-9_-]{11})/) ||
+      input.match(/^([A-Za-z0-9_-]{11})$/);
+    return m ? m[1] : null;
+  }
+
+  function renderList() {
+    var entries = loadEntries();
+    if (!listEl) return;
+    if (!entries.length) {
+      listEl.innerHTML = '<li class="manualadd-empty">Noch nichts hinzugefügt.</li>';
+      return;
+    }
+    listEl.innerHTML = entries.map(function (e, i) {
+      return '<li class="manualadd-item">' +
+        '<span class="manualadd-text"><strong>' + escapeHtml(e.t) + '</strong><span>' + escapeHtml(e.a) + '</span></span>' +
+        '<button type="button" class="manualadd-play" data-i="' + i + '" title="Abspielen">▶</button>' +
+        '<button type="button" class="manualadd-remove" data-i="' + i + '" title="Entfernen">✕</button>' +
+        '</li>';
+    }).join('');
+  }
+
+  function addEntry(a, t, ytId) {
+    var entries = loadEntries();
+    entries.push({ a: a, t: t, yt: ytId, g: 'Ohne', addedAt: Date.now() });
+    saveEntries(entries);
+    renderList();
+  }
+
+  function removeEntry(i) {
+    var entries = loadEntries();
+    entries.splice(i, 1);
+    saveEntries(entries);
+    renderList();
+  }
+
+  function playEntry(i) {
+    var entries = loadEntries();
+    var e = entries[i];
+    if (!e || typeof window.playDeckSong !== 'function') return;
+    var deckKey = (window.DECKS && window.DECKS.A && window.DECKS.A.isPlaying) ? 'B' : 'A';
+    var song = { a: e.a, t: e.t, yt: e.yt };
+    if (window.DECKS && window.DECKS[deckKey]) {
+      window.DECKS[deckKey].queue = [song];
+      window.DECKS[deckKey].index = 0;
+    }
+    window.playDeckSong(deckKey, song, true);
+  }
+
+  function exportEntries() {
+    var entries = loadEntries();
+    var json = JSON.stringify(entries.map(function (e) {
+      return { a: e.a, t: e.t, yt: e.yt };
+    }), null, 2);
+    var ta = document.createElement('textarea');
+    ta.value = json;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    var status = panelEl.querySelector('.manualadd-export-status');
+    if (status) {
+      status.textContent = entries.length + ' Song(s) als JSON in die Zwischenablage kopiert.';
+      window.setTimeout(function () { status.textContent = ''; }, 4000);
+    }
+  }
+
+  function buildPanel() {
+    var panel = document.createElement('div');
+    panel.className = 'manualadd-panel';
+    panel.innerHTML =
+      '<button type="button" class="manualadd-toggle" id="manualadd-toggle">🔍 Song nicht gefunden</button>' +
+      '<div class="manualadd-body" id="manualadd-body" hidden>' +
+      '  <p class="manualadd-hint">Interpret + Titel eintragen, auf YouTube suchen, den Link des richtigen Videos hier einfügen.</p>' +
+      '  <input type="text" class="manualadd-input" id="manualadd-artist" placeholder="Interpret">' +
+      '  <input type="text" class="manualadd-input" id="manualadd-title" placeholder="Titel">' +
+      '  <button type="button" class="manualadd-search" id="manualadd-search">Auf YouTube suchen</button>' +
+      '  <input type="text" class="manualadd-input" id="manualadd-link" placeholder="YouTube-Link oder Video-ID">' +
+      '  <button type="button" class="manualadd-add" id="manualadd-add">Hinzufügen &amp; abspielen</button>' +
+      '  <p class="manualadd-error" id="manualadd-error" hidden></p>' +
+      '  <h4>Manuell hinzugefügt (Ohne Genre, nur dieser Browser)</h4>' +
+      '  <ul class="manualadd-list" id="manualadd-list"></ul>' +
+      '  <button type="button" class="manualadd-export" id="manualadd-export">Als JSON exportieren (für dauerhafte Übernahme)</button>' +
+      '  <p class="manualadd-export-status"></p>' +
+      '</div>';
+    return panel;
+  }
+
+  function injectStyles() {
+    var style = document.createElement('style');
+    style.textContent =
+      '.manualadd-panel{display:inline-block;margin:0 0 4px 8px;font-family:inherit;font-size:13px;vertical-align:top;}' +
+      '.manualadd-toggle{background:#1c1c24;color:#f0e9ff;border:1px solid #4a4460;border-radius:8px;padding:8px 12px;cursor:pointer;}' +
+      '.manualadd-body{margin-top:8px;background:#1c1c24;border:1px solid #4a4460;border-radius:10px;padding:12px;width:300px;color:#e6e0f5;box-shadow:0 8px 24px rgba(0,0,0,.4);}' +
+      '.manualadd-hint{margin:0 0 8px;font-size:12px;opacity:.8;line-height:1.4;}' +
+      '.manualadd-input{display:block;width:100%;box-sizing:border-box;margin-bottom:6px;padding:6px 8px;background:#141419;border:1px solid #4a4460;border-radius:6px;color:#f0e9ff;font-size:12px;}' +
+      '.manualadd-search{width:100%;margin-bottom:10px;background:#332f47;color:#fff;border:1px solid #5a527a;border-radius:6px;padding:6px 8px;cursor:pointer;font-size:12px;}' +
+      '.manualadd-add{width:100%;margin-bottom:4px;background:#22c55e;color:#0c1a10;border:none;border-radius:6px;padding:7px 8px;cursor:pointer;font-size:12px;font-weight:600;}' +
+      '.manualadd-error{color:#ff8a8a;font-size:11px;margin:4px 0;}' +
+      '.manualadd-body h4{font-size:11px;opacity:.7;margin:12px 0 6px;font-weight:600;}' +
+      '.manualadd-list{list-style:none;margin:0 0 8px;padding:0;max-height:160px;overflow-y:auto;}' +
+      '.manualadd-empty{opacity:.6;font-size:12px;padding:4px 0;}' +
+      '.manualadd-item{display:flex;align-items:center;gap:6px;padding:4px 0;border-top:1px solid rgba(255,255,255,.08);}' +
+      '.manualadd-item:first-child{border-top:none;}' +
+      '.manualadd-text{flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden;}' +
+      '.manualadd-text strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;}' +
+      '.manualadd-text span{opacity:.65;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;}' +
+      '.manualadd-play,.manualadd-remove{background:transparent;border:1px solid #5a527a;border-radius:5px;color:#e6e0f5;cursor:pointer;font-size:11px;padding:2px 6px;flex:0 0 auto;}' +
+      '.manualadd-export{width:100%;background:transparent;color:#b3a5c2;border:1px solid #5a527a;border-radius:6px;padding:6px 8px;cursor:pointer;font-size:11px;}' +
+      '.manualadd-export-status{font-size:11px;opacity:.75;margin:6px 0 0;min-height:14px;}';
+    document.head.appendChild(style);
+  }
+
+  function init() {
+    /* Haengt sich direkt HINTER das MIDI-Panel (falls vorhanden), sonst wie
+       midi.js selbst hinter die Playlist-Generator-Beschreibung. */
+    var anchor = document.querySelector('.dj-midi-panel') || document.querySelector('.generator .sub');
+    if (!anchor) {
+      window.setTimeout(init, 500);
+      return;
+    }
+    if (document.querySelector('.manualadd-panel')) return;
+
+    injectStyles();
+
+    panelEl = buildPanel();
+    anchor.insertAdjacentElement('afterend', panelEl);
+
+    listEl = panelEl.querySelector('#manualadd-list');
+    renderList();
+
+    var toggleBtn = panelEl.querySelector('#manualadd-toggle');
+    var body = panelEl.querySelector('#manualadd-body');
+    toggleBtn.addEventListener('click', function () {
+      body.hidden = !body.hidden;
+    });
+
+    panelEl.querySelector('#manualadd-search').addEventListener('click', function () {
+      var a = panelEl.querySelector('#manualadd-artist').value.trim();
+      var t = panelEl.querySelector('#manualadd-title').value.trim();
+      if (!a && !t) return;
+      var q = encodeURIComponent((a + ' ' + t).trim());
+      window.open('https://www.youtube.com/results?search_query=' + q, '_blank', 'noopener');
+    });
+
+    panelEl.querySelector('#manualadd-add').addEventListener('click', function () {
+      var errorEl = panelEl.querySelector('#manualadd-error');
+      errorEl.hidden = true;
+      var a = panelEl.querySelector('#manualadd-artist').value.trim();
+      var t = panelEl.querySelector('#manualadd-title').value.trim();
+      var link = panelEl.querySelector('#manualadd-link').value.trim();
+      var ytId = extractYoutubeId(link);
+      if (!a || !t) {
+        errorEl.textContent = 'Bitte Interpret und Titel eintragen.';
+        errorEl.hidden = false;
+        return;
+      }
+      if (!ytId) {
+        errorEl.textContent = 'Kein gültiger YouTube-Link/ID erkannt.';
+        errorEl.hidden = false;
+        return;
+      }
+      addEntry(a, t, ytId);
+      playEntry(loadEntries().length - 1);
+      panelEl.querySelector('#manualadd-artist').value = '';
+      panelEl.querySelector('#manualadd-title').value = '';
+      panelEl.querySelector('#manualadd-link').value = '';
+    });
+
+    listEl.addEventListener('click', function (ev) {
+      var playBtn = ev.target.closest('.manualadd-play');
+      var removeBtn = ev.target.closest('.manualadd-remove');
+      if (playBtn) playEntry(parseInt(playBtn.dataset.i, 10));
+      else if (removeBtn) removeEntry(parseInt(removeBtn.dataset.i, 10));
+    });
+
+    panelEl.querySelector('#manualadd-export').addEventListener('click', exportEntries);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
