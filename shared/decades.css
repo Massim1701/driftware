@@ -954,7 +954,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
     border-left: none;
     border-top: 1px solid var(--border);
     box-shadow: 0 -8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
-    padding: 10px 20px 12px;
+    padding: 8px 16px 10px;
   }
   .dj-player::before {
     top: 0;
@@ -969,17 +969,31 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: space-evenly;
-    gap: 24px;
+    align-items: flex-start;
+    gap: 10px;
     max-width: 1360px;
     margin: 0 auto;
   }
-  .dj-deck { width: 46%; }
-  .dj-vinyl { width: 150px; height: 150px; }
-  .dj-vinyl-video { width: 124px; height: 124px; }
-  .dj-master { width: 100%; order: 5; margin-top: 4px; }
+  /* Kleinere Vinyl-Scheibe + engere Abstaende, damit beide Decks
+     nebeneinander passen statt untereinander zu wrappen — das war der
+     Hauptgrund fuer viel Scrollen in diesem Zwischenbereich (schmales
+     Browserfenster/Tablet, aber noch nicht Handy-Breakpoint). */
+  .dj-deck { width: 46%; gap: 2px; }
+  .dj-deck-top { gap: 6px; }
+  .dj-vinyl { width: 96px; height: 96px; }
+  .dj-vinyl-video { width: 78px; height: 78px; }
+  .dj-pitch { width: 44px; gap: 3px; }
+  .dj-pitch-display { font-size: 8px; padding: 3px 1px; }
+  .dj-pitch-slider-wrap { min-height: 76px; }
+  .dj-deck-info { min-height: 0; }
+  .dj-deck-controls { gap: 5px; }
+  .dj-deck-controls button { width: 27px; height: 27px; }
+  .dj-deck-controls button[id$="-toggle"] { width: 32px; height: 32px; }
+  .dj-master { width: 100%; order: 5; margin-top: 2px; padding: 7px 12px; gap: 6px; }
   .dj-crossfader, .dj-volume { justify-content: center; }
-  .dj-search-box { margin: 0 auto 8px; max-width: 480px; }
-  .dj-player .search-hint { margin: 0 auto 6px; max-width: 480px; }
+  .dj-autofade-toggle { padding: 4px 10px; }
+  .dj-search-box { margin: 0 auto 6px; max-width: 480px; }
+  .dj-player .search-hint { margin: 0 auto 4px; max-width: 480px; }
 }
 
 @media (max-width: 640px) {
