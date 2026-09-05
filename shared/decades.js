@@ -1314,10 +1314,20 @@ function renderPlaylistGenerator(mountRoot, config) {
   function buildMixSongs() {
     if (!data) return [];
     var out = [];
+    var seen = {};
     Object.keys(data).forEach(function (cat) {
       var songs = (data[cat] || []).slice();
       songs.sort(function (a, b) { return (b.hv || 0) - (a.hv || 0); });
-      out = out.concat(songs.slice(0, MIX_PER_CATEGORY));
+      songs.slice(0, MIX_PER_CATEGORY).forEach(function (s) {
+        /* Songs, die in mehreren Genres einsortiert sind (z.B. Charity-
+           Hits wie "We Are The World" unter SynthPop/PopCharts/Ballads/
+           FunkSoul), sollen im Mix trotzdem nur EINMAL vorkommen -- sonst
+           spielt derselbe Song mehrfach hintereinander/kurz nacheinander. */
+        var id = songId(s);
+        if (seen[id]) return;
+        seen[id] = true;
+        out.push(s);
+      });
     });
     return out;
   }
