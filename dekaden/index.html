@@ -137,6 +137,39 @@
     color: var(--muted);
     letter-spacing: 0.03em;
   }
+  .fetch-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 28px 0 0;
+  }
+  .fetch-btn {
+    font-family: 'Sora', -apple-system, sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 10px 22px;
+    cursor: pointer;
+    transition: border-color 0.18s ease, transform 0.18s ease;
+  }
+  .fetch-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .fetch-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .fetch-status {
+    font-size: 12px;
+    color: var(--muted);
+    min-height: 16px;
+  }
   .ambient-heading {
     font-size: 18px;
     font-weight: 600;
@@ -177,34 +210,6 @@
     border-color: rgba(255,255,255,0.18);
     box-shadow: 0 14px 32px rgba(0,0,0,0.35);
   }
-  .decade-card-badge {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: rgba(58,168,255,0.14);
-    border: 1px solid rgba(58,168,255,0.35);
-    color: var(--accent);
-    font-size: 10px;
-    font-weight: 700;
-    padding: 4px 9px;
-    border-radius: 20px;
-  }
-  .decade-card-badge.live {
-    background: rgba(34,197,94,0.16);
-    border-color: rgba(34,197,94,0.45);
-    color: #4ade80;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .decade-card-badge.live::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #4ade80;
-    flex-shrink: 0;
-  }
   .decade-icon {
     width: 52px;
     height: 52px;
@@ -236,17 +241,6 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%);
-  }
-  .decade-photo .decade-photo-dot {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, var(--accent2), #0d5c50 70%);
-    box-shadow: 0 0 6px rgba(45,212,191,0.6);
-    z-index: 2;
   }
   .decade-name {
     font-family: 'Sora', -apple-system, sans-serif;
@@ -284,6 +278,10 @@
       <div class="hero-stat"><strong>76.000+</strong><span>Songs</span></div>
       <div class="hero-stat"><strong>17</strong><span>Playlisten</span></div>
       <div class="hero-stat"><strong>95,6%</strong><span>mit Video</span></div>
+    </div>
+    <div class="fetch-control">
+      <button id="fetch-btn" class="fetch-btn" type="button">Fetch</button>
+      <span id="fetch-status" class="fetch-status"></span>
     </div>
   </header>
   <main>
@@ -349,11 +347,6 @@
         a.className = 'decade-card';
         a.href = '/' + d.href;
 
-        var badge = document.createElement('span');
-        badge.className = 'decade-card-badge' + (d.live ? ' live' : '');
-        badge.textContent = d.live ? 'Online' : 'In Arbeit';
-        a.appendChild(badge);
-
         var icon;
         if (d.photo) {
           icon = document.createElement('div');
@@ -363,9 +356,6 @@
           img.alt = '';
           img.loading = 'lazy';
           icon.appendChild(img);
-          var dot = document.createElement('span');
-          dot.className = 'decade-photo-dot';
-          icon.appendChild(dot);
         } else {
           icon = document.createElement('div');
           icon.className = 'decade-icon';
@@ -395,6 +385,36 @@
 
     renderCards(DECADES, 'decades-container');
     renderCards(AMBIENTS, 'ambients-container');
+
+    /* "Fetch"-Button: loest den taeglichen Verarbeitungs-Job fuer die
+       Warteliste (queue/fehlende-lieder.json) sofort aus, statt bis
+       04:17 UTC zu warten. Laeuft ueber denselben Cloudflare-Worker-Proxy
+       wie das "Song nicht gefunden"-Formular -- kein Token im Frontend. */
+    var FETCH_DISPATCH_URL = 'https://driftware-warteliste-proxy.welove80sde.workers.dev/dispatch';
+    var fetchBtn = document.getElementById('fetch-btn');
+    var fetchStatus = document.getElementById('fetch-status');
+    fetchBtn.addEventListener('click', function () {
+      fetchBtn.disabled = true;
+      fetchStatus.textContent = 'Wird gestartet …';
+      fetch(FETCH_DISPATCH_URL, { method: 'POST' })
+        .then(function (r) {
+          return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+        })
+        .then(function (res) {
+          if (!res.ok) throw new Error('failed');
+          if (res.data.dispatched) {
+            fetchStatus.textContent = 'Gestartet ✓ (' + res.data.count + ' Eintrag' + (res.data.count === 1 ? '' : 'e') + ')';
+          } else {
+            fetchStatus.textContent = 'Warteliste ist leer — nichts zu holen.';
+          }
+        })
+        .catch(function () {
+          fetchStatus.textContent = 'Fehlgeschlagen. Bitte spaeter erneut versuchen.';
+        })
+        .finally(function () {
+          setTimeout(function () { fetchBtn.disabled = false; }, 60000);
+        });
+    });
   </script>
 </body>
 </html>
