@@ -937,9 +937,9 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   gap: 6px;
   padding: 5px 12px;
   border-radius: 20px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--muted);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;
@@ -947,9 +947,9 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 .dj-autofade-toggle svg { width: 13px; height: 13px; flex-shrink: 0; }
 .dj-autofade-toggle.active {
-  border-color: #f5a623;
-  color: #f5a623;
-  background: rgba(245, 166, 35, 0.12);
+  border-color: #22c55e;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.12);
 }
 .dj-autofade-toggle:hover { border-color: var(--accent); }
 

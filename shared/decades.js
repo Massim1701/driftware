@@ -532,7 +532,7 @@ function ensureDjPlayer() {
     '    <span class="dj-crossfader-label">B</span>' +
     '  </div>' +
     '  <button type="button" id="dj-autofade-toggle" class="dj-autofade-toggle active" aria-pressed="true" ' +
-    '    title="Automatisches Überblenden 5s vor Songende (nur bei passenden BPM) an/aus">' + REFRESH_SVG + ' Autofade An</button>' +
+    '    title="Automatisches Überblenden 10s vor Songende (nur bei passenden BPM) an/aus">' + REFRESH_SVG + ' Autofade An</button>' +
     '  <div class="dj-volume">' +
     '    <span class="dj-volume-label">' + SPEAKER_SVG + '</span>' +
     '    <input type="range" id="dj-master-volume" min="0" max="100" value="80" aria-label="Gesamtlautstärke">' +
