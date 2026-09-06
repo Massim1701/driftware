@@ -5,27 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ultimate Music Master — Driftware</title>
 <meta name="description" content="Songs nach Jahrzehnt und Stimmung sortiert — Playlisten von den 70ern bis heute, bereit für Spotify, Apple Music & YouTube Music.">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0c1224;
-    --panel: #141c33;
-    --accent: #3aa8ff;
-    --text: #f5f7fa;
-    --muted: #9aa3c0;
+    --bg: #0c0d11;
+    --panel: #16171d;
+    --accent: #7c5cff;
+    --accent2: #2dd4bf;
+    --text: #f3f3f6;
+    --muted: #94959f;
     --border: rgba(255,255,255,0.08);
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     background:
-      radial-gradient(760px 420px at 18% -8%, rgba(255,47,179,0.16), transparent 60%),
-      radial-gradient(820px 460px at 88% 6%, rgba(41,226,255,0.14), transparent 60%),
-      radial-gradient(600px 400px at 50% 0%, rgba(124,92,255,0.12), transparent 65%),
+      radial-gradient(760px 420px at 18% -8%, rgba(124,92,255,0.14), transparent 60%),
+      radial-gradient(820px 460px at 88% 6%, rgba(45,212,191,0.12), transparent 60%),
       var(--bg);
     background-repeat: no-repeat;
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     line-height: 1.5;
   }
   .utility-block {
@@ -88,13 +88,13 @@
     box-shadow: 0 0 8px #4ade80;
   }
   .logo {
-    font-family: 'Space Grotesk', -apple-system, sans-serif;
+    font-family: 'Sora', -apple-system, sans-serif;
     font-size: clamp(34px, 6vw, 54px);
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1.05;
     margin: 0 0 14px;
-    background: linear-gradient(120deg, #ff2fb3, #7c5cff 55%, #29e2ff);
+    background: linear-gradient(120deg, var(--accent), #c9b8ff 50%, var(--accent2));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -124,10 +124,10 @@
     min-width: 118px;
   }
   .hero-stat strong {
-    font-family: 'Space Grotesk', -apple-system, sans-serif;
+    font-family: 'Sora', -apple-system, sans-serif;
     font-size: 22px;
     font-weight: 700;
-    background: linear-gradient(120deg, #ff2fb3, #29e2ff);
+    background: linear-gradient(120deg, var(--accent), var(--accent2));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -244,12 +244,12 @@
     width: 9px;
     height: 9px;
     border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, var(--accent2, #29e2ff), #0b6a78 70%);
-    box-shadow: 0 0 6px rgba(41,226,255,0.6);
+    background: radial-gradient(circle at 35% 30%, var(--accent2), #0d5c50 70%);
+    box-shadow: 0 0 6px rgba(45,212,191,0.6);
     z-index: 2;
   }
   .decade-name {
-    font-family: 'Space Grotesk', -apple-system, sans-serif;
+    font-family: 'Sora', -apple-system, sans-serif;
     font-weight: 600;
     font-size: 17px;
   }
@@ -331,15 +331,15 @@
     ];
 
     var AMBIENTS = [
-      { href: 'afterwork-music/', icon: ICONS.wineGlass, bg: 'linear-gradient(135deg, #403f43, #302f33)', name: 'Afterwork', years: 'Alle Jahrzehnte', desc: 'Soul, Neo Soul, Acid Jazz & Smooth Jazz.', live: true },
-      { href: 'chillhouse-music/', icon: ICONS.sunset, bg: 'linear-gradient(135deg, #403f43, #302f33)', name: 'Chill House', years: 'Alle Jahrzehnte', desc: 'Deep House, Ambient House, Nu-Disco, Lounge & Balearic.', live: true },
-      { href: 'christmas-music/', icon: ICONS.tree, bg: 'linear-gradient(135deg, #403f43, #302f33)', name: 'Christmas', years: 'Alle Jahrzehnte', desc: 'Über 900 Weihnachtssongs, Klassiker bis modern.', live: true },
-      { href: 'dinnerparty-music/', icon: ICONS.cocktail, bg: 'linear-gradient(135deg, #403f43, #302f33)', name: 'Dinner Party', years: 'Alle Jahrzehnte', desc: 'Disco, Funk, Boogie & Nu-Disco.', live: true },
-      { href: 'focuswork-music/', icon: ICONS.brain, bg: 'linear-gradient(135deg, #403f43, #302f33)', name: 'Focus & Work', years: 'Alle Jahrzehnte', desc: 'Ambient, Downtempo, Lo-Fi & IDM.', live: true },
-      { href: 'latenight-music/', icon: ICONS.moon, bg: 'linear-gradient(135deg, #403f43, #302f33)', name: 'Late Night', years: 'Alle Jahrzehnte', desc: 'Trip Hop, Contemporary R&B, Downtempo & Dream Pop.', live: true },
-      { href: 'morning-music/', icon: ICONS.sun, bg: 'linear-gradient(135deg, #403f43, #302f33)', name: 'Morning', years: 'Alle Jahrzehnte', desc: 'Folk, Acoustic, Indie Folk & Bossa Nova.', live: true },
-      { href: 'roadtrip-music/', icon: ICONS.car, bg: 'linear-gradient(135deg, #403f43, #302f33)', name: 'Road Trip', years: 'Alle Jahrzehnte', desc: 'Classic Rock, AOR & Synthwave.', live: true },
-      { href: 'workout-music/', icon: ICONS.runner, bg: 'linear-gradient(135deg, #403f43, #302f33)', name: 'Workout & Running', years: 'Alle Jahrzehnte', desc: 'Hi NRG, Eurodance, Drum\'n\'Bass & Progressive House.', live: true }
+      { href: 'afterwork-music/', icon: ICONS.wineGlass, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Afterwork', years: 'Alle Jahrzehnte', desc: 'Soul, Neo Soul, Acid Jazz & Smooth Jazz.', live: true },
+      { href: 'chillhouse-music/', icon: ICONS.sunset, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Chill House', years: 'Alle Jahrzehnte', desc: 'Deep House, Ambient House, Nu-Disco, Lounge & Balearic.', live: true },
+      { href: 'christmas-music/', icon: ICONS.tree, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Christmas', years: 'Alle Jahrzehnte', desc: 'Über 900 Weihnachtssongs, Klassiker bis modern.', live: true },
+      { href: 'dinnerparty-music/', icon: ICONS.cocktail, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Dinner Party', years: 'Alle Jahrzehnte', desc: 'Disco, Funk, Boogie & Nu-Disco.', live: true },
+      { href: 'focuswork-music/', icon: ICONS.brain, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Focus & Work', years: 'Alle Jahrzehnte', desc: 'Ambient, Downtempo, Lo-Fi & IDM.', live: true },
+      { href: 'latenight-music/', icon: ICONS.moon, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Late Night', years: 'Alle Jahrzehnte', desc: 'Trip Hop, Contemporary R&B, Downtempo & Dream Pop.', live: true },
+      { href: 'morning-music/', icon: ICONS.sun, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Morning', years: 'Alle Jahrzehnte', desc: 'Folk, Acoustic, Indie Folk & Bossa Nova.', live: true },
+      { href: 'roadtrip-music/', icon: ICONS.car, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Road Trip', years: 'Alle Jahrzehnte', desc: 'Classic Rock, AOR & Synthwave.', live: true },
+      { href: 'workout-music/', icon: ICONS.runner, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Workout & Running', years: 'Alle Jahrzehnte', desc: 'Hi NRG, Eurodance, Drum\'n\'Bass & Progressive House.', live: true }
     ];
 
     function renderCards(list, containerId) {
