@@ -216,6 +216,38 @@
     box-shadow: 0 6px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06) inset;
   }
   .decade-icon svg { width: 26px; height: 26px; stroke: #fff; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .decade-photo {
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06) inset;
+  }
+  .decade-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: grayscale(0.15) contrast(1.05);
+  }
+  .decade-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%);
+  }
+  .decade-photo .decade-photo-dot {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--accent2, #29e2ff), #0b6a78 70%);
+    box-shadow: 0 0 6px rgba(41,226,255,0.6);
+    z-index: 2;
+  }
   .decade-name {
     font-family: 'Space Grotesk', -apple-system, sans-serif;
     font-weight: 600;
@@ -290,12 +322,12 @@
     };
 
     var DECADES = [
-      { href: '70er-music/', icon: ICONS.disco, bg: 'linear-gradient(135deg, #2c2b2e, #201f21)', name: '70er Music', years: '1970–1979', desc: 'Disco, Rock, Soul und mehr.', live: true },
-      { href: '80er-music/', icon: ICONS.tape, bg: 'linear-gradient(135deg, #38373a, #2b2a2d)', name: '80er Music', years: '1980–1989', desc: 'Party, Rock, Romantic und mehr.', live: true },
-      { href: '90er-music/', icon: ICONS.radio, bg: 'linear-gradient(135deg, #454447, #363538)', name: '90er Music', years: '1990–1999', desc: 'Grunge, Eurodance, HipHop und mehr.', live: true },
-      { href: '2000er-music/', icon: ICONS.bass, bg: 'linear-gradient(135deg, #525154, #434245)', name: '2000er Music', years: '2000–2009', desc: 'Indie Rock, Crunk, Dubstep und mehr.', live: true },
-      { href: '2010er-music/', icon: ICONS.headphones, bg: 'linear-gradient(135deg, #605f62, #4f4e51)', name: '2010er Music', years: '2010–2019', desc: 'Indie, EDM, Trap und mehr.', live: true },
-      { href: '2020er-music/', icon: ICONS.globe, bg: 'linear-gradient(135deg, #706f73, #5c5b5e)', name: '2020er Music', years: '2020–heute', desc: 'Hyperpop, Phonk, Amapiano und mehr.', live: true }
+      { href: '70er-music/', photo: 'img/70er.jpg', name: '70er Music', years: '1970–1979', desc: 'Disco, Rock, Soul und mehr.', live: true },
+      { href: '80er-music/', photo: 'img/80er.jpg', name: '80er Music', years: '1980–1989', desc: 'Party, Rock, Romantic und mehr.', live: true },
+      { href: '90er-music/', photo: 'img/90er.jpg', name: '90er Music', years: '1990–1999', desc: 'Grunge, Eurodance, HipHop und mehr.', live: true },
+      { href: '2000er-music/', photo: 'img/2000er.jpg', name: '2000er Music', years: '2000–2009', desc: 'Indie Rock, Crunk, Dubstep und mehr.', live: true },
+      { href: '2010er-music/', photo: 'img/2010er.jpg', name: '2010er Music', years: '2010–2019', desc: 'Indie, EDM, Trap und mehr.', live: true },
+      { href: '2020er-music/', photo: 'img/2020er.jpg', name: '2020er Music', years: '2020–heute', desc: 'Hyperpop, Phonk, Amapiano und mehr.', live: true }
     ];
 
     var AMBIENTS = [
@@ -322,10 +354,24 @@
         badge.textContent = d.live ? 'Online' : 'In Arbeit';
         a.appendChild(badge);
 
-        var icon = document.createElement('div');
-        icon.className = 'decade-icon';
-        icon.style.background = d.bg;
-        icon.innerHTML = d.icon;
+        var icon;
+        if (d.photo) {
+          icon = document.createElement('div');
+          icon.className = 'decade-photo';
+          var img = document.createElement('img');
+          img.src = d.photo + '?v=1';
+          img.alt = '';
+          img.loading = 'lazy';
+          icon.appendChild(img);
+          var dot = document.createElement('span');
+          dot.className = 'decade-photo-dot';
+          icon.appendChild(dot);
+        } else {
+          icon = document.createElement('div');
+          icon.className = 'decade-icon';
+          icon.style.background = d.bg;
+          icon.innerHTML = d.icon;
+        }
         a.appendChild(icon);
 
         var years = document.createElement('span');
