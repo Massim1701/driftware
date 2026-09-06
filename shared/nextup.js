@@ -1,20 +1,24 @@
 /* Ersetzt den Inhalt der bestehenden "Zuletzt gespielt"-Box (".gen-history",
    aus decades.js) durch EINE kombinierte Verlauf/Warteschlange-Liste --
    an genau derselben Stelle/Groesse, keine zweite Box, keine Luecke.
-   Reine Anzeige (keine Klicks/Interaktion). Reihenfolge von oben nach
-   unten: bis zu 5 kommende Songs (am weitesten entfernter zuerst, naechster
-   direkt ueber dem Highlight), dann der aktuelle Song hervorgehoben, dann
-   bis zu 5 zuletzt gespielte Songs (zuletzt gespielter direkt darunter,
-   aeltere weiter unten). Die Hervorhebung bleibt also immer an derselben
-   Stelle in der Liste, die Liste selbst "rutscht" mit jedem neuen Song um
-   eine Position weiter.
+   Reihenfolge von oben nach unten: bis zu 5 kommende Songs (am weitesten
+   entfernter zuerst, naechster direkt ueber dem Highlight), dann der
+   aktuelle Song hervorgehoben, dann bis zu 5 zuletzt gespielte Songs
+   (zuletzt gespielter direkt darunter, aeltere weiter unten). Die
+   Hervorhebung bleibt also immer an derselben Stelle in der Liste, die
+   Liste selbst "rutscht" mit jedem neuen Song um eine Position weiter.
+
+   Interaktion: jede Zeile ausser der aktuell hervorgehobenen hat ein "×"
+   zum Entfernen -- bei "Warteschlange" wird der Song direkt aus
+   deck.queue entfernt (spielt dann nicht mehr), bei "Verlauf" nur aus der
+   Anzeige-Liste (playHistory) geloescht.
 
    Technisch: die urspruengliche Liste (ID "gen-history-list") wird durch
    eine eigene ID ersetzt -- decades.js' renderPlayHistory() findet sein
    Element dann nicht mehr (hat bereits einen Null-Check eingebaut) und
    schreibt einfach nichts mehr dort hinein, kein Konflikt. Eigenstaendige
-   Datei (wie midi.js/continuity.js) -- liest nur die globalen DECKS/
-   playHistory aus decades.js per Polling, keine Aenderung an
+   Datei (wie midi.js/continuity.js) -- liest/aendert nur die globalen
+   DECKS/playHistory aus decades.js per Polling, keine Aenderung an
    decades.js/.css noetig. */
 
 (function () {
@@ -40,15 +44,22 @@
     });
   }
 
-  function songLine(s, marker, kind) {
+  function songLine(s, marker, kind, idx) {
     // kind: "upcoming" (gruen), "current" (Highlight-Hintergrund), "history" (rot)
     var cls = 'gen-queue-item';
     if (kind === 'current') cls += ' gen-queue-current';
     else if (kind === 'upcoming') cls += ' gen-queue-upcoming';
     else if (kind === 'history') cls += ' gen-queue-history';
+    // Der aktuell gespielte Song laesst sich hier nicht entfernen, nur
+    // kommende (Warteschlange) und vergangene (Verlauf) Zeilen.
+    var removeBtn = (kind !== 'current')
+      ? '<button type="button" class="gen-queue-remove" data-kind="' + kind + '" data-idx="' + idx + '" aria-label="Aus der Liste entfernen" title="Entfernen">&times;</button>'
+      : '';
     return '<li class="' + cls + '">' +
       '<span class="gen-queue-num">' + marker + '</span>' +
-      '<span class="gen-queue-text"><strong>' + escapeHtml(s.t) + '</strong><span>' + escapeHtml(s.a) + '</span></span></li>';
+      '<span class="gen-queue-text"><strong>' + escapeHtml(s.t) + '</strong><span>' + escapeHtml(s.a) + '</span></span>' +
+      removeBtn +
+      '</li>';
   }
 
   function render() {
@@ -63,35 +74,56 @@
     // Start des Abspielens eingetragen, siehe logPlayHistory in decades.js)
     // -- also identisch mit "current". Fuer den Verlauf ab Index 1 lesen,
     // sonst taucht der aktuelle Song doppelt auf (als Highlight UND als
-    // erster Verlaufseintrag).
-    var history = (typeof window.playHistory !== 'undefined' ? window.playHistory : [])
-      .slice(1, 1 + WINDOW_SIZE);
+    // erster Verlaufseintrag). idx haelt dabei den echten Index im
+    // playHistory-Array fest, damit "Entfernen" das richtige Element trifft.
+    var historyEntries = (typeof window.playHistory !== 'undefined' ? window.playHistory : [])
+      .slice(1, 1 + WINDOW_SIZE)
+      .map(function (s, i) { return { song: s, idx: 1 + i }; });
 
-    var upcoming = [];
+    var upcomingEntries = [];
     if (deck && deck.queue && deck.index > -1) {
-      upcoming = deck.queue.slice(deck.index + 1, deck.index + 1 + WINDOW_SIZE);
+      upcomingEntries = deck.queue.slice(deck.index + 1, deck.index + 1 + WINDOW_SIZE)
+        .map(function (s, i) { return { song: s, idx: deck.index + 1 + i }; });
     }
     // Oben in der Liste soll der naechste Song (direkt nach dem aktuellen)
     // am naehesten am Highlight stehen -- also umgekehrte Reihenfolge, der
     // am weitesten entfernte kommende Song ganz oben.
-    var upcomingTopDown = upcoming.slice().reverse();
+    var upcomingTopDown = upcomingEntries.slice().reverse();
 
-    var signature = upcoming.map(function (s) { return s.a + s.t; }).join(',') + '||' +
+    var signature = upcomingEntries.map(function (e) { return e.song.a + e.song.t; }).join(',') + '||' +
       (current ? current.a + current.t : '') + '||' +
-      history.map(function (s) { return s.a + s.t; }).join(',');
+      historyEntries.map(function (e) { return e.song.a + e.song.t; }).join(',');
     if (signature === lastSignature) return; // nichts geaendert, kein unnoetiges Neuzeichnen
     lastSignature = signature;
 
-    if (!current && !history.length && !upcoming.length) {
+    if (!current && !historyEntries.length && !upcomingEntries.length) {
       listEl.innerHTML = '<li class="gen-queue-empty">Nichts geladen.</li>';
       return;
     }
 
     var html = '';
-    html += upcomingTopDown.map(function (s) { return songLine(s, '+', 'upcoming'); }).join('');
-    if (current) html += songLine(current, '▶', 'current');
-    html += history.map(function (s) { return songLine(s, '−', 'history'); }).join('');
+    html += upcomingTopDown.map(function (e) { return songLine(e.song, '+', 'upcoming', e.idx); }).join('');
+    if (current) html += songLine(current, '▶', 'current', null);
+    html += historyEntries.map(function (e) { return songLine(e.song, '−', 'history', e.idx); }).join('');
     listEl.innerHTML = html;
+  }
+
+  function handleRemoveClick(e) {
+    var target = e.target;
+    if (!target || !target.classList || !target.classList.contains('gen-queue-remove')) return;
+    var kind = target.getAttribute('data-kind');
+    var idx = parseInt(target.getAttribute('data-idx'), 10);
+    if (isNaN(idx)) return;
+
+    if (kind === 'upcoming') {
+      var deck = pickActiveDeck();
+      if (deck && deck.queue) deck.queue.splice(idx, 1);
+    } else if (kind === 'history') {
+      if (typeof window.playHistory !== 'undefined') window.playHistory.splice(idx, 1);
+    }
+
+    lastSignature = null; // sofortiges Neuzeichnen erzwingen, nicht erst beim naechsten Poll
+    render();
   }
 
   function injectStyles() {
@@ -110,7 +142,11 @@
       '.gen-queue-current{background:rgba(255,255,255,.1);}' +
       '.gen-queue-current .gen-queue-num{opacity:1;color:#fff;}' +
       '.gen-queue-current strong{color:#fff;}' +
-      '.gen-queue-empty{opacity:.6;font-size:12px;padding:4px 6px;}';
+      '.gen-queue-empty{opacity:.6;font-size:12px;padding:4px 6px;}' +
+      '.gen-queue-remove{margin-left:auto;flex:0 0 auto;background:none;border:none;color:inherit;opacity:.35;font-size:16px;line-height:1;cursor:pointer;padding:2px 6px;border-radius:5px;}' +
+      '.gen-queue-remove:hover{opacity:1;background:rgba(255,255,255,.14);}' +
+      '.gen-queue-remove:focus-visible{opacity:1;outline:1px solid currentColor;}' +
+      '.gen-queue-item:hover .gen-queue-remove{opacity:.7;}';
     document.head.appendChild(style);
   }
 
@@ -138,6 +174,7 @@
       '<ul id="gen-queue-list"><li class="gen-queue-empty">Nichts geladen.</li></ul>';
 
     listEl = document.getElementById('gen-queue-list');
+    listEl.addEventListener('click', handleRemoveClick);
     render();
     setInterval(render, POLL_MS);
   }
