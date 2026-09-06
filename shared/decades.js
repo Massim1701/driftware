@@ -1172,7 +1172,7 @@ function renderSongGrid(container, songs) {
 
     var play = document.createElement('span');
     play.className = 'song-tile-play' + (song.yt ? '' : ' disabled');
-    play.innerHTML = '▶';
+    play.innerHTML = PLAY_SVG;
     play.setAttribute('role', 'button');
     play.setAttribute('tabindex', song.yt ? '0' : '-1');
     play.setAttribute('aria-label', song.yt ? ('Abspielen: ' + song.a + ' – ' + song.t) : 'Kein Video gefunden');
