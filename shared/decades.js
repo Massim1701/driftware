@@ -210,7 +210,7 @@ var STREAMING_SERVICES = [
     key: 'ytmusic',
     label: 'YouTube Music',
     color: '#ff0000',
-    icon: '<circle cx="12" cy="12" r="6.2" fill="#fff"/><path d="M10.3 9.4 15 12l-4.7 2.6z" fill="#ff0000"/>',
+    icon: '<path d="M9.8 7.8v8.4l7.2-4.2z" fill="#fff"/>',
     url: function (q) { return 'https://music.youtube.com/search?q=' + q; }
   },
   {

@@ -9,12 +9,11 @@
   --muted: #a99cc4;
   --border: rgba(255,255,255,0.08);
   --metal-body:
-    repeating-linear-gradient(115deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 7px),
-    linear-gradient(180deg, rgba(255,255,255,0.012), rgba(0,0,0,0.05)),
+    linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.04)),
     var(--bg);
   --metal-panel:
-    repeating-linear-gradient(115deg, rgba(255,255,255,0.018) 0px, rgba(255,255,255,0.018) 1px, transparent 1px, transparent 7px),
-    linear-gradient(180deg, rgba(255,255,255,0.025), rgba(0,0,0,0.04)),
+    repeating-linear-gradient(115deg, rgba(255,255,255,0.008) 0px, rgba(255,255,255,0.008) 1px, transparent 1px, transparent 12px),
+    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03)),
     var(--panel);
 }
 * { box-sizing: border-box; }
@@ -625,7 +624,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   overflow-y: auto;
   z-index: 250;
   background:
-    repeating-linear-gradient(115deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 7px),
+    repeating-linear-gradient(115deg, rgba(255,255,255,0.008) 0px, rgba(255,255,255,0.008) 1px, transparent 1px, transparent 12px),
     linear-gradient(200deg, var(--panel) 0%, var(--bg) 130%);
   border-left: 1px solid var(--border);
   box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04);
