@@ -299,6 +299,25 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   gap: 6px;
 }
 .generator-actions button svg, .generator-actions a svg { width: 14px; height: 14px; flex-shrink: 0; }
+/* Primaeraktion ("Playlist auf Deck laden") deutlich hervorheben, damit sie
+   sich nicht in den beiden Nebenaktionen (Kopieren/CSV) verliert. */
+#gen-play-all {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+#gen-play-all:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+#gen-play-all:active {
+  transform: translateY(0);
+  filter: brightness(1);
+}
 .generator-count { color: var(--muted); font-size: 13px; }
 
 /* Bevorzugter Dienst + Senden: Auswahl geht ohne Kopieren/CSV direkt zum Anbieter */
