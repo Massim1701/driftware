@@ -465,11 +465,12 @@ function deckHTML(key) {
     '      </div>' +
     '      <div class="dj-vinyl-hint">Song hierher ziehen</div>' +
     '    </div>' +
-    '    <div class="dj-pitch">' +
-    '      <div class="dj-pitch-display" id="deck-' + key + '-pitch-display">PITCH 0%</div>' +
-    '      <div class="dj-pitch-slider-wrap">' +
-    '        <input type="range" class="dj-pitch-slider" id="deck-' + key + '-pitch" min="-50" max="50" step="25" value="0" aria-label="Deck ' + key + ': Pitch">' +
-    '      </div>' +
+    '  </div>' +
+    '  <div class="dj-pitch">' +
+    '    <div class="dj-pitch-display" id="deck-' + key + '-pitch-display">PITCH 0%</div>' +
+    '    <div class="dj-pitch-slider-wrap">' +
+    '      <input type="range" class="dj-pitch-slider" id="deck-' + key + '-pitch" min="-50" max="50" step="25" value="0" aria-label="Deck ' + key + ': Pitch">' +
+    '      <div class="dj-scale" aria-hidden="true"><span></span><span></span><span class="mid"></span><span></span><span></span></div>' +
     '    </div>' +
     '  </div>' +
     '  <div class="dj-deck-info">' +
@@ -528,14 +529,20 @@ function ensureDjPlayer() {
     '<div class="dj-master">' +
     '  <div class="dj-crossfader">' +
     '    <span class="dj-crossfader-label">A</span>' +
-    '    <input type="range" id="dj-crossfader" min="0" max="100" value="50" aria-label="Crossfader zwischen Deck A und Deck B">' +
+    '    <div class="dj-slider-wrap">' +
+    '      <input type="range" id="dj-crossfader" min="0" max="100" value="50" aria-label="Crossfader zwischen Deck A und Deck B">' +
+    '      <div class="dj-scale" aria-hidden="true"><span></span><span></span><span class="mid"></span><span></span><span></span></div>' +
+    '    </div>' +
     '    <span class="dj-crossfader-label">B</span>' +
     '  </div>' +
     '  <button type="button" id="dj-autofade-toggle" class="dj-autofade-toggle active" aria-pressed="true" ' +
     '    title="Automatisches Überblenden 10s vor Songende (nur bei passenden BPM) an/aus">' + REFRESH_SVG + ' Autofade An</button>' +
     '  <div class="dj-volume">' +
     '    <span class="dj-volume-label">' + SPEAKER_SVG + '</span>' +
-    '    <input type="range" id="dj-master-volume" min="0" max="100" value="80" aria-label="Gesamtlautstärke">' +
+    '    <div class="dj-slider-wrap">' +
+    '      <input type="range" id="dj-master-volume" min="0" max="100" value="80" aria-label="Gesamtlautstärke">' +
+    '      <div class="dj-scale" aria-hidden="true"><span></span><span></span><span class="mid"></span><span></span><span></span></div>' +
+    '    </div>' +
     '  </div>' +
     '</div>' +
     deckHTML('B') +
