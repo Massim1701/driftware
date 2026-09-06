@@ -810,15 +810,14 @@ function advanceAlternating(key) {
    dieselbe ±10-BPM-Schwelle wie bei der "mixbar"-Markierung im Grid
    (siehe refreshMixableHighlight): passen die Tempi der beiden Songs
    zusammen, laeuft der volle, sanfte 5s-Übergang; passen sie NICHT zusammen
-   (oder fehlt einem der Songs die BPM), wuerde ein langer Übergang zwei
-   unpassende Rhythmen zu lange gleichzeitig hoerbar machen — deshalb dann
-   nur ein kuerzerer ~5s-Wechsel statt des vollen 10s-Blends (aber
-   niemals kuerzer, damit man den Uebergang ueberhaupt wahrnimmt). Ein echtes Beatmatching
+   (oder fehlt einem der Songs die BPM) macht das inzwischen keinen
+   Unterschied mehr: Minimum ist immer 10s, damit der Uebergang immer
+   gut wahrnehmbar ist, egal ob die Tempi zusammenpassen. Ein echtes Beatmatching
    (Zeitdehnung exakt auf die Ziel-BPM) ist mit der YouTube-IFrame-API nicht
    moeglich, da setPlaybackRate nur die festen Stufen 0.5/0.75/1/1.25/1.5
    kennt — zu grob fuer eine Feinanpassung im niedrigen BPM-Bereich. */
 var CROSSFADE_LEAD_SECONDS = 10;
-var QUICK_HANDOFF_SECONDS = 5;
+var QUICK_HANDOFF_SECONDS = 10;
 var activeAutoFade = null;
 
 function bpmsCompatible(bpmA, bpmB) {
