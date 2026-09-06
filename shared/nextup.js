@@ -44,21 +44,30 @@
     });
   }
 
+  var ON_AIR_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' +
+    '<circle cx="12" cy="19" r="1.4" fill="currentColor" stroke="none"/>' +
+    '<path d="M8.5 15a5 5 0 0 1 7 0"/>' +
+    '<path d="M5.5 11.5a9.5 9.5 0 0 1 13 0"/></svg>';
+
   function songLine(s, marker, kind, idx) {
-    // kind: "upcoming" (gruen), "current" (Highlight-Hintergrund), "history" (rot)
+    // kind: "upcoming" (gruen), "current" (Highlight-Hintergrund + On-Air-Chip), "history" (rot)
     var cls = 'gen-queue-item';
     if (kind === 'current') cls += ' gen-queue-current';
     else if (kind === 'upcoming') cls += ' gen-queue-upcoming';
     else if (kind === 'history') cls += ' gen-queue-history';
     // Der aktuell gespielte Song laesst sich hier nicht entfernen, nur
-    // kommende (Warteschlange) und vergangene (Verlauf) Zeilen.
-    var removeBtn = (kind !== 'current')
-      ? '<button type="button" class="gen-queue-remove" data-kind="' + kind + '" data-idx="' + idx + '" aria-label="Aus der Liste entfernen" title="Entfernen">&times;</button>'
-      : '';
+    // kommende (Warteschlange) und vergangene (Verlauf) Zeilen -- er bekommt
+    // stattdessen den "On Air"-Hinweis an derselben Stelle (ganz rechts).
+    var trailing = '';
+    if (kind === 'current') {
+      trailing = '<span class="gen-queue-onair">' + ON_AIR_SVG + ' On Air</span>';
+    } else {
+      trailing = '<button type="button" class="gen-queue-remove" data-kind="' + kind + '" data-idx="' + idx + '" aria-label="Aus der Liste entfernen" title="Entfernen">&times;</button>';
+    }
     return '<li class="' + cls + '">' +
       '<span class="gen-queue-num">' + marker + '</span>' +
       '<span class="gen-queue-text"><strong>' + escapeHtml(s.t) + '</strong><span>' + escapeHtml(s.a) + '</span></span>' +
-      removeBtn +
+      trailing +
       '</li>';
   }
 
@@ -139,9 +148,11 @@
       '.gen-queue-upcoming strong{color:#22c55e;}' +
       '.gen-queue-history .gen-queue-num{opacity:1;color:#ef4444;}' +
       '.gen-queue-history strong{color:#ef4444;}' +
-      '.gen-queue-current{background:rgba(255,255,255,.1);}' +
-      '.gen-queue-current .gen-queue-num{opacity:1;color:#fff;}' +
+      '.gen-queue-current{background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.35);}' +
+      '.gen-queue-current .gen-queue-num{opacity:1;color:#4ade80;}' +
       '.gen-queue-current strong{color:#fff;}' +
+      '.gen-queue-onair{margin-left:auto;align-self:center;display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#4ade80;background:rgba(34,197,94,.16);border:1px solid rgba(34,197,94,.4);padding:4.5px 12px;border-radius:20px;flex:0 0 auto;white-space:nowrap;}' +
+      '.gen-queue-onair svg{width:16.5px;height:16.5px;}' +
       '.gen-queue-empty{opacity:.6;font-size:12px;padding:4px 6px;}' +
       '.gen-queue-remove{margin-left:auto;flex:0 0 auto;background:none;border:none;color:inherit;opacity:.35;font-size:16px;line-height:1;cursor:pointer;padding:2px 6px;border-radius:5px;}' +
       '.gen-queue-remove:hover{opacity:1;background:rgba(255,255,255,.14);}' +
