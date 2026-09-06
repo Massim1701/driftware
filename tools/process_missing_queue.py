@@ -135,6 +135,13 @@ def pick_bucket(catalog_data, discogs_release_data):
     return "Ohne"
 
 
+def humanize_bucket(name):
+    """Nur fuer das Anzeige-Feld 'g' (Genre) manuell zugeordneter Songs --
+    z.B. 'SynthPop' -> 'Synth Pop'. Der Bucket-KEY selbst bleibt unveraendert
+    (camelCase, siehe DECADE_GENRES im Frontend/shared/manualadd.js)."""
+    return re.sub(r"(?<!^)(?=[A-Z])", " ", name or "").strip()
+
+
 def song_id(artist, title):
     return (artist or "").strip().lower(), (title or "").strip().lower()
 
@@ -190,6 +197,61 @@ def main():
             if not artist or not title:
                 print("Eintrag ohne Interpret/Titel uebersprungen:", entry)
                 continue  # kaputten Eintrag verwerfen, nicht ewig behalten
+
+            manual_genre = entry.get("g") if isinstance(entry.get("g"), str) else None
+            manual_genre = manual_genre.strip() if manual_genre else None
+            manual_year_raw = entry.get("y")
+            manual_year = None
+            if isinstance(manual_year_raw, bool):
+                manual_year = None
+            elif isinstance(manual_year_raw, (int, float)):
+                manual_year = int(manual_year_raw)
+            elif isinstance(manual_year_raw, str) and manual_year_raw.strip().isdigit():
+                manual_year = int(manual_year_raw.strip())
+
+            if manual_genre and manual_year:
+                # Nutzer hat Jahr + Genre selbst zugeordnet (Haken bei
+                # "Discogs" war aus) -- keine Discogs-Suche noetig/gewollt.
+                print(f"Bearbeite (manuell, ohne Discogs): {artist} - {title} [{manual_genre}, {manual_year}]")
+                catalog_path_rel = catalog_path_for_year(manual_year)
+                if not catalog_path_rel:
+                    print(f"  Jahr {manual_year} passt zu keiner Dekaden-Kategorie, bleibt in der Warteliste")
+                    remaining.append(entry)
+                    continue
+
+                yt_id = valid_yt_id(entry.get("yt")) or search_youtube(artist, title)
+                if not yt_id:
+                    print("  kein YouTube-Link gefunden, bleibt in der Warteliste")
+                    remaining.append(entry)
+                    continue
+
+                catalog_path_abs = os.path.join(ROOT, catalog_path_rel)
+                if catalog_path_rel not in changed_catalogs:
+                    changed_catalogs[catalog_path_rel] = load_json(catalog_path_abs)
+                catalog_data = changed_catalogs[catalog_path_rel]
+
+                existing_ids = {song_id(s.get("a"), s.get("t")) for lst in catalog_data.values() for s in lst}
+                if song_id(artist, title) in existing_ids:
+                    print("  ist schon in der Datenbank, wird aus der Warteliste entfernt")
+                    continue
+
+                song = {
+                    "a": artist,
+                    "t": title,
+                    "y": manual_year,
+                    "g": humanize_bucket(manual_genre),
+                    "s": None,
+                    "c": None,
+                    "l": None,
+                    "th": None,
+                    "cv": None,
+                    "u": None,
+                    "hv": 0,
+                    "yt": yt_id,
+                }
+                catalog_data.setdefault(manual_genre, []).append(song)
+                print(f"  hinzugefuegt zu {catalog_path_rel} / {manual_genre} (manuell)")
+                continue
 
             print(f"Bearbeite: {artist} - {title}")
             release = discogs_search(artist, title)

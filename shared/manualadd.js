@@ -193,13 +193,13 @@
     }).join('');
   }
 
-  function addEntry(a, t, ytId) {
+  function addEntry(a, t, ytId, manualMeta) {
     var entries = loadEntries();
-    entries.push({ a: a, t: t, yt: ytId, g: 'Ohne', addedAt: Date.now() });
+    entries.push({ a: a, t: t, yt: ytId, g: (manualMeta && manualMeta.g) || 'Ohne', addedAt: Date.now() });
     saveEntries(entries);
     renderList();
     if (fileHandle) writeAutosaveFile();
-    pushToOnlineQueue(a, t, ytId);
+    pushToOnlineQueue(a, t, ytId, manualMeta);
   }
 
   /* ---- Online-Warteliste: schreibt den Song automatisch (ohne
@@ -216,12 +216,17 @@
      aus extractYoutubeId() -- nie eine unvalidierte URL. ---- */
   var QUEUE_PROXY_URL = 'https://driftware-warteliste-proxy.welove80sde.workers.dev/';
 
-  function pushToOnlineQueue(a, t, ytId) {
+  function pushToOnlineQueue(a, t, ytId, manualMeta) {
     setAutosaveStatus('Wird online gespeichert …');
+    var payload = { a: a, t: t, yt: ytId };
+    if (manualMeta) {
+      payload.g = manualMeta.g;
+      payload.y = manualMeta.y;
+    }
     fetch(QUEUE_PROXY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ a: a, t: t, yt: ytId })
+      body: JSON.stringify(payload)
     })
       .then(function (r) { if (!r.ok) throw new Error('write-failed'); setAutosaveStatus('Gesendet ✓'); })
       .catch(function () { setAutosaveStatus('Online-Speicherung fehlgeschlagen (lokal trotzdem gespeichert).'); });
@@ -266,6 +271,36 @@
     window.setTimeout(function () { setAutosaveStatus(''); }, 4000);
   }
 
+  /* Bucket-Keys 1:1 wie in den *-music/songs.json (ohne "Ohne", das ist
+     immer als Fallback-Option vorhanden). Bei Aenderung an den echten
+     Katalog-Dateien nicht zwingend synchron halten -- ein hier gewaehltes
+     Genre, das im Katalog noch fehlt, wird beim Verarbeiten einfach als
+     neuer Bucket angelegt (tools/process_missing_queue.py), nichts geht
+     verloren. */
+  var DECADE_GENRES = {
+    1970: ['Ballads', 'BluesSouthernRock', 'Boogie', 'ClassicRock', 'Country', 'Disco', 'Europop', 'FolkRock', 'FunkSoul', 'GlamRock', 'HardRockMetal', 'Krautrock', 'NewWavePostPunk', 'PopCharts', 'PopRock', 'ProgRock', 'Punk', 'ReggaeDub', 'Schlager', 'Ska', 'SoftRock'],
+    1980: ['Ballads', 'Boogie', 'Country', 'Disco', 'Electro', 'Eurobeat', 'Freestyle', 'FunkSoul', 'HardRockMetal', 'HiNRG', 'House', 'ItaloDisco', 'NDW', 'NewJackSwing', 'NewWave', 'OldSchoolHipHop', 'PopCharts', 'PopRock', 'PostPunkGoth', 'Punk', 'ReggaeDub', 'RockArenaAOR', 'Schlager', 'Ska', 'SoftRock', 'SynthPop'],
+    1990: ['AlternativeRock', 'Ballads', 'BigBeat', 'Britpop', 'ContemporaryRnB', 'Country', 'Dancehall', 'DeepProgHouse', 'Downtempo', 'Emo', 'Eurodance', 'Europop', 'GangstaGFunk', 'Grunge', 'HardcoreHappy', 'House', 'IndieRock', 'JungleDnB', 'NewJackSwing', 'NuMetal', 'PopCharts', 'PopPunk', 'PopRock', 'RnBSwing', 'RockClassic', 'SkaPunk', 'Techno', 'Trance', 'TripHop'],
+    2000: ['AlternativeRock', 'Ballads', 'ContemporaryRnB', 'Country', 'CrunkTrapSnap', 'DancePop', 'Downtempo', 'DubstepGrime', 'ElectroHouse', 'Emo', 'Eurodance', 'GangstaGFunk', 'IndieRock', 'NuMetalHardcore', 'PopCharts', 'PopPunk', 'PopRap', 'PopRock', 'ProgTechHouse', 'Reggaeton', 'RnBNeoSoul', 'RockClassic', 'SynthPop', 'Trance'],
+    2010: ['AlternativePostHardcore', 'AmbientDowntempo', 'ChillwaveVaporwave', 'ContemporaryRnB', 'Country', 'DancePop', 'DeepProgTropicalHouse', 'DubstepFutureBass', 'ElectroHouse', 'Folk', 'GangstaConsciousHipHop', 'IndiePop', 'IndieRock', 'KPop', 'MetalcoreNuMetalHardcore', 'PopCharts', 'PopPunkEmo', 'PopRap', 'PopRock', 'Reggaeton', 'ReggaeDubAfrobeat', 'RnBNeoSoul', 'RockClassic', 'SynthPopSynthwave', 'Trance', 'TrapMoombahton', 'UKBassGrimeDrill'],
+    2020: ['AlternativePostPunk', 'AmbientLoFi', 'AsiaPop', 'Ballads', 'CloudEmoRap', 'DancePop', 'DiscoNuDisco', 'DrumNBass', 'DubstepFutureBass', 'Electro', 'FolkCountry', 'HipHopBoomBap', 'House', 'HyperpopVaporwave', 'IndiePop', 'IndieRock', 'LatinReggaeton', 'MetalcoreHardcore', 'PopCharts', 'PopPunkEmo', 'PopRap', 'PopRock', 'ReggaeDubAfro', 'RnBNeoSoul', 'RockClassic', 'SynthPopSynthwave', 'Techno', 'TranceHardDance', 'TrapPhonk', 'UKBassGrimeDrill']
+  };
+
+  function decadeStartForYear(year) {
+    if (!year || isNaN(year)) return null;
+    if (year >= 1970 && year <= 1979) return 1970;
+    if (year >= 1980 && year <= 1989) return 1980;
+    if (year >= 1990 && year <= 1999) return 1990;
+    if (year >= 2000 && year <= 2009) return 2000;
+    if (year >= 2010 && year <= 2019) return 2010;
+    if (year >= 2020 && year <= 2099) return 2020;
+    return null;
+  }
+
+  function humanizeGenre(key) {
+    return (key || '').replace(/([a-z0-9])([A-Z])/g, '$1 $2');
+  }
+
   function buildPanel() {
     var panel = document.createElement('div');
     panel.className = 'manualadd-panel';
@@ -290,6 +325,11 @@
       '  <input type="text" class="manualadd-input" id="manualadd-title" placeholder="Titel">' +
       '  <button type="button" class="manualadd-search" id="manualadd-search">Auf YouTube suchen</button>' +
       '  <input type="text" class="manualadd-input" id="manualadd-link" placeholder="YouTube-Link oder Video-ID">' +
+      '  <label class="manualadd-toggle-label"><input type="checkbox" id="manualadd-use-discogs" checked> Automatisch per Discogs zuordnen (Jahr &amp; Genre)</label>' +
+      '  <div class="manualadd-manual-fields" id="manualadd-manual-fields" hidden>' +
+      '    <input type="number" class="manualadd-input" id="manualadd-year" placeholder="Jahr (z.B. 1986)" min="1950" max="2099">' +
+      '    <select class="manualadd-input" id="manualadd-genre" disabled><option value="">Zuerst Jahr eingeben</option></select>' +
+      '  </div>' +
       '  <button type="button" class="manualadd-add" id="manualadd-add">Zur Liste hinzufügen</button>' +
       '  <p class="manualadd-error" id="manualadd-error" hidden></p>' +
       '  <h4>Manuell hinzugefügt (Ohne Genre, dieser Browser)</h4>' +
@@ -314,6 +354,10 @@
       '.manualadd-input{display:block;width:100%;box-sizing:border-box;margin-bottom:6px;padding:6px 8px;background:#141419;border:1px solid #4a4460;border-radius:6px;color:#f0e9ff;font-size:12px;}' +
       '.manualadd-search{width:100%;margin-bottom:10px;background:#332f47;color:#fff;border:1px solid #5a527a;border-radius:6px;padding:6px 8px;cursor:pointer;font-size:12px;}' +
       '.manualadd-add{width:100%;margin-bottom:4px;background:#22c55e;color:#0c1a10;border:none;border-radius:6px;padding:7px 8px;cursor:pointer;font-size:12px;font-weight:600;}' +
+      '.manualadd-toggle-label{display:flex;align-items:center;gap:6px;font-size:11px;opacity:.85;margin:2px 0 8px;cursor:pointer;}' +
+      '.manualadd-toggle-label input{margin:0;}' +
+      '.manualadd-manual-fields{margin-bottom:8px;}' +
+      '.manualadd-manual-fields select{cursor:pointer;}' +
       '.manualadd-error{color:#ff8a8a;font-size:11px;margin:4px 0;}' +
       '.manualadd-modal h4{font-size:11px;opacity:.7;margin:12px 0 6px;font-weight:600;}' +
       '.manualadd-list{list-style:none;margin:0 0 8px;padding:0;max-height:160px;overflow-y:auto;}' +
@@ -352,6 +396,29 @@
     renderList();
     restoreAutosaveHandle();
 
+    var useDiscogsCb = modalEl.querySelector('#manualadd-use-discogs');
+    var manualFieldsEl = modalEl.querySelector('#manualadd-manual-fields');
+    var yearInput = modalEl.querySelector('#manualadd-year');
+    var genreSelect = modalEl.querySelector('#manualadd-genre');
+
+    function refreshGenreOptions() {
+      var decade = decadeStartForYear(parseInt(yearInput.value, 10));
+      if (!decade) {
+        genreSelect.innerHTML = '<option value="">Zuerst Jahr eingeben</option>';
+        genreSelect.disabled = true;
+        return;
+      }
+      var genres = DECADE_GENRES[decade] || [];
+      genreSelect.innerHTML = '<option value="">Genre wählen …</option>' +
+        genres.map(function (g) { return '<option value="' + g + '">' + humanizeGenre(g) + '</option>'; }).join('') +
+        '<option value="Ohne">Ohne (kein bestimmtes Genre)</option>';
+      genreSelect.disabled = false;
+    }
+    yearInput.addEventListener('input', refreshGenreOptions);
+    useDiscogsCb.addEventListener('change', function () {
+      manualFieldsEl.hidden = useDiscogsCb.checked;
+    });
+
     var toggleBtn = panelEl.querySelector('#manualadd-toggle');
     function openModal() { modalEl.hidden = false; }
     function closeModal() { modalEl.hidden = true; }
@@ -389,10 +456,29 @@
         errorEl.hidden = false;
         return;
       }
-      addEntry(a, t, ytId);
+      var manualMeta = null;
+      if (!useDiscogsCb.checked) {
+        var year = parseInt(yearInput.value, 10);
+        var genre = genreSelect.value;
+        if (!decadeStartForYear(year)) {
+          errorEl.textContent = 'Bitte ein gültiges Jahr eintragen (1970–2099).';
+          errorEl.hidden = false;
+          return;
+        }
+        if (!genre) {
+          errorEl.textContent = 'Bitte ein Genre auswählen.';
+          errorEl.hidden = false;
+          return;
+        }
+        manualMeta = { g: genre, y: year };
+      }
+      addEntry(a, t, ytId, manualMeta);
       modalEl.querySelector('#manualadd-artist').value = '';
       modalEl.querySelector('#manualadd-title').value = '';
       modalEl.querySelector('#manualadd-link').value = '';
+      yearInput.value = '';
+      genreSelect.innerHTML = '<option value="">Zuerst Jahr eingeben</option>';
+      genreSelect.disabled = true;
     });
 
     listEl.addEventListener('click', function (ev) {
