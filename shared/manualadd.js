@@ -199,6 +199,49 @@
     saveEntries(entries);
     renderList();
     if (fileHandle) writeAutosaveFile();
+    pushToOnlineQueue(a, t, ytId);
+  }
+
+  /* ---- Online-Warteliste: schreibt den Song automatisch (ohne
+     Rueckfrage) in eine nicht verlinkte Datei im Projekt
+     (queue/fehlende-lieder.json) -- direkt per GitHub-Contents-API, kein
+     eigenes Backend noetig. Eine taegliche GitHub-Action liest diese
+     Datei, sucht Discogs-Metadaten + YouTube-Link und nimmt den Song in
+     die passende <dekade>-music/songs.json auf; erst DANN verschwindet
+     der Eintrag aus der Warteliste. Der YouTube-Link kommt hier bereits
+     validiert aus extractYoutubeId() -- nie eine unvalidierte URL. ---- */
+  var GH_TOKEN = 'GITHUB_QUEUE_TOKEN_PLACEHOLDER';
+  var GH_OWNER = 'Massim1701';
+  var GH_REPO = 'driftware';
+  var GH_PATH = 'queue/fehlende-lieder.json';
+  var GH_API = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH;
+
+  function b64EncodeUtf8(str) { return btoa(unescape(encodeURIComponent(str))); }
+  function b64DecodeUtf8(str) { return decodeURIComponent(escape(atob(str))); }
+
+  function pushToOnlineQueue(a, t, ytId) {
+    if (!GH_TOKEN || GH_TOKEN.indexOf('PLACEHOLDER') !== -1) return;
+    var headers = { 'Authorization': 'token ' + GH_TOKEN, 'Accept': 'application/vnd.github+json' };
+    setAutosaveStatus('Wird online gespeichert …');
+    fetch(GH_API, { headers: headers })
+      .then(function (r) { if (!r.ok) throw new Error('read-failed'); return r.json(); })
+      .then(function (fileData) {
+        var list = [];
+        try { list = JSON.parse(b64DecodeUtf8(fileData.content.replace(/\n/g, ''))); } catch (e) { list = []; }
+        if (!Array.isArray(list)) list = [];
+        list.push({ a: a, t: t, yt: ytId, note: null, ts: new Date().toISOString() });
+        return fetch(GH_API, {
+          method: 'PUT',
+          headers: headers,
+          body: JSON.stringify({
+            message: 'Warteliste: "' + a + ' – ' + t + '" hinzugefuegt',
+            content: b64EncodeUtf8(JSON.stringify(list, null, 2)),
+            sha: fileData.sha
+          })
+        });
+      })
+      .then(function (r) { if (!r.ok) throw new Error('write-failed'); setAutosaveStatus('Gesendet ✓'); })
+      .catch(function () { setAutosaveStatus('Online-Speicherung fehlgeschlagen (lokal trotzdem gespeichert).'); });
   }
 
   function removeEntry(i) {
