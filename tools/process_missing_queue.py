@@ -46,6 +46,33 @@ def valid_yt_id(value):
     return value if YOUTUBE_ID_RE.match(value) else None
 
 
+VK_URL_RE = re.compile(r"^https://(?:www\.)?(?:vkvideo\.ru|vk\.com)/\S{1,300}$", re.IGNORECASE)
+
+
+def valid_vk_url(value):
+    """Fallback wenn kein YouTube-Video existiert (siehe shared/manualadd.js):
+    ein vom Nutzer selbst gefundener VK-Link wird NICHT eingebettet (VK bietet
+    keine Fernsteuerung wie die YouTube-IFrame-API), nur als Link gespeichert."""
+    if not value or not isinstance(value, str):
+        return None
+    value = value.strip()
+    return value if VK_URL_RE.match(value) else None
+
+
+PAREN_SUFFIX_RE = re.compile(r"\s*\([^()]*\)\s*$")
+
+
+def strip_parenthetical_suffix(title):
+    """Entfernt einen abschliessenden Klammerzusatz wie '(Radio Version)',
+    '(Extended Mix)', '(Remastered)' -- der ist oft nicht Teil des
+    Original-Release-Titels auf Discogs und fuehrt sonst zu unnoetig vielen
+    Fehltreffern. Nur EIN Fallback-Versuch, wenn die exakte Suche mit dem
+    vollen Titel nichts findet -- der ungekuerzte Titel bleibt immer der
+    erste Versuch."""
+    stripped = PAREN_SUFFIX_RE.sub("", title).strip()
+    return stripped if stripped and stripped != title else None
+
+
 def catalog_path_for_year(year):
     for lo, hi, path in DECADE_CATALOGS:
         if lo <= year <= hi:
@@ -146,12 +173,12 @@ def song_id(artist, title):
     return (artist or "").strip().lower(), (title or "").strip().lower()
 
 
-def build_song_entry(artist, title, release, yt_id):
+def build_song_entry(artist, title, release, yt_id, vk_url=None):
     images = release.get("images") or []
     thumb = next((im.get("uri150") for im in images if im.get("uri150")), None)
     cover = next((im.get("uri") for im in images if im.get("uri")), None)
     labels = ", ".join(dict.fromkeys(l.get("name", "") for l in release.get("labels", []) if l.get("name")))
-    return {
+    entry = {
         "a": artist,
         "t": title,
         "y": release.get("year"),
@@ -165,6 +192,9 @@ def build_song_entry(artist, title, release, yt_id):
         "hv": (release.get("community") or {}).get("have", 0),
         "yt": yt_id,
     }
+    if vk_url:
+        entry["vk"] = vk_url
+    return entry
 
 
 def load_json(path):
@@ -220,8 +250,9 @@ def main():
                     continue
 
                 yt_id = valid_yt_id(entry.get("yt")) or search_youtube(artist, title)
-                if not yt_id:
-                    print("  kein YouTube-Link gefunden, bleibt in der Warteliste")
+                vk_url = valid_vk_url(entry.get("vk"))
+                if not yt_id and not vk_url:
+                    print("  kein YouTube-Link und kein VK-Link gefunden, bleibt in der Warteliste")
                     remaining.append(entry)
                     continue
 
@@ -249,12 +280,19 @@ def main():
                     "hv": 0,
                     "yt": yt_id,
                 }
+                if vk_url:
+                    song["vk"] = vk_url
                 catalog_data.setdefault(manual_genre, []).append(song)
                 print(f"  hinzugefuegt zu {catalog_path_rel} / {manual_genre} (manuell)")
                 continue
 
             print(f"Bearbeite: {artist} - {title}")
             release = discogs_search(artist, title)
+            if not release or not release.get("year"):
+                alt_title = strip_parenthetical_suffix(title)
+                if alt_title:
+                    print(f"  keine Treffer fuer \"{title}\", versuche ohne Klammerzusatz: \"{alt_title}\"")
+                    release = discogs_search(artist, alt_title)
             if not release or not release.get("year"):
                 print("  keine Discogs-Metadaten gefunden, bleibt in der Warteliste")
                 remaining.append(entry)
@@ -267,8 +305,9 @@ def main():
                 continue
 
             yt_id = valid_yt_id(entry.get("yt")) or search_youtube(artist, title)
-            if not yt_id:
-                print("  kein YouTube-Link gefunden, bleibt in der Warteliste")
+            vk_url = valid_vk_url(entry.get("vk"))
+            if not yt_id and not vk_url:
+                print("  kein YouTube-Link und kein VK-Link gefunden, bleibt in der Warteliste")
                 remaining.append(entry)
                 continue
 
@@ -283,7 +322,7 @@ def main():
                 continue  # erfolgreich (schon vorhanden) -> aus Warteliste
 
             bucket = pick_bucket(catalog_data, release)
-            song = build_song_entry(artist, title, release, yt_id)
+            song = build_song_entry(artist, title, release, yt_id, vk_url)
             catalog_data.setdefault(bucket, []).append(song)
             print(f"  hinzugefuegt zu {catalog_path_rel} / {bucket}")
             # erfolgreich verarbeitet -> NICHT zu remaining hinzufuegen
