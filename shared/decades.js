@@ -522,6 +522,81 @@ function queuePlayerSpacing() {
 window.addEventListener('resize', queuePlayerSpacing);
 window.addEventListener('orientationchange', queuePlayerSpacing);
 
+/* Ambient-Loader: separate leise Hintergrund-Loops (Kaminfeuer, Schnee,
+   Glocken, ...) zum eigentlichen Song dazu mischen -- kein eigener Player,
+   nur ein Satz An/Aus-Knoepfe, mehrere gleichzeitig aktivierbar. Quelle:
+   ausschliesslich CC0-Sounds von Freesound (siehe assets/ambient/manifest.json
+   je Kategorie-Ordner), nichts davon sind echte Song-Aufnahmen. Bei jeder Aktivierung wird ein
+   zufaelliger Clip aus der jeweiligen Kategorie gewaehlt -- dadurch klingt
+   es bei jedem Einschalten etwas anders. */
+var CHEVRON_SVG = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+var AMBIENT_CATEGORIES = [
+  { key: 'ambient', label: 'Natur', emoji: '\uD83C\uDF3F' },
+  { key: 'fireplace', label: 'Kaminfeuer', emoji: '\uD83D\uDD25' },
+  { key: 'snow-wind', label: 'Schnee & Wind', emoji: '\u2744\uFE0F' },
+  { key: 'christmas', label: 'Weihnachten', emoji: '\uD83C\uDF84' },
+  { key: 'beach-waves', label: 'Meeresrauschen', emoji: '\uD83C\uDF0A' }
+];
+var ambientManifests = {};  // Kategorie-Key -> Array (nach erstem Laden gecacht)
+var ambientPlayers = {};    // Kategorie-Key -> { audio, entry } fuer gerade laufende Sounds
+var ambientVolume = 45;     // 0-100, gemeinsame Lautstaerke fuer alle aktiven Ambient-Sounds
+
+function ambientButtonsHTML() {
+  return AMBIENT_CATEGORIES.map(function (cat) {
+    return '<button type="button" class="dj-ambient-btn" data-ambient-key="' + cat.key + '" aria-pressed="false" title="' + cat.label + '">' +
+      '<span class="dj-ambient-emoji">' + cat.emoji + '</span>' +
+      '<span class="sr-only">' + cat.label + '</span></button>';
+  }).join('');
+}
+
+function loadAmbientManifest(key) {
+  if (ambientManifests[key]) return Promise.resolve(ambientManifests[key]);
+  return fetch('/assets/ambient/' + key + '/manifest.json')
+    .then(function (res) { return res.ok ? res.json() : []; })
+    .then(function (list) {
+      ambientManifests[key] = Array.isArray(list) ? list : [];
+      return ambientManifests[key];
+    })
+    .catch(function () { return []; });
+}
+
+function stopAmbient(key) {
+  var playing = ambientPlayers[key];
+  if (!playing) return;
+  try { playing.audio.pause(); } catch (e) {}
+  delete ambientPlayers[key];
+}
+
+function startAmbient(key) {
+  loadAmbientManifest(key).then(function (list) {
+    if (!list.length) return;
+    var entry = list[Math.floor(Math.random() * list.length)];
+    var audio = new Audio('/assets/ambient/' + key + '/' + entry.file);
+    audio.loop = true;
+    audio.volume = ambientVolume / 100;
+    audio.play().catch(function () {});
+    ambientPlayers[key] = { audio: audio, entry: entry };
+  });
+}
+
+function toggleAmbient(key, btn) {
+  if (ambientPlayers[key]) {
+    stopAmbient(key);
+    btn.classList.remove('active');
+    btn.setAttribute('aria-pressed', 'false');
+  } else {
+    startAmbient(key);
+    btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
+  }
+}
+
+function applyAmbientVolume() {
+  Object.keys(ambientPlayers).forEach(function (key) {
+    ambientPlayers[key].audio.volume = ambientVolume / 100;
+  });
+}
+
 function ensureDjPlayer() {
   var existing = document.getElementById('dj-player');
   if (existing) return existing;
@@ -540,8 +615,12 @@ function ensureDjPlayer() {
     '    </div>' +
     '    <span class="dj-crossfader-label">B</span>' +
     '  </div>' +
-    '  <button type="button" id="dj-autofade-toggle" class="dj-autofade-toggle active" aria-pressed="true" ' +
-    '    title="Automatisches Überblenden 10s vor Songende (nur bei passenden BPM) an/aus">' + REFRESH_SVG + ' Autofade An</button>' +
+    '  <div class="dj-fade-row">' +
+    '    <button type="button" id="dj-autofade-toggle" class="dj-autofade-toggle active" aria-pressed="true" ' +
+    '      title="Automatisches Überblenden 10s vor Songende (nur bei passenden BPM) an/aus">' + REFRESH_SVG + ' Autofade An</button>' +
+    '    <button type="button" id="dj-manual-fade" class="dj-manual-fade-btn" aria-label="Fade jetzt" ' +
+    '      title="Manuellen Überblend-Vorgang starten (5 Sekunden Verzögerung, dann Crossfade zum anderen Deck)">' + REFRESH_SVG + '</button>' +
+    '  </div>' +
     '  <div class="dj-volume">' +
     '    <span class="dj-volume-label">' + SPEAKER_SVG + '</span>' +
     '    <div class="dj-slider-wrap">' +
@@ -551,6 +630,19 @@ function ensureDjPlayer() {
     '  </div>' +
     '</div>' +
     deckHTML('B') +
+    '</div>' +
+    '<div class="dj-ambient-panel collapsed" id="dj-ambient-panel">' +
+    '  <button type="button" class="dj-ambient-header" id="dj-ambient-toggle" aria-expanded="false">' +
+    '    <span class="dj-ambient-title">' + CHEVRON_SVG + ' Ambient-Sounds</span>' +
+    '  </button>' +
+    '  <div class="dj-ambient-body">' +
+    '    <div class="dj-ambient-vslider-wrap">' +
+    '      <input type="range" id="dj-ambient-volume" class="dj-ambient-vslider" min="0" max="100" value="45" ' +
+    '        aria-label="Ambient-Lautst\u00e4rke" orient="vertical">' +
+    '      <div class="dj-ambient-vscale" aria-hidden="true"><span></span><span></span><span class="mid"></span><span></span><span></span></div>' +
+    '    </div>' +
+    '    <div class="dj-ambient-buttons">' + ambientButtonsHTML() + '</div>' +
+    '  </div>' +
     '</div>';
   document.body.appendChild(bar);
 
@@ -602,6 +694,30 @@ function ensureDjPlayer() {
       activeAutoFade = null;
     }
   });
+  var manualFadeBtn = bar.querySelector('#dj-manual-fade');
+  if (manualFadeBtn) {
+    manualFadeBtn.addEventListener('click', function () { triggerManualFade(manualFadeBtn); });
+  }
+
+  bar.querySelectorAll('.dj-ambient-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { toggleAmbient(btn.dataset.ambientKey, btn); });
+  });
+  var ambientToggle = bar.querySelector('#dj-ambient-toggle');
+  var ambientPanelEl = bar.querySelector('#dj-ambient-panel');
+  if (ambientToggle && ambientPanelEl) {
+    ambientToggle.addEventListener('click', function () {
+      var nowOpen = ambientPanelEl.classList.toggle('collapsed') === false;
+      ambientToggle.setAttribute('aria-expanded', nowOpen ? 'true' : 'false');
+      queuePlayerSpacing();
+    });
+  }
+  var ambientVolumeInput = bar.querySelector('#dj-ambient-volume');
+  if (ambientVolumeInput) {
+    ambientVolumeInput.addEventListener('input', function () {
+      ambientVolume = parseInt(ambientVolumeInput.value, 10);
+      applyAmbientVolume();
+    });
+  }
 
   queuePlayerSpacing();
   return bar;
@@ -877,6 +993,66 @@ function startAutoCrossfade(fromKey, toKey, nextIdx, nextSong, durationSeconds) 
       if (t >= 1) finishAutoCrossfade();
     }, 100)
   };
+}
+
+/* Manueller "Fade jetzt"-Button: startet nach 5 Sekunden Verzoegerung (Countdown
+   auf dem Button sichtbar) denselben Ueberblend-Sweep wie das automatische
+   Crossfade, aber unabhaengig von einer Warteschlange -- faedet einfach vom
+   gerade dominanten Deck zum anderen, sofern dort etwas geladen ist. Das
+   Quelldeck wird danach nur pausiert (Song/Queue bleiben erhalten), damit man
+   bei Bedarf zurueckfaden kann. */
+var manualFadeCountdownId = null;
+
+function startManualFadeSweep(fromKey, toKey) {
+  var from = DECKS[fromKey];
+  var startFader = crossfaderValue;
+  var targetFader = (toKey === 'A') ? 0 : 100;
+  var startTime = Date.now();
+  var durationMs = CROSSFADE_LEAD_SECONDS * 1000;
+  var faderEl = document.getElementById('dj-crossfader');
+
+  activeAutoFade = {
+    fromKey: fromKey,
+    toKey: toKey,
+    intervalId: setInterval(function () {
+      var t = Math.min(1, (Date.now() - startTime) / durationMs);
+      crossfaderValue = Math.round(startFader + (targetFader - startFader) * t);
+      if (faderEl) faderEl.value = crossfaderValue;
+      applyCrossfaderVolumes();
+      if (t >= 1) {
+        clearInterval(activeAutoFade.intervalId);
+        activeAutoFade = null;
+        try { from.player.pauseVideo(); } catch (e) {}
+        from.isPlaying = false;
+        updateDeckInfoUI(fromKey);
+      }
+    }, 100)
+  };
+}
+
+function triggerManualFade(btn) {
+  if (activeAutoFade || manualFadeCountdownId) return;
+  var fromKey = crossfaderValue <= 50 ? 'A' : 'B';
+  var toKey = fromKey === 'A' ? 'B' : 'A';
+  var to = DECKS[toKey];
+  if (!to.song || !to.player) return; // Zieldeck muss ein Song geladen haben
+
+  var remaining = 5;
+  var originalLabel = btn.innerHTML;
+  btn.disabled = true;
+  btn.textContent = String(remaining);
+  manualFadeCountdownId = setInterval(function () {
+    remaining -= 1;
+    if (remaining <= 0) {
+      clearInterval(manualFadeCountdownId);
+      manualFadeCountdownId = null;
+      btn.disabled = false;
+      btn.innerHTML = originalLabel;
+      startManualFadeSweep(fromKey, toKey);
+    } else {
+      btn.textContent = String(remaining);
+    }
+  }, 1000);
 }
 
 /* Greift der Nutzer waehrend eines laufenden Auto-Crossfades manuell ein
