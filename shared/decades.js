@@ -1198,6 +1198,15 @@ function playDeckSong(key, song, autoplay) {
   var deck = DECKS[key];
   deck.song = song;
   deck.historyLogged = false;
+  /* preloadedFor merkt sich, welcher Song stumm fuer eine automatische
+     Weiterschaltung vorbereitet wurde (siehe maybePreloadNext). Wird das
+     Deck jetzt mit einem ANDEREN Song befuellt (z.B. per Drag&Drop, nicht
+     ueber die Warteschlangen-Fortsetzung), stimmt diese Markierung nicht
+     mehr -- ohne diese Zeile haelt maybeStartAutoCrossfade sie trotzdem
+     noch fuer gueltig und startet irgendwann unerwartet ein automatisches
+     Überblenden zu einem ganz anderen Song, als der Nutzer gerade manuell
+     geladen hat (und activeAutoFade blockiert dann auch "Fade jetzt"). */
+  if (deck.preloadedFor !== songId(song)) deck.preloadedFor = null;
   updateDeckInfoUI(key);
   var bar = ensureDjPlayer();
 
