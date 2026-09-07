@@ -481,6 +481,9 @@ function deckHTML(key) {
     '    <span class="dj-deck-remaining" id="deck-' + key + '-remaining"></span>' +
     '    <span class="dj-deck-bpm" id="deck-' + key + '-bpm"></span>' +
     '  </div>' +
+    '  <div class="dj-seekbar-wrap">' +
+    '    <input type="range" class="dj-seekbar" id="deck-' + key + '-seek" min="0" max="1000" step="1" value="0" disabled aria-label="Deck ' + key + ': Position im Song">' +
+    '  </div>' +
     '  <div class="dj-deck-controls">' +
     '    <button type="button" id="deck-' + key + '-prev" aria-label="Deck ' + key + ': voriger Song">' + PREV_SVG + '</button>' +
     '    <button type="button" id="deck-' + key + '-toggle" aria-label="Deck ' + key + ': abspielen/pause">' + PLAY_SVG + '</button>' +
@@ -918,22 +921,54 @@ function updateRemainingTime() {
   ['A', 'B'].forEach(function (key) {
     var deck = DECKS[key];
     var el = document.getElementById('deck-' + key + '-remaining');
+    var seekEl = document.getElementById('deck-' + key + '-seek');
     if (!el) return;
-    if (deck.isPlaying && deck.player && deck.player.getDuration) {
+    if (deck.player && deck.player.getDuration) {
       try {
         var dur = deck.player.getDuration();
         var cur = deck.player.getCurrentTime();
         if (dur > 0) {
-          el.textContent = formatRemaining(dur - cur);
-          maybeStartAutoCrossfade(key, dur - cur);
-          return;
+          if (deck.isPlaying) {
+            el.textContent = formatRemaining(dur - cur);
+            maybeStartAutoCrossfade(key, dur - cur);
+          }
+          /* Waehrend der Nutzer selbst zieht (deck.seeking) nicht
+             ueberschreiben -- sonst "kaempft" der Regler mit dem Polling
+             und springt beim Ziehen staendig zurueck. */
+          if (seekEl && !deck.seeking) seekEl.value = Math.round((cur / dur) * 1000);
+          if (deck.isPlaying) return;
         }
       } catch (e) {}
     }
-    el.textContent = '';
+    if (deck.isPlaying) el.textContent = '';
   });
 }
 setInterval(updateRemainingTime, 500);
+
+/* Eigener Fortschrittsbalken statt YouTube-eigenem Seek-Balken -- der
+   sitzt im runden Vinyl-Ausschnitt und ist durch die Kreismaske kaum noch
+   treffbar (siehe .dj-vinyl-video). Ziehen/Klicken hier ruft stattdessen
+   direkt player.seekTo() auf. */
+function wireSeekbar(key) {
+  var seekEl = document.getElementById('deck-' + key + '-seek');
+  if (!seekEl) return;
+  function beginSeek() { DECKS[key].seeking = true; }
+  function commitSeek() {
+    var deck = DECKS[key];
+    deck.seeking = false;
+    if (!deck.player || !deck.player.getDuration || !deck.player.seekTo) return;
+    try {
+      var dur = deck.player.getDuration();
+      if (dur > 0) deck.player.seekTo(dur * (parseFloat(seekEl.value) / 1000), true);
+    } catch (e) {}
+  }
+  seekEl.addEventListener('pointerdown', beginSeek);
+  seekEl.addEventListener('keydown', beginSeek);
+  seekEl.addEventListener('change', commitSeek);
+  seekEl.addEventListener('pointerup', commitSeek);
+}
+wireSeekbar('A');
+wireSeekbar('B');
 
 /* Autoplay ist standardmaessig AUS: ein geladener Song startet nicht von
    selbst, damit sich vorher (bei Bedarf) der Pitch einstellen laesst.
@@ -950,6 +985,12 @@ function playDeckSong(key, song, autoplay) {
   updateDeckInfoUI(key);
   var bar = ensureDjPlayer();
 
+  /* Neuer Song -- Fortschrittsbalken zuruecksetzen; bleibt deaktiviert,
+     bis unten (nur bei vorhandenem YouTube-Video) wieder freigegeben. */
+  deck.seeking = false;
+  var seekResetEl = document.getElementById('deck-' + key + '-seek');
+  if (seekResetEl) { seekResetEl.value = 0; seekResetEl.disabled = true; }
+
   /* Kein YouTube-Video fuer diesen Song gefunden — statt den Ladevorgang
      abzulehnen (frueher: alert()), wird der Song trotzdem als "geladen"
      angezeigt (Titel/Artist/BPM, ⏮/⏭ funktionieren weiter durch die
@@ -962,6 +1003,9 @@ function playDeckSong(key, song, autoplay) {
     updateDeckInfoUI(key);
     return;
   }
+
+  var seekEnableEl = document.getElementById('deck-' + key + '-seek');
+  if (seekEnableEl) seekEnableEl.disabled = false;
 
   function start() {
     if (deck.player && deck.player.loadVideoById) {
