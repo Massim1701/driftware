@@ -631,10 +631,10 @@ function ensureDjPlayer() {
     '</div>' +
     deckHTML('B') +
     '</div>' +
-    '<div class="dj-ambient-panel collapsed" id="dj-ambient-panel">' +
-    '  <button type="button" class="dj-ambient-header" id="dj-ambient-toggle" aria-expanded="false">' +
-    '    <span class="dj-ambient-title">' + CHEVRON_SVG + ' Ambient-Sounds</span>' +
-    '  </button>' +
+    '<div class="dj-ambient-panel" id="dj-ambient-panel">' +
+    '  <div class="dj-ambient-header">' +
+    '    <span class="dj-ambient-title">Ambient-Sounds</span>' +
+    '  </div>' +
     '  <div class="dj-ambient-body">' +
     '    <div class="dj-ambient-vslider-wrap">' +
     '      <input type="range" id="dj-ambient-volume" class="dj-ambient-vslider" min="0" max="100" value="45" ' +
@@ -702,15 +702,6 @@ function ensureDjPlayer() {
   bar.querySelectorAll('.dj-ambient-btn').forEach(function (btn) {
     btn.addEventListener('click', function () { toggleAmbient(btn.dataset.ambientKey, btn); });
   });
-  var ambientToggle = bar.querySelector('#dj-ambient-toggle');
-  var ambientPanelEl = bar.querySelector('#dj-ambient-panel');
-  if (ambientToggle && ambientPanelEl) {
-    ambientToggle.addEventListener('click', function () {
-      var nowOpen = ambientPanelEl.classList.toggle('collapsed') === false;
-      ambientToggle.setAttribute('aria-expanded', nowOpen ? 'true' : 'false');
-      queuePlayerSpacing();
-    });
-  }
   var ambientVolumeInput = bar.querySelector('#dj-ambient-volume');
   if (ambientVolumeInput) {
     ambientVolumeInput.addEventListener('input', function () {
