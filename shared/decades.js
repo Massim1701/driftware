@@ -658,6 +658,14 @@ function ensureDjPlayer() {
     '</div>';
   document.body.appendChild(bar);
 
+  /* Schallplatten-Drag-Bild schon jetzt anlegen (nicht erst beim ersten
+     dragstart) -- manche Browser (v.a. Safari) rendern ein Element, das
+     im selben Moment wie setDragImage() erst neu ins DOM kommt, nicht
+     zuverlaessig als Drag-Bild und brechen dann den ganzen Drag ab, statt
+     nur die Optik zu verlieren. Mit einem laengst existierenden Element
+     ist das Layout schon berechnet, wenn der erste echte Drag startet. */
+  ensureDragGhost({});
+
   ['A', 'B'].forEach(function (key) {
     bar.querySelector('#deck-' + key + '-toggle').addEventListener('click', function () { deckTogglePlay(key); });
     bar.querySelector('#deck-' + key + '-prev').addEventListener('click', function () { deckStep(key, -1); });
@@ -1571,11 +1579,20 @@ function renderSongGrid(container, songs) {
        Verschieben einer großen Karte. */
     tile.draggable = true;
     tile.addEventListener('dragstart', function (e) {
+      /* setData zuerst und fuer sich allein -- das ist die einzige Zeile, die
+         fuer den Drop wirklich zaehlt (siehe dropzone.addEventListener('drop')
+         weiter unten). Das Schallplatten-Drag-Bild ist nur Optik: wenn das aus
+         irgendeinem Grund fehlschlaegt (aeltere/eigenwillige Browser), soll das
+         NIEMALS den Drop selbst verhindern -- deshalb in einem eigenen try/catch. */
       try {
         e.dataTransfer.setData('application/json', JSON.stringify(song));
         e.dataTransfer.effectAllowed = 'copy';
-        var ghost = ensureDragGhost(song);
-        e.dataTransfer.setDragImage(ghost, DRAG_GHOST_SIZE / 2, DRAG_GHOST_SIZE / 2);
+      } catch (err) {}
+      try {
+        if (typeof e.dataTransfer.setDragImage === 'function') {
+          var ghost = ensureDragGhost(song);
+          e.dataTransfer.setDragImage(ghost, DRAG_GHOST_SIZE / 2, DRAG_GHOST_SIZE / 2);
+        }
       } catch (err) {}
       tile.classList.add('dragging');
     });
