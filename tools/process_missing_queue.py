@@ -220,7 +220,39 @@ def main():
     remaining = []
     changed_catalogs = {}  # path -> data (nur einmal geladen/geschrieben)
 
-    for entry in queue:
+    # Sicherheitsnetz fuer grosse Wartelisten (z.B. Batch-Importe mit
+    # tausenden Eintraegen): GitHub Actions killt den Job nach 6h
+    # Default-Timeout hart ab, OHNE dass dieses Skript noch etwas
+    # speichern koennte -- bisher wurde NUR ganz am Ende der kompletten
+    # Schleife gespeichert, ein Timeout haette also den GESAMTEN
+    # Fortschritt dieses Laufs verworfen. Ab hier: regelmaessig
+    # zwischenspeichern und rechtzeitig VOR dem Timeout selbst kontrolliert
+    # aufhoeren -- die restlichen Eintraege bleiben einfach in der
+    # Warteliste fuer den naechsten taeglichen Lauf, kein Datenverlust,
+    # nur ueber mehrere Tage verteilt.
+    start_time = time.time()
+    time_budget = float(os.environ.get("QUEUE_TIME_BUDGET_SECONDS", "19800"))  # 5.5h
+    save_interval = 300  # Sekunden zwischen Zwischenspeicherungen
+    last_save = start_time
+
+    def save_progress(remaining_tail):
+        for path_rel, data in changed_catalogs.items():
+            save_json(os.path.join(ROOT, path_rel), data)
+        save_json(QUEUE_PATH, remaining + remaining_tail)
+
+    for i, entry in enumerate(queue):
+        now = time.time()
+        if now - start_time > time_budget:
+            print(f"Zeitbudget ({time_budget:.0f}s) erreicht, breche kontrolliert ab -- "
+                  f"restliche {len(queue) - i} Eintraege bleiben in der Warteliste fuer den naechsten Lauf.")
+            save_progress(queue[i:])
+            print(f"Fertig (Zeitlimit). {i - len(remaining)} von {len(queue)} Eintraegen "
+                  f"verarbeitet, {len(queue) - (i - len(remaining))} bleiben in der Warteliste.")
+            return
+        if now - last_save > save_interval:
+            save_progress(queue[i:])
+            last_save = now
+            print(f"  Zwischenstand gespeichert ({i}/{len(queue)} durchlaufen)")
         try:
             artist = (entry.get("a") or "").strip()
             title = (entry.get("t") or "").strip()
