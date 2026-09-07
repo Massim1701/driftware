@@ -481,6 +481,7 @@ function deckHTML(key) {
     '        <div class="dj-vinyl-ring" aria-hidden="true"><span class="dj-vinyl-dot"></span></div>' +
     '      </div>' +
     '      <div class="dj-vinyl-hint">Song hierher ziehen</div>' +
+    '      <div class="dj-vinyl-dragshield" id="deck-' + key + '-dragshield" aria-hidden="true"></div>' +
     '    </div>' +
     '  </div>' +
     '  <div class="dj-pitch">' +
@@ -495,9 +496,6 @@ function deckHTML(key) {
     '    <span id="deck-' + key + '-title">Kein Song geladen</span>' +
     '    <span class="dj-deck-remaining" id="deck-' + key + '-remaining"></span>' +
     '    <span class="dj-deck-bpm" id="deck-' + key + '-bpm"></span>' +
-    '  </div>' +
-    '  <div class="dj-seekbar-wrap">' +
-    '    <input type="range" class="dj-seekbar" id="deck-' + key + '-seek" min="0" max="1000" step="1" value="0" disabled aria-label="Deck ' + key + ': Position im Song">' +
     '  </div>' +
     '  <div class="dj-deck-controls">' +
     '    <button type="button" id="deck-' + key + '-prev" aria-label="Deck ' + key + ': voriger Song">' + PREV_SVG + '</button>' +
@@ -1604,8 +1602,20 @@ function renderSongGrid(container, songs) {
         }
       } catch (err) {}
       tile.classList.add('dragging');
+      /* Ist in einem Deck bereits ein Video geladen, liegt dessen iframe
+         optisch ueber dem Drop-Bereich. pointer-events: none auf dem iframe
+         reicht in der Praxis nicht zuverlaessig, um dragover/drop beim
+         echten OS-Drag durchzulassen -- das Deck "schluckt" den Drop dann
+         stillschweigend (nur beim leeren Deck, ohne iframe, klappte es).
+         Waehrend eines Drags legt sich deshalb ein transparentes Shield
+         (siehe .dj-vinyl-dragshield) ueber JEDES Deck, das die drop-Events
+         zuverlaessig selbst empfaengt und an den Dropzone-Handler weiterreicht. */
+      document.body.classList.add('dnd-dragging');
     });
-    tile.addEventListener('dragend', function () { tile.classList.remove('dragging'); });
+    tile.addEventListener('dragend', function () {
+      tile.classList.remove('dragging');
+      document.body.classList.remove('dnd-dragging');
+    });
 
     container.appendChild(tile);
   });
