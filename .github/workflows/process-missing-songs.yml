@@ -7,6 +7,15 @@ on:
     - cron: '17 4 * * *'
   workflow_dispatch: {}
 
+# Verhindert parallele Laeufe -- ohne das wuerden zwei gleichzeitige Trigger
+# (z.B. Cron + manueller Start) beide denselben Stand von queue/fehlende-lieder.json
+# verarbeiten; wer zuletzt pusht, scheitert dann am Push und die Arbeit ist
+# futsch. cancel-in-progress: false laesst den laufenden Job fertig werden
+# und reiht den neuen Trigger dahinter ein, statt ihn abzubrechen.
+concurrency:
+  group: process-missing-songs
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
