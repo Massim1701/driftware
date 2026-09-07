@@ -1011,6 +1011,12 @@ var manualFadeCountdownId = null;
 
 function startManualFadeSweep(fromKey, toKey) {
   var from = DECKS[fromKey];
+  var to = DECKS[toKey];
+  /* Anders als beim automatischen Crossfade (startAutoCrossfade) ist das
+     Zieldeck hier oft nur geladen/gecued, aber nicht schon am Spielen --
+     ohne diesen Start würde die Lautstärke zwar hochgefahren, aber das
+     Video bliebe pausiert (stumm). */
+  try { to.player.playVideo(); } catch (e) {}
   var startFader = crossfaderValue;
   var targetFader = (toKey === 'A') ? 0 : 100;
   var startTime = Date.now();
