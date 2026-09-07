@@ -18,6 +18,7 @@ var GRID_SVG = '<svg viewBox="0 0 24 24" fill="#8fe3c7" xmlns="http://www.w3.org
 /* Player-Bediensymbole: dezente Linien-/Flaechen-Icons statt Emoji, gleicher
    Grund wie bei den Genre-Kacheln (siehe THEME_ICON_PATHS weiter unten). */
 var PLAY_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+var EXTERNAL_LINK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>';
 var PAUSE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
 var PREV_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6z"/><path d="M20 5v14l-11-7z"/></svg>';
 var NEXT_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2z"/><path d="M4 5v14l11-7z"/></svg>';
@@ -183,6 +184,7 @@ function ensureSongModal() {
     '  <dl class="song-modal-meta" id="song-modal-meta"></dl>' +
     '  <div class="streaming-row" id="song-modal-streaming"></div>' +
     '  <a class="song-modal-link" id="song-modal-link" target="_blank" rel="noopener">Auf Discogs ansehen →</a>' +
+    '  <a class="song-modal-link" id="song-modal-vk-link" target="_blank" rel="noopener">Auf VK ansehen →</a>' +
     '</div>';
   document.body.appendChild(overlay);
   overlay.addEventListener('click', function (e) { if (e.target === overlay) closeSongModal(); });
@@ -1089,15 +1091,34 @@ function openSongModal(song) {
 
   var playBtn = document.getElementById('song-modal-play');
   if (playBtn) {
-    playBtn.disabled = !song.yt;
-    playBtn.innerHTML = PLAY_SVG + (song.yt ? ' Song abspielen' : ' Kein Video gefunden');
-    playBtn.onclick = song.yt ? function () { playSongInContext(song, lastGridSongs); } : null;
+    /* Kein YouTube-Video, aber ein VK-Link wurde manuell hinterlegt (siehe
+       shared/manualadd.js) -- dann statt "Kein Video gefunden" einen Link
+       zum Anschauen auf VK anbieten. Kein automatisches Einbetten (VK bietet
+       keine Fernsteuerung wie die YouTube-IFrame-API), nur Verlinkung. */
+    if (song.yt) {
+      playBtn.disabled = false;
+      playBtn.innerHTML = PLAY_SVG + ' Song abspielen';
+      playBtn.onclick = function () { playSongInContext(song, lastGridSongs); };
+    } else if (song.vk) {
+      playBtn.disabled = false;
+      playBtn.innerHTML = EXTERNAL_LINK_SVG + ' Auf VK ansehen';
+      playBtn.onclick = function () { window.open(song.vk, '_blank', 'noopener'); };
+    } else {
+      playBtn.disabled = true;
+      playBtn.innerHTML = PLAY_SVG + ' Kein Video gefunden';
+      playBtn.onclick = null;
+    }
   }
 
   document.getElementById('song-modal-streaming').innerHTML = streamingLinksHTML(song);
 
   var link = document.getElementById('song-modal-link');
   if (song.u) { link.href = song.u; link.style.display = ''; } else { link.style.display = 'none'; }
+
+  var vkLink = document.getElementById('song-modal-vk-link');
+  if (vkLink) {
+    if (song.vk) { vkLink.href = song.vk; vkLink.style.display = ''; } else { vkLink.style.display = 'none'; }
+  }
 
   overlay.classList.add('open');
 }
@@ -1171,15 +1192,21 @@ function renderSongGrid(container, songs) {
     icons.appendChild(info);
 
     var play = document.createElement('span');
-    play.className = 'song-tile-play' + (song.yt ? '' : ' disabled');
-    play.innerHTML = PLAY_SVG;
+    var hasVkFallback = !song.yt && !!song.vk;
+    play.className = 'song-tile-play' + ((song.yt || hasVkFallback) ? '' : ' disabled') + (hasVkFallback ? ' song-tile-play-vk' : '');
+    play.innerHTML = hasVkFallback ? EXTERNAL_LINK_SVG : PLAY_SVG;
     play.setAttribute('role', 'button');
-    play.setAttribute('tabindex', song.yt ? '0' : '-1');
-    play.setAttribute('aria-label', song.yt ? ('Abspielen: ' + song.a + ' – ' + song.t) : 'Kein Video gefunden');
+    play.setAttribute('tabindex', (song.yt || hasVkFallback) ? '0' : '-1');
+    play.setAttribute('aria-label', song.yt ? ('Abspielen: ' + song.a + ' – ' + song.t) : (hasVkFallback ? ('Auf VK ansehen: ' + song.a + ' – ' + song.t) : 'Kein Video gefunden'));
     if (song.yt) {
       play.addEventListener('click', function (e) { e.stopPropagation(); playSongInContext(song, songs); });
       play.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); playSongInContext(song, songs); }
+      });
+    } else if (hasVkFallback) {
+      play.addEventListener('click', function (e) { e.stopPropagation(); window.open(song.vk, '_blank', 'noopener'); });
+      play.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); window.open(song.vk, '_blank', 'noopener'); }
       });
     }
     icons.appendChild(play);

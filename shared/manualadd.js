@@ -67,6 +67,21 @@
     return m ? m[1] : null;
   }
 
+  /* Faellt YouTube komplett aus (kein Video vorhanden), kann stattdessen ein
+     VK-Link (vkvideo.ru/vk.com) eingetragen werden -- wird NICHT eingebettet
+     (VK bietet anders als YouTube keine JS-Fernsteuerung fuer das Deck-System),
+     sondern nur als "Auf VK ansehen"-Link gespeichert/angezeigt. Akzeptiert
+     entweder den kompletten <iframe>-Einbettungscode von VK ("Teilen" ->
+     "Einbetten") oder einen direkten Link auf vkvideo.ru/vk.com. */
+  function extractVkUrl(input) {
+    if (!input) return null;
+    input = input.trim();
+    var iframeMatch = input.match(/<iframe[^>]+src=["']([^"']+)["']/i);
+    if (iframeMatch) input = iframeMatch[1];
+    var m = input.match(/^(https?:\/\/(?:www\.)?(?:vkvideo\.ru|vk\.com)\/[^\s"']+)/i);
+    return m ? m[1] : null;
+  }
+
   /* ---- IndexedDB: FileSystemFileHandle seitenweit (originweit) merken,
      damit die Auto-Speicherung nur EINMAL pro Browser eingerichtet werden
      muss, nicht pro Dekaden-Seite. ---- */
@@ -193,13 +208,13 @@
     }).join('');
   }
 
-  function addEntry(a, t, ytId, manualMeta) {
+  function addEntry(a, t, ytId, vkUrl, manualMeta) {
     var entries = loadEntries();
-    entries.push({ a: a, t: t, yt: ytId, g: (manualMeta && manualMeta.g) || 'Ohne', addedAt: Date.now() });
+    entries.push({ a: a, t: t, yt: ytId, vk: vkUrl || null, g: (manualMeta && manualMeta.g) || 'Ohne', addedAt: Date.now() });
     saveEntries(entries);
     renderList();
     if (fileHandle) writeAutosaveFile();
-    pushToOnlineQueue(a, t, ytId, manualMeta);
+    pushToOnlineQueue(a, t, ytId, vkUrl, manualMeta);
   }
 
   /* ---- Online-Warteliste: schreibt den Song automatisch (ohne
@@ -216,9 +231,10 @@
      aus extractYoutubeId() -- nie eine unvalidierte URL. ---- */
   var QUEUE_PROXY_URL = 'https://driftware-warteliste-proxy.welove80sde.workers.dev/';
 
-  function pushToOnlineQueue(a, t, ytId, manualMeta) {
+  function pushToOnlineQueue(a, t, ytId, vkUrl, manualMeta) {
     setAutosaveStatus('Wird online gespeichert …');
     var payload = { a: a, t: t, yt: ytId };
+    if (vkUrl) payload.vk = vkUrl;
     if (manualMeta) {
       payload.g = manualMeta.g;
       payload.y = manualMeta.y;
@@ -243,7 +259,14 @@
   function playEntry(i) {
     var entries = loadEntries();
     var e = entries[i];
-    if (!e || typeof window.playDeckSong !== 'function') return;
+    if (!e) return;
+    if (!e.yt) {
+      /* Kein YouTube-Video -- bei einem hinterlegten VK-Link diesen oeffnen
+         (kein Einbetten, siehe extractVkUrl weiter oben), sonst nichts tun. */
+      if (e.vk) window.open(e.vk, '_blank', 'noopener');
+      return;
+    }
+    if (typeof window.playDeckSong !== 'function') return;
     var deckKey = (window.DECKS && window.DECKS.A && window.DECKS.A.isPlaying) ? 'B' : 'A';
     var song = { a: e.a, t: e.t, yt: e.yt };
     if (window.DECKS && window.DECKS[deckKey]) {
@@ -320,11 +343,14 @@
       '<div class="manualadd-modal" role="dialog" aria-modal="true">' +
       '  <button type="button" class="manualadd-close" id="manualadd-close" aria-label="Schließen">✕</button>' +
       '  <h3>Song nicht gefunden</h3>' +
-      '  <p class="manualadd-hint">Interpret + Titel eintragen, auf YouTube suchen, den Link des richtigen Videos hier einfügen.</p>' +
+      '  <p class="manualadd-hint">Interpret + Titel eintragen, auf YouTube suchen, den Link des richtigen Videos hier einfügen. Kein YouTube-Video vorhanden? Auf VK suchen und stattdessen den Einbettungs-Link/Code von dort einfügen.</p>' +
       '  <input type="text" class="manualadd-input" id="manualadd-artist" placeholder="Interpret">' +
       '  <input type="text" class="manualadd-input" id="manualadd-title" placeholder="Titel">' +
-      '  <button type="button" class="manualadd-search" id="manualadd-search">Auf YouTube suchen</button>' +
-      '  <input type="text" class="manualadd-input" id="manualadd-link" placeholder="YouTube-Link oder Video-ID">' +
+      '  <div class="manualadd-search-row">' +
+      '    <button type="button" class="manualadd-search" id="manualadd-search">Auf YouTube suchen</button>' +
+      '    <button type="button" class="manualadd-search manualadd-search-vk" id="manualadd-search-vk">Auf VK suchen</button>' +
+      '  </div>' +
+      '  <input type="text" class="manualadd-input" id="manualadd-link" placeholder="YouTube-Link/ID oder VK-Link/Einbettungscode">' +
       '  <label class="manualadd-toggle-label"><input type="checkbox" id="manualadd-use-discogs" checked> Automatisch per Discogs zuordnen (Jahr &amp; Genre)</label>' +
       '  <div class="manualadd-manual-fields" id="manualadd-manual-fields" hidden>' +
       '    <input type="number" class="manualadd-input" id="manualadd-year" placeholder="Jahr (z.B. 1986)" min="1950" max="2099">' +
@@ -352,7 +378,9 @@
       '.manualadd-close{position:absolute;top:10px;right:10px;background:transparent;border:none;color:#b3a5c2;cursor:pointer;font-size:16px;line-height:1;padding:4px;}' +
       '.manualadd-hint{margin:0 0 8px;font-size:12px;opacity:.8;line-height:1.4;}' +
       '.manualadd-input{display:block;width:100%;box-sizing:border-box;margin-bottom:6px;padding:6px 8px;background:#141419;border:1px solid #4a4460;border-radius:6px;color:#f0e9ff;font-size:12px;}' +
-      '.manualadd-search{width:100%;margin-bottom:10px;background:#332f47;color:#fff;border:1px solid #5a527a;border-radius:6px;padding:6px 8px;cursor:pointer;font-size:12px;}' +
+      '.manualadd-search-row{display:flex;gap:6px;margin-bottom:10px;}' +
+      '.manualadd-search{width:100%;margin-bottom:0;background:#332f47;color:#fff;border:1px solid #5a527a;border-radius:6px;padding:6px 8px;cursor:pointer;font-size:12px;}' +
+      '.manualadd-search-vk{background:#28324a;}' +
       '.manualadd-add{width:100%;margin-bottom:4px;background:#22c55e;color:#0c1a10;border:none;border-radius:6px;padding:7px 8px;cursor:pointer;font-size:12px;font-weight:600;}' +
       '.manualadd-toggle-label{display:flex;align-items:center;gap:6px;font-size:11px;opacity:.85;margin:2px 0 8px;cursor:pointer;}' +
       '.manualadd-toggle-label input{margin:0;}' +
@@ -439,6 +467,17 @@
       window.open('https://www.youtube.com/results?search_query=' + q, 'driftware-yt-search', 'noopener,width=480,height=640,left=200,top=100');
     });
 
+    modalEl.querySelector('#manualadd-search-vk').addEventListener('click', function () {
+      var a = modalEl.querySelector('#manualadd-artist').value.trim();
+      var t = modalEl.querySelector('#manualadd-title').value.trim();
+      if (!a && !t) return;
+      /* VK selbst hat keine zuverlaessig dokumentierte direkte Such-URL --
+         eine Google-Seitensuche auf vkvideo.ru findet trotzdem oeffentliche,
+         einbettbare Videos zuverlaessig. */
+      var q = encodeURIComponent('site:vkvideo.ru ' + (a + ' ' + t).trim());
+      window.open('https://www.google.com/search?q=' + q, 'driftware-vk-search', 'noopener,width=480,height=640,left=200,top=100');
+    });
+
     modalEl.querySelector('#manualadd-add').addEventListener('click', function () {
       var errorEl = modalEl.querySelector('#manualadd-error');
       errorEl.hidden = true;
@@ -446,13 +485,14 @@
       var t = modalEl.querySelector('#manualadd-title').value.trim();
       var link = modalEl.querySelector('#manualadd-link').value.trim();
       var ytId = extractYoutubeId(link);
+      var vkUrl = ytId ? null : extractVkUrl(link);
       if (!a || !t) {
         errorEl.textContent = 'Bitte Interpret und Titel eintragen.';
         errorEl.hidden = false;
         return;
       }
-      if (!ytId) {
-        errorEl.textContent = 'Kein gültiger YouTube-Link/ID erkannt.';
+      if (!ytId && !vkUrl) {
+        errorEl.textContent = 'Kein gültiger YouTube- oder VK-Link erkannt.';
         errorEl.hidden = false;
         return;
       }
@@ -472,7 +512,7 @@
         }
         manualMeta = { g: genre, y: year };
       }
-      addEntry(a, t, ytId, manualMeta);
+      addEntry(a, t, ytId, vkUrl, manualMeta);
       modalEl.querySelector('#manualadd-artist').value = '';
       modalEl.querySelector('#manualadd-title').value = '';
       modalEl.querySelector('#manualadd-link').value = '';
