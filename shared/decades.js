@@ -647,9 +647,6 @@ function ensureDjPlayer() {
     deckHTML('B') +
     '</div>' +
     '<div class="dj-ambient-panel" id="dj-ambient-panel">' +
-    '  <div class="dj-ambient-header">' +
-    '    <span class="dj-ambient-title">Ambient-Sounds</span>' +
-    '  </div>' +
     '  <div class="dj-ambient-body">' +
     '    <div class="dj-ambient-vslider-wrap">' +
     '      <input type="range" id="dj-ambient-volume" class="dj-ambient-vslider" min="0" max="100" value="45" ' +

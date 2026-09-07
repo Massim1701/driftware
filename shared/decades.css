@@ -1038,16 +1038,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   border-radius: 14px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 14px rgba(0,0,0,0.25);
 }
-.dj-ambient-header {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: 3px 0;
-  color: inherit;
-  font: inherit;
-}
-.dj-ambient-title { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-.dj-ambient-body { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 6px; }
+.dj-ambient-body { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 /* Ab 1101px (Player steht als rechte Spalte, siehe @media max-width:1100px
    weiter unten) klappt das Panel nicht nach unten auf, sondern als
    Flyout nach LINKS neben den Player -- so waechst die Player-Hoehe nie,
