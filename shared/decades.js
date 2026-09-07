@@ -182,6 +182,12 @@ function ensureSongModal() {
     '  <div class="song-modal-title" id="song-modal-title"></div>' +
     '  <button type="button" class="song-modal-play" id="song-modal-play">' + PLAY_SVG + ' Song abspielen</button>' +
     '  <dl class="song-modal-meta" id="song-modal-meta"></dl>' +
+    '  <button type="button" class="song-modal-edit-genre-toggle" id="song-modal-edit-genre-toggle" hidden>Genre bearbeiten</button>' +
+    '  <div class="song-modal-genre-edit" id="song-modal-genre-edit" hidden>' +
+    '    <select class="song-modal-genre-select" id="song-modal-genre-select"></select>' +
+    '    <button type="button" class="song-modal-genre-save" id="song-modal-genre-save">Speichern</button>' +
+    '    <p class="song-modal-genre-status" id="song-modal-genre-status"></p>' +
+    '  </div>' +
     '  <div class="streaming-row" id="song-modal-streaming"></div>' +
     '  <a class="song-modal-link" id="song-modal-link" target="_blank" rel="noopener">Auf Discogs ansehen →</a>' +
     '  <a class="song-modal-link" id="song-modal-vk-link" target="_blank" rel="noopener">Auf VK ansehen →</a>' +
@@ -251,6 +257,15 @@ var preferredService = null;
 try { preferredService = localStorage.getItem(PREFERRED_SERVICE_KEY); } catch (e) {}
 var selectedSongs = {};
 var lastGridSongs = [];
+
+/* Fuer den "Genre bearbeiten"-Button im Song-Modal (siehe openSongModal):
+   die Genre-Liste der aktuell offenen Dekaden-Seite (aus dem themes-Array
+   in renderPlaylistGenerator), damit das Dropdown dieselben Buckets zeigt
+   wie die Tabs oben. Wird pro Song beim Rendern der Songliste gesetzt
+   (song._bucket, siehe refresh()) -- nur dann ist bekannt, in welchem
+   Bucket ein Song aktuell steckt, und der Button erscheint nur fuer
+   Songs im Bucket "Ohne". */
+var activeDecadeThemes = null;
 
 function songId(song) { return song.u || (song.a + '␟' + song.t); }
 function isSongSelected(song) { return Object.prototype.hasOwnProperty.call(selectedSongs, songId(song)); }
@@ -1276,6 +1291,72 @@ function closeSongModal() {
   if (overlay) overlay.classList.remove('open');
 }
 
+/* Cloudflare-Worker-Proxy, siehe shared/manualadd.js -- schreibt serverseitig
+   (per gehaltenem GitHub-Token) in queue/fehlende-lieder.json. Die taegliche
+   GitHub Action (tools/process_missing_queue.py) erkennt einen Eintrag mit
+   g+y zu einem Song, der in der Ziel-songs.json bereits existiert (meist im
+   Bucket "Ohne"), und verschiebt ihn nur in den gewaehlten Bucket -- keine
+   erneute Discogs-/YouTube-Suche noetig, alle vorhandenen Song-Daten
+   (Cover, YouTube-Link etc.) bleiben erhalten. */
+var GENRE_FIX_PROXY_URL = 'https://driftware-warteliste-proxy.welove80sde.workers.dev/';
+
+function submitGenreFix(song, genreKey, statusEl, selectEl, saveBtn) {
+  statusEl.textContent = 'Wird gespeichert …';
+  saveBtn.disabled = true;
+  selectEl.disabled = true;
+  fetch(GENRE_FIX_PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ a: song.a, t: song.t, g: genreKey, y: song.y })
+  })
+    .then(function (r) { if (!r.ok) throw new Error('write-failed'); return r; })
+    .then(function () {
+      statusEl.textContent = 'Gespeichert ✓ -- erscheint in Kürze (spätestens am nächsten Tag) im gewählten Genre.';
+      song._bucket = genreKey; /* verhindert doppeltes Absenden, solange das Modal offen bleibt */
+      saveBtn.textContent = 'Gespeichert';
+    })
+    .catch(function () {
+      statusEl.textContent = 'Fehlgeschlagen -- bitte später erneut versuchen.';
+      saveBtn.disabled = false;
+      selectEl.disabled = false;
+    });
+}
+
+/* Baut/verdrahtet den "Genre bearbeiten"-Bereich im Song-Modal. Nur
+   sichtbar, wenn der Song aktuell im Bucket "Ohne" dieser Dekaden-Seite
+   steckt (song._bucket, siehe refresh()) UND die Seite ein eigenes
+   Genre-Set hat (activeDecadeThemes) -- Suchergebnisse/Mix haben keinen
+   bekannten Bucket und zeigen den Button daher nicht. */
+function setupGenreEditUI(song) {
+  var toggleBtn = document.getElementById('song-modal-edit-genre-toggle');
+  var editBox = document.getElementById('song-modal-genre-edit');
+  var selectEl = document.getElementById('song-modal-genre-select');
+  var saveBtn = document.getElementById('song-modal-genre-save');
+  var statusEl = document.getElementById('song-modal-genre-status');
+  if (!toggleBtn || !editBox || !selectEl || !saveBtn || !statusEl) return;
+
+  editBox.hidden = true;
+  statusEl.textContent = '';
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'Speichern';
+  selectEl.disabled = false;
+
+  var canEdit = song._bucket === 'Ohne' && activeDecadeThemes && activeDecadeThemes.length;
+  toggleBtn.hidden = !canEdit;
+  if (!canEdit) return;
+
+  selectEl.innerHTML = activeDecadeThemes
+    .filter(function (t) { return t.key !== 'Ohne'; })
+    .map(function (t) { return '<option value="' + t.key + '">' + escapeHtml(t.label) + '</option>'; })
+    .join('');
+
+  toggleBtn.onclick = function () { editBox.hidden = !editBox.hidden; };
+  saveBtn.onclick = function () {
+    if (!selectEl.value) return;
+    submitGenreFix(song, selectEl.value, statusEl, selectEl, saveBtn);
+  };
+}
+
 function openSongModal(song) {
   var overlay = ensureSongModal();
   var img = document.getElementById('song-modal-img');
@@ -1321,6 +1402,8 @@ function openSongModal(song) {
     }
   }
 
+  setupGenreEditUI(song);
+
   document.getElementById('song-modal-streaming').innerHTML = streamingLinksHTML(song);
 
   var link = document.getElementById('song-modal-link');
@@ -1332,6 +1415,24 @@ function openSongModal(song) {
   }
 
   overlay.classList.add('open');
+}
+
+/* Kleine Schallplatte als Drag-Bild (statt der ganzen Song-Kachel) --
+   ein einzelnes wiederverwendetes Element off-screen, dessen Cover-Bild
+   pro dragstart aktualisiert wird (siehe renderSongGrid). Groesse und
+   Optik lehnen sich an .dj-vinyl-disc im Player an (siehe decades.css). */
+var DRAG_GHOST_SIZE = 150;
+var dragGhostEl = null;
+function ensureDragGhost(song) {
+  if (!dragGhostEl) {
+    dragGhostEl = document.createElement('div');
+    dragGhostEl.className = 'drag-vinyl-ghost';
+    dragGhostEl.innerHTML = '<div class="drag-vinyl-ghost-label"><img id="drag-vinyl-ghost-img" alt=""></div>';
+    document.body.appendChild(dragGhostEl);
+  }
+  var img = dragGhostEl.querySelector('#drag-vinyl-ghost-img');
+  img.src = song.th || song.cv || '';
+  return dragGhostEl;
 }
 
 /* Song-Liste: eine Zeile pro Song, Titel zuerst und fett, Interpret
@@ -1437,12 +1538,18 @@ function renderSongGrid(container, songs) {
 
     /* Auch ohne Video ziehbar (zeigt dann unser Logo auf dem Deck statt
        eines Players, siehe playDeckSong) — nur der Klick-Play-Button
-       bleibt bei fehlendem Video deaktiviert. */
+       bleibt bei fehlendem Video deaktiviert. Als Drag-Bild NICHT die
+       ganze Kachel (Browser-Standard) verwenden, sondern eine kleine
+       Schallplatte in Deck-Groesse (siehe ensureDragGhost) -- so sieht
+       das Ziehen aus wie das Auflegen einer Platte, nicht wie das
+       Verschieben einer großen Karte. */
     tile.draggable = true;
     tile.addEventListener('dragstart', function (e) {
       try {
         e.dataTransfer.setData('application/json', JSON.stringify(song));
         e.dataTransfer.effectAllowed = 'copy';
+        var ghost = ensureDragGhost(song);
+        e.dataTransfer.setDragImage(ghost, DRAG_GHOST_SIZE / 2, DRAG_GHOST_SIZE / 2);
       } catch (err) {}
       tile.classList.add('dragging');
     });
@@ -1545,6 +1652,7 @@ var MIX_KEY = '__mix__';
 var MIX_PER_CATEGORY = 5;
 
 function renderPlaylistGenerator(mountRoot, config) {
+  activeDecadeThemes = config.themes || null;
   var data = null;
   var currentTheme = null;
   var mixSongsCache = null;
@@ -1621,8 +1729,12 @@ function renderPlaylistGenerator(mountRoot, config) {
   }
 
   function refresh() {
-    document.getElementById('gen-count').textContent = currentSongs().length + ' Songs';
-    renderSongGrid(document.getElementById('gen-grid'), currentSongs());
+    var songs = currentSongs();
+    if (currentTheme && currentTheme !== MIX_KEY) {
+      songs.forEach(function (s) { s._bucket = currentTheme; });
+    }
+    document.getElementById('gen-count').textContent = songs.length + ' Songs';
+    renderSongGrid(document.getElementById('gen-grid'), songs);
   }
 
   function clearSearchUI() {

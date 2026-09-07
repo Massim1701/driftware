@@ -249,17 +249,43 @@ def main():
                     remaining.append(entry)
                     continue
 
+                catalog_path_abs = os.path.join(ROOT, catalog_path_rel)
+                if catalog_path_rel not in changed_catalogs:
+                    changed_catalogs[catalog_path_rel] = load_json(catalog_path_abs)
+                catalog_data = changed_catalogs[catalog_path_rel]
+
+                # Genre-Korrektur eines bereits vorhandenen Katalog-Songs (kommt
+                # vom "Genre bearbeiten"-Button bei Songs ohne Genre, siehe
+                # shared/decades.js setupGenreEditUI/submitGenreFix): der Song
+                # steckt schon (meist im Bucket "Ohne") in dieser songs.json,
+                # nur Bucket + "g"-Feld muessen sich aendern -- kein Discogs-/
+                # YouTube-Abgleich noetig, alle vorhandenen Felder (Cover,
+                # YouTube-Link, ...) bleiben unangetastet. Deshalb VOR dem
+                # sonst zwingenden YouTube-/VK-Link-Check geprueft.
+                wanted_id = song_id(artist, title)
+                moved = False
+                for bucket_name, songs_list in list(catalog_data.items()):
+                    if bucket_name == manual_genre:
+                        continue
+                    for i, s in enumerate(songs_list):
+                        if song_id(s.get("a"), s.get("t")) == wanted_id:
+                            existing_song = songs_list.pop(i)
+                            existing_song["g"] = humanize_bucket(manual_genre)
+                            catalog_data.setdefault(manual_genre, []).append(existing_song)
+                            print(f"  verschoben nach {catalog_path_rel} / {manual_genre} (Korrektur, bereits vorhanden)")
+                            moved = True
+                            break
+                    if moved:
+                        break
+                if moved:
+                    continue
+
                 yt_id = valid_yt_id(entry.get("yt")) or search_youtube(artist, title)
                 vk_url = valid_vk_url(entry.get("vk"))
                 if not yt_id and not vk_url:
                     print("  kein YouTube-Link und kein VK-Link gefunden, bleibt in der Warteliste")
                     remaining.append(entry)
                     continue
-
-                catalog_path_abs = os.path.join(ROOT, catalog_path_rel)
-                if catalog_path_rel not in changed_catalogs:
-                    changed_catalogs[catalog_path_rel] = load_json(catalog_path_abs)
-                catalog_data = changed_catalogs[catalog_path_rel]
 
                 existing_ids = {song_id(s.get("a"), s.get("t")) for lst in catalog_data.values() for s in lst}
                 if song_id(artist, title) in existing_ids:
