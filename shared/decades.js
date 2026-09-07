@@ -1039,12 +1039,35 @@ function startManualFadeSweep(fromKey, toKey) {
   };
 }
 
+/* Bricht der Button lautlos ab (kein Song im Ziel-Player, oder gerade schon
+   ein Fade aktiv), sieht das wie ein Button aus, der nicht reagiert -- kurz
+   rot aufblitzen lassen + Tooltip, damit klar ist WARUM nichts passiert. */
+function flashFadeBtnBlocked(btn, reason) {
+  btn.classList.add('blocked');
+  var prevTitle = btn.title;
+  btn.title = reason;
+  setTimeout(function () {
+    btn.classList.remove('blocked');
+    btn.title = prevTitle;
+  }, 1400);
+}
+
 function triggerManualFade(btn) {
-  if (activeAutoFade || manualFadeCountdownId) return;
+  if (activeAutoFade || manualFadeCountdownId) {
+    flashFadeBtnBlocked(btn, 'Läuft schon ein Überblenden -- kurz warten.');
+    return;
+  }
   var fromKey = crossfaderValue <= 50 ? 'A' : 'B';
   var toKey = fromKey === 'A' ? 'B' : 'A';
   var to = DECKS[toKey];
-  if (!to.song || !to.player) return; // Zieldeck muss ein Song geladen haben
+  if (!to.song) {
+    flashFadeBtnBlocked(btn, 'Kein Song in Deck ' + toKey + ' geladen -- erst einen Song dorthin ziehen.');
+    return;
+  }
+  if (!to.player) {
+    flashFadeBtnBlocked(btn, 'Deck ' + toKey + ' lädt noch -- gleich nochmal versuchen.');
+    return;
+  }
 
   var remaining = 5;
   var originalLabel = btn.innerHTML;
