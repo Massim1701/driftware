@@ -1050,6 +1050,13 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
    weiter unten) klappt das Panel nicht nach unten auf, sondern als
    Flyout nach LINKS neben den Player -- so waechst die Player-Hoehe nie,
    egal ob das Ambient-Panel offen ist oder nicht. */
+/* Auf schmalen Screens haengt das Ambient-Panel mit im fixen Player-Balken
+   am unteren Rand (siehe @media max-width:1100px unten) und nimmt dort
+   Platz weg -- auf Wunsch dort komplett aus, der Rechts-Flyout ab 1101px
+   bleibt unveraendert bestehen. */
+@media (max-width: 1100px) {
+  .dj-ambient-panel { display: none; }
+}
 @media (min-width: 1101px) {
   .dj-ambient-body {
     position: fixed;
