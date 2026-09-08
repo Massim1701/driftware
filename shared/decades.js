@@ -798,6 +798,12 @@ function deckHTML(key) {
     '  <div class="dj-deck-head">' +
     '    <div class="dj-deck-label">Deck ' + key + '</div>' +
     '    <div class="dj-deck-info" id="deck-' + key + '-info">' +
+    '      <div class="dj-digital-swatches" id="deck-' + key + '-digital-swatches">' +
+    '        <button type="button" class="dj-digital-swatch" data-color="green" aria-label="Display gruen"></button>' +
+    '        <button type="button" class="dj-digital-swatch" data-color="blue" aria-label="Display blau"></button>' +
+    '        <button type="button" class="dj-digital-swatch" data-color="yellow" aria-label="Display gelb"></button>' +
+    '        <button type="button" class="dj-digital-swatch" data-color="orange" aria-label="Display orange"></button>' +
+    '      </div>' +
     '      <strong id="deck-' + key + '-title">Kein Song geladen</strong>' +
     '      <span id="deck-' + key + '-artist">–</span>' +
     '      <div class="dj-deck-meta">' +
@@ -1877,16 +1883,33 @@ function wireDigitalDisplay(key) {
   var el = document.getElementById('deck-' + key + '-info');
   if (!el) return;
   var storageKey = 'driftware-digital-color-' + key;
+  function setColor(color, persist) {
+    el.dataset.digital = color;
+    var swatches = el.querySelectorAll('.dj-digital-swatch');
+    swatches.forEach(function (sw) { sw.classList.toggle('active', sw.dataset.color === color); });
+    if (persist) { try { localStorage.setItem(storageKey, color); } catch (e) {} }
+  }
   var saved = null;
   try { saved = localStorage.getItem(storageKey); } catch (e) {}
-  var color = DIGITAL_DISPLAY_COLORS.indexOf(saved) !== -1 ? saved : 'green';
-  el.dataset.digital = color;
+  setColor(DIGITAL_DISPLAY_COLORS.indexOf(saved) !== -1 ? saved : 'green', false);
+
+  var swatchWrap = el.querySelector('.dj-digital-swatches');
+  if (swatchWrap) {
+    swatchWrap.addEventListener('click', function (ev) {
+      var btn = ev.target.closest('.dj-digital-swatch');
+      if (!btn) return;
+      ev.stopPropagation();
+      setColor(btn.dataset.color, true);
+    });
+  }
+  /* Zusaetzlich zu den Punkten: Klick irgendwo sonst auf die Anzeige
+     schaltet weiter zur naechsten Farbe (Punkte-Klick stoppt oben per
+     stopPropagation, landet also nicht hier). */
   el.title = 'Klicken zum Farbwechsel';
   el.addEventListener('click', function () {
     var idx = DIGITAL_DISPLAY_COLORS.indexOf(el.dataset.digital);
     var next = DIGITAL_DISPLAY_COLORS[(idx + 1) % DIGITAL_DISPLAY_COLORS.length];
-    el.dataset.digital = next;
-    try { localStorage.setItem(storageKey, next); } catch (e) {}
+    setColor(next, true);
   });
 }
 

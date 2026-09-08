@@ -1031,11 +1031,12 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
    genau wie bei einem echten LCD-Display, das nur eine Hintergrundbeleuchtung
    hat. */
 .dj-deck-info {
+  position: relative;
   text-align: left;
   min-height: 26px;
   width: 100%;
   box-sizing: border-box;
-  padding: 6px 8px;
+  padding: 6px 26px 6px 8px;
   border-radius: 5px;
   background: #04120e;
   border: 1px solid rgba(255,255,255,0.08);
@@ -1045,6 +1046,32 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   --digital-fg: #4ade80;
 }
 .dj-deck-info:hover { border-color: var(--digital-fg); }
+.dj-digital-swatches {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.dj-digital-swatch {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.3);
+  cursor: pointer;
+  box-shadow: 0 0 3px rgba(0,0,0,0.6);
+}
+.dj-digital-swatch[data-color="green"] { background: #4ade80; }
+.dj-digital-swatch[data-color="blue"] { background: #38bdf8; }
+.dj-digital-swatch[data-color="yellow"] { background: #facc15; }
+.dj-digital-swatch[data-color="orange"] { background: #fb923c; }
+.dj-digital-swatch:hover { transform: scale(1.25); }
+.dj-digital-swatch.active { border-color: #fff; box-shadow: 0 0 0 1px rgba(255,255,255,0.5), 0 0 4px rgba(255,255,255,0.7); }
 .dj-deck-info[data-digital="blue"] { --digital-fg: #38bdf8; }
 .dj-deck-info[data-digital="green"] { --digital-fg: #4ade80; }
 .dj-deck-info[data-digital="yellow"] { --digital-fg: #facc15; }
