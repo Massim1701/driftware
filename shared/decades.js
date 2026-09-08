@@ -816,6 +816,10 @@ function deckHTML(key) {
     '      <div class="dj-vinyl-dragshield" id="deck-' + key + '-dragshield" aria-hidden="true"></div>' +
     '    </div>' +
     '  </div>' +
+    '  <div class="dj-waveform" id="deck-' + key + '-waveform" role="slider" tabindex="0" ' +
+    '    aria-label="Deck ' + key + ': Songposition" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
+    '    <canvas id="deck-' + key + '-waveform-canvas"></canvas>' +
+    '  </div>' +
     '  <div class="dj-pitch">' +
     '    <div class="dj-knob-wrap">' +
     '      <div class="dj-knob" id="deck-' + key + '-pitch-knob" role="slider" tabindex="0" ' +
@@ -928,6 +932,7 @@ function ensureDjPlayer() {
     bar.querySelector('#deck-' + key + '-toggle').addEventListener('click', function () { deckTogglePlay(key); });
     bar.querySelector('#deck-' + key + '-prev').addEventListener('click', function () { deckStep(key, -1); });
     bar.querySelector('#deck-' + key + '-next').addEventListener('click', function () { deckStep(key, 1); });
+    wireWaveformSeek(key);
     var dropzone = bar.querySelector('#deck-' + key + '-drop');
     dropzone.addEventListener('dragover', function (e) { e.preventDefault(); dropzone.classList.add('drag-over'); });
     dropzone.addEventListener('dragleave', function () { dropzone.classList.remove('drag-over'); });
@@ -1068,6 +1073,8 @@ function updateDeckInfoUI(key) {
   if (toggleBtn) toggleBtn.innerHTML = deck.isPlaying ? PAUSE_SVG : PLAY_SVG;
   var bpmEl = document.getElementById('deck-' + key + '-bpm');
   if (bpmEl) bpmEl.innerHTML = (deck.song && deck.song.bpm) ? NOTE_SVG + ' ' + deck.song.bpm + ' BPM' : '';
+  ensureWaveformBars(key);
+  drawWaveform(key);
   queuePlayerSpacing();
   refreshMixableHighlight();
   updateBpmSync();
@@ -1700,6 +1707,166 @@ function finishAutoCrossfade() {
   maybePreloadNext(toKey);
 }
 
+/* Wellenform-Fortschrittsanzeige zwischen Vinyl und Pitch-Regler. YouTube
+   liefert keine echte Audio-Wellenform -- stattdessen wird pro Song ein
+   fest generiertes, aber SONG-SPEZIFISCHES Muster gezeichnet (Seed aus
+   songId(), daher bei jedem Laden desselben Songs immer gleich, nicht
+   zufaellig neu). Gespielter Bereich wird in Akzentfarbe eingefaerbt,
+   Intro-/Outro-Skip-Zonen (siehe introSkipFor/outroSkipFor) etwas
+   abgedunkelt -- so ist auch optisch sichtbar, welchen Teil des Videos
+   der Player als "eigentlichen Song" behandelt. Klick/Zug ruft direkt
+   player.seekTo() auf, siehe wireWaveformSeek(). */
+var WAVEFORM_BAR_COUNT = 48;
+
+function hashStr(str) {
+  var h = 0;
+  for (var i = 0; i < str.length; i++) { h = (Math.imul(31, h) + str.charCodeAt(i)) | 0; }
+  return h >>> 0;
+}
+function seededRandom(seed) {
+  var s = seed >>> 0;
+  return function () {
+    s = (s + 0x6D2B79F5) | 0;
+    var t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function buildWaveformBars(song) {
+  var rand = seededRandom(hashStr(songId(song)));
+  var bars = [];
+  for (var i = 0; i < WAVEFORM_BAR_COUNT; i++) {
+    var t = i / (WAVEFORM_BAR_COUNT - 1);
+    /* sanfte Grundform: leiser am Anfang/Ende, voller in der Mitte --
+       typische Songstruktur (Intro/Outro leiser als Refrain), plus
+       Rauschen pro Balken fuer die "Zackigkeit" einer echten Wellenform. */
+    var envelope = 0.32 + 0.68 * Math.sin(Math.PI * t);
+    var noise = 0.5 + rand() * 0.5;
+    bars.push(Math.max(0.1, Math.min(1, envelope * noise)));
+  }
+  return bars;
+}
+function ensureWaveformBars(key) {
+  var deck = DECKS[key];
+  if (!deck.song) { deck.waveformBars = null; deck.waveformSongId = null; return; }
+  var sid = songId(deck.song);
+  if (deck.waveformSongId === sid && deck.waveformBars) return;
+  deck.waveformSongId = sid;
+  deck.waveformBars = buildWaveformBars(deck.song);
+}
+var waveformAccentCache = null;
+function waveformAccentColor() {
+  /* Pro Dekaden-Seite unterschiedliche Akzentfarbe (siehe applyPalette) --
+     einmal pro Zeichnen aus den CSS-Custom-Properties auflösen, damit die
+     Wellenform automatisch zum jeweiligen Seiten-Theme passt. */
+  try {
+    return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#7c5cff';
+  } catch (e) { return '#7c5cff'; }
+}
+function drawWaveform(key) {
+  var deck = DECKS[key];
+  var canvas = document.getElementById('deck-' + key + '-waveform-canvas');
+  if (!canvas) return;
+  ensureWaveformBars(key);
+  var ctx = canvas.getContext('2d');
+  var dpr = window.devicePixelRatio || 1;
+  var cssW = canvas.clientWidth, cssH = canvas.clientHeight;
+  if (!cssW || !cssH) return;
+  if (canvas.width !== Math.round(cssW * dpr) || canvas.height !== Math.round(cssH * dpr)) {
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+  }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssW, cssH);
+
+  var bars = deck.waveformBars;
+  if (!bars) return;
+
+  var dur = 0, cur = 0;
+  if (deck.player && deck.player.getDuration) {
+    try { dur = deck.player.getDuration() || 0; cur = deck.player.getCurrentTime() || 0; } catch (e) {}
+  }
+  var progress = dur > 0 ? Math.max(0, Math.min(1, cur / dur)) : 0;
+  var introFrac = dur > 0 ? introSkipFor(deck.song) / dur : 0;
+  var outroFrac = dur > 0 ? 1 - (outroSkipFor(deck.song) / dur) : 1;
+
+  var gap = 2;
+  var barW = (cssW - gap * (bars.length - 1)) / bars.length;
+  var midY = cssH / 2;
+  var accent = waveformAccentColor();
+  var playedUntilIdx = progress * bars.length;
+
+  for (var i = 0; i < bars.length; i++) {
+    var barH = Math.max(2, bars[i] * cssH);
+    var x = i * (barW + gap);
+    var y = midY - barH / 2;
+    var barT = i / (bars.length - 1);
+    var inSkipZone = barT < introFrac || barT > outroFrac;
+    var played = i < playedUntilIdx;
+    var alpha = inSkipZone ? (played ? 0.45 : 0.22) : (played ? 1 : 0.4);
+    ctx.fillStyle = played
+      ? hexToRgba(accent, alpha)
+      : 'rgba(255,255,255,' + (alpha * 0.5) + ')';
+    ctx.fillRect(x, y, Math.max(1, barW), barH);
+  }
+}
+function hexToRgba(hex, alpha) {
+  hex = (hex || '').trim();
+  var m = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return 'rgba(124,92,255,' + alpha + ')';
+  var n = parseInt(m[1], 16);
+  return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + alpha + ')';
+}
+
+/* Klick/Zug auf die Wellenform springt direkt an die entsprechende Stelle
+   im Song -- waehrend des Ziehens (deck.seeking) ueberschreibt das 500ms-
+   Polling (updateRemainingTime) die Anzeige nicht, sonst "kaempft" die
+   gezeichnete Position mit der Maus. */
+function wireWaveformSeek(key) {
+  var el = document.getElementById('deck-' + key + '-waveform');
+  if (!el) return;
+  var deck = DECKS[key];
+  function fractionFromEvent(ev) {
+    var rect = el.getBoundingClientRect();
+    var x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - rect.left;
+    return Math.max(0, Math.min(1, x / rect.width));
+  }
+  function seekToFraction(frac) {
+    if (!deck.player || !deck.player.getDuration || !deck.player.seekTo) return;
+    try {
+      var dur = deck.player.getDuration();
+      if (dur > 0) { deck.player.seekTo(dur * frac, true); drawWaveform(key); }
+    } catch (e) {}
+  }
+  var dragging = false;
+  el.addEventListener('pointerdown', function (ev) {
+    if (!deck.song) return;
+    dragging = true;
+    deck.seeking = true;
+    seekToFraction(fractionFromEvent(ev));
+  });
+  window.addEventListener('pointermove', function (ev) {
+    if (!dragging) return;
+    seekToFraction(fractionFromEvent(ev));
+  });
+  window.addEventListener('pointerup', function () {
+    if (!dragging) return;
+    dragging = false;
+    deck.seeking = false;
+  });
+  el.addEventListener('keydown', function (ev) {
+    if (!deck.player || !deck.player.getDuration) return;
+    var step = 5;
+    try {
+      var dur = deck.player.getDuration();
+      var cur = deck.player.getCurrentTime();
+      if (ev.key === 'ArrowLeft') { deck.player.seekTo(Math.max(0, cur - step), true); drawWaveform(key); }
+      else if (ev.key === 'ArrowRight') { deck.player.seekTo(Math.min(dur, cur + step), true); drawWaveform(key); }
+    } catch (e) {}
+  });
+}
+window.addEventListener('resize', function () { drawWaveform('A'); drawWaveform('B'); });
+
 /* Restzeit-Anzeige (Minuten:Sekunden bis Songende) pro Deck, laeuft per
    Intervall alle 500ms unabhaengig von Play/Pause-Events, da die YouTube
    IFrame API keine "timeupdate"-Events feuert. */
@@ -1713,7 +1880,6 @@ function updateRemainingTime() {
   ['A', 'B'].forEach(function (key) {
     var deck = DECKS[key];
     var el = document.getElementById('deck-' + key + '-remaining');
-    var seekEl = document.getElementById('deck-' + key + '-seek');
     if (!el) return;
     if (deck.player && deck.player.getDuration) {
       try {
@@ -1729,10 +1895,10 @@ function updateRemainingTime() {
                "greifen". */
             maybeStartAutoCrossfade(key, (dur - outroSkipFor(deck.song)) - cur);
           }
-          /* Waehrend der Nutzer selbst zieht (deck.seeking) nicht
-             ueberschreiben -- sonst "kaempft" der Regler mit dem Polling
+          /* Waehrend der Nutzer selbst an der Wellenform zieht (deck.seeking)
+             nicht ueberschreiben -- sonst "kaempft" die Anzeige mit der Maus
              und springt beim Ziehen staendig zurueck. */
-          if (seekEl && !deck.seeking) seekEl.value = Math.round((cur / dur) * 1000);
+          if (!deck.seeking) drawWaveform(key);
           if (deck.isPlaying) return;
         }
       } catch (e) {}
@@ -1742,31 +1908,6 @@ function updateRemainingTime() {
 }
 setInterval(updateRemainingTime, 500);
 setInterval(maybeAutoRevertSoloPitch, 500);
-
-/* Eigener Fortschrittsbalken statt YouTube-eigenem Seek-Balken -- der
-   sitzt im runden Vinyl-Ausschnitt und ist durch die Kreismaske kaum noch
-   treffbar (siehe .dj-vinyl-video). Ziehen/Klicken hier ruft stattdessen
-   direkt player.seekTo() auf. */
-function wireSeekbar(key) {
-  var seekEl = document.getElementById('deck-' + key + '-seek');
-  if (!seekEl) return;
-  function beginSeek() { DECKS[key].seeking = true; }
-  function commitSeek() {
-    var deck = DECKS[key];
-    deck.seeking = false;
-    if (!deck.player || !deck.player.getDuration || !deck.player.seekTo) return;
-    try {
-      var dur = deck.player.getDuration();
-      if (dur > 0) deck.player.seekTo(dur * (parseFloat(seekEl.value) / 1000), true);
-    } catch (e) {}
-  }
-  seekEl.addEventListener('pointerdown', beginSeek);
-  seekEl.addEventListener('keydown', beginSeek);
-  seekEl.addEventListener('change', commitSeek);
-  seekEl.addEventListener('pointerup', commitSeek);
-}
-wireSeekbar('A');
-wireSeekbar('B');
 
 /* Autoplay ist standardmaessig AUS: ein geladener Song startet nicht von
    selbst, damit sich vorher (bei Bedarf) der Pitch einstellen laesst.
@@ -1792,11 +1933,8 @@ function playDeckSong(key, song, autoplay) {
   updateDeckInfoUI(key);
   var bar = ensureDjPlayer();
 
-  /* Neuer Song -- Fortschrittsbalken zuruecksetzen; bleibt deaktiviert,
-     bis unten (nur bei vorhandenem YouTube-Video) wieder freigegeben. */
+  /* Neuer Song -- laufender Ziehvorgang auf der alten Wellenform beenden. */
   deck.seeking = false;
-  var seekResetEl = document.getElementById('deck-' + key + '-seek');
-  if (seekResetEl) { seekResetEl.value = 0; seekResetEl.disabled = true; }
 
   /* Kein YouTube-Video fuer diesen Song gefunden — statt den Ladevorgang
      abzulehnen (frueher: alert()), wird der Song trotzdem als "geladen"
@@ -1810,9 +1948,6 @@ function playDeckSong(key, song, autoplay) {
     updateDeckInfoUI(key);
     return;
   }
-
-  var seekEnableEl = document.getElementById('deck-' + key + '-seek');
-  if (seekEnableEl) seekEnableEl.disabled = false;
 
   function start() {
     if (deck.player && deck.player.loadVideoById) {
