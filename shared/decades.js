@@ -448,8 +448,8 @@ var masterVolume = 80; /* Gesamtlautstärke, 0-100, skaliert beide Decks zusaetz
 var autoFadeEnabled = true; /* Autofade-Button: automatisches Überblenden an/aus, siehe maybeStartAutoCrossfade */
 var PITCH_STEPS = [-50, -25, 0, 25, 50]; /* die 5 festen Stufen der YouTube-API, siehe setDeckPitch */
 var pitchGlideTimers = {}; /* laufende glideDeckPitch-Animationen pro Deck, siehe dort */
-var bpmSyncGliding = false; /* true waehrend syncIdleDeckToPlaying per glideDeckPitch unterwegs ist */
-var bpmSyncGlideKey = null; /* welches Deck dabei gerade angeglichen wird ('A'/'B') */
+var bpmSyncActive = false; /* true waehrend der Sync-Button-Ablauf (meetInMiddleThenSettle) laeuft */
+var bpmSyncKeys = []; /* die 1-2 Decks, die dabei gerade bewegt werden -- fuer Abbruch bei manuellem Eingriff */
 
 /* Verlauf bereits gespielter Songs (global, seitenweit — es gibt nur einen
    Player pro Seite). Ein Song wird beim Start des tatsaechlichen Abspielens
@@ -632,7 +632,7 @@ function ensureDjPlayer() {
         return PITCH_STEPS.reduce(function (a, b) { return Math.abs(b - raw) < Math.abs(a - raw) ? b : a; });
       };
       pitchKnob.addEventListener('pointerdown', function (e) {
-        cancelPitchGlide(key);
+        userInterruptPitchGlide(key);
         knobDragging = true;
         try { pitchKnob.setPointerCapture(e.pointerId); } catch (err) {}
         setDeckPitch(key, 1 + pitchFromPointer(e) / 100);
@@ -649,7 +649,7 @@ function ensureDjPlayer() {
         else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { cur = Math.max(-50, cur - 25); }
         else { return; }
         e.preventDefault();
-        cancelPitchGlide(key);
+        userInterruptPitchGlide(key);
         setDeckPitch(key, 1 + cur / 100);
       });
     }
@@ -780,7 +780,7 @@ function updateBpmSync() {
   if (aEl) aEl.textContent = rawA ? rawA + ' BPM' : '–';
   if (bEl) bEl.textContent = rawB ? rawB + ' BPM' : '–';
 
-  if (bpmSyncGliding) return; /* Button/Text bleiben waehrend der Animation wie gesetzt */
+  if (bpmSyncActive) return; /* Button/Text bleiben waehrend der Animation wie gesetzt */
 
   if (!rawA || !rawB) {
     if (matchEl) { matchEl.textContent = 'Songs mit BPM laden'; matchEl.className = 'dj-bpm-match'; }
@@ -803,8 +803,8 @@ function updateBpmSync() {
       syncBtn.title = 'Nur möglich, wenn genau ein Deck spielt.';
     } else {
       syncBtn.disabled = ok;
-      syncBtn.innerHTML = REFRESH_SVG + ' Deck ' + roles.idle + ' angleichen';
-      syncBtn.title = 'Pitch von Deck ' + roles.idle + ' so setzen, dass die BPM zu Deck ' + roles.playing + ' passen';
+      syncBtn.innerHTML = REFRESH_SVG + ' Angleichen';
+      syncBtn.title = 'Beide Decks treffen sich auf halber BPM, danach loest sich Deck ' + roles.idle + ' langsam wieder auf sein eigenes Tempo';
     }
   }
 }
@@ -812,13 +812,32 @@ function updateBpmSync() {
 /* Sync faehrt den Pitch nicht in einem Sprung auf die Zielstufe, sondern
    Stufe fuer Stufe mit kurzer Pause dazwischen (die YouTube-API kennt
    keine Zwischenwerte, ein sofortiger Sprung waere als Tempo-/Tonhoehen-
-   Ruck deutlich hoerbar). cancelPitchGlide() bricht das ab, sobald der
-   Nutzer waehrend der Animation selbst am Knopf dreht. */
+   Ruck deutlich hoerbar). Rein internes Aufraeumen (auch von
+   glideDeckPitch selbst genutzt, um einen alten Timer vor einem neuen
+   Zielwert zu kappen) -- fuer den Abbruch durch eine echte Nutzeraktion
+   siehe userInterruptPitchGlide() weiter unten. */
 function cancelPitchGlide(key) {
   if (pitchGlideTimers[key]) {
     clearTimeout(pitchGlideTimers[key]);
     pitchGlideTimers[key] = null;
-    if (key === bpmSyncGlideKey) { bpmSyncGliding = false; bpmSyncGlideKey = null; }
+  }
+}
+
+/* Nutzer greift waehrend eines laufenden Sync-Ablaufs (meetInMiddleThenSettle,
+   siehe unten) manuell an einen der beteiligten Pitch-Knoepfe -- bricht den
+   GESAMTEN Ablauf ab, nicht nur diese eine Seite, sonst liefe die andere
+   Seite alleine auf einen jetzt sinnlosen Zielwert weiter. Nur von echten
+   Knopf-Interaktionen (Pointerdown/Keydown) aufrufen, nie von
+   glideDeckPitch selbst -- sonst wuerde ein Sync-Ablauf seinen eigenen
+   ersten Schritt als Unterbrechung missverstehen und sich sofort selbst
+   abbrechen. */
+function userInterruptPitchGlide(key) {
+  cancelPitchGlide(key);
+  if (bpmSyncActive && bpmSyncKeys.indexOf(key) !== -1) {
+    bpmSyncKeys.forEach(cancelPitchGlide);
+    bpmSyncActive = false;
+    bpmSyncKeys = [];
+    updateBpmSync();
   }
 }
 
@@ -839,27 +858,65 @@ function glideDeckPitch(key, targetPct, stepDelayMs, onDone) {
   step();
 }
 
+/* "In der Mitte treffen": statt nur ein Deck komplett auf das andere zu
+   zwingen, faehrt bei einem echten BPM-Unterschied (siehe bpmsCompatible)
+   der Pitch auf BEIDEN beteiligten Decks Richtung Mittelwert der beiden
+   Original-BPM -- jede Seite muss sich dadurch nur noch halb so weit
+   bewegen, der Uebergang wirkt spuerbar sanfter/fluessiger. Sobald beide
+   Seiten ihre Zielstufe erreicht haben, loest sich NUR das eingehende
+   Deck (toKey) langsam wieder auf sein eigenes Original-Tempo (0%) --
+   das auslaufende (fromKey) bleibt auf der Mitte stehen, es spielt
+   ohnehin gleich nicht mehr. Passen die BPM schon zusammen, passiert
+   nichts (onSettled wird trotzdem sofort aufgerufen). Wird von beiden
+   Uebergaengen (Auto-Crossfade, manueller Fade) UND vom Sync-Button im
+   BPM-Panel genutzt. */
+function meetInMiddleThenSettle(fromKey, toKey, opts) {
+  opts = opts || {};
+  var stepDelayMs = opts.stepDelayMs || 600;
+  var bpmFrom = DECKS[fromKey].song && DECKS[fromKey].song.bpm;
+  var bpmTo = DECKS[toKey].song && DECKS[toKey].song.bpm;
+  if (!bpmFrom || !bpmTo || bpmsCompatible(bpmFrom, bpmTo)) {
+    if (opts.onSettled) opts.onSettled();
+    return;
+  }
+  var mid = (bpmFrom + bpmTo) / 2;
+  function bestStepFor(bpm) {
+    var best = PITCH_STEPS[0];
+    var bestDiff = Infinity;
+    PITCH_STEPS.forEach(function (pct) {
+      var diff = Math.abs(bpm * (1 + pct / 100) - mid);
+      if (diff < bestDiff) { bestDiff = diff; best = pct; }
+    });
+    return best;
+  }
+  var pending = 2;
+  function afterPhase1() {
+    pending -= 1;
+    if (pending > 0) return;
+    glideDeckPitch(toKey, 0, stepDelayMs, opts.onSettled);
+  }
+  glideDeckPitch(fromKey, bestStepFor(bpmFrom), stepDelayMs, afterPhase1);
+  glideDeckPitch(toKey, bestStepFor(bpmTo), stepDelayMs, afterPhase1);
+}
+
 function syncIdleDeckToPlaying() {
-  if (bpmSyncGliding) return;
+  if (bpmSyncActive) return;
   var roles = currentSyncRoles();
   if (!roles) return;
-  var playingBpm = effectiveBpm(roles.playing);
-  var idleRaw = DECKS[roles.idle].song && DECKS[roles.idle].song.bpm;
-  if (!playingBpm || !idleRaw) return;
-  var best = PITCH_STEPS[0];
-  var bestDiff = Infinity;
-  PITCH_STEPS.forEach(function (pct) {
-    var diff = Math.abs(idleRaw * (1 + pct / 100) - playingBpm);
-    if (diff < bestDiff) { bestDiff = diff; best = pct; }
-  });
+  var bpmPlaying = DECKS[roles.playing].song && DECKS[roles.playing].song.bpm;
+  var bpmIdle = DECKS[roles.idle].song && DECKS[roles.idle].song.bpm;
+  if (!bpmPlaying || !bpmIdle) return;
   var syncBtn = document.getElementById('dj-bpm-sync-btn');
-  bpmSyncGliding = true;
-  bpmSyncGlideKey = roles.idle;
+  bpmSyncActive = true;
+  bpmSyncKeys = [roles.playing, roles.idle];
   if (syncBtn) { syncBtn.disabled = true; syncBtn.innerHTML = REFRESH_SVG + ' gleicht an …'; }
-  glideDeckPitch(roles.idle, best, 600, function () {
-    bpmSyncGliding = false;
-    bpmSyncGlideKey = null;
-    updateBpmSync();
+  meetInMiddleThenSettle(roles.playing, roles.idle, {
+    stepDelayMs: 600,
+    onSettled: function () {
+      bpmSyncActive = false;
+      bpmSyncKeys = [];
+      updateBpmSync();
+    }
   });
 }
 
@@ -1079,6 +1136,7 @@ function startAutoCrossfade(fromKey, toKey, nextIdx, nextSong, durationSeconds) 
   try { to.player.setPlaybackRate(to.rate || 1); } catch (e) {}
   try { to.player.playVideo(); } catch (e) {}
   updateDeckInfoUI(toKey);
+  meetInMiddleThenSettle(fromKey, toKey);
 
   var startFader = crossfaderValue;
   var targetFader = (toKey === 'A') ? 0 : 100;
@@ -1115,6 +1173,7 @@ function startManualFadeSweep(fromKey, toKey) {
      ohne diesen Start würde die Lautstärke zwar hochgefahren, aber das
      Video bliebe pausiert (stumm). */
   try { to.player.playVideo(); } catch (e) {}
+  meetInMiddleThenSettle(fromKey, toKey);
   var startFader = crossfaderValue;
   var targetFader = (toKey === 'A') ? 0 : 100;
   var startTime = Date.now();
@@ -1196,6 +1255,9 @@ function cancelActiveAutoFade(key) {
   if (!activeAutoFade) return;
   if (activeAutoFade.fromKey !== key && activeAutoFade.toKey !== key) return;
   clearInterval(activeAutoFade.intervalId);
+  [activeAutoFade.fromKey, activeAutoFade.toKey].forEach(function (k) {
+    if (pitchGlideTimers[k]) { clearTimeout(pitchGlideTimers[k]); pitchGlideTimers[k] = null; }
+  });
   activeAutoFade = null;
 }
 
