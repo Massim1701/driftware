@@ -2415,10 +2415,23 @@ function ensureDragGhost(song) {
 /* Song-Liste: eine Zeile pro Song, Titel zuerst und fett, Interpret
    darunter/daneben klein. Icons (Info/Play/Haken) sind eine normale
    Reihe am rechten Rand statt Overlays auf einem großen Cover. */
+/* Obergrenze fuer gleichzeitig gerenderte Song-Kacheln. Jede Kachel bekommt
+   mehrere addEventListener() (Info, Play, Klick, Drag) -- ein sehr breites
+   Suchergebnis (z.B. ein kurzer/haeufiger Suchbegriff ueber ALLE Dekaden
+   hinweg, das kann leicht mehrere tausend Treffer geben) hat den Tab sonst
+   beim synchronen Aufbau tausender DOM-Knoten in einem Rutsch spuerbar
+   ausgebremst bis hin zum Haengenbleiben. Playlist-Laden/Export (currentSongs())
+   ist davon NICHT betroffen -- nur die sichtbare Kachel-Darstellung wird
+   gekappt, die volle Liste bleibt fuer Deck/CSV etc. erhalten (lastGridSongs
+   haelt trotzdem die volle, ungekuerzte Liste, siehe playSongInContext). */
+var MAX_RENDERED_TILES = 500;
+
 function renderSongGrid(container, songs) {
   lastGridSongs = songs;
   container.innerHTML = '';
-  songs.forEach(function (song) {
+  var truncated = songs.length > MAX_RENDERED_TILES;
+  var visible = truncated ? songs.slice(0, MAX_RENDERED_TILES) : songs;
+  visible.forEach(function (song) {
     var tile = document.createElement('button');
     tile.className = 'song-tile' + (isSongSelected(song) ? ' selected' : '');
     tile.type = 'button';
@@ -2555,6 +2568,12 @@ function renderSongGrid(container, songs) {
 
     container.appendChild(tile);
   });
+  if (truncated) {
+    var notice = document.createElement('div');
+    notice.className = 'song-grid-truncated-notice';
+    notice.textContent = 'Zeige die ersten ' + MAX_RENDERED_TILES + ' von ' + songs.length + ' Treffern — bitte genauer suchen oder filtern, um den Rest zu sehen.';
+    container.appendChild(notice);
+  }
   refreshMixableHighlight();
 }
 
