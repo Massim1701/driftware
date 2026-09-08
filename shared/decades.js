@@ -550,12 +550,30 @@ function restoreDjState() {
     var saved = state.decks && state.decks[key];
     if (!saved || !saved.song) return;
     var deck = DECKS[key];
-    deck.queue = (saved.queue && saved.queue.length) ? saved.queue : [saved.song];
+    var queue = (saved.queue && saved.queue.length) ? saved.queue : [saved.song];
     var idx = -1;
-    for (var i = 0; i < deck.queue.length; i++) {
-      if (deck.queue[i].t === saved.song.t && deck.queue[i].a === saved.song.a) { idx = i; break; }
+    for (var i = 0; i < queue.length; i++) {
+      if (queue[i].t === saved.song.t && queue[i].a === saved.song.a) { idx = i; break; }
     }
-    deck.index = idx !== -1 ? idx : 0;
+    idx = idx !== -1 ? idx : 0;
+
+    /* continuity.js laeuft VOR diesem Aufruf und setzt bei einem frischen
+       Seitenwechsel (< 20s) bereits deck.song -- inkl. tatsaechlich
+       laufender Wiedergabe an der richtigen Position. Das hier NICHT
+       ueberschreiben/neu laden (sonst wird aus "spielt an Position X" wieder
+       "pausiert von vorne"), sondern nur die volle Warteschlange nachliefern
+       (continuity.js kennt nur den einzelnen Song, nicht den Listenkontext),
+       falls es wirklich derselbe Song ist. */
+    if (deck.song) {
+      if (deck.song.t === saved.song.t && deck.song.a === saved.song.a) {
+        deck.queue = queue;
+        deck.index = idx;
+      }
+      return;
+    }
+
+    deck.queue = queue;
+    deck.index = idx;
     deck.rate = saved.rate || 1;
     playDeckSong(key, deck.queue[deck.index], false);
     setDeckPitch(key, deck.rate);
