@@ -32,6 +32,7 @@ var DOWNLOAD_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 var CLOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>';
 var CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>';
 var SHUFFLE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h3.5c2 0 3 .8 4 2.3M3 18h3.5c2 0 3-.8 4-2.3M14 6h4M14 18h4"/><path d="M17 3.5 20.5 6 17 8.5M17 15.5l3.5 2.5-3.5 2.5"/></svg>';
+var LINK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15 15 9"/><path d="M8 17H6a4 4 0 0 1 0-8h2"/><path d="M16 7h2a4 4 0 0 1 0 8h-2"/></svg>';
 
 /* Driftware-Logo: Vinyl-Ring + Label-Punkt + "Drift"-Schwung, feste
    Marken-Farben (nicht die pro-Dekade --accent-Variable, bewusst flache
@@ -509,6 +510,61 @@ var DECADE_REGISTRY = [
   { key: '2020er', label: '2020er Music', page: '/2020er-music/index.html', dataUrl: '/2020er-music/songs.json' }
 ];
 var otherDecadeDataCache = {};
+
+/* Fuer "Dekade verbinden" (siehe renderPlaylistGenerator) wird -- anders als
+   bei der Suche oben, die nur eine flache Liste braucht -- das RAW-JSON pro
+   Kategorie gebraucht (fuer buildMixSongsFrom und den Genre-Abgleich).
+   Eigener Cache, unabhaengig von otherDecadeDataCache, gleicher Aufbau wie
+   das `data` der eigenen Seite (loadData() in renderPlaylistGenerator). */
+var rawDecadeDataCache = {};
+function fetchRawDecadeData(key) {
+  if (Object.prototype.hasOwnProperty.call(rawDecadeDataCache, key)) {
+    return Promise.resolve(rawDecadeDataCache[key]);
+  }
+  var entry = DECADE_REGISTRY.filter(function (d) { return d.key === key; })[0];
+  if (!entry) return Promise.resolve(null);
+  return fetch(entry.dataUrl)
+    .then(function (r) { if (!r.ok) throw new Error('no data'); return r.json(); })
+    .then(function (json) { rawDecadeDataCache[key] = json; return json; })
+    .catch(function () { rawDecadeDataCache[key] = null; return null; });
+}
+
+/* Nachbar-Dekaden fuer "Dekade verbinden": nur die beiden direkt angrenzenden
+   Eintraege in DECADE_REGISTRY (Reihenfolge = chronologische Kette 70er..2020er),
+   NIE beliebige Kombinationen -- genau das haelt den Mix stilistisch nah
+   beieinander (70+80, 80+90, 90+2000, 2000+2010, 2010+2020). */
+function neighborDecadesOf(ownKey) {
+  var idx = -1;
+  for (var i = 0; i < DECADE_REGISTRY.length; i++) {
+    if (DECADE_REGISTRY[i].key === ownKey) { idx = i; break; }
+  }
+  if (idx === -1) return [];
+  var out = [];
+  if (idx > 0) out.push(DECADE_REGISTRY[idx - 1]);
+  if (idx < DECADE_REGISTRY.length - 1) out.push(DECADE_REGISTRY[idx + 1]);
+  return out;
+}
+
+/* Aus JEDER Kategorie eines beliebigen Song-Datensatzes (eigene Dekade ODER
+   verlinkte Nachbar-Dekade) die MIX_PER_CATEGORY beliebtesten Songs -- Basis
+   sowohl fuer den normalen "Mix"-Button (siehe buildMixSongs in
+   renderPlaylistGenerator) als auch fuer den Nachbar-Anteil beim Verbinden. */
+function buildMixSongsFrom(dataObj) {
+  if (!dataObj) return [];
+  var out = [];
+  var seen = {};
+  Object.keys(dataObj).forEach(function (cat) {
+    var songs = (dataObj[cat] || []).slice();
+    songs.sort(function (a, b) { return (b.hv || 0) - (a.hv || 0); });
+    songs.slice(0, MIX_PER_CATEGORY).forEach(function (s) {
+      var id = songId(s);
+      if (seen[id]) return;
+      seen[id] = true;
+      out.push(s);
+    });
+  });
+  return out;
+}
 
 function normalizeText(s) { return (s || '').toString().toLowerCase(); }
 
@@ -2488,28 +2544,69 @@ function renderPlaylistGenerator(mountRoot, config) {
   var searchToken = 0;
   var ownDecadeKey = config.csvPrefix || null;
   var ownDecadeLabel = (DECADE_REGISTRY.filter(function (d) { return d.key === ownDecadeKey; })[0] || {}).label || 'dieser Dekade';
+  var neighborDecades = neighborDecadesOf(ownDecadeKey);
+
+  /* "Dekade verbinden": blendet die Playlist mit einer direkt angrenzenden
+     Dekade (siehe neighborDecadesOf) -- fuer den aktuell gewaehlten Mix/Genre
+     werden die Songs beider Dekaden zusammengefuehrt und einmal gemeinsam
+     gemischt (linkedComboCache), damit Grid/CSV/Deck-Laden konsistent
+     bleiben, bis Dekade oder Auswahl gewechselt wird (siehe computeLinkedCombo). */
+  var linkedDecadeKey = null;
+  var linkedRawData = null;
+  var linkedComboCache = null;
+
+  function computeLinkedCombo() {
+    if (!linkedDecadeKey || !linkedRawData || !currentTheme) { linkedComboCache = null; return; }
+    var ownList = currentTheme === MIX_KEY ? buildMixSongs() : (data[currentTheme] || []);
+    var otherList = currentTheme === MIX_KEY ? buildMixSongsFrom(linkedRawData) : (linkedRawData[currentTheme] || []);
+    if (!otherList.length) { linkedComboCache = { theme: currentTheme, songs: ownList }; return; }
+    /* Herkunft markieren -- renderSongGrid zeigt dafuer automatisch ein
+       Dekaden-Badge (dieselbe Markierung wie bei dekadenuebergreifenden
+       Suchtreffern, siehe searchAllDecades). */
+    otherList.forEach(function (s) { s._decade = linkedDecadeKey; });
+    var seen = {};
+    var combined = [];
+    ownList.forEach(function (s) { var id = songId(s); if (seen[id]) return; seen[id] = true; combined.push(s); });
+    otherList.forEach(function (s) { var id = songId(s); if (seen[id]) return; seen[id] = true; combined.push(s); });
+    linkedComboCache = { theme: currentTheme, songs: shuffled(combined) };
+  }
+
+  function updateLinkChipsUI() {
+    mountRoot.querySelectorAll('.decade-link-chip').forEach(function (c) {
+      var active = c.dataset.key === linkedDecadeKey;
+      c.classList.toggle('active', active);
+      c.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+
+  function toggleLinkedDecade(key) {
+    manualShuffleTheme = null;
+    manualShuffleSongs = null;
+    if (linkedDecadeKey === key) {
+      linkedDecadeKey = null;
+      linkedRawData = null;
+      linkedComboCache = null;
+      updateLinkChipsUI();
+      refresh();
+      return;
+    }
+    linkedDecadeKey = key;
+    linkedRawData = null;
+    linkedComboCache = null;
+    updateLinkChipsUI();
+    refresh(); // zeigt sofort die eigene Dekade, waehrend die Nachbar-Daten laden
+    fetchRawDecadeData(key).then(function (json) {
+      if (linkedDecadeKey !== key) return; // in der Zwischenzeit abgewaehlt/gewechselt
+      linkedRawData = json;
+      computeLinkedCombo();
+      refresh();
+    });
+  }
 
   /* Mix-Button: aus JEDER Kategorie die 5 beliebtesten Songs (Discogs-'have'-
      Zahl als Popularitäts-Proxy, dieselbe Kennzahl wie im README erklärt). */
   function buildMixSongs() {
-    if (!data) return [];
-    var out = [];
-    var seen = {};
-    Object.keys(data).forEach(function (cat) {
-      var songs = (data[cat] || []).slice();
-      songs.sort(function (a, b) { return (b.hv || 0) - (a.hv || 0); });
-      songs.slice(0, MIX_PER_CATEGORY).forEach(function (s) {
-        /* Songs, die in mehreren Genres einsortiert sind (z.B. Charity-
-           Hits wie "We Are The World" unter SynthPop/PopCharts/Ballads/
-           FunkSoul), sollen im Mix trotzdem nur EINMAL vorkommen -- sonst
-           spielt derselbe Song mehrfach hintereinander/kurz nacheinander. */
-        var id = songId(s);
-        if (seen[id]) return;
-        seen[id] = true;
-        out.push(s);
-      });
-    });
-    return out;
+    return buildMixSongsFrom(data);
   }
 
   /* Reihenfolge des Mixes wird bei jeder Auswahl neu gemischt (siehe
@@ -2529,6 +2626,9 @@ function renderPlaylistGenerator(mountRoot, config) {
   function currentSongs() {
     if (!data) return [];
     if (manualShuffleTheme === currentTheme && manualShuffleSongs) return manualShuffleSongs;
+    if (linkedDecadeKey && linkedComboCache && linkedComboCache.theme === currentTheme) {
+      return linkedComboCache.songs;
+    }
     if (currentTheme === MIX_KEY) {
       if (!mixSongsCache) mixSongsCache = shuffled(buildMixSongs());
       return mixSongsCache;
@@ -2576,7 +2676,13 @@ function renderPlaylistGenerator(mountRoot, config) {
     if (currentTheme && currentTheme !== MIX_KEY) {
       songs.forEach(function (s) { s._bucket = currentTheme; });
     }
-    document.getElementById('gen-count').textContent = songs.length + ' Songs';
+    var countLabel = songs.length + ' Songs';
+    if (linkedDecadeKey) {
+      var linkedEntry = DECADE_REGISTRY.filter(function (d) { return d.key === linkedDecadeKey; })[0];
+      var linkedLabel = linkedEntry ? linkedEntry.label.replace(' Music', '') : linkedDecadeKey;
+      countLabel += linkedRawData ? (' · verbunden mit ' + linkedLabel) : (' · lade ' + linkedLabel + ' …');
+    }
+    document.getElementById('gen-count').textContent = countLabel;
     renderSongGrid(document.getElementById('gen-grid'), songs);
   }
 
@@ -2592,12 +2698,16 @@ function renderPlaylistGenerator(mountRoot, config) {
     if (key === MIX_KEY) mixSongsCache = null;
     manualShuffleTheme = null;
     manualShuffleSongs = null;
+    linkedComboCache = null;
     clearSearchUI();
     mountRoot.querySelectorAll('.theme-btn').forEach(function (b) {
       b.classList.toggle('active', b.dataset.key === key);
     });
     document.getElementById('gen-actions').classList.add('visible');
-    loadData().then(refresh);
+    loadData().then(function () {
+      if (linkedDecadeKey && linkedRawData) computeLinkedCombo();
+      refresh();
+    });
     /* Zuletzt gewaehltes Genre pro Dekade/Seite merken (siehe weiter unten,
        initialer Aufruf) -- beim naechsten Besuch (auch per Dekaden-Wechsel-
        Zeile) landet man wieder dort, statt immer beim ersten Genre. */
@@ -2684,6 +2794,14 @@ function renderPlaylistGenerator(mountRoot, config) {
     '  <p class="search-hint" id="gen-search-hint" hidden></p>' +
     '</div>' +
     switchRowHTML() +
+    (neighborDecades.length ? (
+      '<div class="decade-link-row">' +
+      '  <span class="decade-link-label">' + LINK_SVG + ' Dekade verbinden:</span>' +
+      neighborDecades.map(function (n) {
+        return '<button class="decade-link-chip" type="button" data-key="' + n.key + '" aria-pressed="false">' + escapeHtml(n.label.replace(' Music', '')) + '</button>';
+      }).join('') +
+      '</div>'
+    ) : '') +
     '<div class="theme-buttons" id="gen-buttons"></div>' +
     '<div class="send-panel">' +
     '  <span class="send-panel-label">Dein Dienst:</span>' +
@@ -2710,6 +2828,15 @@ function renderPlaylistGenerator(mountRoot, config) {
     '<a href="https://www.tunemymusic.com" target="_blank" rel="noopener">TuneMyMusic</a> hochladen.</p>';
 
   wireSwitchRow(section);
+
+  var linkRow = section.querySelector('.decade-link-row');
+  if (linkRow) {
+    linkRow.addEventListener('click', function (e) {
+      var chip = e.target.closest('.decade-link-chip');
+      if (!chip) return;
+      toggleLinkedDecade(chip.dataset.key);
+    });
+  }
 
   var buttons = section.querySelector('#gen-buttons');
   if (config.themes && config.themes.length) {
