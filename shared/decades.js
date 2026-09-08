@@ -43,29 +43,27 @@ var DRIFTWARE_LOGO_SVG = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000
   '<path d="M3.5 15.5c3.5-5 13.5-5 17 0" fill="none" stroke="#ff2fb3" stroke-width="1.4" stroke-linecap="round"/>' +
   '</svg>';
 
-var SWITCH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 21l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>';
-
 /* Alle Dekaden-/Ambient-Seiten (index.html), die denselben Seitenaufbau
    teilen (#decade-root + renderDecadeIndex/renderPlaylistGenerator) --
    Grundlage sowohl fuer den Wechsel-Umschalter unten als auch fuer die
    AJAX-Navigation (siehe navigateToPage), damit ein Wechsel den laufenden
    Player nicht unterbricht. */
 var SITE_PAGES = [
-  { slug: '70er', folder: '70er-music', label: '70er Music', group: 'Dekaden' },
-  { slug: '80er', folder: '80er-music', label: '80er Music', group: 'Dekaden' },
-  { slug: '90er', folder: '90er-music', label: '90er Music', group: 'Dekaden' },
-  { slug: '2000er', folder: '2000er-music', label: '2000er Music', group: 'Dekaden' },
-  { slug: '2010er', folder: '2010er-music', label: '2010er Music', group: 'Dekaden' },
-  { slug: '2020er', folder: '2020er-music', label: '2020er Music', group: 'Dekaden' },
-  { slug: 'afterwork', folder: 'afterwork-music', label: 'Afterwork', group: 'Stimmungen' },
-  { slug: 'chillhouse', folder: 'chillhouse-music', label: 'Chill House', group: 'Stimmungen' },
-  { slug: 'christmas', folder: 'christmas-music', label: 'Christmas', group: 'Stimmungen' },
-  { slug: 'dinnerparty', folder: 'dinnerparty-music', label: 'Dinner Party', group: 'Stimmungen' },
-  { slug: 'focuswork', folder: 'focuswork-music', label: 'Focus & Work', group: 'Stimmungen' },
-  { slug: 'latenight', folder: 'latenight-music', label: 'Late Night', group: 'Stimmungen' },
-  { slug: 'morning', folder: 'morning-music', label: 'Morning', group: 'Stimmungen' },
-  { slug: 'roadtrip', folder: 'roadtrip-music', label: 'Road Trip', group: 'Stimmungen' },
-  { slug: 'workout', folder: 'workout-music', label: 'Workout & Running', group: 'Stimmungen' }
+  { slug: '70er', folder: '70er-music', label: '70er', group: 'Dekaden', color: '#c9762f' },
+  { slug: '80er', folder: '80er-music', label: '80er', group: 'Dekaden', color: '#ff2fb3' },
+  { slug: '90er', folder: '90er-music', label: '90er', group: 'Dekaden', color: '#29e2ff' },
+  { slug: '2000er', folder: '2000er-music', label: '2000er', group: 'Dekaden', color: '#4a90d9' },
+  { slug: '2010er', folder: '2010er-music', label: '2010er', group: 'Dekaden', color: '#8b5cf6' },
+  { slug: '2020er', folder: '2020er-music', label: '2020er', group: 'Dekaden', color: '#8bc34a' },
+  { slug: 'afterwork', folder: 'afterwork-music', label: 'Afterwork', group: 'Stimmungen', color: '#d98c1f' },
+  { slug: 'chillhouse', folder: 'chillhouse-music', label: 'Chill House', group: 'Stimmungen', color: '#1c8f6f' },
+  { slug: 'christmas', folder: 'christmas-music', label: 'Christmas', group: 'Stimmungen', color: '#e0453f' },
+  { slug: 'dinnerparty', folder: 'dinnerparty-music', label: 'Dinner Party', group: 'Stimmungen', color: '#d9527c' },
+  { slug: 'focuswork', folder: 'focuswork-music', label: 'Focus & Work', group: 'Stimmungen', color: '#4ecdc4' },
+  { slug: 'latenight', folder: 'latenight-music', label: 'Late Night', group: 'Stimmungen', color: '#6a5acd' },
+  { slug: 'morning', folder: 'morning-music', label: 'Morning', group: 'Stimmungen', color: '#f2b705' },
+  { slug: 'roadtrip', folder: 'roadtrip-music', label: 'Road Trip', group: 'Stimmungen', color: '#e8712f' },
+  { slug: 'workout', folder: 'workout-music', label: 'Workout & Running', group: 'Stimmungen', color: '#e2472d' }
 ];
 
 function currentPageFolder() {
@@ -73,31 +71,12 @@ function currentPageFolder() {
   return m ? m[1] : null;
 }
 
-function switchPanelHTML() {
-  var current = currentPageFolder();
-  var groups = ['Dekaden', 'Stimmungen'];
-  return '' +
-    '<div class="dw-switch-panel" id="dw-switch-panel" hidden>' +
-    groups.map(function (g) {
-      var items = SITE_PAGES.filter(function (p) { return p.group === g; });
-      return '' +
-        '<div class="dw-switch-group">' +
-        '  <h4>' + g + '</h4>' +
-        items.map(function (p) {
-          var active = p.folder === current;
-          return '<a class="dw-switch-item' + (active ? ' active' : '') + '" href="/' + p.folder + '/index.html" data-nav-folder="' + p.folder + '"' + (active ? ' aria-current="page"' : '') + '>' + escapeHtml(p.label) + '</a>';
-        }).join('') +
-        '</div>';
-    }).join('') +
-    '</div>';
-}
-
-/* Kompakte Variante des Wechsel-Menues als EINE durchgehende, horizontal
-   scrollbare Zeile (keine Dekaden/Stimmungen-Gruppierung, nicht umbrechend)
-   -- fest eingebaut im Playlist-Generator zwischen Suchfeld und
-   Genre-Buttons, als schneller Zugriff ohne das "Wechseln"-Dropdown extra
-   zu oeffnen. Nutzt dieselbe AJAX-Navigation wie das Dropdown (siehe
-   navigateToPage), der Player laeuft beim Klick ungestoert weiter. */
+/* Schnellzugriff auf andere Dekaden/Stimmungen als zwei durchgehende,
+   horizontal scrollbare Zeilen (Dekaden, Stimmungen darunter) -- fest
+   eingebaut im Playlist-Generator zwischen Suchfeld und Genre-Buttons.
+   Ersetzt das fruehere separate "Wechseln"-Dropdown im Utility-Block
+   (entfernt, da redundant). Wechselt per AJAX (siehe navigateToPage),
+   der Player laeuft beim Klick ungestoert weiter. */
 function switchRowHTML() {
   var current = currentPageFolder();
   function rowFor(group) {
@@ -106,7 +85,7 @@ function switchRowHTML() {
       '<div class="gen-switch-row" role="tablist" aria-label="' + escapeHtml(group) + '">' +
       items.map(function (p) {
         var active = p.folder === current;
-        return '<a class="gen-switch-item' + (active ? ' active' : '') + '" href="/' + p.folder + '/index.html" data-nav-folder="' + p.folder + '"' + (active ? ' aria-current="page"' : '') + '>' + escapeHtml(p.label) + '</a>';
+        return '<a class="gen-switch-item' + (active ? ' active' : '') + '" style="--item-color:' + p.color + '" href="/' + p.folder + '/index.html" data-nav-folder="' + p.folder + '"' + (active ? ' aria-current="page"' : '') + '>' + escapeHtml(p.label) + '</a>';
       }).join('') +
       '</div>';
   }
@@ -140,10 +119,6 @@ function utilityBlockHTML(mailHref) {
     '    <div class="utility-icon" style="background:#1c8f6f">' + GRID_SVG + '</div>' +
     '    <span class="utility-label">Dekaden</span>' +
     '  </a>' +
-    '  <button type="button" class="utility-tile" id="dw-switch-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Andere Dekade oder Stimmung waehlen, ohne den Player zu unterbrechen">' +
-    '    <div class="utility-icon" style="background:#ffd166">' + SWITCH_SVG + '</div>' +
-    '    <span class="utility-label">Wechseln</span>' +
-    '  </button>' +
     '  <a class="utility-tile" href="' + mailHref + '">' +
     '    <div class="utility-icon" style="background:#4a90d9">' + MAIL_SVG + '</div>' +
     '    <span class="utility-label">Mail</span>' +
@@ -152,52 +127,11 @@ function utilityBlockHTML(mailHref) {
     '    <div class="utility-icon" style="background:#6a5acd">' + LOCK_SVG + '</div>' +
     '    <span class="utility-label">Datenschutz</span>' +
     '  </a>' +
-    '</div>' +
-    switchPanelHTML();
-}
-
-/* Oeffnet/schliesst das Wechsel-Menue und faengt Klicks auf einen Eintrag
-   ab -- per AJAX (siehe navigateToPage), damit ein laufender Song beim
-   Wechsel der Dekade/Stimmung nicht unterbrochen wird. Ctrl/Cmd/Shift/
-   Mittelklick (neuer Tab etc.) wird bewusst NICHT abgefangen, der Browser
-   macht dann ganz normal einen echten Seitenwechsel. */
-function wireUtilityBlock() {
-  var toggle = document.getElementById('dw-switch-toggle');
-  var panel = document.getElementById('dw-switch-panel');
-  if (!toggle || !panel) return;
-
-  function closePanel() {
-    panel.hidden = true;
-    toggle.setAttribute('aria-expanded', 'false');
-  }
-  function openPanel() {
-    panel.hidden = false;
-    toggle.setAttribute('aria-expanded', 'true');
-  }
-
-  toggle.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (panel.hidden) openPanel(); else closePanel();
-  });
-  panel.addEventListener('click', function (e) {
-    var item = e.target.closest('.dw-switch-item');
-    if (!item) return;
-    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    e.preventDefault();
-    closePanel();
-    navigateToPage(item.dataset.navFolder);
-  });
-  document.addEventListener('click', function (e) {
-    if (!panel.hidden && !panel.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) closePanel();
-  });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && !panel.hidden) closePanel();
-  });
+    '</div>';
 }
 
 function insertUtilityBlock(mailHref) {
   document.body.insertAdjacentHTML('afterbegin', utilityBlockHTML(mailHref));
-  wireUtilityBlock();
 }
 
 /* ---------- AJAX-Navigation zwischen Dekaden-/Ambient-Seiten ----------
@@ -236,8 +170,6 @@ function swapDecadePage(html) {
      nahtlos weiter, kein echter Reload passiert. */
   var oldUtility = document.querySelector('.utility-block');
   if (oldUtility) oldUtility.remove();
-  var oldSwitchPanel = document.getElementById('dw-switch-panel');
-  if (oldSwitchPanel) oldSwitchPanel.remove();
   root.innerHTML = '';
 
   /* Als <script>-Element einfuegen statt eval() -- fuehrt den Code
@@ -804,6 +736,27 @@ function restoreDjState() {
     playDeckSong(key, deck.queue[deck.index], false);
     setDeckPitch(key, deck.rate);
   });
+
+  highlightResumedPlayer();
+}
+
+/* Der Player ist fest angedockt (position: fixed) und damit nach einem
+   Reload IMMER sichtbar, ganz ohne Scrollen -- trotzdem faellt eine
+   fortgesetzte Wiedergabe in der Ecke leicht nicht sofort auf. Statt die
+   Seite zu einem bestimmten Scroll-Ziel zu zwingen, blitzt der Player
+   deshalb kurz auf, sobald nach einem Reload Song/Warteschlange wieder da
+   sind (durch restoreDjState() hier ODER durch continuity.js, das diese
+   Funktion nach seinem eigenen Resume ebenfalls aufruft -- je nach
+   Ladereihenfolge kann jede der beiden zuerst fertig sein). */
+var djResumeHighlightShown = false;
+function highlightResumedPlayer() {
+  if (djResumeHighlightShown) return;
+  if (!(DECKS.A.song || DECKS.B.song)) return;
+  djResumeHighlightShown = true;
+  var bar = document.getElementById('dj-player');
+  if (!bar) return;
+  bar.classList.add('dj-player-resumed');
+  setTimeout(function () { bar.classList.remove('dj-player-resumed'); }, 2600);
 }
 
 function deckHTML(key) {
@@ -993,6 +946,11 @@ function ensureDjPlayer() {
 
   var fader = bar.querySelector('#dj-crossfader');
   fader.addEventListener('input', function () {
+    /* Nutzer greift manuell an den Regler -- laeuft gerade ein automatischer
+       Crossfade, muss der abgebrochen werden, sonst zieht dessen Intervall
+       (alle 100ms) den Regler im naechsten Tick sofort wieder auf die
+       animierte Position zurueck (siehe cancelActiveAutoFade). */
+    if (activeAutoFade) cancelActiveAutoFade(activeAutoFade.fromKey);
     crossfaderValue = parseInt(fader.value, 10);
     applyCrossfaderVolumes();
   });
@@ -1010,8 +968,12 @@ function ensureDjPlayer() {
     autoFadeBtn.setAttribute('aria-pressed', autoFadeEnabled ? 'true' : 'false');
     autoFadeBtn.innerHTML = REFRESH_SVG + (autoFadeEnabled ? ' Autofade An' : ' Autofade Aus');
     if (!autoFadeEnabled && activeAutoFade) {
-      clearInterval(activeAutoFade.intervalId);
-      activeAutoFade = null;
+      /* cancelActiveAutoFade statt nur clearInterval+null: sonst bleiben
+         die Pitch-Gleitvorgaenge von meetInMiddleThenSettle (siehe dort)
+         unabhaengig weiterlaufen, obwohl der Crossfade selbst schon
+         gestoppt ist -- der Regler bleibt dann auf halber Strecke stehen,
+         waehrend der Pitch trotzdem noch weiter Richtung Zielwert driftet. */
+      cancelActiveAutoFade(activeAutoFade.fromKey);
     }
   });
   var manualFadeBtn = bar.querySelector('#dj-manual-fade');
@@ -1539,8 +1501,13 @@ function startAutoCrossfade(fromKey, toKey, nextIdx, nextSong, durationSeconds) 
    auf dem Button sichtbar) denselben Ueberblend-Sweep wie das automatische
    Crossfade, aber unabhaengig von einer Warteschlange -- faedet einfach vom
    gerade dominanten Deck zum anderen, sofern dort etwas geladen ist. Das
-   Quelldeck wird danach nur pausiert (Song/Queue bleiben erhalten), damit man
-   bei Bedarf zurueckfaden kann. */
+   Quelldeck wird danach genau wie beim automatischen Crossfade (siehe
+   finishAutoCrossfade) komplett geleert, nicht nur pausiert: ein nur
+   pausiertes Deck behaelt deck.song gesetzt, und maybePreloadNext()
+   bricht dann ueber "if (other.song || other.isPlaying) return;" fuer
+   IMMER ab, weil dieses Deck als "belegt" gilt -- kein Vorladen des
+   naechsten Songs mehr moeglich, die Wiedergabe haengt danach zwischen
+   genau diesen zwei Liedern fest. */
 var manualFadeCountdownId = null;
 
 function startManualFadeSweep(fromKey, toKey) {
@@ -1570,9 +1537,14 @@ function startManualFadeSweep(fromKey, toKey) {
         clearInterval(activeAutoFade.intervalId);
         activeAutoFade = null;
         try { from.player.pauseVideo(); } catch (e) {}
+        from.song = null;
+        from.queue = [];
+        from.index = -1;
         from.isPlaying = false;
+        cancelPitchGlide(fromKey);
+        if (from.rate !== 1) setDeckPitch(fromKey, 1);
         updateDeckInfoUI(fromKey);
-        if (Math.round(((from.rate || 1) - 1) * 100) !== 0) glideDeckPitch(fromKey, 0, 400);
+        maybePreloadNext(toKey);
       }
     }, 100)
   };

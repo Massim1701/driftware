@@ -70,9 +70,30 @@
     if (typeof window.playDeckSong !== 'function' || typeof window.DECKS === 'undefined') return;
 
     var song = { a: state.a, t: state.t, yt: state.yt, bpm: state.bpm };
-    window.DECKS[RESUME_DECK].queue = [song];
-    window.DECKS[RESUME_DECK].index = 0;
+    var deck = window.DECKS[RESUME_DECK];
+
+    /* Je nach Ladereihenfolge kann restoreDjState() (decades.js, stellt die
+       VOLLE Warteschlange samt Position wieder her) vor ODER nach diesem
+       Resume hier laufen -- continuity.js kennt nur den einzelnen Song,
+       nicht den Listenkontext. Steht auf dem Deck schon eine Warteschlange,
+       die genau diesen Song enthaelt (weil restoreDjState() zuerst dran
+       war), NICHT mit einem Ein-Song-Array ueberschreiben, sonst bricht
+       jede automatische Weiterschaltung sofort ab ("naechster Song"
+       existiert dann nicht mehr) -- nur die Position darin uebernehmen. */
+    var matchIdx = -1;
+    if (deck.queue && deck.queue.length) {
+      for (var qi = 0; qi < deck.queue.length; qi++) {
+        if (deck.queue[qi] && deck.queue[qi].yt === song.yt) { matchIdx = qi; break; }
+      }
+    }
+    if (matchIdx !== -1) {
+      deck.index = matchIdx;
+    } else {
+      deck.queue = [song];
+      deck.index = 0;
+    }
     window.playDeckSong(RESUME_DECK, song, true);
+    if (typeof window.highlightResumedPlayer === 'function') window.highlightResumedPlayer();
 
     /* Chrome/Edge blockieren unmuted Autoplay, wenn kein frisches User-Gesture
        auf DIESER Seite vorliegt (der Klick war ja auf der VORHERIGEN Seite,

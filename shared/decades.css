@@ -58,56 +58,6 @@ a { color: var(--accent); }
 .utility-label { font-size: 9px; color: var(--muted); }
 button.utility-tile { background: none; border: none; padding: 0; font: inherit; cursor: pointer; }
 
-/* Wechsel-Menue (Dekade/Stimmung ohne Player-Unterbrechung wechseln, siehe
-   navigateToPage in decades.js) -- zentriert unter dem Utility-Block. */
-.dw-switch-panel {
-  position: fixed;
-  top: 64px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 60;
-  width: min(340px, calc(100vw - 24px));
-  max-height: 70vh;
-  overflow-y: auto;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.45);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-/* .dw-switch-panel { display:flex } oben hat dieselbe Spezifitaet wie die
-   Browser-Standardregel fuer [hidden] und gewinnt dagegen -- ohne diese
-   Regel bliebe das Panel dauerhaft sichtbar/ueberlappend, auch ohne Klick
-   auf "Wechseln". */
-.dw-switch-panel[hidden] { display: none; }
-.dw-switch-group h4 {
-  margin: 0 0 6px;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-}
-.dw-switch-group {
-  display: flex;
-  flex-direction: column;
-}
-.dw-switch-item {
-  display: block;
-  padding: 8px 10px;
-  border-radius: 8px;
-  text-decoration: none;
-  color: var(--text);
-  font-size: 13px;
-}
-.dw-switch-item:hover { background: rgba(255,255,255,0.06); }
-.dw-switch-item.active {
-  color: var(--accent);
-  background: rgba(124,92,255,0.12);
-  font-weight: 600;
-}
 
 /* Hero-Header */
 header.decade-header {
@@ -309,9 +259,10 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .gen-switch-item {
   flex: 0 0 auto;
   white-space: nowrap;
-  padding: 6px 12px;
+  padding: 6px 12px 6px 10px;
   border-radius: 999px;
   border: 1px solid var(--border);
+  border-left: 3px solid var(--item-color, var(--border));
   background: rgba(255,255,255,0.03);
   color: var(--text);
   text-decoration: none;
@@ -320,9 +271,9 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 .gen-switch-item:hover { background: rgba(255,255,255,0.07); }
 .gen-switch-item.active {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: rgba(124,92,255,0.14);
+  color: var(--item-color, var(--accent));
+  border-color: var(--item-color, var(--accent));
+  background: rgba(255,255,255,0.08);
 }
 .theme-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .theme-btn {
@@ -761,6 +712,20 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   border-left: 1px solid var(--border);
   box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04);
   padding: 9px 13px 11px;
+}
+/* Player ist "position: fixed", nach einem Reload also immer sichtbar --
+   trotzdem faellt eine fortgesetzte Wiedergabe in der Ecke leicht nicht
+   sofort auf. Kurzer Aufblitz-Effekt statt eines erzwungenen Scrolls (siehe
+   highlightResumedPlayer in decades.js), sobald Song/Warteschlange nach
+   einem Reload wiederhergestellt sind. */
+.dj-player.dj-player-resumed { animation: dj-player-resume-pulse 2.6s ease-out; }
+@keyframes dj-player-resume-pulse {
+  0% { box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04), inset 0 0 0 0 rgba(124,92,255,0); }
+  12% { box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04), inset 0 0 0 2px var(--accent), -8px 0 34px 6px rgba(124,92,255,0.5); }
+  100% { box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04), inset 0 0 0 0 rgba(124,92,255,0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dj-player.dj-player-resumed { animation: none; }
 }
 .dj-player::before {
   content: "";
@@ -1422,8 +1387,6 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   .utility-icon { width: 34px; height: 34px; }
   .utility-icon svg { width: 15px; height: 15px; }
   .utility-label { font-size: 8px; }
-  .dw-switch-panel { top: 56px; padding: 12px; gap: 10px; }
-  .dw-switch-item { padding: 9px 10px; font-size: 13px; }
   .gen-switch-item { padding: 6px 10px; font-size: 11px; }
   main.decade-main { padding: 0 12px 32px; }
   .generator { padding: 16px 12px; }
