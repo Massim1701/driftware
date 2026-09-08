@@ -535,81 +535,6 @@ function queuePlayerSpacing() {
 window.addEventListener('resize', queuePlayerSpacing);
 window.addEventListener('orientationchange', queuePlayerSpacing);
 
-/* Ambient-Loader: separate leise Hintergrund-Loops (Kaminfeuer, Schnee,
-   Glocken, ...) zum eigentlichen Song dazu mischen -- kein eigener Player,
-   nur ein Satz An/Aus-Knoepfe, mehrere gleichzeitig aktivierbar. Quelle:
-   ausschliesslich CC0-Sounds von Freesound (siehe assets/ambient/manifest.json
-   je Kategorie-Ordner), nichts davon sind echte Song-Aufnahmen. Bei jeder Aktivierung wird ein
-   zufaelliger Clip aus der jeweiligen Kategorie gewaehlt -- dadurch klingt
-   es bei jedem Einschalten etwas anders. */
-var CHEVRON_SVG = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg>';
-var AMBIENT_CATEGORIES = [
-  { key: 'ambient', label: 'Natur', emoji: '\uD83C\uDF3F' },
-  { key: 'fireplace', label: 'Kaminfeuer', emoji: '\uD83D\uDD25' },
-  { key: 'snow-wind', label: 'Schnee & Wind', emoji: '\u2744\uFE0F' },
-  { key: 'christmas', label: 'Weihnachten', emoji: '\uD83C\uDF84' },
-  { key: 'beach-waves', label: 'Meeresrauschen', emoji: '\uD83C\uDF0A' }
-];
-var ambientManifests = {};  // Kategorie-Key -> Array (nach erstem Laden gecacht)
-var ambientPlayers = {};    // Kategorie-Key -> { audio, entry } fuer gerade laufende Sounds
-var ambientVolume = 45;     // 0-100, gemeinsame Lautstaerke fuer alle aktiven Ambient-Sounds
-
-function ambientButtonsHTML() {
-  return AMBIENT_CATEGORIES.map(function (cat) {
-    return '<button type="button" class="dj-ambient-btn" data-ambient-key="' + cat.key + '" aria-pressed="false" title="' + cat.label + '">' +
-      '<span class="dj-ambient-emoji">' + cat.emoji + '</span>' +
-      '<span class="sr-only">' + cat.label + '</span></button>';
-  }).join('');
-}
-
-function loadAmbientManifest(key) {
-  if (ambientManifests[key]) return Promise.resolve(ambientManifests[key]);
-  return fetch('/assets/ambient/' + key + '/manifest.json')
-    .then(function (res) { return res.ok ? res.json() : []; })
-    .then(function (list) {
-      ambientManifests[key] = Array.isArray(list) ? list : [];
-      return ambientManifests[key];
-    })
-    .catch(function () { return []; });
-}
-
-function stopAmbient(key) {
-  var playing = ambientPlayers[key];
-  if (!playing) return;
-  try { playing.audio.pause(); } catch (e) {}
-  delete ambientPlayers[key];
-}
-
-function startAmbient(key) {
-  loadAmbientManifest(key).then(function (list) {
-    if (!list.length) return;
-    var entry = list[Math.floor(Math.random() * list.length)];
-    var audio = new Audio('/assets/ambient/' + key + '/' + entry.file);
-    audio.loop = true;
-    audio.volume = ambientVolume / 100;
-    audio.play().catch(function () {});
-    ambientPlayers[key] = { audio: audio, entry: entry };
-  });
-}
-
-function toggleAmbient(key, btn) {
-  if (ambientPlayers[key]) {
-    stopAmbient(key);
-    btn.classList.remove('active');
-    btn.setAttribute('aria-pressed', 'false');
-  } else {
-    startAmbient(key);
-    btn.classList.add('active');
-    btn.setAttribute('aria-pressed', 'true');
-  }
-}
-
-function applyAmbientVolume() {
-  Object.keys(ambientPlayers).forEach(function (key) {
-    ambientPlayers[key].audio.volume = ambientVolume / 100;
-  });
-}
-
 function ensureDjPlayer() {
   var existing = document.getElementById('dj-player');
   if (existing) return existing;
@@ -643,16 +568,6 @@ function ensureDjPlayer() {
     '  </div>' +
     '</div>' +
     deckHTML('B') +
-    '</div>' +
-    '<div class="dj-ambient-panel" id="dj-ambient-panel">' +
-    '  <div class="dj-ambient-body">' +
-    '    <div class="dj-ambient-vslider-wrap">' +
-    '      <input type="range" id="dj-ambient-volume" class="dj-ambient-vslider" min="0" max="100" value="45" ' +
-    '        aria-label="Ambient-Lautst\u00e4rke" orient="vertical">' +
-    '      <div class="dj-ambient-vscale" aria-hidden="true"><span></span><span></span><span class="mid"></span><span></span><span></span></div>' +
-    '    </div>' +
-    '    <div class="dj-ambient-buttons">' + ambientButtonsHTML() + '</div>' +
-    '  </div>' +
     '</div>';
   document.body.appendChild(bar);
 
@@ -715,17 +630,6 @@ function ensureDjPlayer() {
   var manualFadeBtn = bar.querySelector('#dj-manual-fade');
   if (manualFadeBtn) {
     manualFadeBtn.addEventListener('click', function () { triggerManualFade(manualFadeBtn); });
-  }
-
-  bar.querySelectorAll('.dj-ambient-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () { toggleAmbient(btn.dataset.ambientKey, btn); });
-  });
-  var ambientVolumeInput = bar.querySelector('#dj-ambient-volume');
-  if (ambientVolumeInput) {
-    ambientVolumeInput.addEventListener('input', function () {
-      ambientVolume = parseInt(ambientVolumeInput.value, 10);
-      applyAmbientVolume();
-    });
   }
 
   queuePlayerSpacing();
