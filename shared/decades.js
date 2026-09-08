@@ -92,6 +92,43 @@ function switchPanelHTML() {
     '</div>';
 }
 
+/* Kompakte Variante des Wechsel-Menues als EINE durchgehende, horizontal
+   scrollbare Zeile (keine Dekaden/Stimmungen-Gruppierung, nicht umbrechend)
+   -- fest eingebaut im Playlist-Generator zwischen Suchfeld und
+   Genre-Buttons, als schneller Zugriff ohne das "Wechseln"-Dropdown extra
+   zu oeffnen. Nutzt dieselbe AJAX-Navigation wie das Dropdown (siehe
+   navigateToPage), der Player laeuft beim Klick ungestoert weiter. */
+function switchRowHTML() {
+  var current = currentPageFolder();
+  function rowFor(group) {
+    var items = SITE_PAGES.filter(function (p) { return p.group === group; });
+    return '' +
+      '<div class="gen-switch-row" role="tablist" aria-label="' + escapeHtml(group) + '">' +
+      items.map(function (p) {
+        var active = p.folder === current;
+        return '<a class="gen-switch-item' + (active ? ' active' : '') + '" href="/' + p.folder + '/index.html" data-nav-folder="' + p.folder + '"' + (active ? ' aria-current="page"' : '') + '>' + escapeHtml(p.label) + '</a>';
+      }).join('') +
+      '</div>';
+  }
+  return '' +
+    '<div class="gen-switch-rows" id="gen-switch-row">' +
+    rowFor('Dekaden') +
+    rowFor('Stimmungen') +
+    '</div>';
+}
+
+function wireSwitchRow(root) {
+  var row = root.querySelector('#gen-switch-row');
+  if (!row) return;
+  row.addEventListener('click', function (e) {
+    var item = e.target.closest('.gen-switch-item');
+    if (!item) return;
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    navigateToPage(item.dataset.navFolder);
+  });
+}
+
 function utilityBlockHTML(mailHref) {
   return '' +
     '<div class="utility-block">' +
@@ -2411,6 +2448,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     '  </div>' +
     '  <p class="search-hint" id="gen-search-hint" hidden></p>' +
     '</div>' +
+    switchRowHTML() +
     '<div class="theme-buttons" id="gen-buttons"></div>' +
     '<div class="send-panel">' +
     '  <span class="send-panel-label">Dein Dienst:</span>' +
@@ -2434,6 +2472,8 @@ function renderPlaylistGenerator(mountRoot, config) {
     '<p class="song-hint">Für den Import in Spotify, Apple Music oder YouTube Music: Liste kopieren oder CSV herunterladen und bei ' +
     '<a href="https://soundiiz.com" target="_blank" rel="noopener">Soundiiz</a> oder ' +
     '<a href="https://www.tunemymusic.com" target="_blank" rel="noopener">TuneMyMusic</a> hochladen.</p>';
+
+  wireSwitchRow(section);
 
   var buttons = section.querySelector('#gen-buttons');
   if (config.themes && config.themes.length) {

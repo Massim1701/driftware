@@ -78,6 +78,11 @@ button.utility-tile { background: none; border: none; padding: 0; font: inherit;
   flex-direction: column;
   gap: 12px;
 }
+/* .dw-switch-panel { display:flex } oben hat dieselbe Spezifitaet wie die
+   Browser-Standardregel fuer [hidden] und gewinnt dagegen -- ohne diese
+   Regel bliebe das Panel dauerhaft sichtbar/ueberlappend, auch ohne Klick
+   auf "Wechseln". */
+.dw-switch-panel[hidden] { display: none; }
 .dw-switch-group h4 {
   margin: 0 0 6px;
   font-size: 11px;
@@ -286,6 +291,39 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 .generator-search .search-box { margin-bottom: 0; }
 .generator-search .search-hint { margin: 6px 0 0; }
+
+/* Schnellzugriff auf andere Dekaden/Stimmungen, fest zwischen Suchfeld und
+   Genre-Buttons -- Dekaden und Stimmungen je eine eigene, bewusst NICHT
+   umbrechende Zeile (Stimmungen direkt unter Dekaden): bei Platzmangel
+   scrollt die einzelne Zeile horizontal statt sich in die Hoehe zu ziehen.
+   Wechselt per AJAX (siehe navigateToPage), der Player laeuft dabei weiter. */
+.gen-switch-rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.gen-switch-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 4px;
+}
+.gen-switch-item {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+}
+.gen-switch-item:hover { background: rgba(255,255,255,0.07); }
+.gen-switch-item.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(124,92,255,0.14);
+}
 .theme-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .theme-btn {
   background: var(--bg);
@@ -1386,6 +1424,7 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   .utility-label { font-size: 8px; }
   .dw-switch-panel { top: 56px; padding: 12px; gap: 10px; }
   .dw-switch-item { padding: 9px 10px; font-size: 13px; }
+  .gen-switch-item { padding: 6px 10px; font-size: 11px; }
   main.decade-main { padding: 0 12px 32px; }
   .generator { padding: 16px 12px; }
   .generator h2 { font-size: 17px; }
