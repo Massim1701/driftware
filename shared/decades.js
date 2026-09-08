@@ -1277,6 +1277,15 @@ function finishAutoCrossfade() {
   clearInterval(activeAutoFade.intervalId);
   activeAutoFade = null;
 
+  /* Falls das Lied frueher endet (ENDED-Event) als die geschaetzte
+     Crossfade-Dauer verstrichen ist, wuerde der Uebergang sonst mitten
+     drin haengen bleiben: Crossfader auf Zielwert erzwingen und
+     Lautstaerken final anwenden, bevor der From-Deck geleert wird. */
+  crossfaderValue = (toKey === 'A') ? 0 : 100;
+  var faderEl = document.getElementById('dj-crossfader');
+  if (faderEl) faderEl.value = crossfaderValue;
+  applyCrossfaderVolumes();
+
   var from = DECKS[fromKey];
   try { from.player.pauseVideo(); } catch (e) {}
   from.song = null;
