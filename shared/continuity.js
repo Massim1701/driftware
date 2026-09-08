@@ -17,7 +17,6 @@
 (function () {
   var STORAGE_KEY = 'driftware-resume-v1';
   var MAX_AGE_MS = 20000; // 20s -- alles aeltere gilt als "kommt von woanders", kein Auto-Resume
-  var RESUME_DECK = 'A';
 
   function saveState() {
     if (typeof window.DECKS === 'undefined') return;
@@ -37,9 +36,16 @@
       }
     } catch (e) {}
 
+    /* WICHTIG: deckKey mit merken (welches Deck A/B tatsaechlich lief).
+       Frueher war das Ziel-Deck beim Resume fest auf 'A' verdrahtet -- lief
+       aber gerade B (mit seiner vollen Warteschlange), wurde der Song beim
+       Reload trotzdem zwangsweise nach A geladen, dort OHNE die eigentliche
+       Warteschlange (nur als Ein-Song-Array), waehrend restoreDjState()
+       weiter unten B's echte Warteschlange nur noch paused/ungenutzt
+       wiederherstellte. Ergebnis: nach Reload "Warteschlange weg". */
     var state = {
       a: song.a, t: song.t, yt: song.yt, bpm: song.bpm || null,
-      elapsed: elapsed, ts: Date.now(),
+      elapsed: elapsed, ts: Date.now(), deckKey: key,
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -69,6 +75,10 @@
     if (Date.now() - state.ts > MAX_AGE_MS) return; // zu alt, kein Zusammenhang mehr
     if (typeof window.playDeckSong !== 'function' || typeof window.DECKS === 'undefined') return;
 
+    // Auf dem Deck fortsetzen, das tatsaechlich lief (deckKey) -- nicht mehr
+    // fest auf 'A'. Alte, vor diesem Fix gespeicherte States haben kein
+    // deckKey (Fallback 'A', wie bisher).
+    var RESUME_DECK = (state.deckKey === 'B') ? 'B' : 'A';
     var song = { a: state.a, t: state.t, yt: state.yt, bpm: state.bpm };
     var deck = window.DECKS[RESUME_DECK];
 

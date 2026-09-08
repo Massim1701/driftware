@@ -1036,7 +1036,7 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   min-height: 26px;
   width: 100%;
   box-sizing: border-box;
-  padding: 6px 26px 6px 8px;
+  padding: 6px 18px 6px 8px;
   border-radius: 5px;
   background: #04120e;
   border: 1px solid rgba(255,255,255,0.08);
@@ -1048,23 +1048,23 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
 .dj-deck-info:hover { border-color: var(--digital-fg); }
 .dj-digital-swatches {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 5px;
+  right: 5px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 .dj-digital-swatch {
   appearance: none;
   -webkit-appearance: none;
   margin: 0;
-  width: 8px;
-  height: 8px;
+  width: 5px;
+  height: 5px;
   padding: 0;
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.3);
   cursor: pointer;
-  box-shadow: 0 0 3px rgba(0,0,0,0.6);
+  box-shadow: 0 0 2px rgba(0,0,0,0.6);
 }
 .dj-digital-swatch[data-color="green"] { background: #4ade80; }
 .dj-digital-swatch[data-color="blue"] { background: #38bdf8; }
