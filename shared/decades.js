@@ -446,6 +446,7 @@ var nextLoadDeck = 'A';
 var crossfaderValue = 50; /* 0 = nur Deck A hörbar, 100 = nur Deck B */
 var masterVolume = 80; /* Gesamtlautstärke, 0-100, skaliert beide Decks zusaetzlich zum Crossfader */
 var autoFadeEnabled = true; /* Autofade-Button: automatisches Überblenden an/aus, siehe maybeStartAutoCrossfade */
+var PITCH_STEPS = [-50, -25, 0, 25, 50]; /* die 5 festen Stufen der YouTube-API, siehe setDeckPitch */
 
 /* Verlauf bereits gespielter Songs (global, seitenweit — es gibt nur einen
    Player pro Seite). Ein Song wird beim Start des tatsaechlichen Abspielens
@@ -486,9 +487,12 @@ function deckHTML(key) {
     '  </div>' +
     '  <div class="dj-pitch">' +
     '    <div class="dj-pitch-display" id="deck-' + key + '-pitch-display">PITCH 0%</div>' +
-    '    <div class="dj-pitch-slider-wrap">' +
-    '      <input type="range" class="dj-pitch-slider" id="deck-' + key + '-pitch" min="-50" max="50" step="25" value="0" aria-label="Deck ' + key + ': Pitch">' +
-    '      <div class="dj-scale" aria-hidden="true"><span></span><span></span><span class="mid"></span><span></span><span></span></div>' +
+    '    <div class="dj-knob-wrap">' +
+    '      <div class="dj-knob" id="deck-' + key + '-pitch-knob" role="slider" tabindex="0" ' +
+    '        aria-label="Deck ' + key + ': Pitch" aria-valuemin="-50" aria-valuemax="50" aria-valuenow="0" data-value="0">' +
+    '        <div class="dj-knob-ticks" aria-hidden="true"><span></span><span></span><span class="mid"></span><span></span><span></span></div>' +
+    '        <div class="dj-knob-dial" id="deck-' + key + '-pitch-dial"><div class="dj-knob-pointer"></div></div>' +
+    '      </div>' +
     '    </div>' +
     '  </div>' +
     '  <div class="dj-deck-info">' +
@@ -571,6 +575,23 @@ function ensureDjPlayer() {
     '</div>';
   document.body.appendChild(bar);
 
+  var toolsPanel = document.createElement('div');
+  toolsPanel.className = 'dj-tools-panel';
+  toolsPanel.id = 'dj-tools-panel';
+  toolsPanel.innerHTML = '' +
+    '<div class="dj-tools-title">BPM-Sync</div>' +
+    '<div class="dj-bpm-readout">' +
+    '  <div class="dj-bpm-readout-row"><span class="dj-bpm-readout-label">A</span><span class="dj-bpm-readout-value" id="dj-bpm-a">–</span></div>' +
+    '  <div class="dj-bpm-readout-row"><span class="dj-bpm-readout-label">B</span><span class="dj-bpm-readout-value" id="dj-bpm-b">–</span></div>' +
+    '</div>' +
+    '<div class="dj-bpm-match" id="dj-bpm-match">Songs mit BPM laden</div>' +
+    '<button type="button" id="dj-bpm-sync-btn" class="dj-bpm-sync-btn" disabled ' +
+    '  title="Pitch von Deck B so setzen, dass die BPM zu Deck A passen">' + REFRESH_SVG + ' B an A angleichen</button>';
+  document.body.appendChild(toolsPanel);
+  var bpmSyncBtn = toolsPanel.querySelector('#dj-bpm-sync-btn');
+  if (bpmSyncBtn) bpmSyncBtn.addEventListener('click', syncDeckBToA);
+  updateBpmSync();
+
   /* Schallplatten-Drag-Bild schon jetzt anlegen (nicht erst beim ersten
      dragstart) -- manche Browser (v.a. Safari) rendern ein Element, das
      im selben Moment wie setDragImage() erst neu ins DOM kommt, nicht
@@ -596,10 +617,36 @@ function ensureDjPlayer() {
         loadSongToDeck(song, key, lastGridSongs, false);
       } catch (err) {}
     });
-    var pitchSlider = bar.querySelector('#deck-' + key + '-pitch');
-    if (pitchSlider) {
-      pitchSlider.addEventListener('input', function () {
-        setDeckPitch(key, 1 + parseInt(pitchSlider.value, 10) / 100);
+    var pitchKnob = bar.querySelector('#deck-' + key + '-pitch-knob');
+    if (pitchKnob) {
+      var knobDragging = false;
+      var pitchFromPointer = function (e) {
+        var rect = pitchKnob.getBoundingClientRect();
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        var deg = Math.atan2(e.clientX - cx, cy - e.clientY) * 180 / Math.PI;
+        deg = Math.max(-135, Math.min(135, deg));
+        var raw = deg / 135 * 50;
+        return PITCH_STEPS.reduce(function (a, b) { return Math.abs(b - raw) < Math.abs(a - raw) ? b : a; });
+      };
+      pitchKnob.addEventListener('pointerdown', function (e) {
+        knobDragging = true;
+        try { pitchKnob.setPointerCapture(e.pointerId); } catch (err) {}
+        setDeckPitch(key, 1 + pitchFromPointer(e) / 100);
+      });
+      pitchKnob.addEventListener('pointermove', function (e) {
+        if (!knobDragging) return;
+        setDeckPitch(key, 1 + pitchFromPointer(e) / 100);
+      });
+      pitchKnob.addEventListener('pointerup', function () { knobDragging = false; });
+      pitchKnob.addEventListener('pointercancel', function () { knobDragging = false; });
+      pitchKnob.addEventListener('keydown', function (e) {
+        var cur = parseInt(pitchKnob.dataset.value, 10) || 0;
+        if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { cur = Math.min(50, cur + 25); }
+        else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { cur = Math.max(-50, cur - 25); }
+        else { return; }
+        e.preventDefault();
+        setDeckPitch(key, 1 + cur / 100);
       });
     }
   });
@@ -659,8 +706,14 @@ function setDeckPitch(key, rate) {
   if (display) {
     display.textContent = 'PITCH ' + (pct > 0 ? '+' : '') + pct + '%';
   }
-  var slider = document.getElementById('deck-' + key + '-pitch');
-  if (slider && parseInt(slider.value, 10) !== pct) { slider.value = pct; }
+  var knob = document.getElementById('deck-' + key + '-pitch-knob');
+  if (knob) {
+    knob.dataset.value = pct;
+    knob.setAttribute('aria-valuenow', pct);
+  }
+  var dial = document.getElementById('deck-' + key + '-pitch-dial');
+  if (dial) { dial.style.transform = 'rotate(' + (pct / 50 * 135) + 'deg)'; }
+  updateBpmSync();
 }
 
 function updateDeckInfoUI(key) {
@@ -681,6 +734,60 @@ function updateDeckInfoUI(key) {
   if (bpmEl) bpmEl.innerHTML = (deck.song && deck.song.bpm) ? NOTE_SVG + ' ' + deck.song.bpm + ' BPM' : '';
   queuePlayerSpacing();
   refreshMixableHighlight();
+  updateBpmSync();
+}
+
+/* BPM-Sync-Panel: zeigt die (durch den Pitch bereits skalierte) effektive
+   BPM beider Decks und erlaubt per Klick, Deck B automatisch auf die
+   Pitch-Stufe zu setzen, die der BPM von Deck A am naechsten kommt. Nutzt
+   dieselbe feste 5-Stufen-Skala wie der Pitch-Knopf (siehe setDeckPitch)
+   — echte Feinabstimmung ist mit der YouTube-IFrame-API nicht moeglich,
+   aber die naeheste Stufe reicht fuer einen hoerbar saubereren Uebergang. */
+function effectiveBpm(key) {
+  var deck = DECKS[key];
+  if (!deck.song || !deck.song.bpm) return null;
+  return deck.song.bpm * (deck.rate || 1);
+}
+
+function updateBpmSync() {
+  var panel = document.getElementById('dj-tools-panel');
+  if (!panel) return;
+  var aEl = document.getElementById('dj-bpm-a');
+  var bEl = document.getElementById('dj-bpm-b');
+  var matchEl = document.getElementById('dj-bpm-match');
+  var syncBtn = document.getElementById('dj-bpm-sync-btn');
+  var rawA = DECKS.A.song && DECKS.A.song.bpm;
+  var rawB = DECKS.B.song && DECKS.B.song.bpm;
+  if (aEl) aEl.textContent = rawA ? rawA + ' BPM' : '–';
+  if (bEl) bEl.textContent = rawB ? rawB + ' BPM' : '–';
+
+  if (!rawA || !rawB) {
+    if (matchEl) { matchEl.textContent = 'Songs mit BPM laden'; matchEl.className = 'dj-bpm-match'; }
+    if (syncBtn) syncBtn.disabled = true;
+    return;
+  }
+  var effA = effectiveBpm('A');
+  var effB = effectiveBpm('B');
+  var diff = Math.round(Math.abs(effA - effB) * 10) / 10;
+  var ok = diff <= 3;
+  if (matchEl) {
+    matchEl.textContent = (ok ? '✓ synchron' : 'Δ ' + diff + ' BPM') + ' · eff. ' + Math.round(effA) + '/' + Math.round(effB);
+    matchEl.className = 'dj-bpm-match' + (ok ? ' ok' : '');
+  }
+  if (syncBtn) syncBtn.disabled = ok;
+}
+
+function syncDeckBToA() {
+  var bpmA = effectiveBpm('A');
+  var rawB = DECKS.B.song && DECKS.B.song.bpm;
+  if (!bpmA || !rawB) return;
+  var best = PITCH_STEPS[0];
+  var bestDiff = Infinity;
+  PITCH_STEPS.forEach(function (pct) {
+    var diff = Math.abs(rawB * (1 + pct / 100) - bpmA);
+    if (diff < bestDiff) { bestDiff = diff; best = pct; }
+  });
+  setDeckPitch('B', 1 + best / 100);
 }
 
 /* Mix-Hilfe ±10 BPM: sobald auf einem Deck ein Song mit bekanntem bpm

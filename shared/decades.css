@@ -733,54 +733,59 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   letter-spacing: 0.02em;
   box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
 }
-.dj-pitch-slider-wrap {
-  width: 100%;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 3px;
-}
-.dj-pitch-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 22px;
-  background: transparent;
-  cursor: pointer;
-  margin: 0;
-}
-
 .dj-slider-wrap { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 3px; flex: 1; }
 .dj-scale { display: flex; align-items: flex-end; justify-content: space-between; padding: 0 1px; pointer-events: none; }
 .dj-scale span { width: 1px; height: 4px; background: var(--border); }
 .dj-scale span.mid { height: 7px; background: var(--accent); }
-.dj-pitch-slider:focus { outline: none; }
-.dj-pitch-slider::-webkit-slider-runnable-track {
-  height: 4px;
+
+.dj-knob-wrap { display: flex; align-items: center; justify-content: center; padding-top: 4px; }
+.dj-knob {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #3a3a42, #1a1a1f 60%, #2a2a30);
+  border: 1px solid rgba(0,0,0,0.5);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -2px 4px rgba(0,0,0,0.4);
+  cursor: grab;
+  touch-action: none;
+  flex-shrink: 0;
+}
+.dj-knob:active { cursor: grabbing; }
+.dj-knob:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.dj-knob-ticks span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: 50%;
   background: var(--border);
+}
+.dj-knob-ticks span.mid { background: var(--accent2); }
+.dj-knob-ticks span:nth-child(1) { transform: rotate(-135deg) translate(0, -29px); }
+.dj-knob-ticks span:nth-child(2) { transform: rotate(-67.5deg) translate(0, -29px); }
+.dj-knob-ticks span:nth-child(3) { transform: rotate(0deg) translate(0, -29px); }
+.dj-knob-ticks span:nth-child(4) { transform: rotate(67.5deg) translate(0, -29px); }
+.dj-knob-ticks span:nth-child(5) { transform: rotate(135deg) translate(0, -29px); }
+.dj-knob-dial {
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #565660, #202024 70%);
+  transition: transform 0.08s ease;
+}
+.dj-knob-pointer {
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  width: 3px;
+  height: 12px;
+  margin-left: -1.5px;
   border-radius: 2px;
-}
-.dj-pitch-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 30px;
-  height: 15px;
-  border-radius: 3px;
-  background: linear-gradient(180deg, #bbb 0%, #888 30%, #d6d6d6 50%, #d1d1d1 51%, #f0f0f0 100%);
-  border: 1px solid rgba(0,0,0,0.4);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
-  cursor: pointer;
-  margin-top: -6px;
-}
-.dj-pitch-slider::-moz-range-track { height: 4px; background: var(--border); border-radius: 2px; }
-.dj-pitch-slider::-moz-range-thumb {
-  width: 30px;
-  height: 15px;
-  border-radius: 3px;
-  background: linear-gradient(180deg, #bbb 0%, #888 30%, #d6d6d6 50%, #d1d1d1 51%, #f0f0f0 100%);
-  border: 1px solid rgba(0,0,0,0.4);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
-  cursor: pointer;
+  background: var(--accent2);
+  box-shadow: 0 0 4px var(--accent2);
 }
 
 .dj-vinyl {
@@ -1091,6 +1096,66 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   80% { transform: translateX(2px); }
 }
 
+/* BPM-Sync-Flyout: steht links neben der Player-Spalte im selben
+   90px-Streifen, den vorher das Ambient-Panel belegt hat (siehe
+   body padding-right oben) — nur auf breiten Screens, siehe Media-Query. */
+.dj-tools-panel {
+  display: none;
+}
+.dj-tools-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-transform: uppercase;
+  text-align: center;
+}
+.dj-bpm-readout { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.dj-bpm-readout-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-family: 'Courier New', monospace;
+  background: #04120e;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 5px 3px;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
+}
+.dj-bpm-readout-label { font-size: 9px; font-weight: 800; color: var(--muted); }
+.dj-bpm-readout-value { font-size: 12px; font-weight: 800; color: #f5a623; font-variant-numeric: tabular-nums; }
+.dj-bpm-match {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.35;
+}
+.dj-bpm-match.ok { color: #22c55e; }
+.dj-bpm-sync-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 8px 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(124, 92, 255, 0.45);
+  background: rgba(124, 92, 255, 0.12);
+  color: var(--accent);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease, opacity 0.12s ease;
+}
+.dj-bpm-sync-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+.dj-bpm-sync-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(124,92,255,0.2); }
+.dj-bpm-sync-btn:disabled { opacity: 0.35; cursor: default; }
+
 /* Song-Kacheln sind draggable, wenn sie ein Video haben (siehe decades.js) */
 .song-tile[draggable="true"] { cursor: grab; }
 .song-tile.dragging { opacity: 0.4; }
@@ -1147,6 +1212,28 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   .dj-master { width: 100%; order: 5; margin-top: 2px; padding: 7px 12px; gap: 6px; }
   .dj-crossfader, .dj-volume { justify-content: center; }
   .dj-autofade-toggle { padding: 4px 10px; }
+  .dj-tools-panel { display: none !important; }
+}
+
+@media (min-width: 1101px) {
+  .dj-tools-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    position: fixed;
+    top: 0;
+    right: 290px;
+    bottom: 0;
+    width: 90px;
+    overflow-y: auto;
+    z-index: 249;
+    background: linear-gradient(200deg, var(--panel) 0%, var(--bg) 130%);
+    border-left: 1px solid var(--border);
+    padding: 14px 8px;
+    box-shadow: -8px 0 24px rgba(0,0,0,0.3);
+  }
 }
 
 @media (max-width: 640px) {
