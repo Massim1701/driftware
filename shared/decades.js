@@ -2575,6 +2575,12 @@ function renderPlaylistGenerator(mountRoot, config) {
     });
     document.getElementById('gen-actions').classList.add('visible');
     loadData().then(refresh);
+    /* Zuletzt gewaehltes Genre pro Dekade/Seite merken (siehe weiter unten,
+       initialer Aufruf) -- beim naechsten Besuch (auch per Dekaden-Wechsel-
+       Zeile) landet man wieder dort, statt immer beim ersten Genre. */
+    if (ownDecadeKey) {
+      try { localStorage.setItem('driftware-last-genre-' + ownDecadeKey, key); } catch (e) {}
+    }
   }
 
   function runSearch(query) {
@@ -2750,7 +2756,16 @@ function renderPlaylistGenerator(mountRoot, config) {
   });
 
   if (config.themes && config.themes.length) {
-    selectTheme(config.themes[0].key);
+    /* Nicht immer stur das erste Genre -- zuletzt gewaehltes Genre fuer
+       DIESE Dekade wiederherstellen (siehe selectTheme), sonst Mix als
+       sinnvollerer Standard-Einstieg als ein zufaelliges erstes Genre. */
+    var lastGenre = null;
+    if (ownDecadeKey) {
+      try { lastGenre = localStorage.getItem('driftware-last-genre-' + ownDecadeKey); } catch (e) {}
+    }
+    var validKeys = [MIX_KEY].concat(config.themes.map(function (t) { return t.key; }));
+    var initialTheme = (lastGenre && validKeys.indexOf(lastGenre) !== -1) ? lastGenre : MIX_KEY;
+    selectTheme(initialTheme);
   } else {
     showEmptyState();
   }
