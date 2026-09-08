@@ -1217,7 +1217,16 @@ function triggerManualFade(btn) {
     flashFadeBtnBlocked(btn, 'Läuft schon ein Überblenden -- kurz warten.');
     return;
   }
-  var fromKey = crossfaderValue <= 50 ? 'A' : 'B';
+  /* fromKey = das Deck, das GERADE SPIELT (nicht nur die Crossfader-
+     Position -- die kann vom tatsaechlichen Wiedergabestatus abweichen,
+     z.B. wenn beide Decks pausiert sind oder der Regler von einem
+     frueheren Uebergang noch woanders steht). Nur wenn isPlaying keine
+     eindeutige Antwort gibt (keins oder beide spielen), zaehlt die
+     Reglerposition als Notloesung. */
+  var fromKey;
+  if (DECKS.A.isPlaying && !DECKS.B.isPlaying) fromKey = 'A';
+  else if (DECKS.B.isPlaying && !DECKS.A.isPlaying) fromKey = 'B';
+  else fromKey = crossfaderValue <= 50 ? 'A' : 'B';
   var toKey = fromKey === 'A' ? 'B' : 'A';
   var to = DECKS[toKey];
   if (!to.song) {
