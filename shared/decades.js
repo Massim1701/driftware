@@ -609,6 +609,39 @@ var pitchGlideTimers = {}; /* laufende glideDeckPitch-Animationen pro Deck, sieh
 var bpmSyncActive = false; /* true waehrend der Sync-Button-Ablauf (meetInMiddleThenSettle) laeuft */
 var bpmSyncKeys = []; /* die 1-2 Decks, die dabei gerade bewegt werden -- fuer Abbruch bei manuellem Eingriff */
 
+/* Viele YouTube-Videos haben ein paar Sekunden stillen/leisen Vorspann
+   (Label-Intro, Fade-in) oder einen ausklingenden/stillen Nachspann
+   (Fade-out) -- die YouTube-IFrame-API liefert keine Audio-Analyse, eine
+   automatische Erkennung ist technisch nicht moeglich. Deshalb: ein
+   globaler Standard-Sicherheitsabstand gilt fuer JEDEN Song (siehe
+   introSkipFor/outroSkipFor), zusaetzlich kann fuer hartnaeckige
+   Einzelfaelle ein Override hinterlegt werden -- bewusst NICHT in
+   songs.json (Kataloge bleiben unangetastet), sondern in einer eigenen
+   kleinen Datei, siehe loadSongTimingOverrides(). */
+var DEFAULT_INTRO_SKIP_SECONDS = 2;
+var DEFAULT_OUTRO_SKIP_SECONDS = 2;
+var songTimingOverrides = null; /* {songId: {introSkip, outroSkip}}, siehe loadSongTimingOverrides() */
+
+function loadSongTimingOverrides() {
+  if (songTimingOverrides) return Promise.resolve(songTimingOverrides);
+  return fetch('/shared/song-timing.json')
+    .then(function (r) { if (!r.ok) throw new Error('no-overrides'); return r.json(); })
+    .then(function (j) { songTimingOverrides = (j && typeof j === 'object') ? j : {}; return songTimingOverrides; })
+    .catch(function () { songTimingOverrides = {}; return songTimingOverrides; });
+}
+loadSongTimingOverrides();
+
+function introSkipFor(song) {
+  var ov = song && songTimingOverrides && songTimingOverrides[songId(song)];
+  if (ov && typeof ov.introSkip === 'number' && ov.introSkip >= 0) return ov.introSkip;
+  return DEFAULT_INTRO_SKIP_SECONDS;
+}
+function outroSkipFor(song) {
+  var ov = song && songTimingOverrides && songTimingOverrides[songId(song)];
+  if (ov && typeof ov.outroSkip === 'number' && ov.outroSkip >= 0) return ov.outroSkip;
+  return DEFAULT_OUTRO_SKIP_SECONDS;
+}
+
 /* Verlauf bereits gespielter Songs (global, seitenweit — es gibt nur einen
    Player pro Seite). Ein Song wird beim Start des tatsaechlichen Abspielens
    eingetragen (nicht schon beim Laden), und nur einmal pro Ladevorgang
@@ -1332,13 +1365,13 @@ function maybePreloadNext(key) {
     if (other.preloadedFor !== wantedId) return; /* zwischenzeitlich ueberholt */
     if (other.player && other.player.cueVideoById) {
       try { other.player.setVolume(0); } catch (e) {}
-      try { other.player.cueVideoById(nextSong.yt); } catch (e) {}
+      try { other.player.cueVideoById(nextSong.yt, introSkipFor(nextSong)); } catch (e) {}
     } else if (!other.player) {
       other.player = new YT.Player('deck-' + otherKey + '-mount', {
         width: '100%',
         height: '100%',
         videoId: nextSong.yt,
-        playerVars: { rel: 0, playsinline: 1, autoplay: 0 },
+        playerVars: { rel: 0, playsinline: 1, autoplay: 0, start: introSkipFor(nextSong) },
         events: {
           onReady: function (e) { try { e.target.setVolume(0); } catch (err) {} },
           onStateChange: onDeckStateChange(otherKey),
@@ -1513,6 +1546,26 @@ var manualFadeCountdownId = null;
 function startManualFadeSweep(fromKey, toKey) {
   var from = DECKS[fromKey];
   var to = DECKS[toKey];
+
+  /* Kam der Song auf dem Zieldeck aus dem stillen Vorladen (maybePreloadNext),
+     gehoert er zur Warteschlange des AUSLAUFENDEN Decks -- die muss genau wie
+     beim automatischen Crossfade (siehe startAutoCrossfade) jetzt uebernommen
+     werden. OHNE das hier: to.queue bleibt leer/stehen auf einem alten Stand,
+     das Zieldeck hat nach dem Uebergang KEINE Warteschlange mehr (nur den
+     einen geladenen Song) -- Vorladen des naechsten Songs UND ein weiterer
+     manueller Fade brechen danach beide ab ("Kein Song geladen"), obwohl
+     eigentlich noch eine ganze Playlist dahinter waere. Wurde der Song
+     stattdessen manuell per Drag&Drop auf das Zieldeck gezogen, hat es (ueber
+     loadSongToDeck) schon seine eigene korrekte Warteschlange -- die bleibt
+     dann unangetastet. */
+  var fromNextIdx = from.index + 1;
+  var fromNextSong = (fromNextIdx >= 0 && fromNextIdx < from.queue.length) ? from.queue[fromNextIdx] : null;
+  if (fromNextSong && to.preloadedFor === songId(fromNextSong)) {
+    to.queue = from.queue;
+    to.index = fromNextIdx;
+  }
+  to.preloadedFor = null;
+
   /* Anders als beim automatischen Crossfade (startAutoCrossfade) ist das
      Zieldeck hier oft nur geladen/gecued, aber nicht schon am Spielen --
      ohne diesen Start würde die Lautstärke zwar hochgefahren, aber das
@@ -1669,7 +1722,12 @@ function updateRemainingTime() {
         if (dur > 0) {
           if (deck.isPlaying) {
             el.textContent = formatRemaining(dur - cur);
-            maybeStartAutoCrossfade(key, dur - cur);
+            /* Uebergang so timen, als wuerde der Song outroSkipFor()
+               Sekunden frueher enden -- viele Songs klingen gegen Ende
+               schon aus/werden leise, ohne diesen Vorlauf wuerde der
+               Crossfade erst mitten in dieser bereits leisen Passage
+               "greifen". */
+            maybeStartAutoCrossfade(key, (dur - outroSkipFor(deck.song)) - cur);
           }
           /* Waehrend der Nutzer selbst zieht (deck.seeking) nicht
              ueberschreiben -- sonst "kaempft" der Regler mit dem Polling
@@ -1759,9 +1817,9 @@ function playDeckSong(key, song, autoplay) {
   function start() {
     if (deck.player && deck.player.loadVideoById) {
       if (autoplay) {
-        deck.player.loadVideoById(song.yt);
+        deck.player.loadVideoById(song.yt, introSkipFor(song));
       } else {
-        deck.player.cueVideoById(song.yt);
+        deck.player.cueVideoById(song.yt, introSkipFor(song));
       }
       try { deck.player.setPlaybackRate(deck.rate || 1); } catch (e) {}
       // Ein wiederverwendeter Player kann von einem frueheren Vorladen
@@ -1775,7 +1833,7 @@ function playDeckSong(key, song, autoplay) {
         width: '100%',
         height: '100%',
         videoId: song.yt,
-        playerVars: { rel: 0, playsinline: 1, autoplay: autoplay ? 1 : 0 },
+        playerVars: { rel: 0, playsinline: 1, autoplay: autoplay ? 1 : 0, start: introSkipFor(song) },
         events: {
           onReady: function (e) {
             try { e.target.setPlaybackRate(deck.rate || 1); } catch (err) {}

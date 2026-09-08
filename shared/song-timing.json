@@ -1,0 +1,3 @@
+{
+  "_hinweis": "Manuelle Korrektur fuer Songs mit langem stillen Intro/Outro. Key = 'Interpret␟Titel' (exakt wie im Katalog, songId() in decades.js), Wert introSkip/outroSkip in Sekunden -- ueberschreibt fuer diesen Song die globalen Standardwerte (DEFAULT_INTRO_SKIP_SECONDS/DEFAULT_OUTRO_SKIP_SECONDS in decades.js). Beispiel: \"Kool & The Gang␟Cherish\": { \"introSkip\": 8 }"
+}
