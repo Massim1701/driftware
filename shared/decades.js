@@ -1105,7 +1105,7 @@ function updateBpmSync() {
     } else {
       syncBtn.disabled = ok;
       syncBtn.innerHTML = REFRESH_SVG + ' Angleichen';
-      syncBtn.title = 'Beide Decks treffen sich auf halber BPM, danach loest sich Deck ' + roles.idle + ' langsam wieder auf sein eigenes Tempo';
+      syncBtn.title = 'Beide Decks treffen sich kurz auf halber BPM zur Vorbereitung, danach kehren beide von selbst wieder auf ihr Original-Tempo zurueck, sobald sie nicht mehr im Uebergang sind';
     }
   }
 }
@@ -1122,6 +1122,19 @@ function cancelPitchGlide(key) {
     clearTimeout(pitchGlideTimers[key]);
     pitchGlideTimers[key] = null;
   }
+  setKnobAutoGlide(key, false);
+}
+
+/* Visuelles "der Player arbeitet gerade selbststaendig"-Signal: waehrend
+   glideDeckPitch einen Regler automatisch bewegt (nie bei direkter
+   Nutzer-Interaktion am Knopf, die setzt den Pitch sofort ohne Glide),
+   bekommen Knopf + Anzeige eine Klasse fuer sanftere Drehung + pulsierenden
+   Schein (siehe .auto-glide in decades.css). */
+function setKnobAutoGlide(key, on) {
+  var knobEl = document.getElementById('deck-' + key + '-pitch-knob');
+  var displayEl = document.getElementById('deck-' + key + '-pitch-display');
+  if (knobEl) knobEl.classList.toggle('auto-glide', on);
+  if (displayEl) displayEl.classList.toggle('auto-glide', on);
 }
 
 /* Nutzer greift waehrend eines laufenden Sync-Ablaufs (meetInMiddleThenSettle,
@@ -1145,10 +1158,12 @@ function userInterruptPitchGlide(key) {
 function glideDeckPitch(key, targetPct, stepDelayMs, onDone) {
   cancelPitchGlide(key);
   stepDelayMs = stepDelayMs || 600;
+  setKnobAutoGlide(key, true);
   function step() {
     var cur = Math.round(((DECKS[key].rate || 1) - 1) * 100);
     if (cur === targetPct) {
       pitchGlideTimers[key] = null;
+      setKnobAutoGlide(key, false);
       if (onDone) onDone();
       return;
     }
@@ -1219,6 +1234,27 @@ function syncIdleDeckToPlaying() {
       updateBpmSync();
     }
   });
+}
+
+/* BPM-Sync soll HOERBAR nur waehrend eines echten Uebergangs wirken (siehe
+   meetInMiddleThenSettle), nie dauerhaft: sobald genau ein Deck allein im
+   Player laeuft (currentSyncRoles liefert nur dann etwas -- laufen beide
+   oder keins, ist gerade ein Uebergang im Gange oder nichts spielt),
+   kein Crossfade und kein manueller Sync-Ablauf aktiv sind, aber der Pitch
+   dieses Decks noch nicht auf 0% (Original-BPM) steht, faehrt der Regler
+   automatisch mit sichtbarem Glide-Effekt (.auto-glide, siehe
+   setKnobAutoGlide) wieder dorthin zurueck. Deckt sowohl das "Angleichen"
+   im BPM-Panel ab (das spielende Deck landet danach kurz auf der Mitte,
+   hier faehrt es von selbst wieder zurueck) als auch jeden Rest-Zustand,
+   den ein frueherer Uebergang hinterlassen haben koennte. */
+function maybeAutoRevertSoloPitch() {
+  if (activeAutoFade || bpmSyncActive) return;
+  var roles = currentSyncRoles();
+  if (!roles) return;
+  var key = roles.playing;
+  if (pitchGlideTimers[key]) return;
+  var curPct = Math.round(((DECKS[key].rate || 1) - 1) * 100);
+  if (curPct !== 0) glideDeckPitch(key, 0, 500);
 }
 
 /* Mix-Hilfe ±10 BPM: sobald auf einem Deck ein Song mit bekanntem bpm
@@ -1350,6 +1386,8 @@ function tryGaplessHandoff(key) {
   finished.queue = [];
   finished.index = -1;
   finished.isPlaying = false;
+  cancelPitchGlide(key);
+  if (finished.rate !== 1) setDeckPitch(key, 1);
   updateDeckInfoUI(key);
 
   maybePreloadNext(otherKey);
@@ -1381,6 +1419,8 @@ function advanceAlternating(key) {
   finished.queue = [];
   finished.index = -1;
   finished.isPlaying = false;
+  cancelPitchGlide(key);
+  if (finished.rate !== 1) setDeckPitch(key, 1);
   updateDeckInfoUI(key);
 
   return true;
@@ -1495,6 +1535,7 @@ function startManualFadeSweep(fromKey, toKey) {
         try { from.player.pauseVideo(); } catch (e) {}
         from.isPlaying = false;
         updateDeckInfoUI(fromKey);
+        if (Math.round(((from.rate || 1) - 1) * 100) !== 0) glideDeckPitch(fromKey, 0, 400);
       }
     }, 100)
   };
@@ -1565,9 +1606,7 @@ function cancelActiveAutoFade(key) {
   if (!activeAutoFade) return;
   if (activeAutoFade.fromKey !== key && activeAutoFade.toKey !== key) return;
   clearInterval(activeAutoFade.intervalId);
-  [activeAutoFade.fromKey, activeAutoFade.toKey].forEach(function (k) {
-    if (pitchGlideTimers[k]) { clearTimeout(pitchGlideTimers[k]); pitchGlideTimers[k] = null; }
-  });
+  [activeAutoFade.fromKey, activeAutoFade.toKey].forEach(cancelPitchGlide);
   activeAutoFade = null;
 }
 
@@ -1594,6 +1633,7 @@ function finishAutoCrossfade() {
   from.index = -1;
   from.isPlaying = false;
   updateDeckInfoUI(fromKey);
+  if (Math.round(((from.rate || 1) - 1) * 100) !== 0) glideDeckPitch(fromKey, 0, 400);
 
   maybePreloadNext(toKey);
 }
@@ -1634,6 +1674,7 @@ function updateRemainingTime() {
   });
 }
 setInterval(updateRemainingTime, 500);
+setInterval(maybeAutoRevertSoloPitch, 500);
 
 /* Eigener Fortschrittsbalken statt YouTube-eigenem Seek-Balken -- der
    sitzt im runden Vinyl-Ausschnitt und ist durch die Kreismaske kaum noch
