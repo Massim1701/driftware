@@ -2162,7 +2162,18 @@ function deckStep(key, dir, autoplay) {
 function deckTogglePlay(key) {
   var deck = DECKS[key];
   if (!deck.player) return;
-  if (deck.isPlaying) { cancelActiveAutoFade(key); deck.player.pauseVideo(); } else { deck.player.playVideo(); }
+  if (deck.isPlaying) {
+    cancelActiveAutoFade(key);
+    deck.player.pauseVideo();
+  } else {
+    /* Ein per maybePreloadNext() vorgeladenes Deck steht stumm da
+       (setVolume(0), siehe dort) -- wird es NICHT ueber Gapless-Handoff
+       oder Autofade aktiv, sondern der Nutzer druecht hier direkt Play,
+       blieb der Player bisher lautlos, weil applyCrossfaderVolumes() nur
+       in den anderen Uebergangs-Pfaden aufgerufen wurde. */
+    deck.player.playVideo();
+    applyCrossfaderVolumes();
+  }
 }
 
 function deckPause(key) {
