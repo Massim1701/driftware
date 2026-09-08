@@ -461,6 +461,7 @@ function logPlayHistory(song) {
   playHistory.unshift({ a: song.a, t: song.t });
   if (playHistory.length > 30) playHistory.length = 30;
   renderPlayHistory();
+  saveDjState();
 }
 function renderPlayHistory() {
   var list = document.getElementById('gen-history-list');
@@ -472,6 +473,93 @@ function renderPlayHistory() {
   list.innerHTML = playHistory.map(function (h) {
     return '<li><strong>' + escapeHtml(h.t) + '</strong><span>' + escapeHtml(h.a) + '</span></li>';
   }).join('');
+}
+
+/* Verlauf UND Warteschlange (Deck A/B: Song, Queue, Position) ueberleben
+   einen Dekaden-Wechsel -- jede Dekade ist eine eigene Seite (eigener
+   Page-Load), daher geht der In-Memory-Zustand beim Wechsel sonst
+   komplett verloren. Alle Dekaden-Seiten liegen auf derselben Domain
+   (nur andere Pfade), localStorage ist deshalb seitenuebergreifend
+   sichtbar. Es wird bewusst NICHT die Ton-/Player-Instanz selbst
+   gespeichert (isPlaying, Wiedergabeposition) -- die YouTube-Iframes
+   existieren nach einem Seitenwechsel ohnehin nicht mehr. Stattdessen
+   wird der Song beim Wiederherstellen pausiert neu geladen (siehe
+   playDeckSong(..., false)), Titel/Warteschlange sind sofort wieder da,
+   Play muss der Nutzer einmal neu antippen. */
+var DJ_STATE_KEY = 'driftware_dj_state_v1';
+var djSaveTimer = null;
+var djStateRestored = false;
+
+function songForStorage(s) {
+  if (!s) return null;
+  return { a: s.a, t: s.t, u: s.u || null, yt: s.yt || null, bpm: s.bpm || null, g: s.g, y: s.y, s: s.s };
+}
+
+function saveDjState() {
+  try {
+    var state = {
+      history: playHistory,
+      decks: {
+        A: {
+          queue: (DECKS.A.queue || []).map(songForStorage),
+          index: DECKS.A.index,
+          song: songForStorage(DECKS.A.song),
+          rate: DECKS.A.rate || 1
+        },
+        B: {
+          queue: (DECKS.B.queue || []).map(songForStorage),
+          index: DECKS.B.index,
+          song: songForStorage(DECKS.B.song),
+          rate: DECKS.B.rate || 1
+        }
+      }
+    };
+    localStorage.setItem(DJ_STATE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+/* Wird bei jeder Deck-UI-Aktualisierung angestossen (siehe updateDeckInfoUI),
+   das kann waehrend eines Crossfades sehr oft pro Sekunde passieren --
+   deshalb debounced statt bei jedem Aufruf sofort zu schreiben. */
+function scheduleDjStateSave() {
+  clearTimeout(djSaveTimer);
+  djSaveTimer = setTimeout(saveDjState, 800);
+}
+
+try {
+  window.addEventListener('pagehide', saveDjState);
+  window.addEventListener('beforeunload', saveDjState);
+} catch (e) {}
+
+function restoreDjState() {
+  if (djStateRestored) return;
+  djStateRestored = true;
+  var raw;
+  try { raw = localStorage.getItem(DJ_STATE_KEY); } catch (e) { return; }
+  if (!raw) return;
+  var state;
+  try { state = JSON.parse(raw); } catch (e) { return; }
+  if (!state) return;
+
+  if (state.history && state.history.length) {
+    playHistory = state.history.slice(0, 30);
+    renderPlayHistory();
+  }
+
+  ['A', 'B'].forEach(function (key) {
+    var saved = state.decks && state.decks[key];
+    if (!saved || !saved.song) return;
+    var deck = DECKS[key];
+    deck.queue = (saved.queue && saved.queue.length) ? saved.queue : [saved.song];
+    var idx = -1;
+    for (var i = 0; i < deck.queue.length; i++) {
+      if (deck.queue[i].t === saved.song.t && deck.queue[i].a === saved.song.a) { idx = i; break; }
+    }
+    deck.index = idx !== -1 ? idx : 0;
+    deck.rate = saved.rate || 1;
+    playDeckSong(key, deck.queue[deck.index], false);
+    setDeckPitch(key, deck.rate);
+  });
 }
 
 function deckHTML(key) {
@@ -739,6 +827,7 @@ function updateDeckInfoUI(key) {
   queuePlayerSpacing();
   refreshMixableHighlight();
   updateBpmSync();
+  scheduleDjStateSave();
 }
 
 /* BPM-Sync-Panel: zeigt die (durch den Pitch bereits skalierte) effektive
@@ -2127,6 +2216,7 @@ function renderPlaylistGenerator(mountRoot, config) {
      ensureDjPlayer() baut es bei Bedarf jetzt schon auf, statt erst beim
      ersten Songstart. */
   ensureDjPlayer();
+  restoreDjState();
   var searchInput = document.getElementById('gen-search');
   searchInput.addEventListener('input', function () {
     clearTimeout(searchDebounceHandle);
