@@ -1549,6 +1549,44 @@ function bpmsCompatible(bpmA, bpmB) {
   return !!bpmA && !!bpmB && Math.abs(bpmA - bpmB) <= 10;
 }
 
+/* Playlist so um-ordnen, dass aufeinanderfolgende Songs moeglichst nah
+   beieinander liegende BPM haben, statt wie bisher per Zufallsmischung oder
+   Datenbank-Reihenfolge querbeet zu springen (in der Praxis auch mal 50+
+   BPM Unterschied, siehe BPM-Sync-Panel). Greedy "naechster Nachbar"-Kette:
+   startet bei einem zufaelligen Song mit BPM, haengt danach immer den noch
+   nicht platzierten Song mit dem kleinsten BPM-Abstand zum zuletzt
+   platzierten an -- dadurch bleiben die Schritte klein, ohne die Playlist
+   stur nach BPM aufsteigend zu sortieren (jeder Durchlauf startet woanders).
+   Songs ganz ohne BPM-Wert (aktuell z.B. komplett bei 2000er/2010er/2020er,
+   teilweise bei 90er) koennen nicht sinnvoll einsortiert werden und bleiben
+   in ihrer bisherigen Reihenfolge hinten angehaengt -- damit ist die
+   Funktion ein reines No-Op fuer Dekaden ohne (bzw. mit noch zu wenig)
+   BPM-Daten, statt dort halbe Playlists durcheinanderzuwuerfeln. */
+function bpmSmooth(list) {
+  var withBpm = [];
+  var withoutBpm = [];
+  (list || []).forEach(function (s) {
+    if (s && s.bpm) withBpm.push(s); else withoutBpm.push(s);
+  });
+  if (withBpm.length < 2) return (list || []).slice();
+
+  var remaining = withBpm.slice();
+  var startIdx = Math.floor(Math.random() * remaining.length);
+  var ordered = [remaining.splice(startIdx, 1)[0]];
+
+  while (remaining.length) {
+    var lastBpm = ordered[ordered.length - 1].bpm;
+    var bestIdx = 0;
+    var bestDiff = Infinity;
+    for (var i = 0; i < remaining.length; i++) {
+      var diff = Math.abs(remaining[i].bpm - lastBpm);
+      if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
+    }
+    ordered.push(remaining.splice(bestIdx, 1)[0]);
+  }
+  return ordered.concat(withoutBpm);
+}
+
 function maybeStartAutoCrossfade(key, remaining) {
   if (!autoFadeEnabled || activeAutoFade) return;
   var deck = DECKS[key];
@@ -2539,6 +2577,7 @@ function renderPlaylistGenerator(mountRoot, config) {
   var data = null;
   var currentTheme = null;
   var mixSongsCache = null;
+  var genreSongsCache = null; /* {theme, songs} -- BPM-geglaettete Reihenfolge fuer die aktuell gewaehlte Genre-Kachel, siehe currentSongs() */
   var allSongsFlat = null;
   var searchDebounceHandle = null;
   var searchToken = 0;
@@ -2568,7 +2607,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     var combined = [];
     ownList.forEach(function (s) { var id = songId(s); if (seen[id]) return; seen[id] = true; combined.push(s); });
     otherList.forEach(function (s) { var id = songId(s); if (seen[id]) return; seen[id] = true; combined.push(s); });
-    linkedComboCache = { theme: currentTheme, songs: shuffled(combined) };
+    linkedComboCache = { theme: currentTheme, songs: bpmSmooth(shuffled(combined)) };
   }
 
   function updateLinkChipsUI() {
@@ -2630,10 +2669,14 @@ function renderPlaylistGenerator(mountRoot, config) {
       return linkedComboCache.songs;
     }
     if (currentTheme === MIX_KEY) {
-      if (!mixSongsCache) mixSongsCache = shuffled(buildMixSongs());
+      if (!mixSongsCache) mixSongsCache = bpmSmooth(shuffled(buildMixSongs()));
       return mixSongsCache;
     }
-    return currentTheme ? (data[currentTheme] || []) : [];
+    if (!currentTheme) return [];
+    if (!genreSongsCache || genreSongsCache.theme !== currentTheme) {
+      genreSongsCache = { theme: currentTheme, songs: bpmSmooth(data[currentTheme] || []) };
+    }
+    return genreSongsCache.songs;
   }
 
   /* Manuelles Neu-Mischen ueber den "Playlist neu mischen"-Button --
@@ -2647,7 +2690,7 @@ function renderPlaylistGenerator(mountRoot, config) {
   function reshuffleCurrentPlaylist() {
     if (!currentTheme) return;
     manualShuffleTheme = currentTheme;
-    manualShuffleSongs = shuffled(currentSongs());
+    manualShuffleSongs = bpmSmooth(shuffled(currentSongs()));
     refresh();
   }
 
