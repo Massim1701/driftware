@@ -120,22 +120,52 @@ def discogs_release(release_id):
         return None
 
 
-def search_youtube(artist, title):
-    query = f"ytsearch5:{artist} {title}"
+def _yt_dlp_search(query, player_client=None):
+    cmd = ["yt-dlp", query, "--dump-json", "--skip-download", "--no-warnings"]
+    if player_client:
+        cmd += ["--extractor-args", f"youtube:player_client={player_client}"]
     try:
-        out = subprocess.run(
-            ["yt-dlp", query, "--dump-json", "--skip-download", "--no-warnings"],
-            capture_output=True, text=True, timeout=60,
-        )
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=60)
     except Exception as e:
         print(f"  yt-dlp fehlgeschlagen: {e}")
         return None
+
+
+def search_youtube(artist, title):
+    """GitHub-Actions-Runner-IPs werden von YouTube haeufiger als
+    "verdaechtig" eingestuft als ein normaler Heim-/Browser-Zugriff (das ist
+    der Grund, warum manuell auf youtube.com sofort Treffer da sind, wo der
+    Workflow "kein YouTube-Link gefunden" meldet) -- der Standard-yt-dlp-
+    Client bekommt in dem Fall oft eine leere/blockierte Antwort statt eines
+    Fehlers. Deshalb: bei leerem Ergebnis mit dem Android-Client erneut
+    versuchen (umgeht die Bot-Pruefung meist, laeuft ueber eine andere
+    YouTube-API-Oberflaeche) -- und im endgueltigen Fehlerfall stderr loggen,
+    damit ein echter Blocker (statt "Song existiert wirklich nicht") in den
+    Action-Logs sichtbar ist, statt stillschweigend zu verschwinden.
+    """
+    query = f"ytsearch5:{artist} {title}"
+    out = _yt_dlp_search(query)
     candidates = []
-    for line in out.stdout.splitlines():
-        try:
-            candidates.append(json.loads(line))
-        except Exception:
-            continue
+    if out is not None:
+        for line in out.stdout.splitlines():
+            try:
+                candidates.append(json.loads(line))
+            except Exception:
+                continue
+
+    if not candidates:
+        retry = _yt_dlp_search(query, player_client="android")
+        if retry is not None:
+            for line in retry.stdout.splitlines():
+                try:
+                    candidates.append(json.loads(line))
+                except Exception:
+                    continue
+            if not candidates and retry.stderr and retry.stderr.strip():
+                print(f"  yt-dlp ohne Treffer, stderr: {retry.stderr.strip()[:300]}")
+        elif out is not None and out.stderr and out.stderr.strip():
+            print(f"  yt-dlp ohne Treffer, stderr: {out.stderr.strip()[:300]}")
+
     if not candidates:
         return None
     # VEVO-Kanaele bevorzugen (Standing Rule aus dem Projekt: beste Qualitaet).
@@ -217,16 +247,6 @@ def main():
         print("Warteliste ist leer.")
         return
 
-    # Genre-Korrekturen (kommen vom "Genre bearbeiten"-Button bei Songs im
-    # Bucket "Ohne", siehe shared/decades.js submitGenreFix) sind praktisch
-    # kostenlos -- der Song existiert schon im Katalog, es wird nur der
-    # Bucket verschoben, keine Discogs-/YouTube-Suche noetig. Ohne diese
-    # Priorisierung wuerden sie stur in Einfuege-Reihenfolge verarbeitet und
-    # koennten bei einer grossen Warteliste (z.B. nach einem Batch-Import)
-    # tagelang hinter tausenden ratenlimitierten Neuentdeckungen feststecken
-    # -- obwohl die UI "erscheint spaetestens am naechsten Tag" verspricht.
-    # Deshalb: erst alle schnellen Korrekturen, dann der Rest in
-    # urspruenglicher Reihenfolge.
     def _is_quick_genre_fix(e):
         g = e.get("g")
         y = e.get("y")
@@ -237,6 +257,59 @@ def main():
         )
         return bool(has_g and has_y)
 
+    # Vorab-Bereinigung: Eintraege raus, die (Interpret, Titel) zufolge SCHON
+    # in IRGENDEINER Dekaden-songs.json stehen -- kann passieren, wenn
+    # derselbe Song mehrfach in die Warteliste gerutscht ist, oder wenn ein
+    # frueherer Lauf ihn bereits eingetragen hat (die Datenbank-Pruefung
+    # weiter unten schaut sonst NUR im per Discogs-Jahr geratenen EINEN
+    # Dekaden-Bucket nach, nicht dekadenuebergreifend -- ein Song, der z.B.
+    # unter einem leicht anderen Jahr schon in einer NACHBAR-Dekade steckt,
+    # wuerde sonst jeden Tag aufs Neue (erfolglos oder als echtes Duplikat)
+    # verarbeitet). Manuelle Genre-Korrekturen sind ausgenommen -- die
+    # SOLLEN einen bereits vorhandenen Katalog-Song finden, das ist ihr Zweck.
+    all_catalog_ids = set()
+    for _, _, catalog_path_rel in DECADE_CATALOGS:
+        catalog_path_abs = os.path.join(ROOT, catalog_path_rel)
+        if not os.path.exists(catalog_path_abs):
+            continue
+        try:
+            catalog_data = load_json(catalog_path_abs)
+        except Exception:
+            continue
+        for songs_list in catalog_data.values():
+            for s in songs_list:
+                all_catalog_ids.add(song_id(s.get("a"), s.get("t")))
+
+    cleaned_queue = []
+    dropped = 0
+    for e in queue:
+        if not _is_quick_genre_fix(e):
+            a = (e.get("a") or "").strip()
+            t = (e.get("t") or "").strip()
+            if a and t and song_id(a, t) in all_catalog_ids:
+                dropped += 1
+                continue
+        cleaned_queue.append(e)
+    if dropped:
+        print(f"{dropped} Eintraege waren schon dekadenuebergreifend im Katalog, "
+              f"vorab aus der Warteliste entfernt.")
+        save_json(QUEUE_PATH, cleaned_queue)
+    queue = cleaned_queue
+    if not queue:
+        print("Warteliste nach Bereinigung leer.")
+        return
+
+    # Genre-Korrekturen (kommen vom "Genre bearbeiten"-Button bei Songs im
+    # Bucket "Ohne", siehe shared/decades.js submitGenreFix) sind praktisch
+    # kostenlos -- der Song existiert schon im Katalog, es wird nur der
+    # Bucket verschoben, keine Discogs-/YouTube-Suche noetig. Ohne diese
+    # Priorisierung wuerden sie stur in Einfuege-Reihenfolge verarbeitet und
+    # koennten bei einer grossen Warteliste (z.B. nach einem Batch-Import)
+    # tagelang hinter tausenden ratenlimitierten Neuentdeckungen feststecken
+    # -- obwohl die UI "erscheint spaetestens am naechsten Tag" verspricht.
+    # Deshalb: erst alle schnellen Korrekturen, dann der Rest in
+    # urspruenglicher Reihenfolge. (_is_quick_genre_fix ist jetzt weiter
+    # oben definiert, wird auch von der Vorab-Bereinigung gebraucht.)
     quick_entries = [e for e in queue if _is_quick_genre_fix(e)]
     other_entries = [e for e in queue if not _is_quick_genre_fix(e)]
     if quick_entries and other_entries:
