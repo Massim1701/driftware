@@ -772,7 +772,17 @@ function restoreDjState() {
 function deckHTML(key) {
   return '' +
     '<div class="dj-deck" id="deck-' + key + '">' +
-    '  <div class="dj-deck-label">Deck ' + key + '</div>' +
+    '  <div class="dj-deck-head">' +
+    '    <div class="dj-deck-label">Deck ' + key + '</div>' +
+    '    <div class="dj-deck-info">' +
+    '      <strong id="deck-' + key + '-title">Kein Song geladen</strong>' +
+    '      <span id="deck-' + key + '-artist">–</span>' +
+    '      <div class="dj-deck-meta">' +
+    '        <span class="dj-deck-remaining" id="deck-' + key + '-remaining"></span>' +
+    '        <span class="dj-deck-bpm" id="deck-' + key + '-bpm"></span>' +
+    '      </div>' +
+    '    </div>' +
+    '  </div>' +
     '  <div class="dj-deck-top">' +
     '    <div class="dj-vinyl" id="deck-' + key + '-drop">' +
     '      <div class="dj-vinyl-disc" id="deck-' + key + '-disc">' +
@@ -784,7 +794,6 @@ function deckHTML(key) {
     '    </div>' +
     '  </div>' +
     '  <div class="dj-pitch">' +
-    '    <div class="dj-pitch-display" id="deck-' + key + '-pitch-display">PITCH 0%</div>' +
     '    <div class="dj-knob-wrap">' +
     '      <div class="dj-knob" id="deck-' + key + '-pitch-knob" role="slider" tabindex="0" ' +
     '        aria-label="Deck ' + key + ': Pitch" aria-valuemin="-50" aria-valuemax="50" aria-valuenow="0" data-value="0">' +
@@ -792,12 +801,7 @@ function deckHTML(key) {
     '        <div class="dj-knob-dial" id="deck-' + key + '-pitch-dial"><div class="dj-knob-pointer"></div></div>' +
     '      </div>' +
     '    </div>' +
-    '  </div>' +
-    '  <div class="dj-deck-info">' +
-    '    <strong id="deck-' + key + '-artist">–</strong>' +
-    '    <span id="deck-' + key + '-title">Kein Song geladen</span>' +
-    '    <span class="dj-deck-remaining" id="deck-' + key + '-remaining"></span>' +
-    '    <span class="dj-deck-bpm" id="deck-' + key + '-bpm"></span>' +
+    '    <div class="dj-pitch-display" id="deck-' + key + '-pitch-display">0,00</div>' +
     '  </div>' +
     '  <div class="dj-deck-controls">' +
     '    <button type="button" id="deck-' + key + '-prev" aria-label="Deck ' + key + ': voriger Song">' + PREV_SVG + '</button>' +
@@ -1003,7 +1007,8 @@ function setDeckPitch(key, rate) {
   var pct = Math.round((rate - 1) * 100);
   var display = document.getElementById('deck-' + key + '-pitch-display');
   if (display) {
-    display.textContent = 'PITCH ' + (pct > 0 ? '+' : '') + pct + '%';
+    var diff = rate - 1;
+    display.textContent = (diff > 0 ? '+' : '') + diff.toFixed(2).replace('.', ',');
   }
   var knob = document.getElementById('deck-' + key + '-pitch-knob');
   if (knob) {

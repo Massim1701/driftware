@@ -747,6 +747,14 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   gap: 4px;
   width: 262px;
 }
+.dj-deck-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  gap: 3px;
+  text-align: left;
+}
 .dj-deck-label {
   font-size: 11px;
   font-weight: 800;
@@ -761,13 +769,18 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   gap: 10px;
 }
 .dj-pitch {
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
   width: 180px;
 }
 .dj-pitch-display {
+  position: absolute;
+  left: calc(50% + 33px);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
   font-family: 'Courier New', monospace;
   background: #04120e;
   color: #4ade80;
@@ -785,7 +798,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .dj-scale span { width: 1px; height: 4px; background: var(--border); }
 .dj-scale span.mid { height: 7px; background: var(--accent); }
 
-.dj-knob-wrap { display: flex; align-items: center; justify-content: center; padding-top: 4px; }
+.dj-knob-wrap { display: flex; align-items: center; justify-content: center; }
 .dj-knob {
   position: relative;
   width: 50px;
@@ -967,7 +980,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
 
-.dj-deck-info { text-align: center; min-height: 26px; }
+.dj-deck-info { text-align: left; min-height: 26px; width: 100%; }
 .dj-deck-info strong {
   display: block;
   font-size: 13px;
@@ -975,7 +988,7 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 240px;
+  max-width: 100%;
 }
 .dj-deck-info span {
   display: block;
@@ -984,11 +997,16 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 240px;
+  max-width: 100%;
+}
+.dj-deck-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
 }
 .dj-deck-remaining {
   display: block;
-  margin-top: 2px;
   font-size: 11px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -998,9 +1016,8 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
 .dj-deck-bpm {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 3px;
-  margin-top: 1px;
   font-size: 10px;
   font-weight: 700;
   color: #f5a623;
