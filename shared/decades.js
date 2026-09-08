@@ -447,6 +447,8 @@ var crossfaderValue = 50; /* 0 = nur Deck A hörbar, 100 = nur Deck B */
 var masterVolume = 80; /* Gesamtlautstärke, 0-100, skaliert beide Decks zusaetzlich zum Crossfader */
 var autoFadeEnabled = true; /* Autofade-Button: automatisches Überblenden an/aus, siehe maybeStartAutoCrossfade */
 var PITCH_STEPS = [-50, -25, 0, 25, 50]; /* die 5 festen Stufen der YouTube-API, siehe setDeckPitch */
+var pitchGlideTimers = {}; /* laufende glideDeckPitch-Animationen pro Deck, siehe dort */
+var bpmSyncGliding = false; /* true waehrend syncDeckBToA per glideDeckPitch unterwegs ist */
 
 /* Verlauf bereits gespielter Songs (global, seitenweit — es gibt nur einen
    Player pro Seite). Ein Song wird beim Start des tatsaechlichen Abspielens
@@ -630,6 +632,7 @@ function ensureDjPlayer() {
         return PITCH_STEPS.reduce(function (a, b) { return Math.abs(b - raw) < Math.abs(a - raw) ? b : a; });
       };
       pitchKnob.addEventListener('pointerdown', function (e) {
+        cancelPitchGlide(key);
         knobDragging = true;
         try { pitchKnob.setPointerCapture(e.pointerId); } catch (err) {}
         setDeckPitch(key, 1 + pitchFromPointer(e) / 100);
@@ -646,6 +649,7 @@ function ensureDjPlayer() {
         else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { cur = Math.max(-50, cur - 25); }
         else { return; }
         e.preventDefault();
+        cancelPitchGlide(key);
         setDeckPitch(key, 1 + cur / 100);
       });
     }
@@ -774,10 +778,41 @@ function updateBpmSync() {
     matchEl.textContent = (ok ? '✓ synchron' : 'Δ ' + diff + ' BPM') + ' · eff. ' + Math.round(effA) + '/' + Math.round(effB);
     matchEl.className = 'dj-bpm-match' + (ok ? ' ok' : '');
   }
-  if (syncBtn) syncBtn.disabled = ok;
+  if (syncBtn) syncBtn.disabled = bpmSyncGliding ? true : ok;
+}
+
+/* Sync faehrt den Pitch nicht in einem Sprung auf die Zielstufe, sondern
+   Stufe fuer Stufe mit kurzer Pause dazwischen (die YouTube-API kennt
+   keine Zwischenwerte, ein sofortiger Sprung waere als Tempo-/Tonhoehen-
+   Ruck deutlich hoerbar). cancelPitchGlide() bricht das ab, sobald der
+   Nutzer waehrend der Animation selbst am Knopf dreht. */
+function cancelPitchGlide(key) {
+  if (pitchGlideTimers[key]) {
+    clearTimeout(pitchGlideTimers[key]);
+    pitchGlideTimers[key] = null;
+    if (key === 'B' && bpmSyncGliding) { bpmSyncGliding = false; }
+  }
+}
+
+function glideDeckPitch(key, targetPct, stepDelayMs, onDone) {
+  cancelPitchGlide(key);
+  stepDelayMs = stepDelayMs || 600;
+  function step() {
+    var cur = Math.round(((DECKS[key].rate || 1) - 1) * 100);
+    if (cur === targetPct) {
+      pitchGlideTimers[key] = null;
+      if (onDone) onDone();
+      return;
+    }
+    var next = cur + (targetPct > cur ? 25 : -25);
+    setDeckPitch(key, 1 + next / 100);
+    pitchGlideTimers[key] = setTimeout(step, stepDelayMs);
+  }
+  step();
 }
 
 function syncDeckBToA() {
+  if (bpmSyncGliding) return;
   var bpmA = effectiveBpm('A');
   var rawB = DECKS.B.song && DECKS.B.song.bpm;
   if (!bpmA || !rawB) return;
@@ -787,7 +822,15 @@ function syncDeckBToA() {
     var diff = Math.abs(rawB * (1 + pct / 100) - bpmA);
     if (diff < bestDiff) { bestDiff = diff; best = pct; }
   });
-  setDeckPitch('B', 1 + best / 100);
+  var syncBtn = document.getElementById('dj-bpm-sync-btn');
+  var originalLabel = syncBtn ? syncBtn.innerHTML : '';
+  bpmSyncGliding = true;
+  if (syncBtn) { syncBtn.disabled = true; syncBtn.innerHTML = REFRESH_SVG + ' gleicht an …'; }
+  glideDeckPitch('B', best, 600, function () {
+    bpmSyncGliding = false;
+    if (syncBtn) syncBtn.innerHTML = originalLabel;
+    updateBpmSync();
+  });
 }
 
 /* Mix-Hilfe ±10 BPM: sobald auf einem Deck ein Song mit bekanntem bpm
