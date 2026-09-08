@@ -448,7 +448,8 @@ var masterVolume = 80; /* Gesamtlautstärke, 0-100, skaliert beide Decks zusaetz
 var autoFadeEnabled = true; /* Autofade-Button: automatisches Überblenden an/aus, siehe maybeStartAutoCrossfade */
 var PITCH_STEPS = [-50, -25, 0, 25, 50]; /* die 5 festen Stufen der YouTube-API, siehe setDeckPitch */
 var pitchGlideTimers = {}; /* laufende glideDeckPitch-Animationen pro Deck, siehe dort */
-var bpmSyncGliding = false; /* true waehrend syncDeckBToA per glideDeckPitch unterwegs ist */
+var bpmSyncGliding = false; /* true waehrend syncIdleDeckToPlaying per glideDeckPitch unterwegs ist */
+var bpmSyncGlideKey = null; /* welches Deck dabei gerade angeglichen wird ('A'/'B') */
 
 /* Verlauf bereits gespielter Songs (global, seitenweit — es gibt nur einen
    Player pro Seite). Ein Song wird beim Start des tatsaechlichen Abspielens
@@ -587,11 +588,10 @@ function ensureDjPlayer() {
     '  <div class="dj-bpm-readout-row"><span class="dj-bpm-readout-label">B</span><span class="dj-bpm-readout-value" id="dj-bpm-b">–</span></div>' +
     '</div>' +
     '<div class="dj-bpm-match" id="dj-bpm-match">Songs mit BPM laden</div>' +
-    '<button type="button" id="dj-bpm-sync-btn" class="dj-bpm-sync-btn" disabled ' +
-    '  title="Pitch von Deck B so setzen, dass die BPM zu Deck A passen">' + REFRESH_SVG + ' B an A angleichen</button>';
+    '<button type="button" id="dj-bpm-sync-btn" class="dj-bpm-sync-btn" disabled>' + REFRESH_SVG + ' Angleichen</button>';
   document.body.appendChild(toolsPanel);
   var bpmSyncBtn = toolsPanel.querySelector('#dj-bpm-sync-btn');
-  if (bpmSyncBtn) bpmSyncBtn.addEventListener('click', syncDeckBToA);
+  if (bpmSyncBtn) bpmSyncBtn.addEventListener('click', syncIdleDeckToPlaying);
   updateBpmSync();
 
   /* Schallplatten-Drag-Bild schon jetzt anlegen (nicht erst beim ersten
@@ -742,15 +742,30 @@ function updateDeckInfoUI(key) {
 }
 
 /* BPM-Sync-Panel: zeigt die (durch den Pitch bereits skalierte) effektive
-   BPM beider Decks und erlaubt per Klick, Deck B automatisch auf die
-   Pitch-Stufe zu setzen, die der BPM von Deck A am naechsten kommt. Nutzt
-   dieselbe feste 5-Stufen-Skala wie der Pitch-Knopf (siehe setDeckPitch)
-   — echte Feinabstimmung ist mit der YouTube-IFrame-API nicht moeglich,
-   aber die naeheste Stufe reicht fuer einen hoerbar saubereren Uebergang. */
+   BPM beider Decks und erlaubt per Klick, das gerade NICHT spielende Deck
+   automatisch auf die Pitch-Stufe zu setzen, die der BPM des spielenden
+   Decks am naechsten kommt. A/B wechseln staendig die Rolle (mal spielt A
+   und B ist das naechste vorbereitete Deck, mal umgekehrt — siehe
+   maybePreloadNext) — welche Richtung angeglichen wird, wird deshalb bei
+   jedem Update neu bestimmt, nie fest auf B->A. Nutzt dieselbe feste
+   5-Stufen-Skala wie der Pitch-Knopf (siehe setDeckPitch) — echte
+   Feinabstimmung ist mit der YouTube-IFrame-API nicht moeglich, aber die
+   naeheste Stufe reicht fuer einen hoerbar saubereren Uebergang. */
 function effectiveBpm(key) {
   var deck = DECKS[key];
   if (!deck.song || !deck.song.bpm) return null;
   return deck.song.bpm * (deck.rate || 1);
+}
+
+/* Eindeutig nur, wenn genau ein Deck gerade spielt -- laeuft keins oder
+   laufen (kurz beim Ueberblenden) beide, gibt es kein sinnvolles "Ziel"
+   und der Sync-Button wird deaktiviert statt zu raten. */
+function currentSyncRoles() {
+  var aPlaying = DECKS.A.isPlaying;
+  var bPlaying = DECKS.B.isPlaying;
+  if (aPlaying && !bPlaying) return { playing: 'A', idle: 'B' };
+  if (bPlaying && !aPlaying) return { playing: 'B', idle: 'A' };
+  return null;
 }
 
 function updateBpmSync() {
@@ -765,9 +780,11 @@ function updateBpmSync() {
   if (aEl) aEl.textContent = rawA ? rawA + ' BPM' : '–';
   if (bEl) bEl.textContent = rawB ? rawB + ' BPM' : '–';
 
+  if (bpmSyncGliding) return; /* Button/Text bleiben waehrend der Animation wie gesetzt */
+
   if (!rawA || !rawB) {
     if (matchEl) { matchEl.textContent = 'Songs mit BPM laden'; matchEl.className = 'dj-bpm-match'; }
-    if (syncBtn) syncBtn.disabled = true;
+    if (syncBtn) { syncBtn.disabled = true; syncBtn.innerHTML = REFRESH_SVG + ' Angleichen'; syncBtn.title = ''; }
     return;
   }
   var effA = effectiveBpm('A');
@@ -778,7 +795,18 @@ function updateBpmSync() {
     matchEl.textContent = (ok ? '✓ synchron' : 'Δ ' + diff + ' BPM') + ' · eff. ' + Math.round(effA) + '/' + Math.round(effB);
     matchEl.className = 'dj-bpm-match' + (ok ? ' ok' : '');
   }
-  if (syncBtn) syncBtn.disabled = bpmSyncGliding ? true : ok;
+  var roles = currentSyncRoles();
+  if (syncBtn) {
+    if (!roles) {
+      syncBtn.disabled = true;
+      syncBtn.innerHTML = REFRESH_SVG + ' Angleichen';
+      syncBtn.title = 'Nur möglich, wenn genau ein Deck spielt.';
+    } else {
+      syncBtn.disabled = ok;
+      syncBtn.innerHTML = REFRESH_SVG + ' Deck ' + roles.idle + ' angleichen';
+      syncBtn.title = 'Pitch von Deck ' + roles.idle + ' so setzen, dass die BPM zu Deck ' + roles.playing + ' passen';
+    }
+  }
 }
 
 /* Sync faehrt den Pitch nicht in einem Sprung auf die Zielstufe, sondern
@@ -790,7 +818,7 @@ function cancelPitchGlide(key) {
   if (pitchGlideTimers[key]) {
     clearTimeout(pitchGlideTimers[key]);
     pitchGlideTimers[key] = null;
-    if (key === 'B' && bpmSyncGliding) { bpmSyncGliding = false; }
+    if (key === bpmSyncGlideKey) { bpmSyncGliding = false; bpmSyncGlideKey = null; }
   }
 }
 
@@ -811,24 +839,26 @@ function glideDeckPitch(key, targetPct, stepDelayMs, onDone) {
   step();
 }
 
-function syncDeckBToA() {
+function syncIdleDeckToPlaying() {
   if (bpmSyncGliding) return;
-  var bpmA = effectiveBpm('A');
-  var rawB = DECKS.B.song && DECKS.B.song.bpm;
-  if (!bpmA || !rawB) return;
+  var roles = currentSyncRoles();
+  if (!roles) return;
+  var playingBpm = effectiveBpm(roles.playing);
+  var idleRaw = DECKS[roles.idle].song && DECKS[roles.idle].song.bpm;
+  if (!playingBpm || !idleRaw) return;
   var best = PITCH_STEPS[0];
   var bestDiff = Infinity;
   PITCH_STEPS.forEach(function (pct) {
-    var diff = Math.abs(rawB * (1 + pct / 100) - bpmA);
+    var diff = Math.abs(idleRaw * (1 + pct / 100) - playingBpm);
     if (diff < bestDiff) { bestDiff = diff; best = pct; }
   });
   var syncBtn = document.getElementById('dj-bpm-sync-btn');
-  var originalLabel = syncBtn ? syncBtn.innerHTML : '';
   bpmSyncGliding = true;
+  bpmSyncGlideKey = roles.idle;
   if (syncBtn) { syncBtn.disabled = true; syncBtn.innerHTML = REFRESH_SVG + ' gleicht an …'; }
-  glideDeckPitch('B', best, 600, function () {
+  glideDeckPitch(roles.idle, best, 600, function () {
     bpmSyncGliding = false;
-    if (syncBtn) syncBtn.innerHTML = originalLabel;
+    bpmSyncGlideKey = null;
     updateBpmSync();
   });
 }
@@ -883,7 +913,12 @@ function onDeckStateChange(key) {
    entfaellt, weil beide Player-Instanzen bereits laufen/gepuffert sind.
    Betrifft nur den Normalfall (Playlist durchspielen mit nur einem aktiv
    genutzten Deck); ist das zweite Deck bereits belegt, greift dieses
-   Vorladen bewusst nicht ein. */
+   Vorladen bewusst nicht ein.
+   deck.song wird dabei schon jetzt gesetzt (nicht erst beim tatsaechlichen
+   Handoff) — das Deck zeigt Titel/Artist/BPM also sofort an, obwohl es
+   noch pausiert ist. Dadurch weiss das BPM-Sync-Panel schon waehrend das
+   erste Deck laeuft, wie die beiden Tempi zueinander stehen, statt erst
+   nachdem das zweite Deck manuell gestartet wurde. */
 function maybePreloadNext(key) {
   var deck = DECKS[key];
   var otherKey = key === 'A' ? 'B' : 'A';
@@ -897,6 +932,9 @@ function maybePreloadNext(key) {
   if (other.preloadedFor === wantedId) return;
   other.preloadedFor = wantedId;
   ensureDjPlayer();
+  other.song = nextSong;
+  other.historyLogged = false;
+  updateDeckInfoUI(otherKey);
   function cue() {
     if (other.preloadedFor !== wantedId) return; /* zwischenzeitlich ueberholt */
     if (other.player && other.player.cueVideoById) {
@@ -911,7 +949,10 @@ function maybePreloadNext(key) {
         events: {
           onReady: function (e) { try { e.target.setVolume(0); } catch (err) {} },
           onStateChange: onDeckStateChange(otherKey),
-          onError: function () { other.preloadedFor = null; }
+          onError: function () {
+            other.preloadedFor = null;
+            if (other.song && songId(other.song) === wantedId) { other.song = null; updateDeckInfoUI(otherKey); }
+          }
         }
       });
     }
