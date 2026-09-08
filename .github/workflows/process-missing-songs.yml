@@ -44,7 +44,22 @@ jobs:
           git add queue/ *-music/songs.json
           if git diff --cached --quiet; then
             echo "Keine Aenderungen."
-          else
-            git commit -m "Warteliste automatisch verarbeitet"
-            git push
+            exit 0
           fi
+          git commit -m "Warteliste automatisch verarbeitet"
+          # Der Job laeuft oft stundenlang (Zeitbudget siehe process_missing_queue.py).
+          # Wenn in der Zwischenzeit jemand anderes (Massimo, Web) auf master gepusht
+          # hat, wird ein einfaches "git push" abgelehnt -- und der Commit mit dem
+          # gesamten Fortschritt dieses Laufs ginge mit dem Runner-Workspace komplett
+          # verloren. Deshalb bei Ablehnung rebasen und erneut versuchen, statt nur
+          # einmal zu pushen.
+          for i in 1 2 3 4 5; do
+            if git push; then
+              exit 0
+            fi
+            echo "Push abgelehnt (Versuch $i), hole Remote-Stand und rebase..."
+            git fetch origin master
+            git rebase origin/master
+          done
+          echo "::error::Push nach mehreren Versuchen fehlgeschlagen, Fortschritt bleibt lokal im Runner (geht verloren)."
+          exit 1
