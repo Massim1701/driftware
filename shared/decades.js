@@ -797,7 +797,7 @@ function deckHTML(key) {
     '<div class="dj-deck" id="deck-' + key + '">' +
     '  <div class="dj-deck-head">' +
     '    <div class="dj-deck-label">Deck ' + key + '</div>' +
-    '    <div class="dj-deck-info">' +
+    '    <div class="dj-deck-info" id="deck-' + key + '-info">' +
     '      <strong id="deck-' + key + '-title">Kein Song geladen</strong>' +
     '      <span id="deck-' + key + '-artist">–</span>' +
     '      <div class="dj-deck-meta">' +
@@ -933,6 +933,7 @@ function ensureDjPlayer() {
     bar.querySelector('#deck-' + key + '-prev').addEventListener('click', function () { deckStep(key, -1); });
     bar.querySelector('#deck-' + key + '-next').addEventListener('click', function () { deckStep(key, 1); });
     wireWaveformSeek(key);
+    wireDigitalDisplay(key);
     var dropzone = bar.querySelector('#deck-' + key + '-drop');
     dropzone.addEventListener('dragover', function (e) { e.preventDefault(); dropzone.classList.add('drag-over'); });
     dropzone.addEventListener('dragleave', function () { dropzone.classList.remove('drag-over'); });
@@ -1866,6 +1867,28 @@ function wireWaveformSeek(key) {
   });
 }
 window.addEventListener('resize', function () { drawWaveform('A'); drawWaveform('B'); });
+
+/* Digitales Display (Titel/Interpret/Restzeit/BPM): per Klick durchschaltbar
+   zwischen 4 Farben, siehe .dj-deck-info in decades.css. Wahl bleibt pro
+   Deck im Browser erhalten (localStorage), nicht seitenweit synchronisiert
+   -- jedes Deck hat seine eigene Anzeige. */
+var DIGITAL_DISPLAY_COLORS = ['green', 'blue', 'yellow', 'orange'];
+function wireDigitalDisplay(key) {
+  var el = document.getElementById('deck-' + key + '-info');
+  if (!el) return;
+  var storageKey = 'driftware-digital-color-' + key;
+  var saved = null;
+  try { saved = localStorage.getItem(storageKey); } catch (e) {}
+  var color = DIGITAL_DISPLAY_COLORS.indexOf(saved) !== -1 ? saved : 'green';
+  el.dataset.digital = color;
+  el.title = 'Klicken zum Farbwechsel';
+  el.addEventListener('click', function () {
+    var idx = DIGITAL_DISPLAY_COLORS.indexOf(el.dataset.digital);
+    var next = DIGITAL_DISPLAY_COLORS[(idx + 1) % DIGITAL_DISPLAY_COLORS.length];
+    el.dataset.digital = next;
+    try { localStorage.setItem(storageKey, next); } catch (e) {}
+  });
+}
 
 /* Restzeit-Anzeige (Minuten:Sekunden bis Songende) pro Deck, laeuft per
    Intervall alle 500ms unabhaengig von Play/Pause-Events, da die YouTube

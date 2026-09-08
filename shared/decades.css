@@ -772,6 +772,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   gap: 10px;
 }
 .dj-waveform {
+  width: clamp(135px, 10vw, 162px);
   height: 34px;
   border-radius: 6px;
   background: rgba(255,255,255,0.03);
@@ -1022,20 +1023,49 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
 
-.dj-deck-info { text-align: left; min-height: 26px; width: 100%; }
+/* Digitales Display (wie eine alte Autoradio-/Weckerklok-LCD-Anzeige) fuer
+   Titel/Interpret/Restzeit/BPM -- per Klick durchschaltbar zwischen vier
+   Farben (siehe wireDigitalDisplay in decades.js), Wahl bleibt pro Deck in
+   localStorage erhalten. Anders als vorher (unterschiedliche Textfarben je
+   Zeile) leuchtet im Digital-Look die GESAMTE Anzeige in nur einer Farbe --
+   genau wie bei einem echten LCD-Display, das nur eine Hintergrundbeleuchtung
+   hat. */
+.dj-deck-info {
+  text-align: left;
+  min-height: 26px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border-radius: 5px;
+  background: #04120e;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.65);
+  font-family: 'Courier New', monospace;
+  cursor: pointer;
+  --digital-fg: #4ade80;
+}
+.dj-deck-info:hover { border-color: var(--digital-fg); }
+.dj-deck-info[data-digital="blue"] { --digital-fg: #38bdf8; }
+.dj-deck-info[data-digital="green"] { --digital-fg: #4ade80; }
+.dj-deck-info[data-digital="yellow"] { --digital-fg: #facc15; }
+.dj-deck-info[data-digital="orange"] { --digital-fg: #fb923c; }
 .dj-deck-info strong {
   display: block;
   font-size: 13px;
-  color: var(--text);
+  font-weight: 700;
+  color: var(--digital-fg);
+  text-shadow: 0 0 6px var(--digital-fg);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  letter-spacing: 0.02em;
 }
 .dj-deck-info span {
   display: block;
   font-size: 11px;
-  color: var(--muted);
+  color: var(--digital-fg);
+  opacity: 0.75;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1052,7 +1082,8 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   font-size: 11px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: var(--accent);
+  color: var(--digital-fg);
+  text-shadow: 0 0 6px var(--digital-fg);
   min-height: 14px;
 }
 .dj-deck-bpm {
@@ -1062,7 +1093,8 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   gap: 3px;
   font-size: 10px;
   font-weight: 700;
-  color: #f5a623;
+  color: var(--digital-fg);
+  opacity: 0.9;
   min-height: 13px;
 }
 .dj-deck-bpm svg { width: 11px; height: 11px; flex-shrink: 0; }
@@ -1279,7 +1311,7 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   .dj-deck-top { gap: 6px; }
   .dj-vinyl { width: 92px; height: 92px; }
   .dj-vinyl-hint { font-size: 9px; }
-  .dj-waveform { height: 22px; }
+  .dj-waveform { width: 92px; height: 22px; }
   .dj-pitch { width: 132px; gap: 2px; }
   .dj-pitch-display { font-size: 8px; padding: 3px 6px; }
   .dj-knob-wrap { padding-top: 2px; }
@@ -1350,7 +1382,7 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   .dj-deck-top { gap: 6px; }
   .dj-vinyl { width: 96px; height: 96px; }
   .dj-vinyl-video { width: 78px; height: 78px; }
-  .dj-waveform { height: 22px; }
+  .dj-waveform { width: 96px; height: 22px; }
   .dj-pitch { width: 140px; gap: 3px; }
   .dj-pitch-display { font-size: 8px; padding: 3px 1px; }
 
@@ -1425,7 +1457,7 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   .dj-vinyl-video { width: 68px; height: 68px; }
   .dj-vinyl-hint { font-size: 9px; padding: 0 10px; }
   .dj-vinyl-dot { width: 6px; height: 6px; top: 6px; }
-  .dj-waveform { height: 20px; }
+  .dj-waveform { width: 84px; height: 20px; }
   .dj-pitch { width: 120px; }
   .dj-pitch-display { font-size: 7px; padding: 2px 1px; }
 
