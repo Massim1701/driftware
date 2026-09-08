@@ -31,6 +31,7 @@ var COPY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 var DOWNLOAD_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>';
 var CLOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>';
 var CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>';
+var SHUFFLE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h3.5c2 0 3 .8 4 2.3M3 18h3.5c2 0 3-.8 4-2.3M14 6h4M14 18h4"/><path d="M17 3.5 20.5 6 17 8.5M17 15.5l3.5 2.5-3.5 2.5"/></svg>';
 
 /* Driftware-Logo: Vinyl-Ring + Label-Punkt + "Drift"-Schwung, feste
    Marken-Farben (nicht die pro-Dekade --accent-Variable, bewusst flache
@@ -2288,11 +2289,27 @@ function renderPlaylistGenerator(mountRoot, config) {
 
   function currentSongs() {
     if (!data) return [];
+    if (manualShuffleTheme === currentTheme && manualShuffleSongs) return manualShuffleSongs;
     if (currentTheme === MIX_KEY) {
       if (!mixSongsCache) mixSongsCache = shuffled(buildMixSongs());
       return mixSongsCache;
     }
     return currentTheme ? (data[currentTheme] || []) : [];
+  }
+
+  /* Manuelles Neu-Mischen ueber den "Playlist neu mischen"-Button --
+     merkt sich die gemischte Reihenfolge nur fuer die aktuell gewaehlte
+     Kategorie (wie mixSongsCache fuer den Mix), damit Grid, CSV-Export
+     und "Playlist auf Deck laden" konsistent bleiben, bis neu gemischt
+     oder das Genre gewechselt wird. */
+  var manualShuffleTheme = null;
+  var manualShuffleSongs = null;
+
+  function reshuffleCurrentPlaylist() {
+    if (!currentTheme) return;
+    manualShuffleTheme = currentTheme;
+    manualShuffleSongs = shuffled(currentSongs());
+    refresh();
   }
 
   function asLines() {
@@ -2334,6 +2351,8 @@ function renderPlaylistGenerator(mountRoot, config) {
   function selectTheme(key) {
     currentTheme = key;
     if (key === MIX_KEY) mixSongsCache = null;
+    manualShuffleTheme = null;
+    manualShuffleSongs = null;
     clearSearchUI();
     mountRoot.querySelectorAll('.theme-btn').forEach(function (b) {
       b.classList.toggle('active', b.dataset.key === key);
@@ -2430,6 +2449,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     '<div class="generator-actions" id="gen-actions">' +
     '  <span class="generator-count" id="gen-count"></span>' +
     '  <button id="gen-play-all" type="button">' + PLUS_SVG + ' Playlist auf Deck laden</button>' +
+    '  <button id="gen-shuffle" type="button" title="Reihenfolge neu mischen">' + SHUFFLE_SVG + ' Playlist neu mischen</button>' +
     '  <button id="gen-copy" type="button">' + COPY_SVG + ' Liste kopieren</button>' +
     '  <a id="gen-download" download>' + DOWNLOAD_SVG + ' Als CSV exportieren</a>' +
     '</div>' +
@@ -2493,6 +2513,9 @@ function renderPlaylistGenerator(mountRoot, config) {
 
   section.querySelector('#gen-play-all').addEventListener('click', function () {
     playAllCurrent(currentSongs());
+  });
+  section.querySelector('#gen-shuffle').addEventListener('click', function () {
+    reshuffleCurrentPlaylist();
   });
   section.querySelector('#gen-copy').addEventListener('click', function (e) {
     var btn = e.currentTarget;
