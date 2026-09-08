@@ -207,7 +207,6 @@ function navigateToPage(folder, pushHistory) {
       if (pushHistory !== false) history.pushState({ driftwareNav: true, folder: folder }, '', url);
       var ok = swapDecadePage(html);
       if (!ok) throw new Error('nav-swap-failed');
-      window.scrollTo(0, 0);
     })
     .catch(function () {
       /* Fallback: echter Seitenwechsel, falls AJAX aus irgendeinem Grund
