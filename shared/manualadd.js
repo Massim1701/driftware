@@ -22,17 +22,28 @@
 
 (function () {
   var STORAGE_PREFIX = 'driftware-manualadd-';
-  var pageKey = (function () {
-    var m = location.pathname.match(/\/([a-z0-9]+)-music\//i);
-    return m ? m[1] : 'unbekannt';
-  })();
+  /* pageKey/STORAGE_KEY werden bei jedem init() neu bestimmt (nicht mehr nur
+     einmal beim Laden des Scripts) -- die AJAX-Navigation zwischen Dekaden-/
+     Ambient-Seiten (siehe navigateToPage in decades.js) aendert location.pathname
+     per pushState, OHNE dass dieses Script neu geladen wird. Ohne die
+     Neuberechnung wuerden manuell hinzugefuegte Songs nach einem Wechsel
+     weiterhin unter dem ALTEN Seiten-Key gespeichert. */
+  var pageKey = 'unbekannt';
   var STORAGE_KEY = STORAGE_PREFIX + pageKey;
+  function refreshPageKey() {
+    var m = location.pathname.match(/\/([a-z0-9]+)-music\//i);
+    pageKey = m ? m[1] : 'unbekannt';
+    STORAGE_KEY = STORAGE_PREFIX + pageKey;
+  }
   var HAS_FS_ACCESS = typeof window.showSaveFilePicker === 'function';
 
   var panelEl = null;
   var listEl = null;
+  var modalEl = null;
   var autosaveStatusEl = null;
-  var fileHandle = null; /* seitenweite Auto-Speicher-Datei, sobald gewaehlt/wiederhergestellt */
+  var fileHandle = null; /* seitenweite Auto-Speicher-Datei, sobald gewaehlt/wiederhergestellt -- ueberlebt einen AJAX-Wechsel absichtlich unangetastet */
+  var stylesInjected = false;
+  var globalListenersBound = false;
 
   function loadEntries() {
     try {
@@ -367,6 +378,8 @@
   }
 
   function injectStyles() {
+    if (stylesInjected) return;
+    stylesInjected = true;
     var style = document.createElement('style');
     style.textContent =
       '.manualadd-panel{display:inline-block;margin:10px 0 4px 0;font-family:inherit;font-size:13px;vertical-align:top;}' +
@@ -401,7 +414,22 @@
     document.head.appendChild(style);
   }
 
+  /* init() ist bewusst mehrfach aufrufbar -- die AJAX-Navigation zwischen
+     Dekaden-/Ambient-Seiten (siehe navigateToPage in decades.js) baut den
+     Playlist-Generator (und damit den Anker fuer .manualadd-panel) bei
+     jedem Wechsel neu auf; das Modal selbst haengt direkt am <body> und
+     wuerde sonst als Karteileiche mehrfach existieren. decades.js ruft
+     nach jedem Wechsel window.reinitManualAdd() explizit auf. fileHandle
+     (Autosave) bleibt dabei bewusst unangetastet -- die Berechtigung gilt
+     seitenweit, nicht pro Dekade. */
   function init() {
+    refreshPageKey();
+
+    var stalePanel = document.querySelector('.manualadd-panel');
+    if (stalePanel) stalePanel.remove();
+    var staleModal = document.querySelector('.manualadd-backdrop');
+    if (staleModal) staleModal.remove();
+
     /* Haengt sich direkt HINTER das MIDI-Panel (falls vorhanden), sonst wie
        midi.js selbst hinter die Playlist-Generator-Beschreibung. */
     var anchor = document.querySelector('.dj-midi-panel') || document.querySelector('.generator .sub');
@@ -409,14 +437,13 @@
       window.setTimeout(init, 500);
       return;
     }
-    if (document.querySelector('.manualadd-panel')) return;
 
     injectStyles();
 
     panelEl = buildPanel();
     anchor.insertAdjacentElement('afterend', panelEl);
 
-    var modalEl = buildModal();
+    modalEl = buildModal();
     document.body.appendChild(modalEl);
 
     listEl = modalEl.querySelector('#manualadd-list');
@@ -455,9 +482,16 @@
     modalEl.addEventListener('click', function (ev) {
       if (ev.target === modalEl) closeModal(); /* Klick auf Backdrop, nicht aufs Modal selbst */
     });
-    document.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape' && !modalEl.hidden) closeModal();
-    });
+    /* Nur EINMAL global binden (nicht bei jedem init()) -- referenziert
+       modalEl ueber die Modul-Variable, die bei jedem init() aktualisiert
+       wird, damit hier trotzdem immer das aktuell sichtbare Modal gemeint
+       ist, ohne bei jedem Dekaden-Wechsel einen weiteren Listener anzuhaengen. */
+    if (!globalListenersBound) {
+      globalListenersBound = true;
+      document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape' && modalEl && !modalEl.hidden) modalEl.hidden = true;
+      });
+    }
 
     modalEl.querySelector('#manualadd-search').addEventListener('click', function () {
       var a = modalEl.querySelector('#manualadd-artist').value.trim();
@@ -541,6 +575,8 @@
     var exportBtn = modalEl.querySelector('#manualadd-export');
     if (exportBtn) exportBtn.addEventListener('click', exportEntriesToClipboard);
   }
+
+  window.reinitManualAdd = init;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

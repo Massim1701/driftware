@@ -29,6 +29,8 @@
   var learningKey = null;
   var panelEl = null;
   var statusEls = {};
+  var stylesInjected = false;
+  var mapLoaded = false;
 
   function loadMap() {
     try {
@@ -173,6 +175,8 @@
   }
 
   function injectStyles() {
+    if (stylesInjected) return;
+    stylesInjected = true;
     var style = document.createElement('style');
     style.textContent =
       '.dj-midi-panel{display:inline-block;margin:10px 8px 4px 0;font-family:inherit;font-size:13px;vertical-align:top;}' +
@@ -192,6 +196,14 @@
     document.head.appendChild(style);
   }
 
+  /* init() ist bewusst mehrfach aufrufbar -- die AJAX-Navigation zwischen
+     Dekaden-/Ambient-Seiten (siehe navigateToPage in decades.js) baut den
+     Playlist-Generator bei jedem Wechsel neu auf, das MIDI-Panel haengt
+     dort mit dran und wird dabei mit zerstoert. decades.js ruft danach
+     window.reinitMidiPanel() explizit auf, um das Panel an der neuen Stelle
+     neu aufzubauen -- eine bereits laufende MIDI-Verbindung (midiAccess)
+     und die gelernten Zuordnungen (map) bleiben dabei unangetastet, nur
+     die sichtbare Bedienoberflaeche wird neu gezeichnet. */
   function init() {
     // Haengt sich an die Beschreibung des Playlist-Generators (".generator
     // .sub"), NICHT mehr als fixiertes Overlay auf dem Player -- das
@@ -203,10 +215,11 @@
       window.setTimeout(init, 500);
       return;
     }
-    if (document.querySelector('.dj-midi-panel')) return; // schon initialisiert
+    var stale = document.querySelector('.dj-midi-panel');
+    if (stale) stale.remove();
 
     injectStyles();
-    loadMap();
+    if (!mapLoaded) { loadMap(); mapLoaded = true; }
 
     panelEl = document.createElement('div');
     panelEl.className = 'dj-midi-panel';
@@ -230,6 +243,11 @@
 
     var toggleBtn = panelEl.querySelector('#dj-midi-toggle');
     var body = panelEl.querySelector('#dj-midi-body');
+
+    // Bereits verbunden (z.B. vor einem Dekaden-Wechsel) -- Panel gleich im
+    // richtigen Zustand aufbauen statt so zu tun, als sei nichts verbunden.
+    if (midiAccess) { toggleBtn.textContent = '🎛️ MIDI verbunden'; }
+
     toggleBtn.addEventListener('click', function () {
       if (!midiAccess) {
         toggleBtn.textContent = 'Verbinde…';
@@ -261,6 +279,8 @@
       body.hidden = true;
     });
   }
+
+  window.reinitMidiPanel = init;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

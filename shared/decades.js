@@ -43,6 +43,55 @@ var DRIFTWARE_LOGO_SVG = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000
   '<path d="M3.5 15.5c3.5-5 13.5-5 17 0" fill="none" stroke="#ff2fb3" stroke-width="1.4" stroke-linecap="round"/>' +
   '</svg>';
 
+var SWITCH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 21l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>';
+
+/* Alle Dekaden-/Ambient-Seiten (index.html), die denselben Seitenaufbau
+   teilen (#decade-root + renderDecadeIndex/renderPlaylistGenerator) --
+   Grundlage sowohl fuer den Wechsel-Umschalter unten als auch fuer die
+   AJAX-Navigation (siehe navigateToPage), damit ein Wechsel den laufenden
+   Player nicht unterbricht. */
+var SITE_PAGES = [
+  { slug: '70er', folder: '70er-music', label: '70er Music', group: 'Dekaden' },
+  { slug: '80er', folder: '80er-music', label: '80er Music', group: 'Dekaden' },
+  { slug: '90er', folder: '90er-music', label: '90er Music', group: 'Dekaden' },
+  { slug: '2000er', folder: '2000er-music', label: '2000er Music', group: 'Dekaden' },
+  { slug: '2010er', folder: '2010er-music', label: '2010er Music', group: 'Dekaden' },
+  { slug: '2020er', folder: '2020er-music', label: '2020er Music', group: 'Dekaden' },
+  { slug: 'afterwork', folder: 'afterwork-music', label: 'Afterwork', group: 'Stimmungen' },
+  { slug: 'chillhouse', folder: 'chillhouse-music', label: 'Chill House', group: 'Stimmungen' },
+  { slug: 'christmas', folder: 'christmas-music', label: 'Christmas', group: 'Stimmungen' },
+  { slug: 'dinnerparty', folder: 'dinnerparty-music', label: 'Dinner Party', group: 'Stimmungen' },
+  { slug: 'focuswork', folder: 'focuswork-music', label: 'Focus & Work', group: 'Stimmungen' },
+  { slug: 'latenight', folder: 'latenight-music', label: 'Late Night', group: 'Stimmungen' },
+  { slug: 'morning', folder: 'morning-music', label: 'Morning', group: 'Stimmungen' },
+  { slug: 'roadtrip', folder: 'roadtrip-music', label: 'Road Trip', group: 'Stimmungen' },
+  { slug: 'workout', folder: 'workout-music', label: 'Workout & Running', group: 'Stimmungen' }
+];
+
+function currentPageFolder() {
+  var m = location.pathname.match(/\/([a-z0-9]+-music)\/?/i);
+  return m ? m[1] : null;
+}
+
+function switchPanelHTML() {
+  var current = currentPageFolder();
+  var groups = ['Dekaden', 'Stimmungen'];
+  return '' +
+    '<div class="dw-switch-panel" id="dw-switch-panel" hidden>' +
+    groups.map(function (g) {
+      var items = SITE_PAGES.filter(function (p) { return p.group === g; });
+      return '' +
+        '<div class="dw-switch-group">' +
+        '  <h4>' + g + '</h4>' +
+        items.map(function (p) {
+          var active = p.folder === current;
+          return '<a class="dw-switch-item' + (active ? ' active' : '') + '" href="/' + p.folder + '/index.html" data-nav-folder="' + p.folder + '"' + (active ? ' aria-current="page"' : '') + '>' + escapeHtml(p.label) + '</a>';
+        }).join('') +
+        '</div>';
+    }).join('') +
+    '</div>';
+}
+
 function utilityBlockHTML(mailHref) {
   return '' +
     '<div class="utility-block">' +
@@ -54,6 +103,10 @@ function utilityBlockHTML(mailHref) {
     '    <div class="utility-icon" style="background:#1c8f6f">' + GRID_SVG + '</div>' +
     '    <span class="utility-label">Dekaden</span>' +
     '  </a>' +
+    '  <button type="button" class="utility-tile" id="dw-switch-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Andere Dekade oder Stimmung waehlen, ohne den Player zu unterbrechen">' +
+    '    <div class="utility-icon" style="background:#ffd166">' + SWITCH_SVG + '</div>' +
+    '    <span class="utility-label">Wechseln</span>' +
+    '  </button>' +
     '  <a class="utility-tile" href="' + mailHref + '">' +
     '    <div class="utility-icon" style="background:#4a90d9">' + MAIL_SVG + '</div>' +
     '    <span class="utility-label">Mail</span>' +
@@ -62,8 +115,144 @@ function utilityBlockHTML(mailHref) {
     '    <div class="utility-icon" style="background:#6a5acd">' + LOCK_SVG + '</div>' +
     '    <span class="utility-label">Datenschutz</span>' +
     '  </a>' +
-    '</div>';
+    '</div>' +
+    switchPanelHTML();
 }
+
+/* Oeffnet/schliesst das Wechsel-Menue und faengt Klicks auf einen Eintrag
+   ab -- per AJAX (siehe navigateToPage), damit ein laufender Song beim
+   Wechsel der Dekade/Stimmung nicht unterbrochen wird. Ctrl/Cmd/Shift/
+   Mittelklick (neuer Tab etc.) wird bewusst NICHT abgefangen, der Browser
+   macht dann ganz normal einen echten Seitenwechsel. */
+function wireUtilityBlock() {
+  var toggle = document.getElementById('dw-switch-toggle');
+  var panel = document.getElementById('dw-switch-panel');
+  if (!toggle || !panel) return;
+
+  function closePanel() {
+    panel.hidden = true;
+    toggle.setAttribute('aria-expanded', 'false');
+  }
+  function openPanel() {
+    panel.hidden = false;
+    toggle.setAttribute('aria-expanded', 'true');
+  }
+
+  toggle.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (panel.hidden) openPanel(); else closePanel();
+  });
+  panel.addEventListener('click', function (e) {
+    var item = e.target.closest('.dw-switch-item');
+    if (!item) return;
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    closePanel();
+    navigateToPage(item.dataset.navFolder);
+  });
+  document.addEventListener('click', function (e) {
+    if (!panel.hidden && !panel.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) closePanel();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !panel.hidden) closePanel();
+  });
+}
+
+function insertUtilityBlock(mailHref) {
+  document.body.insertAdjacentHTML('afterbegin', utilityBlockHTML(mailHref));
+  wireUtilityBlock();
+}
+
+/* ---------- AJAX-Navigation zwischen Dekaden-/Ambient-Seiten ----------
+   Jede dieser Seiten ist technisch ein eigenes, komplett getrenntes
+   HTML-Dokument -- ein normaler Link waere immer ein echter Seiten-Reload
+   und wuerde den laufenden YouTube-Player/DECKS-Zustand zerstoeren (siehe
+   continuity.js fuer den bisherigen Notbehelf: automatisches Weiterladen
+   mit kurzer Luecke). Stattdessen wird die Zielseite per fetch() geholt,
+   NUR der Seiteninhalt (#decade-root + Utility-Block) ausgetauscht und
+   ihr mitgelieferter Inline-Bootstrap-Code (der dieselben renderDecadeIndex/
+   renderPlaylistGenerator-Aufrufe enthaelt wie ein echter Page-Load) erneut
+   ausgefuehrt. #dj-player, die laufenden YouTube-Iframes, DECKS und
+   playHistory werden dabei nicht angefasst -- die Wiedergabe laeuft nahtlos
+   weiter. Nur ueber SITE_PAGES erreichbare Zielseiten (alle mit demselben
+   #decade-root-Aufbau) werden so behandelt; alles andere (z.B. /dekaden/,
+   externe Links) bleibt ein normaler Linkaufruf. */
+var ajaxNavInFlight = false;
+
+function pageForFolder(folder) {
+  for (var i = 0; i < SITE_PAGES.length; i++) {
+    if (SITE_PAGES[i].folder === folder) return SITE_PAGES[i];
+  }
+  return null;
+}
+
+function swapDecadePage(html) {
+  var doc;
+  try { doc = new DOMParser().parseFromString(html, 'text/html'); } catch (e) { return false; }
+  var scripts = doc.querySelectorAll('body script:not([src])');
+  var bootScript = scripts.length ? scripts[scripts.length - 1].textContent : null;
+  var root = document.getElementById('decade-root');
+  if (!bootScript || !root) return false;
+
+  /* Alte Song-Fortsetzungs-Notiz (continuity.js) fuer den bisherigen
+     Seitenaufbau ist hier nicht relevant -- der Player laeuft ja gerade
+     nahtlos weiter, kein echter Reload passiert. */
+  var oldUtility = document.querySelector('.utility-block');
+  if (oldUtility) oldUtility.remove();
+  var oldSwitchPanel = document.getElementById('dw-switch-panel');
+  if (oldSwitchPanel) oldSwitchPanel.remove();
+  root.innerHTML = '';
+
+  /* Als <script>-Element einfuegen statt eval() -- fuehrt den Code
+     synchron im globalen Scope aus (renderDecadeIndex/renderPlaylistGenerator
+     etc. sind bereits global aus decades.js bekannt) und wird danach
+     wieder entfernt. */
+  var s = document.createElement('script');
+  s.textContent = bootScript;
+  document.body.appendChild(s);
+  s.remove();
+
+  if (typeof window.reinitMidiPanel === 'function') window.reinitMidiPanel();
+  if (typeof window.reinitManualAdd === 'function') window.reinitManualAdd();
+  if (typeof window.reinitNextUp === 'function') window.reinitNextUp();
+
+  return true;
+}
+
+function navigateToPage(folder, pushHistory) {
+  var page = pageForFolder(folder);
+  if (!page) return;
+  if (ajaxNavInFlight) return;
+  if (folder === currentPageFolder() && pushHistory !== false) return;
+
+  ajaxNavInFlight = true;
+  var url = '/' + folder + '/index.html';
+
+  /* WICHTIG: erst die URL umstellen (pushState), DANN den Bootstrap-Code
+     der Zielseite ausfuehren -- der laedt seine eigene songs.json ueber
+     einen relativen Pfad ("songs.json?v=..."), der sich sonst noch gegen
+     die ALTE Seite aufloesen wuerde. */
+  fetch(url)
+    .then(function (r) { if (!r.ok) throw new Error('nav-fetch-failed'); return r.text(); })
+    .then(function (html) {
+      if (pushHistory !== false) history.pushState({ driftwareNav: true, folder: folder }, '', url);
+      var ok = swapDecadePage(html);
+      if (!ok) throw new Error('nav-swap-failed');
+      window.scrollTo(0, 0);
+    })
+    .catch(function () {
+      /* Fallback: echter Seitenwechsel, falls AJAX aus irgendeinem Grund
+         fehlschlaegt (Netzwerk, unerwartetes Seitenformat, ...). */
+      location.href = url;
+    })
+    .then(function () { ajaxNavInFlight = false; })
+    .catch(function () { ajaxNavInFlight = false; });
+}
+
+window.addEventListener('popstate', function () {
+  var folder = currentPageFolder();
+  if (folder && pageForFolder(folder)) navigateToPage(folder, false);
+});
 
 function contactFormHTML(subject) {
   return '' +
@@ -85,7 +274,7 @@ function renderDecadeIndex(cfg) {
   var metaDesc = document.querySelector('meta[name="description"]');
   if (metaDesc) metaDesc.setAttribute('content', cfg.name + ': ' + cfg.tagline);
 
-  document.body.insertAdjacentHTML('afterbegin', utilityBlockHTML('privacy.html#kontakt'));
+  insertUtilityBlock('privacy.html#kontakt');
 
   var main = document.getElementById('decade-root');
   main.insertAdjacentHTML('beforeend', '' +
@@ -110,7 +299,7 @@ function renderDecadeIndex(cfg) {
 function renderDecadeImpressum(cfg) {
   applyPalette(cfg.colors);
   document.title = 'Impressum — ' + cfg.name;
-  document.body.insertAdjacentHTML('afterbegin', utilityBlockHTML('privacy.html#kontakt'));
+  insertUtilityBlock('privacy.html#kontakt');
   var main = document.getElementById('decade-root');
   main.insertAdjacentHTML('beforeend', '' +
     '<main class="legal-main">' +
@@ -135,7 +324,7 @@ function renderDecadeImpressum(cfg) {
 function renderDecadePrivacy(cfg) {
   applyPalette(cfg.colors);
   document.title = 'Datenschutzerklärung — ' + cfg.name;
-  document.body.insertAdjacentHTML('afterbegin', utilityBlockHTML('#kontakt'));
+  insertUtilityBlock('#kontakt');
   var main = document.getElementById('decade-root');
   main.insertAdjacentHTML('beforeend', '' +
     '<main class="legal-main">' +

@@ -26,6 +26,8 @@
   var POLL_MS = 1000;
   var listEl = null;
   var lastSignature = null;
+  var pollTimer = null;
+  var stylesInjected = false;
 
   function pickActiveDeck() {
     if (typeof window.DECKS === 'undefined') return null;
@@ -136,6 +138,8 @@
   }
 
   function injectStyles() {
+    if (stylesInjected) return;
+    stylesInjected = true;
     var style = document.createElement('style');
     style.textContent =
       '.gen-history ul{max-height:none;}' +
@@ -161,13 +165,18 @@
     document.head.appendChild(style);
   }
 
+  /* init() ist bewusst mehrfach aufrufbar -- die AJAX-Navigation zwischen
+     Dekaden-/Ambient-Seiten (siehe navigateToPage in decades.js) baut die
+     ".gen-history"-Box bei jedem Wechsel neu auf (kompletter Austausch von
+     #decade-root), ohne dass die Seite selbst neu laedt. decades.js ruft
+     danach window.reinitNextUp() explizit auf, damit diese Liste an die
+     NEUE Box andockt statt an die alte (aus dem DOM entfernte). */
   function init() {
     var nativeHistory = document.querySelector('.gen-history');
     if (!nativeHistory) {
       window.setTimeout(init, 500); // Generator noch nicht gerendert
       return;
     }
-    if (document.getElementById('gen-queue-list')) return; // schon initialisiert
 
     injectStyles();
 
@@ -186,9 +195,13 @@
 
     listEl = document.getElementById('gen-queue-list');
     listEl.addEventListener('click', handleRemoveClick);
+    lastSignature = null; // sofortiges Neuzeichnen fuer die neue Box erzwingen
     render();
-    setInterval(render, POLL_MS);
+    if (pollTimer) clearInterval(pollTimer); // keine doppelten Polling-Loops nach einem Wechsel
+    pollTimer = setInterval(render, POLL_MS);
   }
+
+  window.reinitNextUp = init;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
