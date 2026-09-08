@@ -217,6 +217,33 @@ def main():
         print("Warteliste ist leer.")
         return
 
+    # Genre-Korrekturen (kommen vom "Genre bearbeiten"-Button bei Songs im
+    # Bucket "Ohne", siehe shared/decades.js submitGenreFix) sind praktisch
+    # kostenlos -- der Song existiert schon im Katalog, es wird nur der
+    # Bucket verschoben, keine Discogs-/YouTube-Suche noetig. Ohne diese
+    # Priorisierung wuerden sie stur in Einfuege-Reihenfolge verarbeitet und
+    # koennten bei einer grossen Warteliste (z.B. nach einem Batch-Import)
+    # tagelang hinter tausenden ratenlimitierten Neuentdeckungen feststecken
+    # -- obwohl die UI "erscheint spaetestens am naechsten Tag" verspricht.
+    # Deshalb: erst alle schnellen Korrekturen, dann der Rest in
+    # urspruenglicher Reihenfolge.
+    def _is_quick_genre_fix(e):
+        g = e.get("g")
+        y = e.get("y")
+        has_g = isinstance(g, str) and g.strip()
+        has_y = isinstance(y, bool) is False and (
+            (isinstance(y, (int, float)))
+            or (isinstance(y, str) and y.strip().isdigit())
+        )
+        return bool(has_g and has_y)
+
+    quick_entries = [e for e in queue if _is_quick_genre_fix(e)]
+    other_entries = [e for e in queue if not _is_quick_genre_fix(e)]
+    if quick_entries and other_entries:
+        print(f"{len(quick_entries)} Genre-Korrektur(en) vorgezogen, "
+              f"{len(other_entries)} Neuentdeckungen folgen danach.")
+    queue = quick_entries + other_entries
+
     remaining = []
     changed_catalogs = {}  # path -> data (nur einmal geladen/geschrieben)
 
