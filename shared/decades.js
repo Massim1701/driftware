@@ -656,6 +656,50 @@ var DECKS = {
   A: { player: null, queue: [], index: -1, isPlaying: false, song: null, rate: 1, preloadedFor: null },
   B: { player: null, queue: [], index: -1, isPlaying: false, song: null, rate: 1, preloadedFor: null }
 };
+
+/* Fehler-Log fuers Debugging von "stuertzt ab/haengt sich auf"-Meldungen,
+   die sich vor Ort nicht reproduzieren lassen: haelt die letzten 20
+   uncaught Errors/Promise-Rejections in localStorage fest (Zeit, Nachricht,
+   Datei/Zeile, Stack), damit sie nach einem realen Vorfall im Nachhinein
+   ausgelesen werden koennen (F12-Konsole -> localStorage.getItem(...)),
+   statt dass der Fehler spurlos im Nichts verschwindet. Rein additiv,
+   greift nicht in den eigentlichen Fehler ein (kein preventDefault) und
+   darf selbst unter keinen Umstaenden etwas werfen. */
+(function () {
+  var LOG_KEY = 'driftware-error-log-v1';
+  var MAX_ENTRIES = 20;
+  function pushEntry(entry) {
+    try {
+      var raw = localStorage.getItem(LOG_KEY);
+      var log = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(log)) log = [];
+      log.push(entry);
+      if (log.length > MAX_ENTRIES) log = log.slice(log.length - MAX_ENTRIES);
+      localStorage.setItem(LOG_KEY, JSON.stringify(log));
+    } catch (e) {}
+  }
+  window.addEventListener('error', function (e) {
+    try {
+      pushEntry({
+        ts: new Date().toISOString(), type: 'error',
+        msg: e.message, source: e.filename, line: e.lineno, col: e.colno,
+        stack: e.error && e.error.stack ? String(e.error.stack).slice(0, 800) : null,
+        page: location.pathname
+      });
+    } catch (err) {}
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    try {
+      var reason = e.reason;
+      pushEntry({
+        ts: new Date().toISOString(), type: 'unhandledrejection',
+        msg: reason && reason.message ? reason.message : String(reason),
+        stack: reason && reason.stack ? String(reason.stack).slice(0, 800) : null,
+        page: location.pathname
+      });
+    } catch (err) {}
+  });
+})();
 var nextLoadDeck = 'A';
 var crossfaderValue = 50; /* 0 = nur Deck A hörbar, 100 = nur Deck B */
 var masterVolume = 80; /* Gesamtlautstärke, 0-100, skaliert beide Decks zusaetzlich zum Crossfader */
@@ -1382,11 +1426,21 @@ function refreshMixableHighlight() {
   });
 }
 
+/* Zaehlt aufeinanderfolgende Video-Fehler pro Deck (siehe onError weiter
+   unten) -- ohne diese Bremse haengt eine Kette kaputter/gesperrter
+   YouTube-IDs in der Warteschlange den Player in einer schnellen Folge aus
+   deckStep()->loadVideoById()->onError()->deckStep()->... jeder Sprung baut
+   den Player neu auf, das kann den Tab bei vielen Fehlschlaegen in Serie
+   spuerbar ausbremsen bis hin zum Haengenbleiben. Wird bei jedem
+   erfolgreichen Play-Start (PLAYING-Event) wieder auf 0 gesetzt. */
+var deckErrorStreak = { A: 0, B: 0 };
+
 function onDeckStateChange(key) {
   return function (e) {
     var deck = DECKS[key];
     if (e.data === YT.PlayerState.PLAYING) {
       deck.isPlaying = true;
+      deckErrorStreak[key] = 0;
       if (!deck.historyLogged) { logPlayHistory(deck.song); deck.historyLogged = true; }
       maybePreloadNext(key);
     } else if (e.data === YT.PlayerState.PAUSED) {
@@ -2116,7 +2170,19 @@ function playDeckSong(key, song, autoplay) {
             applyCrossfaderVolumes();
           },
           onStateChange: onDeckStateChange(key),
-          onError: function () { deckStep(key, 1, true); }
+          onError: function () {
+            deckErrorStreak[key] = (deckErrorStreak[key] || 0) + 1;
+            if (deckErrorStreak[key] > 5) {
+              /* Sicherheitsbremse: 5+ kaputte Videos in Folge -- nicht
+                 weiter durch die Liste hetzen, sondern anhalten. Deck
+                 bleibt auf dem zuletzt geladenen (fehlerhaften) Song
+                 stehen, Titel/BPM/Skip-Buttons funktionieren weiter, nur
+                 das automatische Weiterspringen stoppt. */
+              try { console.warn('driftware: ' + deckErrorStreak[key] + ' Videofehler in Folge auf Deck ' + key + ' -- Auto-Skip gestoppt.'); } catch (err) {}
+              return;
+            }
+            deckStep(key, 1, true);
+          }
         }
       });
     }
