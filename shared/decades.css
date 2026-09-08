@@ -1160,6 +1160,47 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
 .song-tile[draggable="true"] { cursor: grab; }
 .song-tile.dragging { opacity: 0.4; }
 
+/* Breite Sidebar-Ansicht (>=1101px), aber wenig Hoehe -- z.B. iPad im
+   Querformat (Safari-Chrome frisst zusaetzlich Hoehe von den ohnehin nur
+   ~820-834px). Die rechte Spalte bleibt bestehen (siehe oben), wird aber
+   kompakter, damit beide Decks + Mastersektion ohne internes Scrollen auf
+   einen Bildschirm passen. */
+@media (min-width: 1101px) and (max-height: 860px) {
+  .dj-player { padding: 6px 10px 8px; }
+  .dj-decks { gap: 2px; }
+  .dj-deck { gap: 2px; }
+  .dj-deck-label { font-size: 9px; }
+  .dj-deck-top { gap: 6px; }
+  .dj-vinyl { width: 92px; height: 92px; }
+  .dj-vinyl-hint { font-size: 9px; }
+  .dj-pitch { width: 132px; gap: 2px; }
+  .dj-pitch-display { font-size: 8px; padding: 3px 6px; }
+  .dj-knob-wrap { padding-top: 2px; }
+  .dj-knob { width: 34px; height: 34px; }
+  .dj-knob-ticks span:nth-child(1) { transform: rotate(-135deg) translate(0, -19px); }
+  .dj-knob-ticks span:nth-child(2) { transform: rotate(-67.5deg) translate(0, -19px); }
+  .dj-knob-ticks span:nth-child(3) { transform: rotate(0deg) translate(0, -19px); }
+  .dj-knob-ticks span:nth-child(4) { transform: rotate(67.5deg) translate(0, -19px); }
+  .dj-knob-ticks span:nth-child(5) { transform: rotate(135deg) translate(0, -19px); }
+  .dj-knob-pointer { height: 8px; top: 3px; }
+  .dj-deck-info { min-height: 0; }
+  .dj-deck-info strong { font-size: 11px; }
+  .dj-deck-info span { font-size: 10px; }
+  .dj-deck-remaining { font-size: 9px; min-height: 0; margin-top: 0; }
+  .dj-deck-bpm { font-size: 9px; min-height: 0; margin-top: 0; }
+  .dj-deck-controls { gap: 5px; }
+  .dj-deck-controls button { width: 26px; height: 26px; }
+  .dj-deck-controls button svg { width: 12px; height: 12px; }
+  .dj-deck-controls button[id$="-toggle"] { width: 32px; height: 32px; }
+  .dj-deck-controls button[id$="-toggle"] svg { width: 15px; height: 15px; }
+  .dj-master { padding: 5px 10px; gap: 4px; }
+  .dj-autofade-toggle { padding: 3px 9px; font-size: 10px; }
+  .dj-manual-fade-btn { width: 26px; height: 26px; }
+  .dj-tools-panel { padding: 8px 8px; gap: 8px; }
+  .dj-bpm-readout { gap: 5px; }
+  .dj-bpm-readout-row { padding: 3px 3px; }
+}
+
 /* Unter 1100px ist rechts kein Platz fuer eine 360px-Spalte — der Player
    klappt dort zurueck in die klassische Leiste am unteren Rand. */
 @media (max-width: 1100px) {
