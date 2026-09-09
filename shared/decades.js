@@ -81,24 +81,29 @@ function currentPageFolder() {
    der Player laeuft beim Klick ungestoert weiter. */
 function switchRowHTML() {
   var current = currentPageFolder();
-  function dropdownFor(group, placeholder) {
+  function dropdownFor(group, placeholder, idSuffix) {
     var items = SITE_PAGES.filter(function (p) { return p.group === group; });
     var activeItem = items.filter(function (p) { return p.folder === current; })[0];
+    var selectId = 'gen-switch-select-' + idSuffix;
     var options = (activeItem ? '' : '<option value="" disabled selected hidden>' + escapeHtml(placeholder) + '</option>') +
       items.map(function (p) {
         var active = p.folder === current;
         return '<option value="' + p.folder + '" data-color="' + p.color + '"' + (active ? ' selected' : '') + '>' + escapeHtml(p.label) + '</option>';
       }).join('');
+    /* <label for="..."> statt <div>: ein Klick IRGENDWO im Pill (auch auf
+       der Gruppen-Beschriftung/Polsterung, nicht nur exakt auf dem
+       <select>) oeffnet damit nativ das Dropdown -- Browser leiten Klicks
+       auf ein zugeordnetes <label> an sein Formularelement weiter. */
     return '' +
-      '<div class="gen-switch-dropdown" style="--item-color:' + (activeItem ? activeItem.color : 'var(--border)') + '">' +
+      '<label class="gen-switch-dropdown" for="' + selectId + '" style="--item-color:' + (activeItem ? activeItem.color : 'var(--border)') + '">' +
       '  <span class="gen-switch-dd-label">' + escapeHtml(group) + '</span>' +
-      '  <select class="gen-switch-select" aria-label="' + escapeHtml(group) + ' wechseln">' + options + '</select>' +
-      '</div>';
+      '  <select id="' + selectId + '" class="gen-switch-select" aria-label="' + escapeHtml(group) + ' wechseln">' + options + '</select>' +
+      '</label>';
   }
   return '' +
     '<div class="gen-switch-rows" id="gen-switch-row">' +
-    dropdownFor('Dekaden', 'Dekade wechseln') +
-    dropdownFor('Stimmungen', 'Stimmung wechseln') +
+    dropdownFor('Dekaden', 'Dekade wechseln', 'dekaden') +
+    dropdownFor('Stimmungen', 'Stimmung wechseln', 'stimmungen') +
     '</div>';
 }
 

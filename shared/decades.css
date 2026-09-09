@@ -251,22 +251,25 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .gen-switch-dropdown {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex: 1 1 200px;
-  min-width: 150px;
-  padding: 7px 10px;
+  gap: 6px;
+  flex: 1 1 150px;
+  min-width: 110px;
+  padding: 5px 8px;
   border-radius: 999px;
   border: 1px solid var(--border);
   border-left: 3px solid var(--item-color, var(--border));
   background: rgba(255,255,255,0.03);
+  cursor: pointer;
 }
+.gen-switch-dropdown:hover,
 .gen-switch-dropdown:focus-within { background: rgba(255,255,255,0.07); }
 .gen-switch-dd-label {
   flex: 0 0 auto;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--muted);
   white-space: nowrap;
+  pointer-events: none;
 }
 .gen-switch-select {
   flex: 1 1 auto;
@@ -275,17 +278,17 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   background: transparent;
   color: var(--item-color, var(--text));
   font-family: inherit;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  padding-right: 16px;
+  padding-right: 14px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cfd3dc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right center;
-  background-size: 12px;
+  background-size: 11px;
 }
 .gen-switch-select:focus { outline: none; }
 .gen-switch-select option { background: #14151c; color: #f2f3f7; font-weight: 500; }
@@ -725,7 +728,9 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   border-radius: 8px;
   color: var(--text);
   font-size: 12px;
+  cursor: pointer;
 }
+.song-modal-genre-select:hover { border-color: var(--accent2); }
 .song-modal-genre-save {
   align-self: flex-start;
   background: var(--accent2);
