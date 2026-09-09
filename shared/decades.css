@@ -945,13 +945,19 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
    unterschiedlich viele Elemente haben (2 oben, 3 unten) -- mit Grid
    kann jedes der 5 von decades.js unveraendert erzeugten Kind-Elemente
    frei per grid-area plaziert werden, ohne das Markup anzufassen. */
+/* Schritt 5 (Nutzer: "diese Einheiten rechts und links genau unter die
+   displays" -- Pitch-Regler+Play/Skip sollen nicht mehr unter dem
+   Plattenteller sitzen, sondern unter der Digitalanzeige, gespiegelt auf
+   beiden Decks). Kopfzeile (Label+Display) spannt jetzt 2 Spalten, damit
+   Pitch+Buttons darunter genug Breite haben; Plattenteller/Waveform
+   bleiben rechts daneben in der 3. Spalte. */
 .dj-deck {
   position: relative;
   display: grid;
-  grid-template-columns: auto auto 1fr;
+  grid-template-columns: auto auto auto 1fr;
   grid-template-areas:
-    "head vinyl ."
-    "wave pitch ctrl";
+    "head head vinyl ."
+    "pitch ctrl wave .";
   align-items: center;
   column-gap: 8px;
   row-gap: 6px;
@@ -959,10 +965,10 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   min-width: 0;
 }
 #deck-B {
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto auto auto;
   grid-template-areas:
-    ". vinyl head"
-    "ctrl pitch wave";
+    ". vinyl head head"
+    ". wave ctrl pitch";
 }
 .dj-deck-head {
   grid-area: head;
@@ -981,6 +987,9 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
    hinausragt), statt frei in die Hoehe zu wachsen. */
 .dj-deck-label {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   letter-spacing: 0.06em;
@@ -1422,9 +1431,10 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
 .dj-deck-controls button svg { width: 9px; height: 9px; }
 .dj-deck-controls button:hover { border-color: var(--accent); }
 .dj-deck-controls button[id$="-toggle"] {
-  background: #ff0000;
+  background: #22c55e;
   color: #fff;
-  border-color: #ff0000;
+  border-color: #22c55e;
+  border-radius: 5px;
   width: 24px;
   height: 24px;
   font-size: 16px;
