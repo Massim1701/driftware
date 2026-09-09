@@ -248,50 +248,96 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
    scrollt die einzelne Zeile horizontal statt sich in die Hoehe zu ziehen.
    Wechselt per AJAX (siehe navigateToPage), der Player laeuft dabei weiter. */
 .gen-switch-rows { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
-.gen-switch-dropdown {
+
+/* Eigenes Dropdown (Button + Liste) statt <select> -- native Popups lassen
+   sich v.a. auf macOS/Safari gar nicht stylen (immer weiss, immer so lang
+   wie die Liste). Der Trigger-Button sieht aus wie vorher die Pille, das
+   Popup darunter ist bewusst dezent: dunkler Hintergrund, duenner Rand,
+   leichter Schatten -- setzt sich vom Seitenhintergrund ab, aber nicht
+   grell -- und hat eine feste Maximalhoehe, laengere Listen (z.B. Genres)
+   scrollen darin statt die Seite in die Laenge zu ziehen. */
+.gen-dd { position: relative; flex: 1 1 150px; min-width: 110px; }
+.gen-dd-trigger {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 6px;
-  flex: 1 1 150px;
-  min-width: 110px;
-  padding: 5px 8px;
+  padding: 5px 22px 5px 8px;
   border-radius: 999px;
   border: 1px solid var(--border);
   border-left: 3px solid var(--item-color, var(--border));
   background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font-family: inherit;
   cursor: pointer;
+  text-align: left;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cfd3dc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 11px;
 }
-.gen-switch-dropdown:hover,
-.gen-switch-dropdown:focus-within { background: rgba(255,255,255,0.07); }
-.gen-switch-dd-label {
+.gen-dd-trigger:hover,
+.gen-dd.open .gen-dd-trigger { background-color: rgba(255,255,255,0.07); }
+.gen-dd-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.gen-dd-label {
   flex: 0 0 auto;
   font-size: 10px;
   font-weight: 600;
   color: var(--muted);
   white-space: nowrap;
-  pointer-events: none;
 }
-.gen-switch-select {
+.gen-dd-value {
   flex: 1 1 auto;
   min-width: 0;
-  border: none;
-  background: transparent;
-  color: var(--item-color, var(--text));
-  font-family: inherit;
   font-size: 11px;
   font-weight: 600;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  padding-right: 14px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cfd3dc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right center;
-  background-size: 11px;
+  color: var(--item-color, var(--text));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.gen-switch-select:focus { outline: none; }
-.gen-switch-select option { background: #14151c; color: #f2f3f7; font-weight: 500; }
+.gen-dd-value.placeholder { color: var(--muted); font-weight: 500; }
+
+.gen-dd-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  /* Ueber dem fixen DJ-Player/Song-Modal (z-index bis 250) -- sonst
+     verschwindet das Popup teilweise dahinter, siehe .dj-player. */
+  z-index: 260;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  max-height: 250px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  background: #14151c;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+}
+.gen-dd-list[hidden] { display: none; }
+.gen-dd-item {
+  padding: 7px 10px;
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+  font-size: 12px;
+  font-weight: 500;
+  color: #f2f3f7;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gen-dd-item:hover { background: rgba(255,255,255,0.08); }
+.gen-dd-item.active {
+  border-left-color: var(--item-color, var(--accent));
+  color: var(--item-color, var(--accent));
+  font-weight: 700;
+  background: rgba(255,255,255,0.05);
+}
+.gen-genre-dd { flex: 0 0 auto; min-width: 230px; max-width: 100%; }
 .decade-link-row {
   display: flex;
   flex-wrap: wrap;
@@ -326,7 +372,6 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 .theme-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .gen-genre-row { margin-bottom: 18px; }
-.gen-genre-dropdown { flex: 0 0 auto; min-width: 230px; max-width: 100%; }
 .theme-btn {
   background: var(--bg);
   border: 1px solid var(--border);
@@ -1523,8 +1568,9 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   .utility-icon svg { width: 15px; height: 15px; }
   .utility-label { font-size: 8px; }
   .gen-switch-rows { flex-direction: column; }
-  .gen-switch-dropdown { flex: 0 0 auto; padding: 6px 10px; min-width: 0; }
-  .gen-switch-select { font-size: 11px; }
+  .gen-dd { flex: 0 0 auto; min-width: 0; }
+  .gen-dd-trigger { padding: 6px 22px 6px 10px; }
+  .gen-dd-value { font-size: 11px; }
   main.decade-main { padding: 0 12px 32px; }
   .generator { padding: 16px 12px; }
   .generator h2 { font-size: 17px; }

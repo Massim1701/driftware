@@ -73,6 +73,104 @@ function currentPageFolder() {
   return m ? m[1] : null;
 }
 
+/* Eigenes Dropdown-Widget (Button + Liste) statt <select>: native Popups
+   lassen sich vor allem auf macOS/Safari GAR NICHT stylen (immer weiss,
+   immer so lang wie die Liste, unabhaengig vom CSS) -- deshalb hier
+   komplett selbst gebaut: begrenzte Hoehe (scrollt bei vielen Eintraegen),
+   dunkler Hintergrund passend zum Rest der Seite. Wird fuer den Dekaden-/
+   Stimmungen-Wechsel UND fuer die Genre-Auswahl im Playlist-Generator
+   benutzt (siehe renderPlaylistGenerator). */
+var openDropdowns = [];
+function closeAllDropdowns() {
+  openDropdowns.forEach(function (fn) { fn(); });
+  openDropdowns = [];
+}
+document.addEventListener('click', closeAllDropdowns);
+
+function ddItemsHTML(items, selectedValue) {
+  return items.map(function (it) {
+    var active = it.value === selectedValue;
+    var style = it.color ? ' style="--item-color:' + it.color + '"' : '';
+    var title = it.title ? ' title="' + escapeHtml(it.title) + '"' : '';
+    return '<li role="option" class="gen-dd-item' + (active ? ' active' : '') + '" data-value="' + escapeHtml(it.value) + '"' + style + title + ' aria-selected="' + (active ? 'true' : 'false') + '">' + escapeHtml(it.text) + '</li>';
+  }).join('');
+}
+
+/* config: {ddId, extraClass, label, placeholder, items: [{value,text,color}], selectedValue} */
+function ddHTML(config) {
+  var selected = config.items.filter(function (it) { return it.value === config.selectedValue; })[0];
+  var valueText = selected ? selected.text : config.placeholder;
+  var accent = selected && selected.color ? selected.color : 'var(--border)';
+  return '' +
+    '<div class="gen-dd' + (config.extraClass ? ' ' + config.extraClass : '') + '" id="' + config.ddId + '" data-placeholder="' + escapeHtml(config.placeholder) + '" style="--item-color:' + accent + '">' +
+    '  <button type="button" class="gen-dd-trigger" aria-haspopup="listbox" aria-expanded="false">' +
+    '    <span class="gen-dd-label">' + escapeHtml(config.label) + '</span>' +
+    '    <span class="gen-dd-value' + (selected ? '' : ' placeholder') + '">' + escapeHtml(valueText) + '</span>' +
+    '  </button>' +
+    '  <ul class="gen-dd-list" role="listbox" aria-label="' + escapeHtml(config.label) + '" hidden>' + ddItemsHTML(config.items, config.selectedValue) + '</ul>' +
+    '</div>';
+}
+
+/* Nach dem Einfuegen ins DOM aufrufen -- onSelect(value) wird bei Klick auf
+   einen Eintrag aufgerufen, NICHT bei rein programmatischem ddSetValue(). */
+function wireDropdown(ddEl, onSelect) {
+  var trigger = ddEl.querySelector('.gen-dd-trigger');
+  var list = ddEl.querySelector('.gen-dd-list');
+  function closeDD() {
+    list.hidden = true;
+    ddEl.classList.remove('open');
+    trigger.setAttribute('aria-expanded', 'false');
+  }
+  function openDD() {
+    closeAllDropdowns();
+    list.hidden = false;
+    ddEl.classList.add('open');
+    trigger.setAttribute('aria-expanded', 'true');
+    openDropdowns.push(closeDD);
+  }
+  trigger.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (list.hidden) openDD(); else closeDD();
+  });
+  list.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var item = e.target.closest('.gen-dd-item');
+    if (!item) return;
+    ddSetValue(ddEl, item.dataset.value);
+    closeDD();
+    onSelect(item.dataset.value);
+  });
+  ddEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { closeDD(); trigger.focus(); }
+  });
+}
+
+/* Anzeige (Beschriftung, Farbe, aktiver Eintrag) programmatisch setzen --
+   fuer Faelle, in denen sich die Auswahl NICHT per Klick auf einen
+   Dropdown-Eintrag aendert (z.B. Genre-Wechsel ueber selectTheme() beim
+   Seitenstart, oder Zuruecksetzen auf den Platzhalter waehrend einer
+   Suche, siehe runSearch). Loest KEIN onSelect aus. */
+function ddSetValue(ddEl, value) {
+  var valueEl = ddEl.querySelector('.gen-dd-value');
+  var matched = null;
+  ddEl.querySelectorAll('.gen-dd-item').forEach(function (li) {
+    var active = li.dataset.value === value;
+    li.classList.toggle('active', active);
+    li.setAttribute('aria-selected', active ? 'true' : 'false');
+    if (active) matched = li;
+  });
+  if (matched) {
+    valueEl.textContent = matched.textContent;
+    valueEl.classList.remove('placeholder');
+    var color = matched.style.getPropertyValue('--item-color');
+    ddEl.style.setProperty('--item-color', color || 'var(--border)');
+  } else {
+    valueEl.textContent = ddEl.dataset.placeholder || '';
+    valueEl.classList.add('placeholder');
+    ddEl.style.setProperty('--item-color', 'var(--border)');
+  }
+}
+
 /* Schnellzugriff auf andere Dekaden/Stimmungen als zwei durchgehende,
    horizontal scrollbare Zeilen (Dekaden, Stimmungen darunter) -- fest
    eingebaut im Playlist-Generator zwischen Suchfeld und Genre-Buttons.
@@ -82,23 +180,16 @@ function currentPageFolder() {
 function switchRowHTML() {
   var current = currentPageFolder();
   function dropdownFor(group, placeholder, idSuffix) {
-    var items = SITE_PAGES.filter(function (p) { return p.group === group; });
-    var activeItem = items.filter(function (p) { return p.folder === current; })[0];
-    var selectId = 'gen-switch-select-' + idSuffix;
-    var options = (activeItem ? '' : '<option value="" disabled selected hidden>' + escapeHtml(placeholder) + '</option>') +
-      items.map(function (p) {
-        var active = p.folder === current;
-        return '<option value="' + p.folder + '" data-color="' + p.color + '"' + (active ? ' selected' : '') + '>' + escapeHtml(p.label) + '</option>';
-      }).join('');
-    /* <label for="..."> statt <div>: ein Klick IRGENDWO im Pill (auch auf
-       der Gruppen-Beschriftung/Polsterung, nicht nur exakt auf dem
-       <select>) oeffnet damit nativ das Dropdown -- Browser leiten Klicks
-       auf ein zugeordnetes <label> an sein Formularelement weiter. */
-    return '' +
-      '<label class="gen-switch-dropdown" for="' + selectId + '" style="--item-color:' + (activeItem ? activeItem.color : 'var(--border)') + '">' +
-      '  <span class="gen-switch-dd-label">' + escapeHtml(group) + '</span>' +
-      '  <select id="' + selectId + '" class="gen-switch-select" aria-label="' + escapeHtml(group) + ' wechseln">' + options + '</select>' +
-      '</label>';
+    var items = SITE_PAGES.filter(function (p) { return p.group === group; })
+      .map(function (p) { return { value: p.folder, text: p.label, color: p.color }; });
+    var activeItem = items.filter(function (it) { return it.value === current; })[0];
+    return ddHTML({
+      ddId: 'gen-switch-dd-' + idSuffix,
+      label: group,
+      placeholder: placeholder,
+      items: items,
+      selectedValue: activeItem ? activeItem.value : null
+    });
   }
   return '' +
     '<div class="gen-switch-rows" id="gen-switch-row">' +
@@ -110,15 +201,8 @@ function switchRowHTML() {
 function wireSwitchRow(root) {
   var row = root.querySelector('#gen-switch-row');
   if (!row) return;
-  row.querySelectorAll('.gen-switch-select').forEach(function (select) {
-    select.addEventListener('change', function () {
-      if (!select.value) return;
-      var opt = select.options[select.selectedIndex];
-      var color = opt && opt.dataset.color;
-      var wrap = select.closest('.gen-switch-dropdown');
-      if (color && wrap) wrap.style.setProperty('--item-color', color);
-      navigateToPage(select.value);
-    });
+  row.querySelectorAll('.gen-dd').forEach(function (ddEl) {
+    wireDropdown(ddEl, function (value) { navigateToPage(value); });
   });
 }
 
@@ -2851,8 +2935,8 @@ function renderPlaylistGenerator(mountRoot, config) {
     manualShuffleSongs = null;
     linkedComboCache = null;
     clearSearchUI();
-    var genreSelectEl = mountRoot.querySelector('#gen-genre-select');
-    if (genreSelectEl) genreSelectEl.value = key;
+    var genreDd = mountRoot.querySelector('#gen-genre-dd');
+    if (genreDd) ddSetValue(genreDd, key);
     document.getElementById('gen-actions').classList.add('visible');
     loadData().then(function () {
       if (linkedDecadeKey && linkedRawData) computeLinkedCombo();
@@ -2879,8 +2963,8 @@ function renderPlaylistGenerator(mountRoot, config) {
       return;
     }
 
-    var genreSelectEl = mountRoot.querySelector('#gen-genre-select');
-    if (genreSelectEl) genreSelectEl.value = '';
+    var genreDd = mountRoot.querySelector('#gen-genre-dd');
+    if (genreDd) ddSetValue(genreDd, null);
     document.getElementById('gen-actions').classList.add('visible');
 
     hintEl.hidden = false;
@@ -2953,12 +3037,20 @@ function renderPlaylistGenerator(mountRoot, config) {
       }).join('') +
       '</div>'
     ) : '') +
-    '<div class="gen-genre-row">' +
-    '  <label class="gen-switch-dropdown gen-genre-dropdown" for="gen-genre-select">' +
-    '    <span class="gen-switch-dd-label">Genre</span>' +
-    '    <select id="gen-genre-select" class="gen-switch-select" aria-label="Genre wählen"></select>' +
-    '  </label>' +
-    '</div>' +
+    (config.themes && config.themes.length ? (
+      '<div class="gen-genre-row">' +
+      ddHTML({
+        ddId: 'gen-genre-dd',
+        extraClass: 'gen-genre-dd',
+        label: 'Genre',
+        placeholder: 'Genre',
+        items: [{ value: MIX_KEY, text: 'Mix – Best-of aller Genres', color: null, title: 'Die ' + MIX_PER_CATEGORY + ' beliebtesten Songs aus jedem Genre' }].concat(
+          config.themes.map(function (t) { return { value: t.key, text: t.label, color: null }; })
+        ),
+        selectedValue: null
+      }) +
+      '</div>'
+    ) : '') +
     '<div class="send-panel">' +
     '  <span class="send-panel-label">Dein Dienst:</span>' +
     '  <div class="provider-picker" id="gen-provider-picker"></div>' +
@@ -2994,34 +3086,9 @@ function renderPlaylistGenerator(mountRoot, config) {
     });
   }
 
-  var genreSelect = section.querySelector('#gen-genre-select');
-  if (genreSelect && config.themes && config.themes.length) {
-    /* Leere Platzhalter-Option -- wird nur waehrend einer aktiven Suche
-       angezeigt (siehe runSearch), wenn kein Genre "aktiv" ist. */
-    var placeholderOpt = document.createElement('option');
-    placeholderOpt.value = '';
-    placeholderOpt.disabled = true;
-    placeholderOpt.hidden = true;
-    placeholderOpt.textContent = 'Genre';
-    genreSelect.appendChild(placeholderOpt);
-
-    var mixOpt = document.createElement('option');
-    mixOpt.value = MIX_KEY;
-    mixOpt.title = 'Die ' + MIX_PER_CATEGORY + ' beliebtesten Songs aus jedem Genre';
-    mixOpt.textContent = 'Mix – Best-of aller Genres';
-    genreSelect.appendChild(mixOpt);
-
-    config.themes.forEach(function (t) {
-      var opt = document.createElement('option');
-      opt.value = t.key;
-      opt.textContent = t.label;
-      genreSelect.appendChild(opt);
-    });
-
-    genreSelect.addEventListener('change', function () {
-      if (!genreSelect.value) return;
-      selectTheme(genreSelect.value);
-    });
+  var genreDd = section.querySelector('#gen-genre-dd');
+  if (genreDd) {
+    wireDropdown(genreDd, function (value) { selectTheme(value); });
   }
 
   var target = mountRoot.querySelector(config.mountBefore);
