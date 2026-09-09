@@ -265,7 +265,7 @@ function switchRowHTML() {
     ddHTML({
       ddId: 'gen-switch-dd-stimmungen',
       label: 'Ambient/Mood',
-      placeholder: 'Ambient/Mood wechseln',
+      placeholder: 'wechseln',
       items: items,
       selectedValue: activeItem ? activeItem.value : null
     }) +
