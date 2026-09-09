@@ -1,0 +1,94 @@
+name: Christmas-Playlist erweitern
+
+on:
+  workflow_dispatch: {}
+
+# Selbe Gruppe wie process-missing-songs.yml: beide Workflows schreiben in
+# einzeilige *-music/songs.json-Dateien (siehe dortiger Kommentar zum
+# Rebase-Konflikt-Risiko) -- geteilte Gruppe verhindert, dass sie gleichzeitig
+# laufen und sich gegenseitig beim Push in die Quere kommen, statt das erst
+# per Redo-Logik aufzufangen.
+concurrency:
+  group: process-missing-songs
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  expand:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Startzeit merken
+        run: echo "JOB_START_TS=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Abhaengigkeiten installieren
+        run: pip install --quiet yt-dlp
+
+      - name: Warteliste verarbeiten
+        # Kein DISCOGS_TOKEN noetig -- die Kandidaten (queue/christmas-
+        # erweiterung.json) wurden bereits mit vollstaendigen Discogs-
+        # Metadaten befuellt, dieser Schritt sucht nur noch die YouTube-Links.
+        run: python3 tools/process_christmas_queue.py
+
+      - name: Aenderungen committen und pushen
+        run: |
+          git config user.name "driftware-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add queue/christmas-erweiterung.json christmas-music/songs.json
+          if git diff --cached --quiet; then
+            echo "Keine Aenderungen."
+            exit 0
+          fi
+          git commit -m "Christmas-Playlist erweitert"
+
+          # Gleiche Redo-Strategie wie process-missing-songs.yml (siehe dort
+          # fuer die ausfuehrliche Begruendung): bei einem echten Rebase-
+          # Konflikt (gleichzeitige Aenderung an derselben einzeiligen JSON-
+          # Datei) NICHT von Hand zusammenfuehren, sondern auf den frischen
+          # Remote-Stand zuruecksetzen und die Verarbeitung dort erneut
+          # anstossen -- tools/process_christmas_queue.py ist dafuer bewusst
+          # zustandslos/wiederholbar.
+          for i in 1 2 3 4 5; do
+            if git push; then
+              echo "Push erfolgreich (Versuch $i)."
+              exit 0
+            fi
+
+            echo "Push abgelehnt (Versuch $i), hole Remote-Stand..."
+            git fetch origin master
+
+            if git rebase origin/master; then
+              echo "Sauber rebased, versuche erneut zu pushen."
+              continue
+            fi
+
+            echo "Echter Rebase-Konflikt -- Rebase abgebrochen, Lauf wird auf dem neuen Remote-Stand neu aufgesetzt statt blind zusammengefuehrt."
+            git rebase --abort
+            git reset --hard origin/master
+
+            ELAPSED=$(( $(date +%s) - JOB_START_TS ))
+            BUDGET=$(( 20700 - ELAPSED ))
+            if [ "$BUDGET" -lt 120 ]; then
+              echo "Kaum noch Zeit im 6h-Job-Limit uebrig -- Neu-Verarbeitung wird uebersprungen, der naechste Lauf uebernimmt den Rest. Kein Datenverlust, da bereits auf den frischen Remote-Stand zurueckgesetzt."
+              exit 0
+            fi
+
+            CHRISTMAS_TIME_BUDGET_SECONDS=$BUDGET python3 tools/process_christmas_queue.py
+
+            git add queue/christmas-erweiterung.json christmas-music/songs.json
+            if git diff --cached --quiet; then
+              echo "Nach Neu-Verarbeitung auf dem frischen Stand keine eigenen Aenderungen mehr uebrig."
+              exit 0
+            fi
+            git commit -m "Christmas-Playlist erweitert"
+          done
+
+          echo "::error::Push nach mehreren Versuchen fehlgeschlagen, Fortschritt bleibt lokal im Runner (geht verloren)."
+          exit 1
