@@ -976,7 +976,13 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
     "wave . ctrl pitch";
 }
 .dj-deck-head {
+  /* Schritt 8 (Nutzer: "Display immer oben in den Ecken platzieren"):
+     .dj-deck hat align-items:center fuer die ANDEREN Grid-Elemente
+     (Plattenteller/Pitch/Buttons/Waveform) -- das Display allein wird
+     per align-self:start an den oberen Rand der Zeile gepinnt, statt
+     mittig zu schweben. */
   grid-area: head;
+  align-self: start;
   display: flex;
   flex-direction: row;
   align-items: stretch;
