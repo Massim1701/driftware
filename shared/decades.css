@@ -18,23 +18,29 @@ body {
   color: var(--text);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
-  /* Konsolen-Layout (9.9.): Player steht jetzt als volle Kopfzeile OBEN im
-     normalen Seitenfluss statt als feste Spalte rechts -- die frueheren
-     padding-right-Reservierungen (460px fuer Sidebar+Tools-Panel) sind
-     dadurch ueberfluessig geworden, kein Platz mehr freizuhalten. */
+  /* Der DJ-Player steht als feste Spalte rechts — Platz lassen, damit
+     Inhalt/Footer nicht darunter verschwinden. Auf schmalen Screens
+     wandert er zurueck an den unteren Rand (siehe Media-Queries).
+     460px = 370px Player + 90px BPM-Sync-Panel (siehe .dj-player /
+     .dj-tools-panel weiter unten). War 380px/290px -- auf breiten
+     Desktop-Screens (>1100px, betrifft KEINE der anderen Breakpoint-Fixes
+     hier) wirkte die schmale 290px-Spalte selbst gestapelt noch eng
+     ("Player zusammengerafft" bezog sich offenbar die ganze Zeit auch auf
+     den normalen Desktop-Fall, nicht nur auf schmale Fenster/iPad). */
+  padding-right: 460px;
 }
 a { color: var(--accent); }
 
-/* Utility-Block (Home / Mail / Datenschutz) -- stand vorher "position:fixed"
-   oben mittig ueber der ganzen Seite; das wuerde jetzt mit der neuen,
-   vollbreiten Player-Kopfzeile kollidieren (beide wollen den oberen Rand).
-   Jetzt normaler Seitenfluss-Block ganz oben, VOR dem Player. */
+/* Utility-Block oben (Home / Mail / Datenschutz) */
 .utility-block {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
   display: flex;
   flex-direction: row;
-  justify-content: center;
   gap: 10px;
-  padding: 12px 0 0;
 }
 .utility-tile {
   display: flex;
@@ -132,10 +138,14 @@ header.decade-header {
 /* Themen-/Feature-Grid */
 main.decade-main {
   max-width: 1400px;
-  /* Konsolen-Layout (9.9.): Player ist keine rechte Sidebar mehr, sondern
-     eine volle Kopfzeile oben -- der Inhalt darunter ist wieder ganz
-     normal mittig zentriert, kein Rechts-Andock-Trick mehr noetig. */
-  margin: 0 auto;
+  /* War "margin: 0 auto" (mittig zentriert) -- ab ca. 1860px Fensterbreite
+     (max-width 1400px + Sidebar-Player+Tools-Panel 460px) hat "auto" links
+     UND rechts Luft verteilt, wodurch zwischen Inhalt und Player eine immer
+     groessere Luecke entstand (bei 2200px schon 170px), der Player wirkte
+     dadurch "abgehaengt". Jetzt haengt der Inhalt fest am Player/Tools-
+     Panel (0 Luecke bei jeder Breite), ueberschuessiger Platz auf breiten
+     Screens sammelt sich links statt in der Mitte zu klaffen. */
+  margin: 0 0 0 auto;
   padding: 0 24px 90px;
 }
 .features {
@@ -554,18 +564,9 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   gap: 20px;
 }
 .song-grid {
-  /* .gen-history (frueher der zweite Flex-Nachbar hier) ist jetzt
-     dauerhaft ausgeblendet (siehe .gen-history weiter unten -- die
-     Warteschlange lebt in der eigenen Tabelle ueber dem Seiteninhalt) --
-     .song-grid bekam dadurch als einziges flex:1-Kind die GANZE
-     Zeilenbreite bis zu seinem alten max-width:900px, die Zeilen wirkten
-     dadurch viel zu breit auseinandergezogen. Deshalb hier ein eigenes,
-     enger gesetztes max-width statt sich auf den (jetzt leeren)
-     Nachbarn zu verlassen. */
   flex: 1;
   min-width: 0;
-  max-width: 620px;
-  margin: 0 auto;
+  max-width: 900px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -583,13 +584,6 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   border-radius: 8px;
 }
 .gen-history {
-  /* Konsolen-Layout (9.9.): die Warteschlange steht jetzt als eigene,
-     persistente Tabelle direkt unter dem Player (siehe .dj-queue-panel,
-     nextup.js) statt als kleine Box hier im Seiteninhalt -- diese
-     Original-Box wird von decades.js zwar weiterhin pro Seite gefuellt,
-     bleibt aber ausgeblendet, damit die Warteschlange nicht doppelt
-     auftaucht. */
-  display: none;
   flex: 1;
   min-width: 260px;
   max-width: 340px;
@@ -864,29 +858,30 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
    auf).
    Die Chrome-Fader-Verlaufsfarben (siehe Slider-Thumbs weiter unten) sind
    von wheelsofsteel.net (Scott Schiller, BSD-Lizenz) übernommen. ---------- */
-/* Konsolen-Layout (9.9.): Player war die ganze Session eine fixe rechte
-   Spalte -- jetzt stattdessen eine volle, normale Kopfzeile ganz oben im
-   Seitenfluss (sticky, damit sie beim Scrollen durch die Bibliothek
-   erreichbar bleibt), Decks nebeneinander statt gestapelt. Ersetzt die
-   alte 370px-Sidebar-Regel komplett. */
 .dj-player {
   display: block;
-  position: sticky;
+  position: fixed;
   top: 0;
+  right: 0;
+  bottom: 0;
+  width: 370px;
+  overflow-y: auto;
   z-index: 250;
-  width: 100%;
   background: linear-gradient(200deg, var(--panel) 0%, var(--bg) 130%);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
-  padding: 4px 24px 4px;
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04);
+  padding: 12px 18px 14px;
 }
-/* Kurzer Aufblitz-Effekt (siehe highlightResumedPlayer in decades.js),
-   sobald Song/Warteschlange nach einem Reload wiederhergestellt sind. */
+/* Player ist "position: fixed", nach einem Reload also immer sichtbar --
+   trotzdem faellt eine fortgesetzte Wiedergabe in der Ecke leicht nicht
+   sofort auf. Kurzer Aufblitz-Effekt statt eines erzwungenen Scrolls (siehe
+   highlightResumedPlayer in decades.js), sobald Song/Warteschlange nach
+   einem Reload wiederhergestellt sind. */
 .dj-player.dj-player-resumed { animation: dj-player-resume-pulse 2.6s ease-out; }
 @keyframes dj-player-resume-pulse {
-  0% { box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04), inset 0 0 0 0 rgba(124,92,255,0); }
-  12% { box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04), inset 0 0 0 2px var(--accent), 0 8px 34px 6px rgba(124,92,255,0.5); }
-  100% { box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04), inset 0 0 0 0 rgba(124,92,255,0); }
+  0% { box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04), inset 0 0 0 0 rgba(124,92,255,0); }
+  12% { box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04), inset 0 0 0 2px var(--accent), -8px 0 34px 6px rgba(124,92,255,0.5); }
+  100% { box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04), inset 0 0 0 0 rgba(124,92,255,0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .dj-player.dj-player-resumed { animation: none; }
@@ -894,122 +889,34 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .dj-player::before {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
+  top: 0;
   bottom: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+  left: 0;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, var(--accent), var(--accent2), transparent);
   opacity: 0.7;
 }
 .dj-decks {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  max-width: 1440px;
-  margin: 0 auto;
+  gap: 4px;
 }
-/* Deck-Layout (9.9., "Breite ausnutzen" + "streng dich an" -- zweiter,
-   konsequenterer Anlauf): EIN Deck ist jetzt ein einziger horizontaler
-   Streifen (wie ein Mixer-Kanalstreifen), keine zwei Zeilen mehr.
-   Reihenfolge von links nach rechts: Plattenteller, Digitalanzeige
-   (waechst, fuellt die Mitte -- Label "Deck A" links, Songinfos in der
-   Box, Farbwaehler-Punkte oben rechts der Box: Inhalt sitzt also bereits
-   in den LINKEN und RECHTEN Ecken dieses Abschnitts statt zentriert
-   gestapelt, wie der Nutzer vorgeschlagen hat), Waveform, Pitch-Regler,
-   Play/Prev/Next -- alles auf gleicher Hoehe. Deck-Hoehe ist dadurch nur
-   noch so hoch wie das hoechste einzelne Element (Plattenteller), nicht
-   mehr Summe aus fuenf gestapelten Zeilen. `order` sortiert die 5 von
-   decades.js unveraendert in derselben Reihenfolge erzeugten Kind-
-   Elemente (.dj-deck-head/.dj-deck-top/.dj-waveform/.dj-pitch/
-   .dj-deck-controls) visuell um, ohne das Markup anzufassen. Unter 1050px
-   (Media-Query weiter unten) wieder gestapelte Spalte -- der Streifen
-   waere auf Handy-Breite zu eng. */
-.dj-decks {
-  align-items: stretch;
-}
-/* Schritt 2 (Nutzer: "oben in den ecken" -- praezisiert Schritt 1):
-   die Digitalanzeige haengt jetzt nicht mehr IN der Reihe, sondern
-   absolut ueber der Deck-Zeile, oben an der jeweiligen AEUSSEREN Ecke
-   (Deck A oben-links, Deck B oben-rechts) -- wie ein Kanalstreifen-Label,
-   das ueber den eigentlichen Reglern schwebt. Darunter, in normaler
-   Fluss-Reihenfolge, der Rest: Plattenteller/Waveform/Pitch/Buttons, bei
-   Deck B gespiegelt (Buttons zur Mitte/Crossfader hin). */
-/* Schritt 4 (Nutzer: "Plattenteller neben das Display setz-en"): Kopf-
-   zeile ist kein schwebendes Overlay mehr, sondern eine echte Grid-Zeile
-   -- Label+Digitalanzeige UND Plattenteller stehen jetzt gemeinsam oben
-   in der Ecke, nebeneinander. Waveform/Pitch/Buttons bilden eine zweite
-   Grid-Zeile darunter. Grid statt Flex+order, weil die beiden Zeilen
-   unterschiedlich viele Elemente haben (2 oben, 3 unten) -- mit Grid
-   kann jedes der 5 von decades.js unveraendert erzeugten Kind-Elemente
-   frei per grid-area plaziert werden, ohne das Markup anzufassen. */
-/* Schritt 5 (Nutzer: "diese Einheiten rechts und links genau unter die
-   displays" -- Pitch-Regler+Play/Skip sollen nicht mehr unter dem
-   Plattenteller sitzen, sondern unter der Digitalanzeige, gespiegelt auf
-   beiden Decks). Kopfzeile (Label+Display) spannt jetzt 2 Spalten, damit
-   Pitch+Buttons darunter genug Breite haben; Plattenteller/Waveform
-   bleiben rechts daneben in der 3. Spalte. */
-/* Schritt 6 (Nutzer: "Plattenteller neben den Fader in der Mitte,
-   links und rechts") -- Plattenteller+Waveform sind jetzt in der
-   AEUSSERSTEN Spalte Richtung Crossfader-Modul (ein 1fr-Spacer VOR
-   dieser Spalte schiebt sie dorthin), statt neben dem Display zu
-   stehen. */
 .dj-deck {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto auto 1fr auto;
-  grid-template-areas:
-    "head head . ."
-    "pitch ctrl . .";
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  align-content: start;
-  column-gap: 8px;
-  row-gap: 6px;
-  flex: 1 1 380px;
-  min-width: 0;
-}
-#deck-B {
-  grid-template-columns: auto 1fr auto auto;
-  grid-template-areas:
-    ". . head head"
-    ". . ctrl pitch";
+  gap: 4px;
+  width: 334px;
 }
 .dj-deck-head {
-  /* Schritt 8 (Nutzer: "Display immer oben in den Ecken platzieren"):
-     .dj-deck hat align-items:center fuer die ANDEREN Grid-Elemente
-     (Plattenteller/Pitch/Buttons/Waveform) -- das Display allein wird
-     per align-self:start an den oberen Rand der Zeile gepinnt, statt
-     mittig zu schweben. */
-  grid-area: head;
-  align-self: start;
   display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  gap: 5px;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  gap: 3px;
+  text-align: left;
 }
-/* Deck B sitzt am AEUSSEREN rechten Rand -- Label soll deshalb aussen
-   (rechts vom Display) stehen statt wie bei Deck A links davor. */
-#deck-B .dj-deck-head { flex-direction: row-reverse; }
-/* Schritt 3 (Nutzer: "die um 180 Grad gedreht daneben, nicht hoeher als
-   das display"): Label wieder hochkant/180-Grad-gedreht wie in Schritt 1
-   -- aber jetzt per align-items:stretch auf die Hoehe der Digitalanzeige
-   nebenan begrenzt (overflow:hidden schneidet ab, was darueber
-   hinausragt), statt frei in die Hoehe zu wachsen. */
-.dj-deck-label {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  letter-spacing: 0.06em;
-  overflow: hidden;
-}
-.dj-deck-info { flex: 1 1 auto; min-width: 100px; }
-.dj-pitch { grid-area: pitch; }
-.dj-deck-controls { grid-area: ctrl; }
 .dj-deck-label {
   font-size: 11px;
   font-weight: 800;
@@ -1018,31 +925,14 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   text-transform: uppercase;
 }
 .dj-deck-top {
-  /* Schritt 10 (Nutzer: "genau unter dem Display ohne Luecke"): Plattenteller
-     nimmt nicht mehr an der Grid-Zeilenberechnung teil (position:absolute,
-     an der oberen aeusseren Ecke der Deck-Zeile verankert, Groesse
-     unveraendert) -- Zeile 1 wird dadurch nur noch so hoch wie das Display. */
-  position: absolute;
-  top: 0;
-  right: 0;
   display: flex;
   align-items: stretch;
   justify-content: center;
   gap: 10px;
 }
-#deck-B .dj-deck-top { right: auto; left: 0; }
-/* Schritt 12 (Nutzer: "diese hier genau unter den Plattentellern rechts
-   und links, nicht groesser als der Plattenteller selbst"): Waveform
-   verlaesst wie der Plattenteller die Grid-Zeilenberechnung und wird
-   direkt darunter verankert -- gleiche rechte/linke Kante wie
-   .dj-deck-top, Breite an die Plattenteller-Groesse gekoppelt (clamp
-   identisch), damit sie nie breiter wird als der Teller. */
 .dj-waveform {
-  position: absolute;
-  top: calc(clamp(80px, 8.8vw, 124px) + 8px);
-  right: 0;
-  width: clamp(80px, 8.8vw, 124px);
-  height: 18px;
+  width: clamp(135px, 10vw, 162px);
+  height: 34px;
   border-radius: 6px;
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.06);
@@ -1050,7 +940,6 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   touch-action: none;
   overflow: hidden;
 }
-#deck-B .dj-waveform { right: auto; left: 0; }
 .dj-waveform canvas { display: block; width: 100%; height: 100%; }
 .dj-waveform:hover { border-color: rgba(255,255,255,0.14); }
 .dj-waveform:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -1059,12 +948,11 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 112px;
-  overflow: visible;
+  width: 180px;
 }
 .dj-pitch-display {
   position: absolute;
-  left: calc(50% + 37px);
+  left: calc(50% + 33px);
   top: 50%;
   transform: translateY(-50%);
   white-space: nowrap;
@@ -1073,10 +961,10 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   color: #4ade80;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 10px;
   font-weight: 800;
   text-align: center;
-  padding: 5px 9px;
+  padding: 5px 8px;
   letter-spacing: 0.02em;
   box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
 }
@@ -1088,8 +976,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .dj-knob-wrap { display: flex; align-items: center; justify-content: center; }
 .dj-knob {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: linear-gradient(160deg, #3a3a42, #1a1a1f 60%, #2a2a30);
   border: 1px solid rgba(0,0,0,0.5);
@@ -1104,21 +992,21 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 2px;
-  height: 2px;
-  margin: -1px 0 0 -1px;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
   border-radius: 50%;
   background: var(--border);
 }
 .dj-knob-ticks span.mid { background: var(--accent2); }
-.dj-knob-ticks span:nth-child(1) { transform: rotate(-135deg) translate(0, -34px); }
-.dj-knob-ticks span:nth-child(2) { transform: rotate(-67.5deg) translate(0, -34px); }
-.dj-knob-ticks span:nth-child(3) { transform: rotate(0deg) translate(0, -34px); }
-.dj-knob-ticks span:nth-child(4) { transform: rotate(67.5deg) translate(0, -34px); }
-.dj-knob-ticks span:nth-child(5) { transform: rotate(135deg) translate(0, -34px); }
+.dj-knob-ticks span:nth-child(1) { transform: rotate(-135deg) translate(0, -29px); }
+.dj-knob-ticks span:nth-child(2) { transform: rotate(-67.5deg) translate(0, -29px); }
+.dj-knob-ticks span:nth-child(3) { transform: rotate(0deg) translate(0, -29px); }
+.dj-knob-ticks span:nth-child(4) { transform: rotate(67.5deg) translate(0, -29px); }
+.dj-knob-ticks span:nth-child(5) { transform: rotate(135deg) translate(0, -29px); }
 .dj-knob-dial {
   position: absolute;
-  inset: 7px;
+  inset: 5px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #565660, #202024 70%);
   transition: transform 0.08s ease;
@@ -1126,10 +1014,10 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .dj-knob-pointer {
   position: absolute;
   left: 50%;
-  top: 7px;
-  width: 2px;
-  height: 15px;
-  margin-left: -1px;
+  top: 4px;
+  width: 3px;
+  height: 12px;
+  margin-left: -1.5px;
   border-radius: 2px;
   background: var(--accent2);
   box-shadow: 0 0 4px var(--accent2);
@@ -1163,16 +1051,9 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 
 .dj-vinyl {
-  /* Schritt 4 (Nutzer: "kann ruhig groesser werden"): jetzt, wo der
-     Plattenteller oben in der Ecke neben dem Display steht statt in der
-     engen Kanalstreifen-Reihe, ist wieder mehr Platz -- deutlich groesser
-     als die vorherige Kompakt-Version (52-76px). */
-  /* Schritt 6 (Nutzer: "kann ruhig groesser werden, aber nicht groesser
-     als das Fader-Modul"): Fader-Modul (.dj-master) ist ca. 190px hoch --
-     150px bleibt sichtbar kleiner, aber deutlich groesser als vorher. */
   position: relative;
-  width: clamp(80px, 8.8vw, 124px);
-  height: clamp(80px, 8.8vw, 124px);
+  width: clamp(135px, 13vw, 200px);
+  height: clamp(135px, 13vw, 200px);
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -1225,8 +1106,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   justify-content: center;
 }
 .dj-vinyl-video {
-  width: clamp(62px, 6.9vw, 103px);
-  height: clamp(62px, 6.9vw, 103px);
+  width: 113px;
+  height: 113px;
   border-radius: 50%;
   overflow: hidden;
   background: #000;
@@ -1269,15 +1150,10 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 .dj-vinyl-video-logo svg { width: 100%; height: 100%; }
 .dj-vinyl-ring {
-  /* Schritt 12b (Nutzer: "Punkt wieder um den Plattenteller rotieren
-     lassen"): z-index ergaenzt, damit der rotierende Punkt bei Songs mit
-     YouTube-Video (eigener Stacking-Context durchs iframe) sicher SICHTBAR
-     ueber dem Video bleibt, statt eventuell darunter zu verschwinden. */
   position: absolute;
   inset: 0;
   border-radius: 50%;
   pointer-events: none;
-  z-index: 3;
 }
 .dj-vinyl-disc.playing .dj-vinyl-ring {
   animation: dj-spin 2.6s linear infinite;
@@ -1288,11 +1164,11 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 .dj-vinyl-dot {
   position: absolute;
-  top: 5px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  width: 5px;
-  height: 5px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: rgba(255,255,255,0.2);
   transition: background 0.15s ease, box-shadow 0.15s ease;
@@ -1308,9 +1184,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 0 8px;
-  font-size: 8px;
-  line-height: 1.2;
+  padding: 0 20px;
+  font-size: 11px;
   color: var(--muted);
   background: rgba(0,0,0,0.4);
   border-radius: 50%;
@@ -1340,22 +1215,13 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
    genau wie bei einem echten LCD-Display, das nur eine Hintergrundbeleuchtung
    hat. */
 .dj-deck-info {
-  /* Schritt 11 (Nutzer: "passe die Groesse an", nachdem Schritt 10 die
-     Luecke geschlossen hat): der dadurch frei gewordene Platz in der
-     190px-Zeile wird genutzt, um Display+Knopf+Buttons nochmal moderat
-     zu vergroessern -- Summe aus Kopf+Gap+Zeile2 bleibt klar unter der
-     Fader-Hoehe. */
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  column-gap: 8px;
   text-align: left;
-  min-height: 32px;
+  min-height: 26px;
   width: 100%;
   box-sizing: border-box;
-  padding: 8px 20px 8px 11px;
-  border-radius: 7px;
+  padding: 6px 18px 6px 8px;
+  border-radius: 5px;
   background: #04120e;
   border: 1px solid rgba(255,255,255,0.08);
   box-shadow: inset 0 0 8px rgba(0,0,0,0.65);
@@ -1363,11 +1229,6 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   cursor: pointer;
   --digital-fg: #4ade80;
 }
-/* Titel+Artist in der linken Spalte (gestapelt), Restzeit+BPM in der
-   rechten Spalte (vertikal zentriert) -- Ecken links/rechts statt einer
-   dritten Zeile untereinander, wie vom Nutzer vorgeschlagen. */
-.dj-deck-info strong { grid-column: 1; grid-row: 1; min-width: 0; }
-.dj-deck-info span { grid-column: 1; grid-row: 2; min-width: 0; }
 .dj-deck-info:hover { border-color: var(--digital-fg); }
 .dj-digital-swatches {
   position: absolute;
@@ -1401,7 +1262,7 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
 .dj-deck-info[data-digital="orange"] { --digital-fg: #fb923c; }
 .dj-deck-info strong {
   display: block;
-  font-size: 18px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--digital-fg);
   text-shadow: 0 0 6px var(--digital-fg);
@@ -1410,31 +1271,26 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   text-overflow: ellipsis;
   max-width: 100%;
   letter-spacing: 0.02em;
-  line-height: 1.25;
 }
 .dj-deck-info span {
   display: block;
-  font-size: 14px;
+  font-size: 11px;
   color: var(--digital-fg);
   opacity: 0.75;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-  line-height: 1.25;
 }
 .dj-deck-meta {
-  grid-column: 2;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  margin-top: 0;
-  margin-right: 10px;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
 }
 .dj-deck-remaining {
   display: block;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--digital-fg);
@@ -1445,19 +1301,19 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 4px;
-  font-size: 13px;
+  gap: 3px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--digital-fg);
   opacity: 0.9;
-  min-height: 14px;
+  min-height: 13px;
 }
-.dj-deck-bpm svg { width: 12px; height: 12px; flex-shrink: 0; }
+.dj-deck-bpm svg { width: 11px; height: 11px; flex-shrink: 0; }
 
-.dj-deck-controls { display: flex; align-items: center; gap: 5px; }
+.dj-deck-controls { display: flex; align-items: center; gap: 8px; }
 .dj-deck-controls button {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: linear-gradient(160deg, rgba(255,255,255,0.14), rgba(0,0,0,0.18)), var(--bg);
@@ -1469,42 +1325,30 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   align-items: center;
   justify-content: center;
 }
-.dj-deck-controls button svg { width: 17px; height: 17px; }
+.dj-deck-controls button svg { width: 15px; height: 15px; }
 .dj-deck-controls button:hover { border-color: var(--accent); }
 .dj-deck-controls button[id$="-toggle"] {
-  background: #22c55e;
+  background: #ff0000;
   color: #fff;
-  border-color: #22c55e;
-  border-radius: 8px;
-  width: 54px;
-  height: 54px;
+  border-color: #ff0000;
+  width: 40px;
+  height: 40px;
   font-size: 16px;
 }
-.dj-deck-controls button[id$="-toggle"] svg { width: 22px; height: 22px; }
+.dj-deck-controls button[id$="-toggle"] svg { width: 18px; height: 18px; }
 
-/* Master-Spalte (9.9., "Breite ausnutzen"): war eine schmale (250px),
-   komplett durchgestapelte Saeule -- jetzt ein 2-spaltiges Grid, das die
-   jetzt freie Breite neben den kompakteren Decks nutzt statt Hoehe zu
-   fressen: Crossfader oben ueber die volle Breite, Lautstaerke + Autofade/
-   Fade-jetzt nebeneinander in einer Zeile, BPM-Sync (.dj-tools-panel) als
-   eigene, INTERN horizontale Zeile ganz unten (siehe dort). */
 .dj-master {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px 12px;
-  width: 380px;
-  flex: 0 0 380px;
-  align-self: center;
-  padding: 6px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 7px 13px;
   background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 14px rgba(0,0,0,0.25);
 }
-.dj-crossfader { grid-column: 1 / 3; }
-.dj-volume { grid-column: 1; }
-.dj-fade-row { grid-column: 2; justify-content: flex-end; }
-.dj-tools-panel { grid-column: 1 / 3; }
 .dj-crossfader { display: flex; align-items: center; gap: 7px; }
 .dj-crossfader-label { font-size: 12px; font-weight: 800; color: var(--muted); }
 #dj-crossfader, #dj-master-volume {
@@ -1555,7 +1399,7 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 10px;
+  padding: 5px 12px;
   border-radius: 20px;
   border: 1px solid rgba(239, 68, 68, 0.45);
   background: rgba(239, 68, 68, 0.12);
@@ -1577,8 +1421,8 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   border-radius: 50%;
   border: 1px solid #ff0000;
@@ -1601,52 +1445,41 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   80% { transform: translateX(2px); }
 }
 
-/* Konsolen-Layout (9.9.): BPM-Sync war ein separates, fixiert
-   positioniertes Flyout-Panel links neben der Sidebar -- jetzt ganz
-   normaler Bestandteil der Master-Spalte (per JS in ensureDjPlayer() in
-   .dj-master eingehaengt, siehe decades.js), kein eigenes position:fixed
-   mehr noetig. */
+/* BPM-Sync-Flyout: steht links neben der Player-Spalte im selben
+   90px-Streifen, den vorher das Ambient-Panel belegt hat (siehe
+   body padding-right oben) — nur auf breiten Screens, siehe Media-Query. */
 .dj-tools-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  width: 100%;
-  border-top: 1px solid var(--border);
-  padding-top: 5px;
-  margin-top: 1px;
+  display: none;
 }
 .dj-tools-title {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.04em;
   color: var(--muted);
   text-transform: uppercase;
   text-align: center;
 }
-.dj-bpm-readout { display: flex; flex-direction: row; gap: 4px; width: 100%; }
+.dj-bpm-readout { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 .dj-bpm-readout-row {
   display: flex;
-  flex-direction: row;
-  align-items: baseline;
-  justify-content: center;
-  gap: 4px;
-  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   font-family: 'Courier New', monospace;
   background: #04120e;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 6px;
-  padding: 3px 3px;
+  padding: 5px 3px;
   box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
 }
-.dj-bpm-readout-label { font-size: 8px; font-weight: 800; color: var(--muted); }
-.dj-bpm-readout-value { font-size: 11px; font-weight: 800; color: #f5a623; font-variant-numeric: tabular-nums; }
+.dj-bpm-readout-label { font-size: 9px; font-weight: 800; color: var(--muted); }
+.dj-bpm-readout-value { font-size: 12px; font-weight: 800; color: #f5a623; font-variant-numeric: tabular-nums; }
 .dj-bpm-match {
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
   color: var(--muted);
   text-align: center;
-  line-height: 1.2;
+  line-height: 1.35;
 }
 .dj-bpm-match.ok { color: #22c55e; }
 .dj-bpm-sync-btn {
@@ -1654,9 +1487,9 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
   width: 100%;
-  padding: 5px 4px;
+  padding: 8px 4px;
   border-radius: 12px;
   border: 1px solid rgba(124, 92, 255, 0.45);
   background: rgba(124, 92, 255, 0.12);
@@ -1672,101 +1505,150 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
 .dj-bpm-sync-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(124,92,255,0.2); }
 .dj-bpm-sync-btn:disabled { opacity: 0.35; cursor: default; }
 
-/* Konsolen-Layout (9.9.): persistente Warteschlangen-Tabelle direkt unter
-   dem Player -- einmal per JS an dieser Stelle im DOM eingehaengt (siehe
-   nextup.js), ueberlebt Dekaden-Wechsel unveraendert, kein Neuaufbau pro
-   Seite mehr noetig (ersetzt die alte ".gen-history"-Box, siehe dort). */
-.dj-queue-panel {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 14px 24px;
-}
-.dj-queue-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
-.dj-queue-head h2 { margin: 0; font-size: 14px; display: flex; align-items: center; gap: 7px; }
-.dj-queue-head h2 svg { width: 14px; height: 14px; flex-shrink: 0; }
-.dj-queue-count { font-size: 11.5px; color: var(--muted); }
-.dj-queue-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); }
-table.dj-queue-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-table.dj-queue-table th {
-  text-align: left; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
-  color: var(--muted); font-weight: 800; padding: 8px 10px; border-bottom: 1px solid var(--border);
-}
-table.dj-queue-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-table.dj-queue-table tr:last-child td { border-bottom: none; }
-table.dj-queue-table .dq-drag { width: 18px; color: var(--muted); cursor: grab; text-align: center; }
-table.dj-queue-table .dq-num { width: 24px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
-table.dj-queue-table .dq-title strong { display: block; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 360px; }
-table.dj-queue-table .dq-title span { display: block; font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 360px; }
-table.dj-queue-table .dq-genre { color: var(--accent2); font-size: 12px; white-space: nowrap; }
-table.dj-queue-table .dq-year, table.dj-queue-table .dq-bpm { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
-table.dj-queue-table .dq-remove { width: 20px; text-align: center; color: var(--muted); cursor: pointer; background: none; border: none; font-size: 15px; padding: 2px 6px; border-radius: 5px; }
-table.dj-queue-table .dq-remove:hover { color: var(--text); background: rgba(255,255,255,0.1); }
-tr.dq-upcoming .dq-num { color: #22c55e; }
-tr.dq-current { background: rgba(34,197,94,0.1); }
-tr.dq-current td { border-bottom-color: rgba(34,197,94,0.25); }
-tr.dq-current .dq-num { color: #4ade80; }
-tr.dq-history { opacity: 0.55; }
-tr.dq-history .dq-num { color: #ef4444; }
-tr.dq-empty td { color: var(--muted); font-size: 12px; text-align: center; padding: 16px 10px; }
-tr.dq-upcoming.dq-dragging { opacity: 0.35; }
-tr.dq-upcoming.dq-drop-target td { box-shadow: inset 0 2px 0 var(--accent), inset 0 -2px 0 var(--accent); }
-.dj-queue-panel.dq-drag-over .dj-queue-table-wrap { box-shadow: 0 0 0 3px var(--accent); }
-@media (max-width: 640px) {
-  .dj-queue-panel { padding: 10px 12px; }
-  table.dj-queue-table .dq-genre, table.dj-queue-table .dq-year { display: none; }
-  table.dj-queue-table .dq-title strong, table.dj-queue-table .dq-title span { max-width: 42vw; }
-}
-
 /* Song-Kacheln sind draggable, wenn sie ein Video haben (siehe decades.js) */
 .song-tile[draggable="true"] { cursor: grab; }
 .song-tile.dragging { opacity: 0.4; }
 
-/* Konsolen-Layout (9.9.): die alte iPad-Kompakt-Regel (max-height+pointer:
-   coarse) und die alte "Sidebar >=1101px"-Regel fuer Tools-Panel/Header
-   sind komplett entfallen -- beide existierten nur, weil der Player eine
-   fixierte, hochkant-schmale rechte Spalte war, die auf kurzen Bildschirmen
-   (iPad quer) nicht ohne internes Schrumpfen passte. Als volle, flache
-   Kopfzeile oben ist der Player von Natur aus kurz (~200px hoch), das
-   Platzproblem gibt es nicht mehr, egal wie niedrig das Fenster ist.
+/* Breite Sidebar-Ansicht (>=1101px), aber wenig Hoehe -- z.B. iPad im
+   Querformat (Safari-Chrome frisst zusaetzlich Hoehe von den ohnehin nur
+   ~820-834px). Die rechte Spalte bleibt bestehen (siehe oben), wird aber
+   kompakter, damit beide Decks + Mastersektion ohne internes Scrollen auf
+   einen Bildschirm passen.
+   "and (pointer: coarse)" ist WICHTIG: eine reine max-height-Abfrage kann
+   nicht zwischen einem echten iPad im Querformat und einem stinknormalen,
+   nicht maximierten Desktop-Browserfenster unterscheiden -- beides ist
+   fuer CSS einfach "Fensterhoehe <= 860px". Genau DAS ist der Bug, der
+   die Player-Verbreiterung dieser Session ausgehebelt hat: bei 1634x858px
+   Fenstergroesse (ganz normales, leicht verkleinertes Browserfenster,
+   keinerlei iPad) griff trotzdem diese "iPad-Kompakt"-Regel und
+   quetschte Vinyl (92px statt bis zu 200px), Deck-Abstaende (2px statt
+   14px+) etc. wieder auf iPad-Niveau zusammen -- unabhaengig von der
+   tatsaechlichen Fensterbreite. pointer:coarse ist auf einem Touchscreen
+   (iPad) wahr, auf einem Desktop mit Maus/Trackpad dagegen immer falsch
+   -- damit greift die Kompakt-Optik nur noch fuer echte Touch-Geraete
+   mit wenig Hoehe, nicht mehr fuer jedes schmale/kurze Desktop-Fenster. */
+@media (min-width: 1101px) and (max-height: 860px) and (pointer: coarse) {
+  .dj-player { padding: 6px 10px 8px; }
+  .dj-decks { gap: 2px; }
+  .dj-deck { gap: 2px; }
+  .dj-deck-label { font-size: 9px; }
+  .dj-deck-top { gap: 6px; }
+  .dj-vinyl { width: 92px; height: 92px; }
+  .dj-vinyl-hint { font-size: 9px; }
+  .dj-waveform { width: 92px; height: 22px; }
+  .dj-pitch { width: 132px; gap: 2px; }
+  .dj-pitch-display { font-size: 8px; padding: 3px 6px; }
+  .dj-knob-wrap { padding-top: 2px; }
+  .dj-knob { width: 34px; height: 34px; }
+  .dj-knob-ticks span:nth-child(1) { transform: rotate(-135deg) translate(0, -19px); }
+  .dj-knob-ticks span:nth-child(2) { transform: rotate(-67.5deg) translate(0, -19px); }
+  .dj-knob-ticks span:nth-child(3) { transform: rotate(0deg) translate(0, -19px); }
+  .dj-knob-ticks span:nth-child(4) { transform: rotate(67.5deg) translate(0, -19px); }
+  .dj-knob-ticks span:nth-child(5) { transform: rotate(135deg) translate(0, -19px); }
+  .dj-knob-pointer { height: 8px; top: 3px; }
+  .dj-deck-info { min-height: 0; }
+  .dj-deck-info strong { font-size: 11px; }
+  .dj-deck-info span { font-size: 10px; }
+  .dj-deck-remaining { font-size: 9px; min-height: 0; margin-top: 0; }
+  .dj-deck-bpm { font-size: 9px; min-height: 0; margin-top: 0; }
+  .dj-deck-controls { gap: 5px; }
+  .dj-deck-controls button { width: 26px; height: 26px; }
+  .dj-deck-controls button svg { width: 12px; height: 12px; }
+  .dj-deck-controls button[id$="-toggle"] { width: 32px; height: 32px; }
+  .dj-deck-controls button[id$="-toggle"] svg { width: 15px; height: 15px; }
+  .dj-master { padding: 5px 10px; gap: 4px; }
+  .dj-autofade-toggle { padding: 3px 9px; font-size: 10px; }
+  .dj-manual-fade-btn { width: 26px; height: 26px; }
+  .dj-tools-panel { padding: 8px 8px; gap: 8px; }
+  .dj-bpm-readout { gap: 5px; }
+  .dj-bpm-readout-row { padding: 3px 3px; }
+}
 
-   Unter 1050px ist nebeneinander (2 Decks x 334px + 250px Master + Abstaende
-   ~960px + Kopfzeilen-Padding) zu eng -- dann gestapelt, wie frueher auf
-   schmalen Screens. */
-@media (max-width: 1050px) {
-  .dj-player { padding: 6px 16px 8px; }
-  .dj-decks { flex-direction: column; align-items: center; gap: 10px; }
-  /* Der breite Kanalstreifen (siehe .dj-deck weiter oben) passt nicht auf
-     Handy-Breite -- hier wieder die alte gestapelte Spalte. */
-  .dj-deck {
+/* Unter 1100px ist rechts kein Platz fuer eine 360px-Spalte. FRUEHER klappte
+   der Player hier in eine fixierte Leiste am unteren Bildschirmrand
+   (position: fixed + max-height in vh) -- das Problem dabei: position:fixed
+   richtet sich IMMER nach dem sichtbaren Viewport, nie nach dem
+   Seiteninhalt oder dem Scrollstand. Egal wie hoch/niedrig max-height
+   gesetzt wurde, es deckte IMMER einen festen Batzen vom unteren
+   Bildschirmrand ab -- bei schmalem Browserfenster/iPad lagen Suchfeld,
+   Dekaden-Reihe, Ambient/Mood-Dropdown, "Dekade verbinden", Genre-Dropdown
+   und "Auswahl senden" direkt darunter und waren dauerhaft verdeckt, ganz
+   unabhaengig vom gewaehlten Prozentwert. Das war der wiederkehrende
+   "Player/Warteschlange"-Bug. Jetzt stattdessen ganz normaler Seitenfluss
+   (position: static): der Player sitzt als eigener Block am Ende der
+   Seite, deckt dadurch NIE etwas anderes ab -- man scrollt einfach zu ihm
+   runter statt dass er permanent im Weg schwebt. */
+@media (max-width: 1100px) {
+  body { padding-right: 0; padding-bottom: 0; }
+  .dj-player {
+    /* relative statt static: bleibt im normalen Seitenfluss (kein
+       Ueberdecken mehr), behaelt aber einen Positionierungskontext fuer
+       den Akzentstrich (::before, position:absolute) am oberen Rand. */
+    position: relative;
+    width: auto;
+    max-height: none;
+    overflow-y: visible;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    padding: 8px 16px 10px;
+    margin-top: 16px;
+  }
+  .dj-player::before {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: auto;
+    width: auto;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+  }
+  /* Frueher hier extra klein geschrumpft (Vinyl 96px, enge Abstaende),
+     NUR damit beide Decks nebeneinander noch in die alte Hoehen-Bremse
+     (60vh, dann 42vh) des fixierten Drawers passten -- siehe Kommentar bei
+     .dj-player oben. Diese Hoehen-Bremse gibt es nicht mehr (normaler
+     Seitenfluss, beliebig hoch), also gibt es auch keinen Grund mehr, die
+     Decks klein zu quetschen. Jetzt gestapelt und in normaler/grosser
+     Groesse -- genau das, was als "Playe zusammengerafft" bemaengelt
+     wurde. */
+  .dj-decks {
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .dj-deck { width: 100%; max-width: 360px; }
+  .dj-master { width: 100%; max-width: 360px; margin: 4px auto 0; }
+  .dj-tools-panel { display: none !important; }
+}
+
+@media (min-width: 1101px) {
+  .dj-tools-panel {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    flex: 0 0 auto;
-    width: 100%;
-    max-width: 300px;
-    padding-top: 0;
+    justify-content: center;
+    gap: 12px;
+    position: fixed;
+    top: 0;
+    right: 370px;
+    bottom: 0;
+    width: 90px;
+    overflow-y: auto;
+    z-index: 249;
+    background: linear-gradient(200deg, var(--panel) 0%, var(--bg) 130%);
+    border-left: 1px solid var(--border);
+    padding: 14px 8px;
+    box-shadow: -8px 0 24px rgba(0,0,0,0.3);
   }
-  .dj-deck-top, .dj-deck-head, .dj-waveform, .dj-pitch, .dj-deck-controls { order: unset; }
-  .dj-deck-head {
-    position: static;
-    max-width: none;
-    flex-direction: column;
-    align-items: flex-start;
-    align-self: stretch;
-    gap: 2px;
-  }
-  .dj-deck-label { writing-mode: horizontal-tb; transform: none; }
-  .dj-master {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 300px;
-    flex-basis: auto;
-    margin: 4px auto 0;
-  }
-  .dj-crossfader, .dj-volume, .dj-fade-row, .dj-tools-panel { grid-column: unset; }
-  .dj-tools-panel { flex-direction: column; }
+  /* Hero-Header war weiterhin "margin: 0 auto" (Basisregel oben) -- bei
+     Sidebar-Layout stand er dadurch mittig in der Content-Flaeche links
+     vom Player, WAEHREND main.decade-main (siehe dort) schon rechts an
+     den Player/Tools-Panel andockt. Header und Inhalt liefen dadurch
+     nicht mehr auf gleicher Kante, sah nach zwei verschiedenen Layouts
+     uebereinander aus. Nur hier (>1100px, wo die Sidebar existiert)
+     denselben Rechts-Andock-Trick wie main.decade-main -- unter 1100px
+     (kein Sidebar, volle Breite) bleibt der Hero-Header normal mittig. */
+  header.decade-header { margin: 0 0 0 auto; }
 }
 
 @media (max-width: 640px) {
@@ -1779,7 +1661,9 @@ tr.dq-upcoming.dq-drop-target td { box-shadow: inset 0 2px 0 var(--accent), inse
   .decade-years { font-size: 10px; margin-bottom: 4px; }
   .decade-tagline { font-size: 12px; margin-bottom: 8px; }
   .badge { font-size: 11px; padding: 5px 10px; }
-  .utility-block { padding-top: 8px; gap: 8px; }
+  /* Auf dem Handy nicht mitscrollen lassen — sonst liegt der Block
+     staendig ueber dem Seiteninhalt. */
+  .utility-block { position: absolute; top: 10px; gap: 8px; }
   .utility-icon { width: 34px; height: 34px; }
   .utility-icon svg { width: 15px; height: 15px; }
   .utility-label { font-size: 8px; }
@@ -1820,4 +1704,60 @@ tr.dq-upcoming.dq-drop-target td { box-shadow: inset 0 2px 0 var(--accent), inse
   .song-grid { max-width: none; width: 100%; box-sizing: border-box; }
   .gen-history { width: 100%; box-sizing: border-box; }
   .gen-history ul { max-height: 220px; }
+}
+
+/* Revert (Nutzer: 'zuruck wie vor dem Umbau, Player untereinander auf der
+   rechten Seite'): ab hier NUR die Warteschlangen-Tabelle aus dem
+   Konsolen-Redesign uebernommen -- die JS-Seite (decades.js/nextup.js)
+   haengt sie weiterhin ein, die alte '.gen-history'-Box (oben in dieser
+   Datei) wird von JS nicht mehr befuellt. Der Rest dieser Datei ist der
+   Stand VOR dem Konsolen-Redesign (Player wieder feste Spalte rechts,
+   Decks gestapelt). */
+/* Konsolen-Layout (9.9.): persistente Warteschlangen-Tabelle direkt unter
+   dem Player -- einmal per JS an dieser Stelle im DOM eingehaengt (siehe
+   nextup.js), ueberlebt Dekaden-Wechsel unveraendert, kein Neuaufbau pro
+   Seite mehr noetig (ersetzt die alte ".gen-history"-Box, siehe dort). */
+.dj-queue-panel {
+  /* Revert-Anpassung: .utility-block (Home/Dekaden/Mail/Datenschutz) ist im
+     alten Layout fixed oben mittig -- ohne den (in dieser Session bereits
+     vorher entfernten) Hero-Header driftete die Warteschlangen-Tabelle
+     direkt darunter und ueberlappte die Icons. Oben genug Platz lassen. */
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 70px 24px 14px;
+}
+.dj-queue-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+.dj-queue-head h2 { margin: 0; font-size: 14px; display: flex; align-items: center; gap: 7px; }
+.dj-queue-head h2 svg { width: 14px; height: 14px; flex-shrink: 0; }
+.dj-queue-count { font-size: 11.5px; color: var(--muted); }
+.dj-queue-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); }
+table.dj-queue-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.dj-queue-table th {
+  text-align: left; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--muted); font-weight: 800; padding: 8px 10px; border-bottom: 1px solid var(--border);
+}
+table.dj-queue-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+table.dj-queue-table tr:last-child td { border-bottom: none; }
+table.dj-queue-table .dq-drag { width: 18px; color: var(--muted); cursor: grab; text-align: center; }
+table.dj-queue-table .dq-num { width: 24px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+table.dj-queue-table .dq-title strong { display: block; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 360px; }
+table.dj-queue-table .dq-title span { display: block; font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 360px; }
+table.dj-queue-table .dq-genre { color: var(--accent2); font-size: 12px; white-space: nowrap; }
+table.dj-queue-table .dq-year, table.dj-queue-table .dq-bpm { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.dj-queue-table .dq-remove { width: 20px; text-align: center; color: var(--muted); cursor: pointer; background: none; border: none; font-size: 15px; padding: 2px 6px; border-radius: 5px; }
+table.dj-queue-table .dq-remove:hover { color: var(--text); background: rgba(255,255,255,0.1); }
+tr.dq-upcoming .dq-num { color: #22c55e; }
+tr.dq-current { background: rgba(34,197,94,0.1); }
+tr.dq-current td { border-bottom-color: rgba(34,197,94,0.25); }
+tr.dq-current .dq-num { color: #4ade80; }
+tr.dq-history { opacity: 0.55; }
+tr.dq-history .dq-num { color: #ef4444; }
+tr.dq-empty td { color: var(--muted); font-size: 12px; text-align: center; padding: 16px 10px; }
+tr.dq-upcoming.dq-dragging { opacity: 0.35; }
+tr.dq-upcoming.dq-drop-target td { box-shadow: inset 0 2px 0 var(--accent), inset 0 -2px 0 var(--accent); }
+.dj-queue-panel.dq-drag-over .dj-queue-table-wrap { box-shadow: 0 0 0 3px var(--accent); }
+@media (max-width: 640px) {
+  .dj-queue-panel { padding: 70px 12px 10px; }
+  table.dj-queue-table .dq-genre, table.dj-queue-table .dq-year { display: none; }
+  table.dj-queue-table .dq-title strong, table.dj-queue-table .dq-title span { max-width: 42vw; }
 }
