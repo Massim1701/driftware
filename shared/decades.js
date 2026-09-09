@@ -1169,19 +1169,16 @@ function deckHTML(key) {
    sie beim Nutzen des Players immer erreichbar bleibt. Die Leiste ist
    von Anfang an sichtbar (kein Ein-/Ausblenden mehr, kein X zum
    Schließen) — Suche muss jederzeit zugaenglich sein. */
-/* Der Player steht auf breiten Screens als Spalte rechts, darunter als
-   Leiste am unteren Rand. Wie hoch diese Leiste ist, haengt vom Inhalt ab
-   (geladene Songtitel, Umbrueche) — deshalb wird der Freiraum unter dem
-   Seiteninhalt hier gemessen statt in der CSS geraten. Sonst verschwindet
-   auf Tablets der untere Teil der Seite hinter dem Player. */
+/* Der Player steht auf breiten Screens (>1100px) als FIXIERTE Spalte
+   rechts -- dafuer braucht die Seite rechts Platz, der hier reserviert
+   wird (padding-right kommt aus der Basis-CSS-Regel, hier nur noch
+   paddingBottom fuer den Fixed-Fall zuruecksetzen). Unter 1100px ist der
+   Player seit dem Ueberdeckungs-Bug (siehe Kommentar bei .dj-player im
+   1100px-Media-Query in decades.css) NICHT mehr fixiert, sondern normaler
+   Seiteninhalt -- dort ist kein zusaetzliches padding-bottom noetig oder
+   sinnvoll (der Player braucht ja bereits echten Platz im Fluss). */
 function syncPlayerSpacing() {
-  var bar = document.getElementById('dj-player');
-  if (!bar) return;
-  if (window.innerWidth <= 1100) {
-    document.body.style.paddingBottom = (bar.offsetHeight + 12) + 'px';
-  } else {
-    document.body.style.paddingBottom = '';
-  }
+  document.body.style.paddingBottom = '';
 }
 var spacingHandle = null;
 function queuePlayerSpacing() {

@@ -1538,29 +1538,35 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   .dj-bpm-readout-row { padding: 3px 3px; }
 }
 
-/* Unter 1100px ist rechts kein Platz fuer eine 360px-Spalte — der Player
-   klappt dort zurueck in die klassische Leiste am unteren Rand. */
+/* Unter 1100px ist rechts kein Platz fuer eine 360px-Spalte. FRUEHER klappte
+   der Player hier in eine fixierte Leiste am unteren Bildschirmrand
+   (position: fixed + max-height in vh) -- das Problem dabei: position:fixed
+   richtet sich IMMER nach dem sichtbaren Viewport, nie nach dem
+   Seiteninhalt oder dem Scrollstand. Egal wie hoch/niedrig max-height
+   gesetzt wurde, es deckte IMMER einen festen Batzen vom unteren
+   Bildschirmrand ab -- bei schmalem Browserfenster/iPad lagen Suchfeld,
+   Dekaden-Reihe, Ambient/Mood-Dropdown, "Dekade verbinden", Genre-Dropdown
+   und "Auswahl senden" direkt darunter und waren dauerhaft verdeckt, ganz
+   unabhaengig vom gewaehlten Prozentwert. Das war der wiederkehrende
+   "Player/Warteschlange"-Bug. Jetzt stattdessen ganz normaler Seitenfluss
+   (position: static): der Player sitzt als eigener Block am Ende der
+   Seite, deckt dadurch NIE etwas anderes ab -- man scrollt einfach zu ihm
+   runter statt dass er permanent im Weg schwebt. */
 @media (max-width: 1100px) {
-  body { padding-right: 0; padding-bottom: 400px; }
+  body { padding-right: 0; padding-bottom: 0; }
   .dj-player {
-    top: auto;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    /* relative statt static: bleibt im normalen Seitenfluss (kein
+       Ueberdecken mehr), behaelt aber einen Positionierungskontext fuer
+       den Akzentstrich (::before, position:absolute) am oberen Rand. */
+    position: relative;
     width: auto;
-    /* War 60vh -- das deckt bei schmalem Browserfenster/iPad (z.B. 817x862)
-       fast 520px vom UNTEREN Bildschirmrand ab, IMMER, unabhaengig vom
-       Scrollen (position: fixed richtet sich nach dem Viewport, nicht nach
-       dem Seiteninhalt). Ergebnis: Suchfeld, Genre-/Stimmungs-Dropdowns und
-       "Auswahl senden" lagen direkt darunter und waren komplett verdeckt --
-       das war das wiederkehrende "Warteschlange/Player"-Problem, kein
-       Scroll-Problem. 42vh laesst dem restlichen Interface wieder genug
-       Raum; der Player selbst bleibt intern scrollbar (overflow-y: auto). */
-    max-height: 42vh;
+    max-height: none;
+    overflow-y: visible;
     border-left: none;
     border-top: 1px solid var(--border);
-    box-shadow: 0 -8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
     padding: 8px 16px 10px;
+    margin-top: 16px;
   }
   .dj-player::before {
     top: 0;
@@ -1657,7 +1663,7 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   .gen-history ul { max-height: 160px; }
 
   /* Player: deutlich kleiner, damit er nicht den halben Bildschirm frisst */
-  .dj-player { padding: 8px 10px 10px; max-height: 46vh; }
+  .dj-player { padding: 8px 10px 10px; }
   .dj-decks { gap: 8px; align-items: flex-start; }
   .dj-deck { width: 48%; min-width: 0; gap: 2px; }
   .dj-deck-label { font-size: 9px; }
@@ -1686,17 +1692,16 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   .dj-autofade-toggle { font-size: 10px; padding: 4px 10px; }
   /* 16px verhindert, dass iOS beim Antippen ins Feld hineinzoomt */
   .generator-search .search-input { font-size: 16px; padding: 9px 12px 9px 34px; }
-  body { padding-bottom: 300px; }
 }
 
 /* Echte Handybreiten: die 48%-Spalten oben (640px-Block) sind ab hier zu
    schmal -- Songtitel/BPM werden abgeschnitten, Knoepfe kaum noch tapbar
    ("Playe sind zusammengerafft"-Feedback). Deshalb hier die Decks wieder
-   gestapelt statt nebeneinander, jedes auf voller Breite. .dj-player
-   scrollt ohnehin schon (overflow-y: auto), die groessere Gesamthoehe ist
-   also unkritisch. */
+   gestapelt statt nebeneinander, jedes auf voller Breite. Der Player ist
+   seit dem Ueberdeckungs-Fix kein fixiertes Element mehr (siehe
+   1100px-Media-Query), braucht hier also keine max-height-Bremse mehr --
+   er ist einfach so hoch wie sein Inhalt, ganz normaler Seitenfluss. */
 @media (max-width: 480px) {
-  .dj-player { max-height: 68vh; }
   .dj-decks { flex-direction: column; align-items: center; gap: 10px; }
   .dj-deck { width: 100%; max-width: 300px; }
 }
