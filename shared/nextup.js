@@ -119,6 +119,47 @@
     listEl.innerHTML = html;
   }
 
+  /* Songs lassen sich aus der Song-Kachel-Liste (decades.js, dragstart auf
+     ".song-tile") direkt auf diese Box ziehen, um sie ans Ende der
+     Warteschlange des aktiven Decks zu haengen -- dieselbe
+     "application/json"-Payload, die auch die Deck-Dropzones (siehe
+     decades.js #deck-A-drop/#deck-B-drop) schon lesen, hier nur ohne
+     Dragshield noetig (kein Video-Iframe liegt ueber dieser Box). */
+  function wireDropzone(box) {
+    box.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      box.classList.add('gen-queue-drag-over');
+    });
+    box.addEventListener('dragleave', function () {
+      box.classList.remove('gen-queue-drag-over');
+    });
+    box.addEventListener('drop', function (e) {
+      e.preventDefault();
+      box.classList.remove('gen-queue-drag-over');
+      var raw = e.dataTransfer.getData('application/json');
+      if (!raw) return;
+      var song;
+      try { song = JSON.parse(raw); } catch (err) { return; }
+      if (!song) return;
+
+      var deck = pickActiveDeck();
+      if (deck && deck.song && deck.queue && deck.index > -1) {
+        // Ans Ende der bestehenden Warteschlange haengen, laufende
+        // Wiedergabe bleibt unangetastet.
+        deck.queue.push(song);
+      } else if (typeof window.loadSongToDeck === 'function') {
+        // Kein Deck aktiv/geladen -- keine Warteschlange, in die man
+        // haengen koennte. Song stattdessen frisch auf Deck A laden (wie
+        // ein Klick auf ▶), ohne automatisch zu starten.
+        window.loadSongToDeck(song, 'A', [song], false);
+      } else {
+        return;
+      }
+      lastSignature = null; // sofortiges Neuzeichnen erzwingen
+      render();
+    });
+  }
+
   function handleRemoveClick(e) {
     var target = e.target;
     if (!target || !target.classList || !target.classList.contains('gen-queue-remove')) return;
@@ -161,7 +202,8 @@
       '.gen-queue-remove{margin-left:auto;flex:0 0 auto;background:none;border:none;color:inherit;opacity:.35;font-size:16px;line-height:1;cursor:pointer;padding:2px 6px;border-radius:5px;}' +
       '.gen-queue-remove:hover{opacity:1;background:rgba(255,255,255,.14);}' +
       '.gen-queue-remove:focus-visible{opacity:1;outline:1px solid currentColor;}' +
-      '.gen-queue-item:hover .gen-queue-remove{opacity:.7;}';
+      '.gen-queue-item:hover .gen-queue-remove{opacity:.7;}' +
+      '.gen-history.gen-queue-drag-over{box-shadow:0 0 0 3px var(--accent);border-radius:12px;}';
     document.head.appendChild(style);
   }
 
@@ -195,6 +237,7 @@
 
     listEl = document.getElementById('gen-queue-list');
     listEl.addEventListener('click', handleRemoveClick);
+    wireDropzone(nativeHistory);
     lastSignature = null; // sofortiges Neuzeichnen fuer die neue Box erzwingen
     render();
     if (pollTimer) clearInterval(pollTimer); // keine doppelten Polling-Loops nach einem Wechsel
