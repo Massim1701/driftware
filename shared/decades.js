@@ -2371,52 +2371,100 @@ function playDeckSong(key, song, autoplay) {
     return;
   }
 
-  function start() {
-    if (deck.player && deck.player.loadVideoById) {
-      if (autoplay) {
-        deck.player.loadVideoById(song.yt, introSkipFor(song));
-      } else {
-        deck.player.cueVideoById(song.yt, introSkipFor(song));
+  function freshMount() {
+    /* Baut den Mount-Knoten IMMER frisch auf, statt sich auf das durch
+       'deck-<key>-mount' referenzierte Element zu verlassen: YT.Player()
+       ersetzt dieses Element beim ersten Aufbau durch ein <iframe> mit
+       gleicher ID, und genau dieses Iframe kann durch spaetere Zustaende
+       (z.B. der "kein YouTube-Video"-Zweig oben, der mount.innerHTML
+       ueberschreibt) verwaist oder ungueltig werden. Ein garantiert neuer,
+       leerer Container verhindert, dass YT.Player() an einem kaputten
+       Knoten haengt. */
+    var discEl = document.getElementById('deck-' + key + '-disc');
+    if (discEl) discEl.innerHTML = '<div class="dj-vinyl-video" id="deck-' + key + '-mount"></div>';
+  }
+
+  function buildPlayer() {
+    freshMount();
+    deck.player = new YT.Player('deck-' + key + '-mount', {
+      width: '100%',
+      height: '100%',
+      videoId: song.yt,
+      playerVars: { rel: 0, playsinline: 1, autoplay: autoplay ? 1 : 0, start: introSkipFor(song) },
+      events: {
+        onReady: function (e) {
+          try { e.target.setPlaybackRate(deck.rate || 1); } catch (err) {}
+          /* siehe deckTogglePlay: Play-Klick kam evtl. schon rein, bevor
+             der Player bereit war -- jetzt nachholen. */
+          if (autoplay || deck.pendingPlay) { e.target.playVideo(); }
+          deck.pendingPlay = false;
+          applyCrossfaderVolumes();
+        },
+        onStateChange: onDeckStateChange(key),
+        onError: function () {
+          deckErrorStreak[key] = (deckErrorStreak[key] || 0) + 1;
+          if (deckErrorStreak[key] > 5) {
+            /* Sicherheitsbremse: 5+ kaputte Videos in Folge -- nicht
+               weiter durch die Liste hetzen, sondern anhalten. Deck
+               bleibt auf dem zuletzt geladenen (fehlerhaften) Song
+               stehen, Titel/BPM/Skip-Buttons funktionieren weiter, nur
+               das automatische Weiterspringen stoppt. */
+            try { console.warn('driftware: ' + deckErrorStreak[key] + ' Videofehler in Folge auf Deck ' + key + ' -- Auto-Skip gestoppt.'); } catch (err) {}
+            return;
+          }
+          deckStep(key, 1, true);
+        }
       }
-      try { deck.player.setPlaybackRate(deck.rate || 1); } catch (e) {}
+    });
+  }
+
+  function start() {
+    var mountEl = document.getElementById('deck-' + key + '-mount');
+    var reused = false;
+    if (deck.player && deck.player.loadVideoById && mountEl && mountEl.isConnected) {
+      reused = true;
+      try {
+        if (autoplay) {
+          deck.player.loadVideoById(song.yt, introSkipFor(song));
+        } else {
+          deck.player.cueVideoById(song.yt, introSkipFor(song));
+        }
+        deck.player.setPlaybackRate(deck.rate || 1);
+      } catch (e) {
+        reused = false;
+      }
       // Ein wiederverwendeter Player kann von einem frueheren Vorladen
       // (maybePreloadNext) noch stumm geschaltet sein (setVolume(0)) --
       // ohne diesen Reset bliebe das Deck lautlos, bis der Nutzer zufaellig
       // den Crossfader/die Lautstaerke anfasst und dadurch applyCrossfaderVolumes()
       // erneut auslaest.
       applyCrossfaderVolumes();
-    } else {
-      deck.player = new YT.Player('deck-' + key + '-mount', {
-        width: '100%',
-        height: '100%',
-        videoId: song.yt,
-        playerVars: { rel: 0, playsinline: 1, autoplay: autoplay ? 1 : 0, start: introSkipFor(song) },
-        events: {
-          onReady: function (e) {
-            try { e.target.setPlaybackRate(deck.rate || 1); } catch (err) {}
-            /* siehe deckTogglePlay: Play-Klick kam evtl. schon rein, bevor
-               der Player bereit war -- jetzt nachholen. */
-            if (autoplay || deck.pendingPlay) { e.target.playVideo(); }
-            deck.pendingPlay = false;
-            applyCrossfaderVolumes();
-          },
-          onStateChange: onDeckStateChange(key),
-          onError: function () {
-            deckErrorStreak[key] = (deckErrorStreak[key] || 0) + 1;
-            if (deckErrorStreak[key] > 5) {
-              /* Sicherheitsbremse: 5+ kaputte Videos in Folge -- nicht
-                 weiter durch die Liste hetzen, sondern anhalten. Deck
-                 bleibt auf dem zuletzt geladenen (fehlerhaften) Song
-                 stehen, Titel/BPM/Skip-Buttons funktionieren weiter, nur
-                 das automatische Weiterspringen stoppt. */
-              try { console.warn('driftware: ' + deckErrorStreak[key] + ' Videofehler in Folge auf Deck ' + key + ' -- Auto-Skip gestoppt.'); } catch (err) {}
-              return;
-            }
-            deckStep(key, 1, true);
-          }
-        }
-      });
     }
+    if (!reused) {
+      buildPlayer();
+      return;
+    }
+
+    /* FREEZE-FIX (9.9.): nach Dekaden-Wechsel + Playlist-Laden kam es vor,
+       dass cueVideoById()/loadVideoById() auf einem wiederverwendeten
+       Player-Objekt STUMM NICHTS bewirkte -- das Iframe blieb auf dem
+       alten Video stehen, DECKS.<key>.song/.queue/.index zeigten aber
+       schon den neuen Song. Fuer den Nutzer sah das aus wie "Player
+       startet nicht mehr". Deshalb kurz nach dem Umschaltversuch pruefen,
+       ob es wirklich beim neuen Video angekommen ist -- wenn nicht, den
+       alten Player verwerfen und frisch aufbauen statt das Deck tot
+       stehen zu lassen. */
+    var expectedId = song.yt;
+    setTimeout(function () {
+      if (!deck.player || deck.song !== song) return; // zwischenzeitlich schon wieder was anderes geladen
+      var actual = null;
+      try { actual = deck.player.getVideoData && deck.player.getVideoData().video_id; } catch (e) {}
+      if (actual && actual !== expectedId) {
+        try { deck.player.destroy(); } catch (e) {}
+        deck.player = null;
+        buildPlayer();
+      }
+    }, 900);
   }
   loadYouTubeAPI(start);
 }
@@ -2483,7 +2531,31 @@ function deckTogglePlay(key) {
        in den anderen Uebergangs-Pfaden aufgerufen wurde. */
     deck.player.playVideo();
     applyCrossfaderVolumes();
+    watchdogPlayStart(key);
   }
+}
+
+/* FREEZE-FIX (9.9.): manchmal reagiert ein laenger wiederverwendeter
+   Player-Objekt nicht mehr richtig auf playVideo() -- der Zustand bleibt
+   haengen (z.B. CUED oder UNSTARTED), statt zu PLAYING/BUFFERING zu
+   wechseln (beobachtet u.a. nach mehrfachem Dekaden-Wechsel + erneutem
+   Playlist-Laden). Fuer den Nutzer sieht das aus wie "Player startet
+   nicht mehr". Nach einem Play-Klick deshalb kurz pruefen, ob es
+   tatsaechlich losgegangen ist -- wenn nicht, den haengenden Player
+   verwerfen, frisch aufbauen und den Song mit Autoplay neu laden statt
+   das Deck tot stehen zu lassen. */
+function watchdogPlayStart(key) {
+  var deck = DECKS[key];
+  var song = deck.song;
+  setTimeout(function () {
+    if (!deck.player || deck.song !== song || deck.isPlaying) return; // inzwischen alles gut oder was anderes geladen
+    var state = null;
+    try { state = deck.player.getPlayerState(); } catch (e) {}
+    if (state === 1 || state === 3) return; // spielt oder puffert schon, alles gut
+    try { deck.player.destroy(); } catch (e) {}
+    deck.player = null;
+    playDeckSong(key, song, true);
+  }, 1200);
 }
 
 function deckPause(key) {
