@@ -1133,7 +1133,20 @@ function deckHTML(key) {
     '  <div class="dj-deck-top">' +
     '    <div class="dj-vinyl" id="deck-' + key + '-drop">' +
     '      <div class="dj-vinyl-disc" id="deck-' + key + '-disc">' +
-    '        <div class="dj-vinyl-video" id="deck-' + key + '-mount"></div>' +
+    /* WICHTIG: ".dj-vinyl-video" sitzt auf einem STABILEN Aussen-Div, das
+       Groesse/Rundung/Clipping via CSS traegt -- der eigentliche Mount-
+       Knoten fuer YT.Player() ist ein einfaches inneres Div OHNE eigene
+       Klasse. Grund: new YT.Player('deck-X-mount', ...) ERSETZT den
+       referenzierten Knoten komplett durch ein <iframe> mit gleicher ID,
+       aber OHNE dessen Klassen zu uebernehmen. Sass die Klasse frueher
+       direkt auf dem Mount-Div, verschwand ".dj-vinyl-video" beim ersten
+       Player-Aufbau spurlos aus dem DOM -- das CSS-Selektor ".dj-vinyl-
+       video iframe" (Skalierung/Zentrierung des Videobilds, siehe
+       decades.css) griff dann nie, das Video landete winzig und
+       unzentriert in der Ecke der Plattenteller-Scheibe. Mit dem stabilen
+       Aussen-Div bleibt die Klasse erhalten, egal was YT.Player() mit dem
+       inneren Mount-Knoten macht. */
+    '        <div class="dj-vinyl-video"><div id="deck-' + key + '-mount"></div></div>' +
     '        <div class="dj-vinyl-ring" aria-hidden="true"><span class="dj-vinyl-dot"></span></div>' +
     '      </div>' +
     '      <div class="dj-vinyl-hint">Song hierher ziehen</div>' +
@@ -2391,7 +2404,7 @@ function playDeckSong(key, song, autoplay) {
        leerer Container verhindert, dass YT.Player() an einem kaputten
        Knoten haengt. */
     var discEl = document.getElementById('deck-' + key + '-disc');
-    if (discEl) discEl.innerHTML = '<div class="dj-vinyl-video" id="deck-' + key + '-mount"></div>';
+    if (discEl) discEl.innerHTML = '<div class="dj-vinyl-video"><div id="deck-' + key + '-mount"></div></div>';
   }
 
   function buildPlayer() {
