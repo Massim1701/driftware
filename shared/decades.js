@@ -264,8 +264,8 @@ function switchRowHTML() {
     '<div class="gen-switch-rows" id="gen-switch-row">' +
     ddHTML({
       ddId: 'gen-switch-dd-stimmungen',
-      label: 'Stimmungen',
-      placeholder: 'Stimmung wechseln',
+      label: 'Ambient/Mood',
+      placeholder: 'Ambient/Mood wechseln',
       items: items,
       selectedValue: activeItem ? activeItem.value : null
     }) +
@@ -3140,12 +3140,6 @@ function renderPlaylistGenerator(mountRoot, config) {
       if (linkedDecadeKey && linkedRawData) computeLinkedCombo();
       refresh();
     });
-    /* Zuletzt gewaehltes Genre pro Dekade/Seite merken (siehe weiter unten,
-       initialer Aufruf) -- beim naechsten Besuch (auch per Dekaden-Wechsel-
-       Zeile) landet man wieder dort, statt immer beim ersten Genre. */
-    if (ownDecadeKey) {
-      try { localStorage.setItem('driftware-last-genre-' + ownDecadeKey, key); } catch (e) {}
-    }
   }
 
   function runSearch(query) {
@@ -3365,21 +3359,12 @@ function renderPlaylistGenerator(mountRoot, config) {
   }
 
   if (config.themes && config.themes.length) {
-    /* Nicht immer stur das erste Genre -- zuletzt gewaehltes Genre fuer
-       DIESE Dekade wiederherstellen (siehe selectTheme), sonst Mix als
-       sinnvollerer Standard-Einstieg als ein zufaelliges erstes Genre. */
-    var lastGenre = null;
-    if (ownDecadeKey) {
-      try { lastGenre = localStorage.getItem('driftware-last-genre-' + ownDecadeKey); } catch (e) {}
-    }
-    var validKeys = [MIX_KEY, ALL_KEY].concat(config.themes.map(function (t) { return t.key; }));
-    /* Default ist jetzt "Alle Songs" statt Mix -- die kleine Mix-Vorschau
-       (nur MIX_PER_CATEGORY pro Genre) als ERSTER Eindruck einer Seite
-       sorgte wiederholt fuer Verwirrung ("wo sind die restlichen Songs?"),
-       siehe Nutzer-Rueckmeldungen. Mix bleibt als bewusste Auswahl im
-       Dropdown erhalten, ist nur nicht mehr die Grundeinstellung. */
-    var initialTheme = (lastGenre && validKeys.indexOf(lastGenre) !== -1) ? lastGenre : ALL_KEY;
-    selectTheme(initialTheme);
+    /* Immer "Alle Songs" als Start, unabhaengig von einem frueher
+       gewaehlten Genre -- das gemerkte letzte Genre (ueber Seitenaufrufe
+       hinweg) sorgte dafuer, dass die Seite mal so, mal so startete, je
+       nachdem was zuletzt angeklickt wurde. "Alle Songs" ist der
+       verlaessliche, immer gleiche Einstieg (siehe Nutzeranforderung). */
+    selectTheme(ALL_KEY);
   } else {
     showEmptyState();
   }
