@@ -138,7 +138,14 @@ header.decade-header {
 /* Themen-/Feature-Grid */
 main.decade-main {
   max-width: 1400px;
-  margin: 0 auto;
+  /* War "margin: 0 auto" (mittig zentriert) -- ab ca. 1860px Fensterbreite
+     (max-width 1400px + Sidebar-Player+Tools-Panel 460px) hat "auto" links
+     UND rechts Luft verteilt, wodurch zwischen Inhalt und Player eine immer
+     groessere Luecke entstand (bei 2200px schon 170px), der Player wirkte
+     dadurch "abgehaengt". Jetzt haengt der Inhalt fest am Player/Tools-
+     Panel (0 Luecke bei jeder Breite), ueberschuessiger Platz auf breiten
+     Screens sammelt sich links statt in der Mitte zu klaffen. */
+  margin: 0 0 0 auto;
   padding: 0 24px 90px;
 }
 .features {
