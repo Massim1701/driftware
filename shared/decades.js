@@ -671,6 +671,26 @@ var decadeChipRefreshers = [];
    verlinkte Nachbar-Dekade) die MIX_PER_CATEGORY beliebtesten Songs -- Basis
    sowohl fuer den normalen "Mix"-Button (siehe buildMixSongs in
    renderPlaylistGenerator) als auch fuer den Nachbar-Anteil beim Verbinden. */
+/* Wirklich ALLE Songs (ungekuerzt, alle Genres zusammen) -- Gegenstueck zu
+   buildMixSongsFrom (die nur MIX_PER_CATEGORY pro Genre nimmt). Ohne diese
+   Option gab es keinen Weg, die komplette Songliste einer Seite auf einen
+   Blick zu sehen, nur den kleinen Mix-Ausschnitt oder ein einzelnes Genre --
+   das sorgte wiederholt fuer Verwirrung ("wo sind die restlichen Songs?"). */
+function buildAllSongsFrom(dataObj) {
+  if (!dataObj) return [];
+  var out = [];
+  var seen = {};
+  Object.keys(dataObj).forEach(function (cat) {
+    (dataObj[cat] || []).forEach(function (s) {
+      var id = songId(s);
+      if (seen[id]) return;
+      seen[id] = true;
+      out.push(s);
+    });
+  });
+  return out;
+}
+
 function buildMixSongsFrom(dataObj) {
   if (!dataObj) return [];
   var out = [];
@@ -2822,6 +2842,7 @@ function themeIconHTML(iconName) {
 /* config: { mountBefore: CSS-Selektor im Ziel-Container, dataUrl, themes: [{key,label}], csvPrefix }
    csvPrefix dient auch als Dekaden-Schlüssel fürs DECADE_REGISTRY (70er, 80er, ...). */
 var MIX_KEY = '__mix__';
+var ALL_KEY = '__all__';
 var MIX_PER_CATEGORY = 5;
 
 function renderPlaylistGenerator(mountRoot, config) {
@@ -2829,6 +2850,7 @@ function renderPlaylistGenerator(mountRoot, config) {
   var data = null;
   var currentTheme = null;
   var mixSongsCache = null;
+  var allSongsCache = null;
   var genreSongsCache = null; /* {theme, songs} -- BPM-geglaettete Reihenfolge fuer die aktuell gewaehlte Genre-Kachel, siehe currentSongs() */
   var allSongsFlat = null;
   var searchDebounceHandle = null;
@@ -2848,8 +2870,8 @@ function renderPlaylistGenerator(mountRoot, config) {
 
   function computeLinkedCombo() {
     if (!linkedDecadeKey || !linkedRawData || !currentTheme) { linkedComboCache = null; return; }
-    var ownList = currentTheme === MIX_KEY ? buildMixSongs() : (data[currentTheme] || []);
-    var otherList = currentTheme === MIX_KEY ? buildMixSongsFrom(linkedRawData) : (linkedRawData[currentTheme] || []);
+    var ownList = currentTheme === MIX_KEY ? buildMixSongs() : currentTheme === ALL_KEY ? buildAllSongsFrom(data) : (data[currentTheme] || []);
+    var otherList = currentTheme === MIX_KEY ? buildMixSongsFrom(linkedRawData) : currentTheme === ALL_KEY ? buildAllSongsFrom(linkedRawData) : (linkedRawData[currentTheme] || []);
     if (!otherList.length) { linkedComboCache = { theme: currentTheme, songs: ownList }; return; }
     /* Herkunft markieren -- renderSongGrid zeigt dafuer automatisch ein
        Dekaden-Badge (dieselbe Markierung wie bei dekadenuebergreifenden
@@ -2952,6 +2974,10 @@ function renderPlaylistGenerator(mountRoot, config) {
       if (!mixSongsCache) mixSongsCache = bpmSmooth(shuffled(buildMixSongs()));
       return mixSongsCache;
     }
+    if (currentTheme === ALL_KEY) {
+      if (!allSongsCache) allSongsCache = bpmSmooth(shuffled(buildAllSongsFrom(data)));
+      return allSongsCache;
+    }
     if (!currentTheme) return [];
     if (!genreSongsCache || genreSongsCache.theme !== currentTheme) {
       genreSongsCache = { theme: currentTheme, songs: bpmSmooth(data[currentTheme] || []) };
@@ -2996,7 +3022,7 @@ function renderPlaylistGenerator(mountRoot, config) {
 
   function refresh() {
     var songs = currentSongs();
-    if (currentTheme && currentTheme !== MIX_KEY) {
+    if (currentTheme && currentTheme !== MIX_KEY && currentTheme !== ALL_KEY) {
       songs.forEach(function (s) { s._bucket = currentTheme; });
     }
     var countLabel = songs.length + ' Songs';
@@ -3031,6 +3057,7 @@ function renderPlaylistGenerator(mountRoot, config) {
   function selectTheme(key) {
     currentTheme = key;
     if (key === MIX_KEY) mixSongsCache = null;
+    if (key === ALL_KEY) allSongsCache = null;
     manualShuffleTheme = null;
     manualShuffleSongs = null;
     linkedComboCache = null;
@@ -3149,7 +3176,10 @@ function renderPlaylistGenerator(mountRoot, config) {
         extraClass: 'gen-genre-dd',
         label: 'Genre',
         placeholder: 'Genre',
-        items: [{ value: MIX_KEY, text: 'Mix – Best-of aller Genres', color: null, title: 'Die ' + MIX_PER_CATEGORY + ' beliebtesten Songs aus jedem Genre' }].concat(
+        items: [
+          { value: ALL_KEY, text: 'Alle Songs', color: null, title: 'Wirklich alle Songs aus allen Genres, ungekuerzt' },
+          { value: MIX_KEY, text: 'Mix – Best-of aller Genres', color: null, title: 'Die ' + MIX_PER_CATEGORY + ' beliebtesten Songs aus jedem Genre' }
+        ].concat(
           config.themes.map(function (t) { return { value: t.key, text: t.label, color: null }; })
         ),
         selectedValue: null
@@ -3269,8 +3299,13 @@ function renderPlaylistGenerator(mountRoot, config) {
     if (ownDecadeKey) {
       try { lastGenre = localStorage.getItem('driftware-last-genre-' + ownDecadeKey); } catch (e) {}
     }
-    var validKeys = [MIX_KEY].concat(config.themes.map(function (t) { return t.key; }));
-    var initialTheme = (lastGenre && validKeys.indexOf(lastGenre) !== -1) ? lastGenre : MIX_KEY;
+    var validKeys = [MIX_KEY, ALL_KEY].concat(config.themes.map(function (t) { return t.key; }));
+    /* Default ist jetzt "Alle Songs" statt Mix -- die kleine Mix-Vorschau
+       (nur MIX_PER_CATEGORY pro Genre) als ERSTER Eindruck einer Seite
+       sorgte wiederholt fuer Verwirrung ("wo sind die restlichen Songs?"),
+       siehe Nutzer-Rueckmeldungen. Mix bleibt als bewusste Auswahl im
+       Dropdown erhalten, ist nur nicht mehr die Grundeinstellung. */
+    var initialTheme = (lastGenre && validKeys.indexOf(lastGenre) !== -1) ? lastGenre : ALL_KEY;
     selectTheme(initialTheme);
   } else {
     showEmptyState();
