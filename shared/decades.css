@@ -971,6 +971,9 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   align-items: stretch;
   gap: 5px;
 }
+/* Deck B sitzt am AEUSSEREN rechten Rand -- Label soll deshalb aussen
+   (rechts vom Display) stehen statt wie bei Deck A links davor. */
+#deck-B .dj-deck-head { flex-direction: row-reverse; }
 /* Schritt 3 (Nutzer: "die um 180 Grad gedreht daneben, nicht hoeher als
    das display"): Label wieder hochkant/180-Grad-gedreht wie in Schritt 1
    -- aber jetzt per align-items:stretch auf die Hoehe der Digitalanzeige
