@@ -1225,7 +1225,14 @@ function ensureDjPlayer() {
     '</div>' +
     deckHTML('B') +
     '</div>';
-  document.body.appendChild(bar);
+  /* Konsolen-Layout (9.9.): Player ist keine fixe Sidebar mehr, sondern
+     eine normale Kopfzeile im Seitenfluss -- die DOM-Position ist jetzt
+     wichtig (frueher bei position:fixed egal). Muss VOR #decade-root
+     stehen, sonst rutscht die Konsole unter den Seiteninhalt statt
+     darueber. */
+  var decadeRoot = document.getElementById('decade-root');
+  if (decadeRoot) document.body.insertBefore(bar, decadeRoot);
+  else document.body.insertBefore(bar, document.body.firstChild);
 
   var toolsPanel = document.createElement('div');
   toolsPanel.className = 'dj-tools-panel';
@@ -1238,7 +1245,12 @@ function ensureDjPlayer() {
     '</div>' +
     '<div class="dj-bpm-match" id="dj-bpm-match">Songs mit BPM laden</div>' +
     '<button type="button" id="dj-bpm-sync-btn" class="dj-bpm-sync-btn" disabled>' + REFRESH_SVG + ' Angleichen</button>';
-  document.body.appendChild(toolsPanel);
+  /* War ein eigenes, fixiert positioniertes Panel neben der Sidebar --
+     jetzt normaler Bestandteil der Master-Spalte (siehe .dj-tools-panel
+     in decades.css), direkt unter Crossfader/Autofade eingehaengt. */
+  var masterCol = bar.querySelector('.dj-master');
+  if (masterCol) masterCol.appendChild(toolsPanel);
+  else document.body.insertBefore(toolsPanel, bar.nextSibling);
   var bpmSyncBtn = toolsPanel.querySelector('#dj-bpm-sync-btn');
   if (bpmSyncBtn) bpmSyncBtn.addEventListener('click', syncIdleDeckToPlaying);
   updateBpmSync();

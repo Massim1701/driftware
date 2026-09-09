@@ -1,6 +1,14 @@
-/* Ersetzt den Inhalt der bestehenden "Zuletzt gespielt"-Box (".gen-history",
-   aus decades.js) durch EINE kombinierte Verlauf/Warteschlange-Liste --
-   an genau derselben Stelle/Groesse, keine zweite Box, keine Luecke.
+/* Baut EINE persistente Verlauf/Warteschlange-Tabelle (".dj-queue-panel"),
+   die genau wie der Player (#dj-player) direkt an document.body haengt und
+   damit den Wechsel zwischen Dekaden-/Ambient-Seiten ueberlebt (die AJAX-
+   Navigation in decades.js tauscht nur den Inhalt von #decade-root aus).
+   Vorher hat diese Datei stattdessen die pro-Seite neu erzeugte
+   ".gen-history"-Box (aus decades.js) gekapert und musste sich deshalb bei
+   JEDEM Seitenwechsel per window.reinitNextUp() neu anhaengen. Die native
+   Box existiert weiterhin (decades.js erzeugt/befuellt sie unveraendert),
+   ist per CSS aber ausgeblendet (siehe .gen-history{display:none} in
+   decades.css) -- kein doppeltes Element, keine Luecke.
+
    Reihenfolge von oben nach unten: bis zu 5 kommende Songs (am weitesten
    entfernter zuerst, naechster direkt ueber dem Highlight), dann der
    aktuelle Song hervorgehoben, dann bis zu 5 zuletzt gespielte Songs
@@ -11,23 +19,21 @@
    Interaktion: jede Zeile ausser der aktuell hervorgehobenen hat ein "×"
    zum Entfernen -- bei "Warteschlange" wird der Song direkt aus
    deck.queue entfernt (spielt dann nicht mehr), bei "Verlauf" nur aus der
-   Anzeige-Liste (playHistory) geloescht.
+   Anzeige-Liste (playHistory) geloescht. Kommende Songs lassen sich
+   zusaetzlich per Drag & Drop innerhalb der Tabelle umsortieren.
 
-   Technisch: die urspruengliche Liste (ID "gen-history-list") wird durch
-   eine eigene ID ersetzt -- decades.js' renderPlayHistory() findet sein
-   Element dann nicht mehr (hat bereits einen Null-Check eingebaut) und
-   schreibt einfach nichts mehr dort hinein, kein Konflikt. Eigenstaendige
-   Datei (wie midi.js/continuity.js) -- liest/aendert nur die globalen
-   DECKS/playHistory aus decades.js per Polling, keine Aenderung an
-   decades.js/.css noetig. */
+   Eigenstaendige Datei (wie midi.js/continuity.js) -- liest/aendert nur
+   die globalen DECKS/playHistory aus decades.js per Polling, keine
+   Aenderung an decades.js noetig ausser der reinen DOM-Platzierung des
+   Players (siehe ensureDjPlayer in decades.js). */
 
 (function () {
   var WINDOW_SIZE = 5; // je 5 zurueck und 5 vor dem aktuellen Song
   var POLL_MS = 1000;
-  var listEl = null;
+  var tbody = null;
+  var countEl = null;
   var lastSignature = null;
   var pollTimer = null;
-  var stylesInjected = false;
   var draggingIdx = null; // != null waehrend ein Warteschlangen-Eintrag zum Umsortieren gezogen wird
 
   function pickActiveDeck() {
@@ -47,41 +53,29 @@
     });
   }
 
-  var ON_AIR_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' +
-    '<circle cx="12" cy="19" r="1.4" fill="currentColor" stroke="none"/>' +
-    '<path d="M8.5 15a5 5 0 0 1 7 0"/>' +
-    '<path d="M5.5 11.5a9.5 9.5 0 0 1 13 0"/></svg>';
-
-  function songLine(s, marker, kind, idx) {
-    // kind: "upcoming" (gruen), "current" (Highlight-Hintergrund + On-Air-Chip), "history" (rot)
-    var cls = 'gen-queue-item';
-    if (kind === 'current') cls += ' gen-queue-current';
-    else if (kind === 'upcoming') cls += ' gen-queue-upcoming';
-    else if (kind === 'history') cls += ' gen-queue-history';
+  function songRow(s, marker, kind, idx) {
+    // kind: "upcoming" (gruen), "current" (Highlight-Hintergrund), "history" (rot)
+    var cls = 'dq-' + kind;
     // Der aktuell gespielte Song laesst sich hier nicht entfernen, nur
-    // kommende (Warteschlange) und vergangene (Verlauf) Zeilen -- er bekommt
-    // stattdessen den "On Air"-Hinweis an derselben Stelle (ganz rechts).
-    var trailing = '';
-    if (kind === 'current') {
-      trailing = '<span class="gen-queue-onair">' + ON_AIR_SVG + ' On Air</span>';
-    } else {
-      trailing = '<button type="button" class="gen-queue-remove" data-kind="' + kind + '" data-idx="' + idx + '" aria-label="Aus der Liste entfernen" title="Entfernen">&times;</button>';
-    }
-    // Nur kommende Songs (Warteschlange) lassen sich per Drag & Drop
-    // umsortieren -- Verlauf ist Vergangenheit, der aktuelle Song laeuft
-    // gerade. data-idx traegt hier den ECHTEN Index in deck.queue (siehe
-    // render(): bleibt beim visuellen Umdrehen der Liste an den Objekten
-    // haengen), reordering() unten kann ihn also direkt verwenden.
+    // kommende (Warteschlange) und vergangene (Verlauf) Zeilen.
+    var dragCell = kind === 'upcoming' ? '<span aria-hidden="true">⠿</span>' : '';
+    var removeCell = kind === 'current'
+      ? ''
+      : '<button type="button" class="dq-remove" data-kind="' + kind + '" data-idx="' + idx + '" aria-label="Aus der Liste entfernen" title="Entfernen">&times;</button>';
     var draggableAttr = kind === 'upcoming' ? ' draggable="true"' : '';
-    return '<li class="' + cls + '" data-idx="' + idx + '"' + draggableAttr + '>' +
-      '<span class="gen-queue-num">' + marker + '</span>' +
-      '<span class="gen-queue-text"><strong>' + escapeHtml(s.t) + '</strong><span>' + escapeHtml(s.a) + '</span></span>' +
-      trailing +
-      '</li>';
+    return '<tr class="' + cls + '" data-idx="' + idx + '"' + draggableAttr + '>' +
+      '<td class="dq-drag">' + dragCell + '</td>' +
+      '<td class="dq-num">' + marker + '</td>' +
+      '<td class="dq-title"><strong>' + escapeHtml(s.t) + '</strong><span>' + escapeHtml(s.a) + '</span></td>' +
+      '<td class="dq-genre">' + escapeHtml(s.g || s.s || '–') + '</td>' +
+      '<td class="dq-year">' + (s.y || '–') + '</td>' +
+      '<td class="dq-bpm">' + (s.bpm || '–') + '</td>' +
+      '<td class="dq-remove-cell">' + removeCell + '</td>' +
+      '</tr>';
   }
 
   function render() {
-    if (!listEl) return;
+    if (!tbody) return;
     var deck = pickActiveDeck();
     var current = deck ? deck.song : null;
 
@@ -114,37 +108,38 @@
     if (signature === lastSignature) return; // nichts geaendert, kein unnoetiges Neuzeichnen
     lastSignature = signature;
 
+    if (countEl) countEl.textContent = upcomingEntries.length + ' in der Warteschlange';
+
     if (!current && !historyEntries.length && !upcomingEntries.length) {
-      listEl.innerHTML = '<li class="gen-queue-empty">Nichts geladen.</li>';
+      tbody.innerHTML = '<tr class="dq-empty"><td colspan="7">Nichts geladen.</td></tr>';
       return;
     }
 
     var html = '';
-    html += upcomingTopDown.map(function (e) { return songLine(e.song, '+', 'upcoming', e.idx); }).join('');
-    if (current) html += songLine(current, '▶', 'current', null);
-    html += historyEntries.map(function (e) { return songLine(e.song, '−', 'history', e.idx); }).join('');
-    listEl.innerHTML = html;
+    html += upcomingTopDown.map(function (e) { return songRow(e.song, '+', 'upcoming', e.idx); }).join('');
+    if (current) html += songRow(current, '▶', 'current', null);
+    html += historyEntries.map(function (e) { return songRow(e.song, '−', 'history', e.idx); }).join('');
+    tbody.innerHTML = html;
   }
 
   /* Songs lassen sich aus der Song-Kachel-Liste (decades.js, dragstart auf
-     ".song-tile") direkt auf diese Box ziehen, um sie ans Ende der
+     ".song-tile") direkt auf dieses Panel ziehen, um sie ans Ende der
      Warteschlange des aktiven Decks zu haengen -- dieselbe
      "application/json"-Payload, die auch die Deck-Dropzones (siehe
-     decades.js #deck-A-drop/#deck-B-drop) schon lesen, hier nur ohne
-     Dragshield noetig (kein Video-Iframe liegt ueber dieser Box). */
-  function wireDropzone(box) {
-    box.addEventListener('dragover', function (e) {
+     decades.js #deck-A-drop/#deck-B-drop) schon lesen. */
+  function wireDropzone(panel) {
+    panel.addEventListener('dragover', function (e) {
       if (draggingIdx !== null) return; // internes Umsortieren laeuft, siehe wireReorder()
       e.preventDefault();
-      box.classList.add('gen-queue-drag-over');
+      panel.classList.add('dq-drag-over');
     });
-    box.addEventListener('dragleave', function () {
-      box.classList.remove('gen-queue-drag-over');
+    panel.addEventListener('dragleave', function () {
+      panel.classList.remove('dq-drag-over');
     });
-    box.addEventListener('drop', function (e) {
+    panel.addEventListener('drop', function (e) {
       if (draggingIdx !== null) return; // internes Umsortieren, siehe wireReorder()
       e.preventDefault();
-      box.classList.remove('gen-queue-drag-over');
+      panel.classList.remove('dq-drag-over');
       var raw = e.dataTransfer.getData('application/json');
       if (!raw) return;
       var song;
@@ -169,43 +164,43 @@
     });
   }
 
-  /* Kommende Songs (Warteschlange) per Drag & Drop INNERHALB der Liste
+  /* Kommende Songs (Warteschlange) per Drag & Drop INNERHALB der Tabelle
      umsortieren -- ziehen und auf eine andere "+"-Zeile fallen lassen,
      tauscht die Position in deck.queue. Verlauf/aktueller Song sind nicht
-     betroffen (kein draggable-Attribut, siehe songLine()). Eigene,
+     betroffen (kein draggable-Attribut, siehe songRow()). Eigene,
      dataTransfer-freie Verfolgung ueber draggingIdx statt
      dataTransfer.getData(), weil dataTransfer beim dragover-Handler
      in manchen Browsern nicht zuverlaessig lesbar ist. */
-  function wireReorder(list) {
-    list.addEventListener('dragstart', function (e) {
-      var li = e.target.closest('.gen-queue-upcoming');
-      if (!li) { draggingIdx = null; return; }
-      draggingIdx = parseInt(li.getAttribute('data-idx'), 10);
+  function wireReorder(body) {
+    body.addEventListener('dragstart', function (e) {
+      var tr = e.target.closest('.dq-upcoming');
+      if (!tr) { draggingIdx = null; return; }
+      draggingIdx = parseInt(tr.getAttribute('data-idx'), 10);
       try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', ''); } catch (err) {}
-      li.classList.add('gen-queue-dragging');
+      tr.classList.add('dq-dragging');
     });
-    list.addEventListener('dragend', function () {
+    body.addEventListener('dragend', function () {
       draggingIdx = null;
-      var stale = list.querySelectorAll('.gen-queue-dragging, .gen-queue-drop-target');
-      for (var i = 0; i < stale.length; i++) stale[i].classList.remove('gen-queue-dragging', 'gen-queue-drop-target');
+      var stale = body.querySelectorAll('.dq-dragging, .dq-drop-target');
+      for (var i = 0; i < stale.length; i++) stale[i].classList.remove('dq-dragging', 'dq-drop-target');
     });
-    list.addEventListener('dragover', function (e) {
+    body.addEventListener('dragover', function (e) {
       if (draggingIdx === null) return; // kein interner Reorder -- externer Song-Tile-Drop laeuft ueber wireDropzone
-      var li = e.target.closest('.gen-queue-upcoming');
-      if (!li) return;
+      var tr = e.target.closest('.dq-upcoming');
+      if (!tr) return;
       e.preventDefault();
       e.stopPropagation();
-      var prev = list.querySelector('.gen-queue-drop-target');
-      if (prev && prev !== li) prev.classList.remove('gen-queue-drop-target');
-      li.classList.add('gen-queue-drop-target');
+      var prev = body.querySelector('.dq-drop-target');
+      if (prev && prev !== tr) prev.classList.remove('dq-drop-target');
+      tr.classList.add('dq-drop-target');
     });
-    list.addEventListener('drop', function (e) {
+    body.addEventListener('drop', function (e) {
       if (draggingIdx === null) return;
-      var li = e.target.closest('.gen-queue-upcoming');
-      if (!li) return;
+      var tr = e.target.closest('.dq-upcoming');
+      if (!tr) return;
       e.preventDefault();
       e.stopPropagation();
-      var toIdx = parseInt(li.getAttribute('data-idx'), 10);
+      var toIdx = parseInt(tr.getAttribute('data-idx'), 10);
       var deck = pickActiveDeck();
       if (deck && deck.queue && !isNaN(toIdx) && !isNaN(draggingIdx) && draggingIdx !== toIdx) {
         var item = deck.queue.splice(draggingIdx, 1)[0];
@@ -219,7 +214,7 @@
 
   function handleRemoveClick(e) {
     var target = e.target;
-    if (!target || !target.classList || !target.classList.contains('gen-queue-remove')) return;
+    if (!target || !target.classList || !target.classList.contains('dq-remove')) return;
     var kind = target.getAttribute('data-kind');
     var idx = parseInt(target.getAttribute('data-idx'), 10);
     if (isNaN(idx)) return;
@@ -235,73 +230,62 @@
     render();
   }
 
-  function injectStyles() {
-    if (stylesInjected) return;
-    stylesInjected = true;
-    var style = document.createElement('style');
-    style.textContent =
-      '.gen-history ul{max-height:none;}' +
-      '.gen-queue-item{display:flex;align-items:baseline;gap:8px;padding:5px 6px;border-radius:6px;}' +
-      '.gen-queue-num{opacity:.5;flex:0 0 auto;min-width:16px;text-align:center;}' +
-      '.gen-queue-text{display:flex;flex-direction:column;overflow:hidden;}' +
-      '.gen-queue-text strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
-      '.gen-queue-text span{opacity:.65;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
-      '.gen-queue-upcoming .gen-queue-num{opacity:1;color:#22c55e;}' +
-      '.gen-queue-upcoming strong{color:#22c55e;}' +
-      '.gen-queue-history .gen-queue-num{opacity:1;color:#ef4444;}' +
-      '.gen-queue-history strong{color:#ef4444;}' +
-      '.gen-queue-current{background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.35);}' +
-      '.gen-queue-current .gen-queue-num{opacity:1;color:#4ade80;}' +
-      '.gen-queue-current strong{color:#fff;}' +
-      '.gen-queue-onair{margin-left:auto;align-self:center;display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#4ade80;background:rgba(34,197,94,.16);border:1px solid rgba(34,197,94,.4);padding:4.5px 12px;border-radius:20px;flex:0 0 auto;white-space:nowrap;}' +
-      '.gen-queue-onair svg{width:16.5px;height:16.5px;}' +
-      '.gen-queue-empty{opacity:.6;font-size:12px;padding:4px 6px;}' +
-      '.gen-queue-remove{margin-left:auto;flex:0 0 auto;background:none;border:none;color:inherit;opacity:.35;font-size:16px;line-height:1;cursor:pointer;padding:2px 6px;border-radius:5px;}' +
-      '.gen-queue-remove:hover{opacity:1;background:rgba(255,255,255,.14);}' +
-      '.gen-queue-remove:focus-visible{opacity:1;outline:1px solid currentColor;}' +
-      '.gen-queue-item:hover .gen-queue-remove{opacity:.7;}' +
-      '.gen-history.gen-queue-drag-over{box-shadow:0 0 0 3px var(--accent);border-radius:12px;}' +
-      '.gen-queue-upcoming{cursor:grab;}' +
-      '.gen-queue-dragging{opacity:.35;}' +
-      '.gen-queue-drop-target{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent);}';
-    document.head.appendChild(style);
-  }
-
-  /* init() ist bewusst mehrfach aufrufbar -- die AJAX-Navigation zwischen
-     Dekaden-/Ambient-Seiten (siehe navigateToPage in decades.js) baut die
-     ".gen-history"-Box bei jedem Wechsel neu auf (kompletter Austausch von
-     #decade-root), ohne dass die Seite selbst neu laedt. decades.js ruft
-     danach window.reinitNextUp() explizit auf, damit diese Liste an die
-     NEUE Box andockt statt an die alte (aus dem DOM entfernte). */
+  /* init() ist bewusst mehrfach aufrufbar (window.reinitNextUp() ruft es
+     nach jeder AJAX-Seiten-Navigation weiterhin auf), baut das Panel aber
+     nur EINMAL -- es haengt direkt an document.body (Geschwister von
+     #dj-player), genau wie der Player selbst uebersteht es also den
+     Inhalts-Austausch von #decade-root unveraendert. Nachfolgende Aufrufe
+     sind nur noch ein sofortiges Neuzeichnen (falls sich z.B. das aktive
+     Deck durch die Navigation geaendert hat). */
   function init() {
-    var nativeHistory = document.querySelector('.gen-history');
-    if (!nativeHistory) {
-      window.setTimeout(init, 500); // Generator noch nicht gerendert
+    if (document.getElementById('dj-queue-panel')) {
+      lastSignature = null;
+      render();
       return;
     }
 
-    injectStyles();
+    var djPlayer = document.getElementById('dj-player');
+    if (!djPlayer) {
+      window.setTimeout(init, 500); // Player noch nicht aufgebaut (ensureDjPlayer in decades.js)
+      return;
+    }
 
     var nextIconSvg = (typeof window.NEXT_SVG === 'string')
       ? window.NEXT_SVG
       : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5v14l11-7z"/></svg>';
 
-    // Original-Inhalt (Ueberschrift "Zuletzt gespielt" + #gen-history-list)
-    // komplett ersetzen -- dieselbe Box, dieselbe Position/Groesse, nur der
-    // Inhalt wird zu unserer kombinierten Liste. decades.js' eigene
-    // renderPlayHistory() findet "#gen-history-list" danach nicht mehr und
-    // tut nichts mehr (hat einen Null-Check), kein Konflikt.
-    nativeHistory.innerHTML =
-      '<h3>' + nextIconSvg + ' Verlauf & Warteschlange</h3>' +
-      '<ul id="gen-queue-list"><li class="gen-queue-empty">Nichts geladen.</li></ul>';
+    var panel = document.createElement('div');
+    panel.className = 'dj-queue-panel';
+    panel.id = 'dj-queue-panel';
+    panel.innerHTML =
+      '<div class="dj-queue-head">' +
+      '<h2>' + nextIconSvg + ' Verlauf &amp; Warteschlange</h2>' +
+      '<span class="dj-queue-count" id="dj-queue-count"></span>' +
+      '</div>' +
+      '<div class="dj-queue-table-wrap">' +
+      '<table class="dj-queue-table">' +
+      '<thead><tr>' +
+      '<th class="dq-drag"></th><th class="dq-num">#</th><th>Titel</th><th class="dq-genre">Genre</th><th class="dq-year">Jahr</th><th class="dq-bpm">BPM</th><th class="dq-remove-cell"></th>' +
+      '</tr></thead>' +
+      '<tbody id="dj-queue-tbody"><tr class="dq-empty"><td colspan="7">Nichts geladen.</td></tr></tbody>' +
+      '</table>' +
+      '</div>';
 
-    listEl = document.getElementById('gen-queue-list');
-    listEl.addEventListener('click', handleRemoveClick);
-    wireDropzone(nativeHistory);
-    wireReorder(listEl);
-    lastSignature = null; // sofortiges Neuzeichnen fuer die neue Box erzwingen
+    // Direkt hinter den Player haengen, vor den eigentlichen Seiteninhalt
+    // (#decade-root) -- derselbe Platz, an dem ihn auch der Nutzer im
+    // BPM-Studio-Vorbild sieht (Player oben, Playliste direkt darunter).
+    var decadeRoot = document.getElementById('decade-root');
+    if (decadeRoot) decadeRoot.parentNode.insertBefore(panel, decadeRoot);
+    else djPlayer.parentNode.insertBefore(panel, djPlayer.nextSibling);
+
+    tbody = document.getElementById('dj-queue-tbody');
+    countEl = document.getElementById('dj-queue-count');
+    tbody.addEventListener('click', handleRemoveClick);
+    wireDropzone(panel);
+    wireReorder(tbody);
+    lastSignature = null; // sofortiges Neuzeichnen fuer das neue Panel erzwingen
     render();
-    if (pollTimer) clearInterval(pollTimer); // keine doppelten Polling-Loops nach einem Wechsel
+    if (pollTimer) clearInterval(pollTimer); // keine doppelten Polling-Loops
     pollTimer = setInterval(render, POLL_MS);
   }
 
