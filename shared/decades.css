@@ -20,8 +20,14 @@ body {
   line-height: 1.5;
   /* Der DJ-Player steht als feste Spalte rechts — Platz lassen, damit
      Inhalt/Footer nicht darunter verschwinden. Auf schmalen Screens
-     wandert er zurueck an den unteren Rand (siehe Media-Queries). */
-  padding-right: 380px;
+     wandert er zurueck an den unteren Rand (siehe Media-Queries).
+     460px = 370px Player + 90px BPM-Sync-Panel (siehe .dj-player /
+     .dj-tools-panel weiter unten). War 380px/290px -- auf breiten
+     Desktop-Screens (>1100px, betrifft KEINE der anderen Breakpoint-Fixes
+     hier) wirkte die schmale 290px-Spalte selbst gestapelt noch eng
+     ("Player zusammengerafft" bezog sich offenbar die ganze Zeit auch auf
+     den normalen Desktop-Fall, nicht nur auf schmale Fenster/iPad). */
+  padding-right: 460px;
 }
 a { color: var(--accent); }
 
@@ -851,13 +857,13 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   top: 0;
   right: 0;
   bottom: 0;
-  width: 290px;
+  width: 370px;
   overflow-y: auto;
   z-index: 250;
   background: linear-gradient(200deg, var(--panel) 0%, var(--bg) 130%);
   border-left: 1px solid var(--border);
   box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04);
-  padding: 9px 13px 11px;
+  padding: 12px 18px 14px;
 }
 /* Player ist "position: fixed", nach einem Reload also immer sichtbar --
    trotzdem faellt eine fortgesetzte Wiedergabe in der Ecke leicht nicht
@@ -894,7 +900,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  width: 262px;
+  width: 334px;
 }
 .dj-deck-head {
   display: flex;
@@ -1039,8 +1045,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 
 .dj-vinyl {
   position: relative;
-  width: clamp(135px, 10vw, 162px);
-  height: clamp(135px, 10vw, 162px);
+  width: clamp(135px, 13vw, 200px);
+  height: clamp(135px, 13vw, 200px);
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -1604,7 +1610,7 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
     gap: 12px;
     position: fixed;
     top: 0;
-    right: 290px;
+    right: 370px;
     bottom: 0;
     width: 90px;
     overflow-y: auto;
