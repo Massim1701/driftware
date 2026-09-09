@@ -1518,7 +1518,15 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
     right: 0;
     bottom: 0;
     width: auto;
-    max-height: 60vh;
+    /* War 60vh -- das deckt bei schmalem Browserfenster/iPad (z.B. 817x862)
+       fast 520px vom UNTEREN Bildschirmrand ab, IMMER, unabhaengig vom
+       Scrollen (position: fixed richtet sich nach dem Viewport, nicht nach
+       dem Seiteninhalt). Ergebnis: Suchfeld, Genre-/Stimmungs-Dropdowns und
+       "Auswahl senden" lagen direkt darunter und waren komplett verdeckt --
+       das war das wiederkehrende "Warteschlange/Player"-Problem, kein
+       Scroll-Problem. 42vh laesst dem restlichen Interface wieder genug
+       Raum; der Player selbst bleibt intern scrollbar (overflow-y: auto). */
+    max-height: 42vh;
     border-left: none;
     border-top: 1px solid var(--border);
     box-shadow: 0 -8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);

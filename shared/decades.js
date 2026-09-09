@@ -10,6 +10,52 @@ function applyPalette(colors) {
   });
 }
 
+/* Geraete-Typ-Check: setzt data-device="phone|tablet|desktop" auf <html>,
+   damit CSS/JS bei Bedarf gezielt nach Geraetekategorie statt nur nach
+   roher Fensterbreite unterscheiden kann (z.B. ein Handy im Querformat mit
+   ~800px Breite soll trotzdem als "phone" gelten, nicht wie ein iPad
+   behandelt werden). Rein additiv/informativ -- das eigentliche Layout
+   laeuft weiterhin ueber CSS-Breakpoints (Fensterbreite ist fuer die
+   Platzfrage relevanter als die Geraeteklasse); dieses Attribut ist dazu
+   da, kuenftige Layout-Entscheidungen ausdruecklich nach "Handy" vs.
+   "iPad/Web" trennen zu koennen, statt es aus der Pixelzahl zu erraten.
+   iPadOS meldet sich seit iOS 13 standardmaessig als Desktop-Safari (UA
+   enthaelt "Macintosh") -- deshalb zusaetzlich ueber Touch-Support +
+   maxTouchPoints erkannt. */
+function detectDeviceType() {
+  try {
+    var ua = navigator.userAgent || '';
+    var isIPadUA = /iPad/.test(ua) ||
+      (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    var isPhoneUA = /iPhone|iPod/.test(ua) ||
+      (/Android/.test(ua) && /Mobile/.test(ua)) ||
+      /Windows Phone/.test(ua);
+    var isAndroidTabletUA = /Android/.test(ua) && !/Mobile/.test(ua);
+    var coarsePointer = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    var minSide = Math.min(window.screen.width || 0, window.screen.height || 0);
+
+    var type;
+    if (isPhoneUA) {
+      type = 'phone';
+    } else if (isIPadUA || isAndroidTabletUA) {
+      type = 'tablet';
+    } else if (coarsePointer && minSide > 0 && minSide < 600) {
+      // Touch-Geraet ohne eindeutige UA-Kennung, aber schmale kurze
+      // Bildschirmseite -- eher Handy als Tablet.
+      type = 'phone';
+    } else if (coarsePointer && minSide >= 600) {
+      type = 'tablet';
+    } else {
+      type = 'desktop';
+    }
+    document.documentElement.setAttribute('data-device', type);
+  } catch (e) {
+    // Erkennung ist informativ, nie kritisch -- bei Fehler einfach nichts
+    // setzen statt die Seite zu blockieren.
+  }
+}
+detectDeviceType();
+
 var HOME_SVG = '<svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>';
 var MAIL_SVG = '<svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>';
 var LOCK_SVG = '<svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>';
