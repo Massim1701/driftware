@@ -247,34 +247,48 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
    umbrechende Zeile (Stimmungen direkt unter Dekaden): bei Platzmangel
    scrollt die einzelne Zeile horizontal statt sich in die Hoehe zu ziehen.
    Wechselt per AJAX (siehe navigateToPage), der Player laeuft dabei weiter. */
-.gen-switch-rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-.gen-switch-row {
+.gen-switch-rows { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.gen-switch-dropdown {
   display: flex;
-  flex-wrap: nowrap;
-  gap: 6px;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  padding-bottom: 4px;
-}
-.gen-switch-item {
-  flex: 0 0 auto;
-  white-space: nowrap;
-  padding: 6px 12px 6px 10px;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 200px;
+  min-width: 150px;
+  padding: 7px 10px;
   border-radius: 999px;
   border: 1px solid var(--border);
   border-left: 3px solid var(--item-color, var(--border));
   background: rgba(255,255,255,0.03);
-  color: var(--text);
-  text-decoration: none;
+}
+.gen-switch-dropdown:focus-within { background: rgba(255,255,255,0.07); }
+.gen-switch-dd-label {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.gen-switch-select {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--item-color, var(--text));
+  font-family: inherit;
   font-size: 12px;
   font-weight: 600;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cfd3dc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: 12px;
 }
-.gen-switch-item:hover { background: rgba(255,255,255,0.07); }
-.gen-switch-item.active {
-  color: var(--item-color, var(--accent));
-  border-color: var(--item-color, var(--accent));
-  background: rgba(255,255,255,0.08);
-}
+.gen-switch-select:focus { outline: none; }
+.gen-switch-select option { background: #14151c; color: #f2f3f7; font-weight: 500; }
 .decade-link-row {
   display: flex;
   flex-wrap: wrap;
@@ -1501,7 +1515,9 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   .utility-icon { width: 34px; height: 34px; }
   .utility-icon svg { width: 15px; height: 15px; }
   .utility-label { font-size: 8px; }
-  .gen-switch-item { padding: 6px 10px; font-size: 11px; }
+  .gen-switch-rows { flex-direction: column; }
+  .gen-switch-dropdown { flex: 0 0 auto; padding: 6px 10px; min-width: 0; }
+  .gen-switch-select { font-size: 11px; }
   main.decade-main { padding: 0 12px 32px; }
   .generator { padding: 16px 12px; }
   .generator h2 { font-size: 17px; }

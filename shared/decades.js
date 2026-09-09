@@ -81,32 +81,39 @@ function currentPageFolder() {
    der Player laeuft beim Klick ungestoert weiter. */
 function switchRowHTML() {
   var current = currentPageFolder();
-  function rowFor(group) {
+  function dropdownFor(group, placeholder) {
     var items = SITE_PAGES.filter(function (p) { return p.group === group; });
-    return '' +
-      '<div class="gen-switch-row" role="tablist" aria-label="' + escapeHtml(group) + '">' +
+    var activeItem = items.filter(function (p) { return p.folder === current; })[0];
+    var options = (activeItem ? '' : '<option value="" disabled selected hidden>' + escapeHtml(placeholder) + '</option>') +
       items.map(function (p) {
         var active = p.folder === current;
-        return '<a class="gen-switch-item' + (active ? ' active' : '') + '" style="--item-color:' + p.color + '" href="/' + p.folder + '/index.html" data-nav-folder="' + p.folder + '"' + (active ? ' aria-current="page"' : '') + '>' + escapeHtml(p.label) + '</a>';
-      }).join('') +
+        return '<option value="' + p.folder + '" data-color="' + p.color + '"' + (active ? ' selected' : '') + '>' + escapeHtml(p.label) + '</option>';
+      }).join('');
+    return '' +
+      '<div class="gen-switch-dropdown" style="--item-color:' + (activeItem ? activeItem.color : 'var(--border)') + '">' +
+      '  <span class="gen-switch-dd-label">' + escapeHtml(group) + '</span>' +
+      '  <select class="gen-switch-select" aria-label="' + escapeHtml(group) + ' wechseln">' + options + '</select>' +
       '</div>';
   }
   return '' +
     '<div class="gen-switch-rows" id="gen-switch-row">' +
-    rowFor('Dekaden') +
-    rowFor('Stimmungen') +
+    dropdownFor('Dekaden', 'Dekade wechseln') +
+    dropdownFor('Stimmungen', 'Stimmung wechseln') +
     '</div>';
 }
 
 function wireSwitchRow(root) {
   var row = root.querySelector('#gen-switch-row');
   if (!row) return;
-  row.addEventListener('click', function (e) {
-    var item = e.target.closest('.gen-switch-item');
-    if (!item) return;
-    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    e.preventDefault();
-    navigateToPage(item.dataset.navFolder);
+  row.querySelectorAll('.gen-switch-select').forEach(function (select) {
+    select.addEventListener('change', function () {
+      if (!select.value) return;
+      var opt = select.options[select.selectedIndex];
+      var color = opt && opt.dataset.color;
+      var wrap = select.closest('.gen-switch-dropdown');
+      if (color && wrap) wrap.style.setProperty('--item-color', color);
+      navigateToPage(select.value);
+    });
   });
 }
 
