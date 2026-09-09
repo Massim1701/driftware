@@ -1651,6 +1651,18 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   body { padding-bottom: 300px; }
 }
 
+/* Echte Handybreiten: die 48%-Spalten oben (640px-Block) sind ab hier zu
+   schmal -- Songtitel/BPM werden abgeschnitten, Knoepfe kaum noch tapbar
+   ("Playe sind zusammengerafft"-Feedback). Deshalb hier die Decks wieder
+   gestapelt statt nebeneinander, jedes auf voller Breite. .dj-player
+   scrollt ohnehin schon (overflow-y: auto), die groessere Gesamthoehe ist
+   also unkritisch. */
+@media (max-width: 480px) {
+  .dj-player { max-height: 68vh; }
+  .dj-decks { flex-direction: column; align-items: center; gap: 10px; }
+  .dj-deck { width: 100%; max-width: 300px; }
+}
+
 @media (max-width: 900px) {
   /* Gestapelt statt nebeneinander. align-items muss hier von flex-start
      auf stretch wechseln: sonst richtet sich die Spaltenbreite nach der
