@@ -100,7 +100,10 @@ function ddItemsHTML(items, selectedValue) {
 function ddHTML(config) {
   var selected = config.items.filter(function (it) { return it.value === config.selectedValue; })[0];
   var valueText = selected ? selected.text : config.placeholder;
-  var accent = selected && selected.color ? selected.color : 'var(--border)';
+  /* Fallback var(--accent) statt var(--border): Items ohne eigene Farbe
+     (z.B. Genres, siehe renderPlaylistGenerator) wirkten sonst bei
+     Auswahl grau/"ausgegraut" statt erkennbar hervorgehoben. */
+  var accent = selected ? (selected.color || 'var(--accent)') : 'var(--border)';
   return '' +
     '<div class="gen-dd' + (config.extraClass ? ' ' + config.extraClass : '') + '" id="' + config.ddId + '" data-placeholder="' + escapeHtml(config.placeholder) + '" style="--item-color:' + accent + '">' +
     '  <button type="button" class="gen-dd-trigger" aria-haspopup="listbox" aria-expanded="false">' +
@@ -163,7 +166,7 @@ function ddSetValue(ddEl, value) {
     valueEl.textContent = matched.textContent;
     valueEl.classList.remove('placeholder');
     var color = matched.style.getPropertyValue('--item-color');
-    ddEl.style.setProperty('--item-color', color || 'var(--border)');
+    ddEl.style.setProperty('--item-color', color || 'var(--accent)');
   } else {
     valueEl.textContent = ddEl.dataset.placeholder || '';
     valueEl.classList.add('placeholder');
@@ -1593,7 +1596,17 @@ function maybePreloadNext(key) {
         videoId: nextSong.yt,
         playerVars: { rel: 0, playsinline: 1, autoplay: 0, start: introSkipFor(nextSong) },
         events: {
-          onReady: function (e) { try { e.target.setVolume(0); } catch (err) {} },
+          onReady: function (e) {
+            /* Wurde waehrend des Vorladens (siehe deckTogglePlay) bereits ein
+               Play gewuenscht, jetzt nachholen statt stumm zu bleiben. */
+            if (other.pendingPlay) {
+              other.pendingPlay = false;
+              try { e.target.playVideo(); } catch (err) {}
+              applyCrossfaderVolumes();
+            } else {
+              try { e.target.setVolume(0); } catch (err) {}
+            }
+          },
           onStateChange: onDeckStateChange(otherKey),
           onError: function () {
             other.preloadedFor = null;
@@ -2262,7 +2275,10 @@ function playDeckSong(key, song, autoplay) {
         events: {
           onReady: function (e) {
             try { e.target.setPlaybackRate(deck.rate || 1); } catch (err) {}
-            if (autoplay) { e.target.playVideo(); }
+            /* siehe deckTogglePlay: Play-Klick kam evtl. schon rein, bevor
+               der Player bereit war -- jetzt nachholen. */
+            if (autoplay || deck.pendingPlay) { e.target.playVideo(); }
+            deck.pendingPlay = false;
             applyCrossfaderVolumes();
           },
           onStateChange: onDeckStateChange(key),
@@ -2324,6 +2340,19 @@ function deckStep(key, dir, autoplay) {
 function deckTogglePlay(key) {
   var deck = DECKS[key];
   if (!deck.player) return;
+  /* deck.player existiert schon direkt nach "new YT.Player(...)"
+     (playDeckSong/maybePreloadNext), die eigentlichen Steuer-Methoden
+     (playVideo/pauseVideo) haengt die YouTube-IFrame-API aber erst beim
+     onReady-Event ein -- ein Klick auf Play in diesem kurzen Fenster
+     (v.a. auf einem gerade erst vorgeladenen Deck) fuehrte bisher zu
+     "deck.player.playVideo is not a function" und blieb dann tot (siehe
+     driftware-error-log-v1 vom 9.9.). Play-Wunsch stattdessen vormerken
+     und automatisch nachholen, sobald der Player wirklich bereit ist
+     (siehe onReady in playDeckSong und maybePreloadNext). */
+  if (typeof deck.player.playVideo !== 'function' || typeof deck.player.pauseVideo !== 'function') {
+    if (!deck.isPlaying) deck.pendingPlay = true;
+    return;
+  }
   if (deck.isPlaying) {
     cancelActiveAutoFade(key);
     deck.player.pauseVideo();
