@@ -2506,7 +2506,20 @@ function deckStep(key, dir, autoplay) {
 
 function deckTogglePlay(key) {
   var deck = DECKS[key];
-  if (!deck.player) return;
+  if (!deck.player) {
+    /* Player existiert noch gar nicht -- typischerweise beim allerersten
+       Song der Seite, waehrend die YouTube-IFrame-API noch laedt
+       (loadYouTubeAPI): playDeckSong hat schon einen Song gesetzt, aber
+       "new YT.Player(...)" laeuft erst, sobald das API-Script fertig ist.
+       Klickt der Nutzer JETZT auf Play, ging der Wunsch bisher komplett
+       verloren (kein pendingPlay gesetzt, da die Funktion einfach
+       zurueckkehrte) -- der Song blieb dann stumm gecued stehen, bis man
+       zufaellig noch mal klickte. Play-Wunsch deshalb genau wie im
+       Halb-fertig-Fall unten vormerken; playDeckSong holt ihn beim
+       fertigen Aufbau nach (siehe onReady dort). */
+    if (!deck.isPlaying) deck.pendingPlay = true;
+    return;
+  }
   /* deck.player existiert schon direkt nach "new YT.Player(...)"
      (playDeckSong/maybePreloadNext), die eigentlichen Steuer-Methoden
      (playVideo/pauseVideo) haengt die YouTube-IFrame-API aber erst beim
