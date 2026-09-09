@@ -937,27 +937,40 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
    das ueber den eigentlichen Reglern schwebt. Darunter, in normaler
    Fluss-Reihenfolge, der Rest: Plattenteller/Waveform/Pitch/Buttons, bei
    Deck B gespiegelt (Buttons zur Mitte/Crossfader hin). */
+/* Schritt 4 (Nutzer: "Plattenteller neben das Display setz-en"): Kopf-
+   zeile ist kein schwebendes Overlay mehr, sondern eine echte Grid-Zeile
+   -- Label+Digitalanzeige UND Plattenteller stehen jetzt gemeinsam oben
+   in der Ecke, nebeneinander. Waveform/Pitch/Buttons bilden eine zweite
+   Grid-Zeile darunter. Grid statt Flex+order, weil die beiden Zeilen
+   unterschiedlich viele Elemente haben (2 oben, 3 unten) -- mit Grid
+   kann jedes der 5 von decades.js unveraendert erzeugten Kind-Elemente
+   frei per grid-area plaziert werden, ohne das Markup anzufassen. */
 .dj-deck {
   position: relative;
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  grid-template-areas:
+    "head vinyl ."
+    "wave pitch ctrl";
   align-items: center;
-  gap: 8px;
+  column-gap: 8px;
+  row-gap: 6px;
   flex: 1 1 380px;
   min-width: 0;
-  padding-top: 32px;
+}
+#deck-B {
+  grid-template-columns: 1fr auto auto;
+  grid-template-areas:
+    ". vinyl head"
+    "ctrl pitch wave";
 }
 .dj-deck-head {
-  position: absolute;
-  top: 0;
-  left: 0;
+  grid-area: head;
   display: flex;
   flex-direction: row;
   align-items: stretch;
   gap: 5px;
-  max-width: 70%;
 }
-#deck-B .dj-deck-head { left: auto; right: 0; }
 /* Schritt 3 (Nutzer: "die um 180 Grad gedreht daneben, nicht hoeher als
    das display"): Label wieder hochkant/180-Grad-gedreht wie in Schritt 1
    -- aber jetzt per align-items:stretch auf die Hoehe der Digitalanzeige
@@ -971,14 +984,10 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   overflow: hidden;
 }
 .dj-deck-info { flex: 1 1 auto; min-width: 100px; }
-.dj-deck-top { order: 1; flex: 0 0 auto; }
-.dj-waveform { order: 2; flex: 0 0 auto; }
-.dj-pitch { order: 3; flex: 0 0 auto; }
-.dj-deck-controls { order: 4; flex: 0 0 auto; }
-#deck-B .dj-deck-top { order: 3; }
-#deck-B .dj-waveform { order: 2; }
-#deck-B .dj-pitch { order: 1; }
-#deck-B .dj-deck-controls { order: 0; }
+.dj-deck-top { grid-area: vinyl; }
+.dj-waveform { grid-area: wave; }
+.dj-pitch { grid-area: pitch; }
+.dj-deck-controls { grid-area: ctrl; }
 .dj-deck-label {
   font-size: 11px;
   font-weight: 800;
@@ -1114,9 +1123,13 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 
 .dj-vinyl {
+  /* Schritt 4 (Nutzer: "kann ruhig groesser werden"): jetzt, wo der
+     Plattenteller oben in der Ecke neben dem Display steht statt in der
+     engen Kanalstreifen-Reihe, ist wieder mehr Platz -- deutlich groesser
+     als die vorherige Kompakt-Version (52-76px). */
   position: relative;
-  width: clamp(52px, 5vw, 76px);
-  height: clamp(52px, 5vw, 76px);
+  width: clamp(80px, 8vw, 120px);
+  height: clamp(80px, 8vw, 120px);
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -1169,8 +1182,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   justify-content: center;
 }
 .dj-vinyl-video {
-  width: 42px;
-  height: 42px;
+  width: clamp(66px, 6.6vw, 100px);
+  height: clamp(66px, 6.6vw, 100px);
   border-radius: 50%;
   overflow: hidden;
   background: #000;
