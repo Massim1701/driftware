@@ -325,6 +325,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   border-color: var(--accent);
 }
 .theme-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.gen-genre-row { margin-bottom: 18px; }
+.gen-genre-dropdown { flex: 0 0 auto; min-width: 230px; max-width: 100%; }
 .theme-btn {
   background: var(--bg);
   border: 1px solid var(--border);

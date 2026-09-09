@@ -51,12 +51,12 @@ var DRIFTWARE_LOGO_SVG = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000
    AJAX-Navigation (siehe navigateToPage), damit ein Wechsel den laufenden
    Player nicht unterbricht. */
 var SITE_PAGES = [
-  { slug: '70er', folder: '70er-music', label: '70er', group: 'Dekaden', color: '#c9762f' },
-  { slug: '80er', folder: '80er-music', label: '80er', group: 'Dekaden', color: '#ff2fb3' },
-  { slug: '90er', folder: '90er-music', label: '90er', group: 'Dekaden', color: '#29e2ff' },
-  { slug: '2000er', folder: '2000er-music', label: '2000er', group: 'Dekaden', color: '#4a90d9' },
-  { slug: '2010er', folder: '2010er-music', label: '2010er', group: 'Dekaden', color: '#8b5cf6' },
-  { slug: '2020er', folder: '2020er-music', label: '2020er', group: 'Dekaden', color: '#8bc34a' },
+  { slug: '70er', folder: '70er-music', label: '70er', group: 'Dekades', color: '#c9762f' },
+  { slug: '80er', folder: '80er-music', label: '80er', group: 'Dekades', color: '#ff2fb3' },
+  { slug: '90er', folder: '90er-music', label: '90er', group: 'Dekades', color: '#29e2ff' },
+  { slug: '2000er', folder: '2000er-music', label: '2000er', group: 'Dekades', color: '#4a90d9' },
+  { slug: '2010er', folder: '2010er-music', label: '2010er', group: 'Dekades', color: '#8b5cf6' },
+  { slug: '2020er', folder: '2020er-music', label: '2020er', group: 'Dekades', color: '#8bc34a' },
   { slug: 'afterwork', folder: 'afterwork-music', label: 'Afterwork', group: 'Stimmungen', color: '#d98c1f' },
   { slug: 'chillhouse', folder: 'chillhouse-music', label: 'Chill House', group: 'Stimmungen', color: '#1c8f6f' },
   { slug: 'christmas', folder: 'christmas-music', label: 'Christmas', group: 'Stimmungen', color: '#e0453f' },
@@ -102,7 +102,7 @@ function switchRowHTML() {
   }
   return '' +
     '<div class="gen-switch-rows" id="gen-switch-row">' +
-    dropdownFor('Dekaden', 'Dekade wechseln', 'dekaden') +
+    dropdownFor('Dekades', 'Dekade wechseln', 'dekaden') +
     dropdownFor('Stimmungen', 'Stimmung wechseln', 'stimmungen') +
     '</div>';
 }
@@ -2851,9 +2851,8 @@ function renderPlaylistGenerator(mountRoot, config) {
     manualShuffleSongs = null;
     linkedComboCache = null;
     clearSearchUI();
-    mountRoot.querySelectorAll('.theme-btn').forEach(function (b) {
-      b.classList.toggle('active', b.dataset.key === key);
-    });
+    var genreSelectEl = mountRoot.querySelector('#gen-genre-select');
+    if (genreSelectEl) genreSelectEl.value = key;
     document.getElementById('gen-actions').classList.add('visible');
     loadData().then(function () {
       if (linkedDecadeKey && linkedRawData) computeLinkedCombo();
@@ -2880,7 +2879,8 @@ function renderPlaylistGenerator(mountRoot, config) {
       return;
     }
 
-    mountRoot.querySelectorAll('.theme-btn').forEach(function (b) { b.classList.remove('active'); });
+    var genreSelectEl = mountRoot.querySelector('#gen-genre-select');
+    if (genreSelectEl) genreSelectEl.value = '';
     document.getElementById('gen-actions').classList.add('visible');
 
     hintEl.hidden = false;
@@ -2953,7 +2953,12 @@ function renderPlaylistGenerator(mountRoot, config) {
       }).join('') +
       '</div>'
     ) : '') +
-    '<div class="theme-buttons" id="gen-buttons"></div>' +
+    '<div class="gen-genre-row">' +
+    '  <label class="gen-switch-dropdown gen-genre-dropdown" for="gen-genre-select">' +
+    '    <span class="gen-switch-dd-label">Genre</span>' +
+    '    <select id="gen-genre-select" class="gen-switch-select" aria-label="Genre wählen"></select>' +
+    '  </label>' +
+    '</div>' +
     '<div class="send-panel">' +
     '  <span class="send-panel-label">Dein Dienst:</span>' +
     '  <div class="provider-picker" id="gen-provider-picker"></div>' +
@@ -2989,25 +2994,33 @@ function renderPlaylistGenerator(mountRoot, config) {
     });
   }
 
-  var buttons = section.querySelector('#gen-buttons');
-  if (config.themes && config.themes.length) {
-    var mixBtn = document.createElement('button');
-    mixBtn.className = 'theme-btn theme-btn-mix';
-    mixBtn.type = 'button';
-    mixBtn.innerHTML = themeIconHTML('dice') + '<span>Mix – Best-of aller Genres</span>';
-    mixBtn.title = 'Die ' + MIX_PER_CATEGORY + ' beliebtesten Songs aus jedem Genre';
-    mixBtn.dataset.key = MIX_KEY;
-    mixBtn.addEventListener('click', function () { selectTheme(MIX_KEY); });
-    buttons.appendChild(mixBtn);
+  var genreSelect = section.querySelector('#gen-genre-select');
+  if (genreSelect && config.themes && config.themes.length) {
+    /* Leere Platzhalter-Option -- wird nur waehrend einer aktiven Suche
+       angezeigt (siehe runSearch), wenn kein Genre "aktiv" ist. */
+    var placeholderOpt = document.createElement('option');
+    placeholderOpt.value = '';
+    placeholderOpt.disabled = true;
+    placeholderOpt.hidden = true;
+    placeholderOpt.textContent = 'Genre';
+    genreSelect.appendChild(placeholderOpt);
+
+    var mixOpt = document.createElement('option');
+    mixOpt.value = MIX_KEY;
+    mixOpt.title = 'Die ' + MIX_PER_CATEGORY + ' beliebtesten Songs aus jedem Genre';
+    mixOpt.textContent = 'Mix – Best-of aller Genres';
+    genreSelect.appendChild(mixOpt);
 
     config.themes.forEach(function (t) {
-      var btn = document.createElement('button');
-      btn.className = 'theme-btn';
-      btn.type = 'button';
-      btn.innerHTML = themeIconHTML(THEME_KEY_ICON[t.key]) + '<span>' + escapeHtml(t.label) + '</span>';
-      btn.dataset.key = t.key;
-      btn.addEventListener('click', function () { selectTheme(t.key); });
-      buttons.appendChild(btn);
+      var opt = document.createElement('option');
+      opt.value = t.key;
+      opt.textContent = t.label;
+      genreSelect.appendChild(opt);
+    });
+
+    genreSelect.addEventListener('change', function () {
+      if (!genreSelect.value) return;
+      selectTheme(genreSelect.value);
     });
   }
 
