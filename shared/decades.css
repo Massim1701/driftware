@@ -365,11 +365,20 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   cursor: pointer;
 }
 .decade-link-chip:hover { background: rgba(255,255,255,0.06); }
-.decade-link-chip.active {
+/* "linked" = per Klick verbundene Nachbar-Dekade (dezenter Umriss).
+   "now-playing" = die Dekade, die GERADE tatsaechlich zu hoeren ist
+   (kraeftige Farbe, siehe currentPlayingDecadeKey() in decades.js) --
+   ueberschreibt "linked" optisch, sobald sie aktiv ist. */
+.decade-link-chip.linked {
+  border-color: var(--accent2);
+  color: var(--accent2);
+}
+.decade-link-chip.now-playing {
   background: var(--accent);
   color: #fff;
   border-color: var(--accent);
 }
+.decade-own-chip { font-weight: 700; }
 .theme-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .gen-genre-row { margin-bottom: 18px; }
 .theme-btn {

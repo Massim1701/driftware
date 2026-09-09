@@ -637,12 +637,35 @@ function neighborDecadesOf(ownKey) {
   for (var i = 0; i < DECADE_REGISTRY.length; i++) {
     if (DECADE_REGISTRY[i].key === ownKey) { idx = i; break; }
   }
-  if (idx === -1) return [];
-  var out = [];
-  if (idx > 0) out.push(DECADE_REGISTRY[idx - 1]);
-  if (idx < DECADE_REGISTRY.length - 1) out.push(DECADE_REGISTRY[idx + 1]);
-  return out;
+  if (idx === -1) return { prev: null, next: null };
+  return {
+    prev: idx > 0 ? DECADE_REGISTRY[idx - 1] : null,
+    next: idx < DECADE_REGISTRY.length - 1 ? DECADE_REGISTRY[idx + 1] : null
+  };
 }
+
+/* Liefert den Dekaden-Schluessel des Songs, der GERADE tatsaechlich zu
+   hoeren ist -- fuer die farbliche Hervorhebung in "Dekade verbinden"
+   (siehe renderPlaylistGenerator). Bevorzugt das eine spielende Deck; bei
+   zwei gleichzeitig spielenden Decks (kurz waehrend des Ueberblendens) wird
+   -- wie bei currentSyncRoles() -- die Crossfader-Position als Notloesung
+   herangezogen. Songs ohne eigenes _decade-Feld (siehe computeLinkedCombo)
+   gehoeren zur eigenen Dekade der Seite. */
+function currentPlayingDecadeKey(ownDecadeKey) {
+  var a = DECKS.A, b = DECKS.B;
+  var key;
+  if (a.isPlaying && !b.isPlaying) key = 'A';
+  else if (b.isPlaying && !a.isPlaying) key = 'B';
+  else if (a.isPlaying && b.isPlaying) key = crossfaderValue <= 50 ? 'A' : 'B';
+  else return ownDecadeKey;
+  var deck = DECKS[key];
+  return (deck.song && deck.song._decade) || ownDecadeKey;
+}
+
+/* Registrierte Callbacks, die bei jeder relevanten Deck-Aenderung (siehe
+   updateDeckInfoUI) neu pruefen sollen, welche Dekade gerade spielt --
+   z.B. um die "Dekade verbinden"-Chips farblich nachzuziehen. */
+var decadeChipRefreshers = [];
 
 /* Aus JEDER Kategorie eines beliebigen Song-Datensatzes (eigene Dekade ODER
    verlinkte Nachbar-Dekade) die MIX_PER_CATEGORY beliebtesten Songs -- Basis
@@ -882,7 +905,14 @@ var djStateRestored = false;
 
 function songForStorage(s) {
   if (!s) return null;
-  return { a: s.a, t: s.t, u: s.u || null, yt: s.yt || null, bpm: s.bpm || null, g: s.g, y: s.y, s: s.s };
+  /* _decade NICHT weglassen: fehlte bisher hier, obwohl ein per "Dekade
+     verbinden" geladener Song aus einer FREMDEN Dekade stammen kann (siehe
+     computeLinkedCombo) -- ohne dieses Feld "vergass" ein wiederhergestellter
+     Song nach einem Reload, aus welcher Dekade er kommt (Badge, farbliche
+     Now-Playing-Markierung des Verbinden-Chips), siehe auch
+     driftware-linked-decade-<key> weiter unten fuer den Verbindungs-Status
+     selbst. */
+  return { a: s.a, t: s.t, u: s.u || null, yt: s.yt || null, bpm: s.bpm || null, g: s.g, y: s.y, s: s.s, _decade: s._decade || null };
 }
 
 function saveDjState() {
@@ -1285,6 +1315,7 @@ function updateDeckInfoUI(key) {
   refreshMixableHighlight();
   updateBpmSync();
   scheduleDjStateSave();
+  decadeChipRefreshers.forEach(function (fn) { fn(); });
 }
 
 /* BPM-Sync-Panel: zeigt die (durch den Pitch bereits skalierte) effektive
@@ -2831,36 +2862,64 @@ function renderPlaylistGenerator(mountRoot, config) {
     linkedComboCache = { theme: currentTheme, songs: bpmSmooth(shuffled(combined)) };
   }
 
+  /* "linked" (Umriss) markiert eine per Klick VERBUNDENE Nachbar-Dekade;
+     "now-playing" (kraeftige Farbe) markiert, welche Dekade GERADE
+     tatsaechlich zu hoeren ist -- siehe currentPlayingDecadeKey(). Die
+     eigene Dekade hat kein "linked", sie ist immer die Basis. */
   function updateLinkChipsUI() {
+    var playingKey = currentPlayingDecadeKey(ownDecadeKey);
     mountRoot.querySelectorAll('.decade-link-chip').forEach(function (c) {
-      var active = c.dataset.key === linkedDecadeKey;
-      c.classList.toggle('active', active);
-      c.setAttribute('aria-pressed', active ? 'true' : 'false');
+      var key = c.dataset.key;
+      var isOwn = key === ownDecadeKey;
+      var linked = !isOwn && key === linkedDecadeKey;
+      c.classList.toggle('linked', linked);
+      c.classList.toggle('now-playing', key === playingKey);
+      c.setAttribute('aria-pressed', (isOwn ? !linkedDecadeKey : linked) ? 'true' : 'false');
     });
   }
+  decadeChipRefreshers.push(updateLinkChipsUI);
 
-  function toggleLinkedDecade(key) {
-    manualShuffleTheme = null;
-    manualShuffleSongs = null;
-    if (linkedDecadeKey === key) {
-      linkedDecadeKey = null;
-      linkedRawData = null;
-      linkedComboCache = null;
-      updateLinkChipsUI();
-      refresh();
-      return;
-    }
+  /* Verbindungs-Status wird pro eigener Dekade gemerkt (localStorage) --
+     vorher gab es das NICHT: nach einem Reload zeigte "Dekade verbinden"
+     wieder "getrennt", waehrend das Deck (ueber saveDjState/restoreDjState)
+     trotzdem noch die VOLLE verbundene Warteschlange weiterspielte. Grid,
+     Genre-Zaehler und Chip-Farbe wichen dadurch vom tatsaechlich
+     spielenden Song ab ("Struktur wirkt gestoert", siehe auch
+     currentPlayingDecadeKey()/_decade in songForStorage). Jetzt wird die
+     Verbindung beim Laden aktiv wiederhergestellt (siehe Aufruf weiter
+     unten), damit beides wieder zusammenpasst. */
+  function linkStorageKey() { return 'driftware-linked-decade-' + ownDecadeKey; }
+
+  function linkDecade(key) {
     linkedDecadeKey = key;
     linkedRawData = null;
     linkedComboCache = null;
     updateLinkChipsUI();
     refresh(); // zeigt sofort die eigene Dekade, waehrend die Nachbar-Daten laden
+    try { localStorage.setItem(linkStorageKey(), key); } catch (e) {}
     fetchRawDecadeData(key).then(function (json) {
       if (linkedDecadeKey !== key) return; // in der Zwischenzeit abgewaehlt/gewechselt
       linkedRawData = json;
       computeLinkedCombo();
       refresh();
     });
+  }
+
+  function unlinkDecade() {
+    if (!linkedDecadeKey) return;
+    linkedDecadeKey = null;
+    linkedRawData = null;
+    linkedComboCache = null;
+    updateLinkChipsUI();
+    refresh();
+    try { localStorage.removeItem(linkStorageKey()); } catch (e) {}
+  }
+
+  function toggleLinkedDecade(key) {
+    manualShuffleTheme = null;
+    manualShuffleSongs = null;
+    if (linkedDecadeKey === key) { unlinkDecade(); return; }
+    linkDecade(key);
   }
 
   /* Mix-Button: aus JEDER Kategorie die 5 beliebtesten Songs (Discogs-'have'-
@@ -3058,12 +3117,17 @@ function renderPlaylistGenerator(mountRoot, config) {
     '  <p class="search-hint" id="gen-search-hint" hidden></p>' +
     '</div>' +
     switchRowHTML() +
-    (neighborDecades.length ? (
+    ((neighborDecades.prev || neighborDecades.next) ? (
       '<div class="decade-link-row">' +
       '  <span class="decade-link-label">' + LINK_SVG + ' Dekade verbinden:</span>' +
-      neighborDecades.map(function (n) {
-        return '<button class="decade-link-chip" type="button" data-key="' + n.key + '" aria-pressed="false">' + escapeHtml(n.label.replace(' Music', '')) + '</button>';
-      }).join('') +
+      /* Chronologische Reihenfolge, eigene Dekade in der Mitte (siehe
+         Nutzeranforderung): [vorherige] [eigene] [naechste]. */
+      [neighborDecades.prev, { key: ownDecadeKey, label: ownDecadeLabel, own: true }, neighborDecades.next]
+        .filter(Boolean)
+        .map(function (n) {
+          var cls = 'decade-link-chip' + (n.own ? ' decade-own-chip' : '');
+          return '<button class="' + cls + '" type="button" data-key="' + n.key + '" aria-pressed="false">' + escapeHtml(n.label.replace(' Music', '')) + '</button>';
+        }).join('') +
       '</div>'
     ) : '') +
     (config.themes && config.themes.length ? (
@@ -3111,6 +3175,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     linkRow.addEventListener('click', function (e) {
       var chip = e.target.closest('.decade-link-chip');
       if (!chip) return;
+      if (chip.classList.contains('decade-own-chip')) { unlinkDecade(); return; }
       toggleLinkedDecade(chip.dataset.key);
     });
   }
@@ -3122,6 +3187,13 @@ function renderPlaylistGenerator(mountRoot, config) {
 
   var target = mountRoot.querySelector(config.mountBefore);
   mountRoot.insertBefore(section, target || null);
+
+  /* ERST ab hier ist .decade-link-row wirklich im mountRoot -- ein Aufruf
+     von updateLinkChipsUI() vor diesem insertBefore faende ueber
+     mountRoot.querySelectorAll() noch keine Chips (section haengt dann noch
+     nicht im DOM) und wuerde die "now-playing"-Markierung der eigenen
+     Dekade beim initialen Laden stillschweigend auslassen. */
+  updateLinkChipsUI();
 
   renderProviderPicker(section.querySelector('#gen-provider-picker'));
   section.querySelector('#gen-send').addEventListener('click', sendSelection);
@@ -3164,6 +3236,18 @@ function renderPlaylistGenerator(mountRoot, config) {
     link.download = (config.csvPrefix || 'playlist') + '-' + (currentTheme || 'songs') + '.csv';
     setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
   });
+
+  /* Verbundene Nachbar-Dekade wiederherstellen, BEVOR das Genre gewaehlt
+     wird (siehe linkDecade() oben) -- nur wenn der gespeicherte Schluessel
+     tatsaechlich noch einer der beiden echten Nachbarn ist. */
+  if (ownDecadeKey && (neighborDecades.prev || neighborDecades.next)) {
+    var savedLinkedKey = null;
+    try { savedLinkedKey = localStorage.getItem(linkStorageKey()); } catch (e) {}
+    var validNeighborKeys = [neighborDecades.prev, neighborDecades.next].filter(Boolean).map(function (d) { return d.key; });
+    if (savedLinkedKey && validNeighborKeys.indexOf(savedLinkedKey) !== -1) {
+      linkDecade(savedLinkedKey);
+    }
+  }
 
   if (config.themes && config.themes.length) {
     /* Nicht immer stur das erste Genre -- zuletzt gewaehltes Genre fuer
