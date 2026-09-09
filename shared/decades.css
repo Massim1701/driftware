@@ -379,6 +379,36 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   border-color: var(--accent);
 }
 .decade-own-chip { font-weight: 700; }
+/* Feste Dekaden-Navigationszeile (ersetzt das fruehere Dekaden-Dropdown
+   oben im Playlist-Generator) -- gleiches Chip-Aussehen wie .decade-link-*
+   oben, aber eigene Klasse: .decade-link-row hat eine eigene Klick-Logik
+   (Dekade verbinden) auf Section-Ebene, die nicht mit reiner
+   Seiten-Navigation vermischt werden darf. */
+.decade-nav-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.decade-nav-chip {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.decade-nav-chip:hover { background: rgba(255,255,255,0.06); }
+.decade-nav-chip.decade-nav-active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  cursor: default;
+  font-weight: 700;
+}
 .theme-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .gen-genre-row { margin-bottom: 18px; }
 .theme-btn {

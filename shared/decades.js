@@ -220,30 +220,55 @@ function ddSetValue(ddEl, value) {
   }
 }
 
-/* Schnellzugriff auf andere Dekaden/Stimmungen als zwei durchgehende,
-   horizontal scrollbare Zeilen (Dekaden, Stimmungen darunter) -- fest
-   eingebaut im Playlist-Generator zwischen Suchfeld und Genre-Buttons.
-   Ersetzt das fruehere separate "Wechseln"-Dropdown im Utility-Block
-   (entfernt, da redundant). Wechselt per AJAX (siehe navigateToPage),
-   der Player laeuft beim Klick ungestoert weiter. */
+/* Dekaden-Schnellzugriff als feste, chronologisch sortierte Button-Reihe
+   (70er -> 2020er, immer sichtbar) statt Dropdown -- ein Dropdown versteckt
+   die Reihenfolge hinter einem Klick und zeigt immer nur die AKTUELLE
+   Dekade an, was wiederholt als verwirrend/"Reihenfolge kaputt" empfunden
+   wurde. Gleiches Chip-Aussehen wie die "Dekade verbinden"-Zeile, aber
+   eigene Klasse (decade-nav-*), weil die dortige Klick-Logik (Verbinden)
+   nicht mit reiner Navigation kollidieren darf. Wechselt per AJAX (siehe
+   navigateToPage), der Player laeuft beim Klick ungestoert weiter. */
+function decadeNavRowHTML() {
+  var current = currentPageFolder();
+  var items = SITE_PAGES.filter(function (p) { return p.group === 'Dekades'; });
+  return '' +
+    '<div class="decade-nav-row" id="decade-nav-row">' +
+    '  <span class="decade-link-label">' + GRID_SVG + ' Dekaden:</span>' +
+    items.map(function (p) {
+      var active = p.folder === current;
+      return '<button class="decade-nav-chip' + (active ? ' decade-nav-active' : '') + '" type="button" data-folder="' + p.folder + '"' +
+        (active ? ' aria-current="page" disabled' : '') + '>' + escapeHtml(p.label) + '</button>';
+    }).join('') +
+    '</div>';
+}
+
+function wireDecadeNavRow(root) {
+  var row = root.querySelector('#decade-nav-row');
+  if (!row) return;
+  row.addEventListener('click', function (e) {
+    var btn = e.target.closest('.decade-nav-chip');
+    if (!btn || btn.disabled) return;
+    navigateToPage(btn.dataset.folder);
+  });
+}
+
+/* Stimmungen bleiben als Dropdown (deutlich mehr Eintraege als Dekaden --
+   als feste Reihe wuerde das den Kopfbereich sprengen). Wechselt per AJAX
+   (siehe navigateToPage), der Player laeuft beim Klick ungestoert weiter. */
 function switchRowHTML() {
   var current = currentPageFolder();
-  function dropdownFor(group, placeholder, idSuffix) {
-    var items = SITE_PAGES.filter(function (p) { return p.group === group; })
-      .map(function (p) { return { value: p.folder, text: p.label, color: p.color }; });
-    var activeItem = items.filter(function (it) { return it.value === current; })[0];
-    return ddHTML({
-      ddId: 'gen-switch-dd-' + idSuffix,
-      label: group,
-      placeholder: placeholder,
-      items: items,
-      selectedValue: activeItem ? activeItem.value : null
-    });
-  }
+  var items = SITE_PAGES.filter(function (p) { return p.group === 'Stimmungen'; })
+    .map(function (p) { return { value: p.folder, text: p.label, color: p.color }; });
+  var activeItem = items.filter(function (it) { return it.value === current; })[0];
   return '' +
     '<div class="gen-switch-rows" id="gen-switch-row">' +
-    dropdownFor('Dekades', 'Dekade wechseln', 'dekaden') +
-    dropdownFor('Stimmungen', 'Stimmung wechseln', 'stimmungen') +
+    ddHTML({
+      ddId: 'gen-switch-dd-stimmungen',
+      label: 'Stimmungen',
+      placeholder: 'Stimmung wechseln',
+      items: items,
+      selectedValue: activeItem ? activeItem.value : null
+    }) +
     '</div>';
 }
 
@@ -3201,6 +3226,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     '  </div>' +
     '  <p class="search-hint" id="gen-search-hint" hidden></p>' +
     '</div>' +
+    decadeNavRowHTML() +
     switchRowHTML() +
     ((neighborDecades.prev || neighborDecades.next) ? (
       '<div class="decade-link-row">' +
@@ -3256,6 +3282,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     '<a href="https://soundiiz.com" target="_blank" rel="noopener">Soundiiz</a> oder ' +
     '<a href="https://www.tunemymusic.com" target="_blank" rel="noopener">TuneMyMusic</a> hochladen.</p>';
 
+  wireDecadeNavRow(section);
   wireSwitchRow(section);
 
   var linkRow = section.querySelector('.decade-link-row');
