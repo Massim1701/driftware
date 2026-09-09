@@ -29,6 +29,13 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Startzeit merken
+        # Fuer das Zeitbudget einer moeglichen Neu-Verarbeitung weiter unten
+        # (siehe "Aenderungen committen und pushen") -- damit ein Redo nach
+        # einem Konflikt niemals zusammen mit dem ersten Durchlauf ueber das
+        # 6h-Hardlimit von GitHub-gehosteten Runnern hinaus laeuft.
+        run: echo "JOB_START_TS=$(date +%s)" >> "$GITHUB_ENV"
+
       - name: Abhaengigkeiten installieren
         run: pip install --quiet yt-dlp
 
@@ -38,6 +45,8 @@ jobs:
         run: python3 tools/process_missing_queue.py
 
       - name: Aenderungen committen und pushen
+        env:
+          DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
         run: |
           git config user.name "driftware-bot"
           git config user.email "actions@users.noreply.github.com"
@@ -47,19 +56,63 @@ jobs:
             exit 0
           fi
           git commit -m "Warteliste automatisch verarbeitet"
-          # Der Job laeuft oft stundenlang (Zeitbudget siehe process_missing_queue.py).
-          # Wenn in der Zwischenzeit jemand anderes (Massimo, Web) auf master gepusht
-          # hat, wird ein einfaches "git push" abgelehnt -- und der Commit mit dem
-          # gesamten Fortschritt dieses Laufs ginge mit dem Runner-Workspace komplett
-          # verloren. Deshalb bei Ablehnung rebasen und erneut versuchen, statt nur
-          # einmal zu pushen.
+
+          # Der Job laeuft oft stundenlang (Zeitbudget siehe
+          # process_missing_queue.py). Wenn in der Zwischenzeit jemand
+          # anderes (Massimo, Web) auf master gepusht hat, wird ein
+          # einfaches "git push" abgelehnt. Ein blindes "git rebase" reicht
+          # dafuer NICHT: queue/fehlende-lieder.json und *-music/songs.json
+          # werden ohne Zeilenumbrueche gespeichert (ein einziger riesiger
+          # String pro Datei), Git kann darin also nie zeilenweise
+          # zusammenfuehren -- JEDE gleichzeitige Aenderung an derselben
+          # Datei fuehrt zu einem echten Rebase-KONFLIKT, nicht nur zu einer
+          # simplen Nicht-Fast-Forward-Ablehnung. Sonst wuerde der
+          # 5,5h-Fortschritt dieses Laufs beim Rebase-Fehlschlag komplett
+          # verworfen (siehe Vorfall vom 8./9.9.: genau das ist passiert).
+          #
+          # Deshalb bei einem echten Rebase-KONFLIKT: abbrechen, hart auf
+          # den neuen Remote-Stand zuruecksetzen und die Verarbeitung dort
+          # NOCHMAL laufen lassen, statt zu versuchen, die Aenderungen von
+          # Hand zusammenzufuehren. process_missing_queue.py ist dafuer
+          # bewusst zustandslos/wiederholbar: es liest immer nur die
+          # AKTUELLE Warteliste + AKTUELLEN Katalog und verarbeitet, was da
+          # ist -- ein zweiter Lauf auf frischem Stand ist genauso korrekt
+          # wie der erste, nur eben mit dem, was der andere Push zusaetzlich
+          # eingebracht hat.
           for i in 1 2 3 4 5; do
             if git push; then
+              echo "Push erfolgreich (Versuch $i)."
               exit 0
             fi
-            echo "Push abgelehnt (Versuch $i), hole Remote-Stand und rebase..."
+
+            echo "Push abgelehnt (Versuch $i), hole Remote-Stand..."
             git fetch origin master
-            git rebase origin/master
+
+            if git rebase origin/master; then
+              echo "Sauber rebased, versuche erneut zu pushen."
+              continue
+            fi
+
+            echo "Echter Rebase-Konflikt (gleichzeitige Aenderung an derselben Datei) -- Rebase abgebrochen, Lauf wird auf dem neuen Remote-Stand neu aufgesetzt statt blind zusammengefuehrt."
+            git rebase --abort
+            git reset --hard origin/master
+
+            ELAPSED=$(( $(date +%s) - JOB_START_TS ))
+            BUDGET=$(( 20700 - ELAPSED ))  # Ziel: Job insgesamt unter ~5h45min bleiben (6h-Hardlimit der Runner)
+            if [ "$BUDGET" -lt 120 ]; then
+              echo "Kaum noch Zeit im 6h-Job-Limit uebrig -- Neu-Verarbeitung wird uebersprungen, der naechste taegliche Lauf uebernimmt den Rest. Kein Datenverlust, da bereits auf den frischen Remote-Stand zurueckgesetzt."
+              exit 0
+            fi
+
+            QUEUE_TIME_BUDGET_SECONDS=$BUDGET python3 tools/process_missing_queue.py
+
+            git add queue/ *-music/songs.json
+            if git diff --cached --quiet; then
+              echo "Nach Neu-Verarbeitung auf dem frischen Stand keine eigenen Aenderungen mehr uebrig."
+              exit 0
+            fi
+            git commit -m "Warteliste automatisch verarbeitet"
           done
+
           echo "::error::Push nach mehreren Versuchen fehlgeschlagen, Fortschritt bleibt lokal im Runner (geht verloren)."
           exit 1
