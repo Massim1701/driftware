@@ -951,13 +951,18 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
    beiden Decks). Kopfzeile (Label+Display) spannt jetzt 2 Spalten, damit
    Pitch+Buttons darunter genug Breite haben; Plattenteller/Waveform
    bleiben rechts daneben in der 3. Spalte. */
+/* Schritt 6 (Nutzer: "Plattenteller neben den Fader in der Mitte,
+   links und rechts") -- Plattenteller+Waveform sind jetzt in der
+   AEUSSERSTEN Spalte Richtung Crossfader-Modul (ein 1fr-Spacer VOR
+   dieser Spalte schiebt sie dorthin), statt neben dem Display zu
+   stehen. */
 .dj-deck {
   position: relative;
   display: grid;
-  grid-template-columns: auto auto auto 1fr;
+  grid-template-columns: auto auto 1fr auto;
   grid-template-areas:
-    "head head vinyl ."
-    "pitch ctrl wave .";
+    "head head . vinyl"
+    "pitch ctrl . wave";
   align-items: center;
   column-gap: 8px;
   row-gap: 6px;
@@ -965,10 +970,10 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   min-width: 0;
 }
 #deck-B {
-  grid-template-columns: 1fr auto auto auto;
+  grid-template-columns: auto 1fr auto auto;
   grid-template-areas:
-    ". vinyl head head"
-    ". wave ctrl pitch";
+    "vinyl . head head"
+    "wave . ctrl pitch";
 }
 .dj-deck-head {
   grid-area: head;
@@ -1139,9 +1144,12 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
      Plattenteller oben in der Ecke neben dem Display steht statt in der
      engen Kanalstreifen-Reihe, ist wieder mehr Platz -- deutlich groesser
      als die vorherige Kompakt-Version (52-76px). */
+  /* Schritt 6 (Nutzer: "kann ruhig groesser werden, aber nicht groesser
+     als das Fader-Modul"): Fader-Modul (.dj-master) ist ca. 190px hoch --
+     150px bleibt sichtbar kleiner, aber deutlich groesser als vorher. */
   position: relative;
-  width: clamp(80px, 8vw, 120px);
-  height: clamp(80px, 8vw, 120px);
+  width: clamp(90px, 10vw, 150px);
+  height: clamp(90px, 10vw, 150px);
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -1194,8 +1202,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   justify-content: center;
 }
 .dj-vinyl-video {
-  width: clamp(66px, 6.6vw, 100px);
-  height: clamp(66px, 6.6vw, 100px);
+  width: clamp(75px, 8.3vw, 125px);
+  height: clamp(75px, 8.3vw, 125px);
   border-radius: 50%;
   overflow: hidden;
   background: #000;
