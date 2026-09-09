@@ -1577,34 +1577,21 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
     height: 2px;
     background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
   }
+  /* Frueher hier extra klein geschrumpft (Vinyl 96px, enge Abstaende),
+     NUR damit beide Decks nebeneinander noch in die alte Hoehen-Bremse
+     (60vh, dann 42vh) des fixierten Drawers passten -- siehe Kommentar bei
+     .dj-player oben. Diese Hoehen-Bremse gibt es nicht mehr (normaler
+     Seitenfluss, beliebig hoch), also gibt es auch keinen Grund mehr, die
+     Decks klein zu quetschen. Jetzt gestapelt und in normaler/grosser
+     Groesse -- genau das, was als "Playe zusammengerafft" bemaengelt
+     wurde. */
   .dj-decks {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-    align-items: flex-start;
-    gap: 10px;
-    max-width: 1360px;
-    margin: 0 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
   }
-  /* Kleinere Vinyl-Scheibe + engere Abstaende, damit beide Decks
-     nebeneinander passen statt untereinander zu wrappen — das war der
-     Hauptgrund fuer viel Scrollen in diesem Zwischenbereich (schmales
-     Browserfenster/Tablet, aber noch nicht Handy-Breakpoint). */
-  .dj-deck { width: 46%; gap: 2px; }
-  .dj-deck-top { gap: 6px; }
-  .dj-vinyl { width: 96px; height: 96px; }
-  .dj-vinyl-video { width: 78px; height: 78px; }
-  .dj-waveform { width: 96px; height: 22px; }
-  .dj-pitch { width: 140px; gap: 3px; }
-  .dj-pitch-display { font-size: 8px; padding: 3px 1px; }
-
-  .dj-deck-info { min-height: 0; }
-  .dj-deck-controls { gap: 5px; }
-  .dj-deck-controls button { width: 27px; height: 27px; }
-  .dj-deck-controls button[id$="-toggle"] { width: 32px; height: 32px; }
-  .dj-master { width: 100%; order: 5; margin-top: 2px; padding: 7px 12px; gap: 6px; }
-  .dj-crossfader, .dj-volume { justify-content: center; }
-  .dj-autofade-toggle { padding: 4px 10px; }
+  .dj-deck { width: 100%; max-width: 360px; }
+  .dj-master { width: 100%; max-width: 360px; margin: 4px auto 0; }
   .dj-tools-panel { display: none !important; }
 }
 
@@ -1662,48 +1649,15 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   .song-grid { max-height: 60vh; }
   .gen-history ul { max-height: 160px; }
 
-  /* Player: deutlich kleiner, damit er nicht den halben Bildschirm frisst */
-  .dj-player { padding: 8px 10px 10px; }
-  .dj-decks { gap: 8px; align-items: flex-start; }
-  .dj-deck { width: 48%; min-width: 0; gap: 2px; }
-  .dj-deck-label { font-size: 9px; }
-  .dj-deck-top { gap: 6px; }
-  .dj-vinyl { width: 84px; height: 84px; }
-  .dj-vinyl-video { width: 68px; height: 68px; }
-  .dj-vinyl-hint { font-size: 9px; padding: 0 10px; }
-  .dj-vinyl-dot { width: 6px; height: 6px; top: 6px; }
-  .dj-waveform { width: 84px; height: 20px; }
-  .dj-pitch { width: 120px; }
-  .dj-pitch-display { font-size: 7px; padding: 2px 1px; }
-
-
-  .dj-deck-info { min-height: 20px; }
-  .dj-deck-info strong { font-size: 11px; max-width: 150px; }
-  .dj-deck-info span { font-size: 10px; max-width: 150px; }
-  .dj-deck-remaining { font-size: 10px; margin-top: 1px; }
-  .dj-deck-bpm { font-size: 9px; }
-  .dj-deck-controls { gap: 6px; }
-  .dj-deck-controls button { width: 28px; height: 28px; font-size: 11px; }
-  .dj-deck-controls button[id$="-toggle"] { width: 34px; height: 34px; font-size: 13px; }
-  .dj-master { width: 100%; order: 5; margin-top: 2px; padding: 6px 12px; gap: 6px; }
+  /* Deck-Groesse/Vinyl bleiben ab hier wie im 1100px-Block (gestapelt,
+     grosszuegig) -- fruehere Extra-Schrumpfstufe hier (48%-Spalten, 84px
+     Vinyl) gab's nur wegen der alten Hoehen-Bremse des fixierten Players,
+     die es nicht mehr gibt (siehe Kommentar im 1100px-Block). */
   .dj-crossfader { width: 100%; justify-content: center; }
   .dj-volume { width: 100%; justify-content: center; }
   #dj-crossfader, #dj-master-volume { width: 62%; }
-  .dj-autofade-toggle { font-size: 10px; padding: 4px 10px; }
   /* 16px verhindert, dass iOS beim Antippen ins Feld hineinzoomt */
   .generator-search .search-input { font-size: 16px; padding: 9px 12px 9px 34px; }
-}
-
-/* Echte Handybreiten: die 48%-Spalten oben (640px-Block) sind ab hier zu
-   schmal -- Songtitel/BPM werden abgeschnitten, Knoepfe kaum noch tapbar
-   ("Playe sind zusammengerafft"-Feedback). Deshalb hier die Decks wieder
-   gestapelt statt nebeneinander, jedes auf voller Breite. Der Player ist
-   seit dem Ueberdeckungs-Fix kein fixiertes Element mehr (siehe
-   1100px-Media-Query), braucht hier also keine max-height-Bremse mehr --
-   er ist einfach so hoch wie sein Inhalt, ganz normaler Seitenfluss. */
-@media (max-width: 480px) {
-  .dj-decks { flex-direction: column; align-items: center; gap: 10px; }
-  .dj-deck { width: 100%; max-width: 300px; }
 }
 
 @media (max-width: 900px) {
