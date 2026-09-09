@@ -554,9 +554,18 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   gap: 20px;
 }
 .song-grid {
+  /* .gen-history (frueher der zweite Flex-Nachbar hier) ist jetzt
+     dauerhaft ausgeblendet (siehe .gen-history weiter unten -- die
+     Warteschlange lebt in der eigenen Tabelle ueber dem Seiteninhalt) --
+     .song-grid bekam dadurch als einziges flex:1-Kind die GANZE
+     Zeilenbreite bis zu seinem alten max-width:900px, die Zeilen wirkten
+     dadurch viel zu breit auseinandergezogen. Deshalb hier ein eigenes,
+     enger gesetztes max-width statt sich auf den (jetzt leeren)
+     Nachbarn zu verlassen. */
   flex: 1;
   min-width: 0;
-  max-width: 900px;
+  max-width: 620px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -869,7 +878,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   background: linear-gradient(200deg, var(--panel) 0%, var(--bg) 130%);
   border-bottom: 1px solid var(--border);
   box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
-  padding: 14px 24px 16px;
+  padding: 4px 24px 4px;
 }
 /* Kurzer Aufblitz-Effekt (siehe highlightResumedPlayer in decades.js),
    sobald Song/Warteschlange nach einem Reload wiederhergestellt sind. */
@@ -896,27 +905,59 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  gap: 20px;
-  max-width: 1400px;
+  gap: 16px;
+  max-width: 1440px;
   margin: 0 auto;
+}
+/* Deck-Layout (9.9., "Breite ausnutzen" + "streng dich an" -- zweiter,
+   konsequenterer Anlauf): EIN Deck ist jetzt ein einziger horizontaler
+   Streifen (wie ein Mixer-Kanalstreifen), keine zwei Zeilen mehr.
+   Reihenfolge von links nach rechts: Plattenteller, Digitalanzeige
+   (waechst, fuellt die Mitte -- Label "Deck A" links, Songinfos in der
+   Box, Farbwaehler-Punkte oben rechts der Box: Inhalt sitzt also bereits
+   in den LINKEN und RECHTEN Ecken dieses Abschnitts statt zentriert
+   gestapelt, wie der Nutzer vorgeschlagen hat), Waveform, Pitch-Regler,
+   Play/Prev/Next -- alles auf gleicher Hoehe. Deck-Hoehe ist dadurch nur
+   noch so hoch wie das hoechste einzelne Element (Plattenteller), nicht
+   mehr Summe aus fuenf gestapelten Zeilen. `order` sortiert die 5 von
+   decades.js unveraendert in derselben Reihenfolge erzeugten Kind-
+   Elemente (.dj-deck-head/.dj-deck-top/.dj-waveform/.dj-pitch/
+   .dj-deck-controls) visuell um, ohne das Markup anzufassen. Unter 1050px
+   (Media-Query weiter unten) wieder gestapelte Spalte -- der Streifen
+   waere auf Handy-Breite zu eng. */
+.dj-decks {
+  align-items: stretch;
 }
 .dj-deck {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 4px;
-  width: 334px;
+  gap: 8px;
+  flex: 1 1 380px;
+  min-width: 0;
 }
+.dj-deck-top { order: 1; flex: 0 0 auto; }
 .dj-deck-head {
+  order: 2;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  align-self: stretch;
-  gap: 3px;
-  text-align: left;
+  flex-direction: row;
+  align-items: center;
+  gap: 7px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
+.dj-deck-label {
+  flex: 0 0 auto;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  letter-spacing: 0.1em;
+}
+.dj-deck-info { flex: 1 1 auto; min-width: 100px; }
+.dj-waveform { order: 3; flex: 0 0 auto; }
+.dj-pitch { order: 4; flex: 0 0 auto; }
+.dj-deck-controls { order: 5; flex: 0 0 auto; }
 .dj-deck-label {
   font-size: 11px;
   font-weight: 800;
@@ -931,8 +972,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   gap: 10px;
 }
 .dj-waveform {
-  width: clamp(135px, 10vw, 162px);
-  height: 34px;
+  width: clamp(75px, 6vw, 100px);
+  height: 18px;
   border-radius: 6px;
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.06);
@@ -948,11 +989,12 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 180px;
+  width: 68px;
+  overflow: visible;
 }
 .dj-pitch-display {
   position: absolute;
-  left: calc(50% + 33px);
+  left: calc(50% + 21px);
   top: 50%;
   transform: translateY(-50%);
   white-space: nowrap;
@@ -961,10 +1003,10 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   color: #4ade80;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
   text-align: center;
-  padding: 5px 8px;
+  padding: 3px 5px;
   letter-spacing: 0.02em;
   box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
 }
@@ -976,8 +1018,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .dj-knob-wrap { display: flex; align-items: center; justify-content: center; }
 .dj-knob {
   position: relative;
-  width: 50px;
-  height: 50px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: linear-gradient(160deg, #3a3a42, #1a1a1f 60%, #2a2a30);
   border: 1px solid rgba(0,0,0,0.5);
@@ -992,21 +1034,21 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 3px;
-  height: 3px;
-  margin: -1.5px 0 0 -1.5px;
+  width: 2px;
+  height: 2px;
+  margin: -1px 0 0 -1px;
   border-radius: 50%;
   background: var(--border);
 }
 .dj-knob-ticks span.mid { background: var(--accent2); }
-.dj-knob-ticks span:nth-child(1) { transform: rotate(-135deg) translate(0, -29px); }
-.dj-knob-ticks span:nth-child(2) { transform: rotate(-67.5deg) translate(0, -29px); }
-.dj-knob-ticks span:nth-child(3) { transform: rotate(0deg) translate(0, -29px); }
-.dj-knob-ticks span:nth-child(4) { transform: rotate(67.5deg) translate(0, -29px); }
-.dj-knob-ticks span:nth-child(5) { transform: rotate(135deg) translate(0, -29px); }
+.dj-knob-ticks span:nth-child(1) { transform: rotate(-135deg) translate(0, -18px); }
+.dj-knob-ticks span:nth-child(2) { transform: rotate(-67.5deg) translate(0, -18px); }
+.dj-knob-ticks span:nth-child(3) { transform: rotate(0deg) translate(0, -18px); }
+.dj-knob-ticks span:nth-child(4) { transform: rotate(67.5deg) translate(0, -18px); }
+.dj-knob-ticks span:nth-child(5) { transform: rotate(135deg) translate(0, -18px); }
 .dj-knob-dial {
   position: absolute;
-  inset: 5px;
+  inset: 3px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #565660, #202024 70%);
   transition: transform 0.08s ease;
@@ -1014,10 +1056,10 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .dj-knob-pointer {
   position: absolute;
   left: 50%;
-  top: 4px;
-  width: 3px;
-  height: 12px;
-  margin-left: -1.5px;
+  top: 3px;
+  width: 2px;
+  height: 8px;
+  margin-left: -1px;
   border-radius: 2px;
   background: var(--accent2);
   box-shadow: 0 0 4px var(--accent2);
@@ -1052,8 +1094,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 
 .dj-vinyl {
   position: relative;
-  width: clamp(135px, 13vw, 200px);
-  height: clamp(135px, 13vw, 200px);
+  width: clamp(52px, 5vw, 76px);
+  height: clamp(52px, 5vw, 76px);
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -1106,8 +1148,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   justify-content: center;
 }
 .dj-vinyl-video {
-  width: 113px;
-  height: 113px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   overflow: hidden;
   background: #000;
@@ -1164,11 +1206,11 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 .dj-vinyl-dot {
   position: absolute;
-  top: 10px;
+  top: 5px;
   left: 50%;
   transform: translateX(-50%);
-  width: 8px;
-  height: 8px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: rgba(255,255,255,0.2);
   transition: background 0.15s ease, box-shadow 0.15s ease;
@@ -1184,8 +1226,9 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 0 20px;
-  font-size: 11px;
+  padding: 0 8px;
+  font-size: 8px;
+  line-height: 1.2;
   color: var(--muted);
   background: rgba(0,0,0,0.4);
   border-radius: 50%;
@@ -1216,11 +1259,15 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
    hat. */
 .dj-deck-info {
   position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 8px;
   text-align: left;
-  min-height: 26px;
+  min-height: 18px;
   width: 100%;
   box-sizing: border-box;
-  padding: 6px 18px 6px 8px;
+  padding: 3px 16px 3px 6px;
   border-radius: 5px;
   background: #04120e;
   border: 1px solid rgba(255,255,255,0.08);
@@ -1229,6 +1276,11 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   cursor: pointer;
   --digital-fg: #4ade80;
 }
+/* Titel+Artist in der linken Spalte (gestapelt), Restzeit+BPM in der
+   rechten Spalte (vertikal zentriert) -- Ecken links/rechts statt einer
+   dritten Zeile untereinander, wie vom Nutzer vorgeschlagen. */
+.dj-deck-info strong { grid-column: 1; grid-row: 1; min-width: 0; }
+.dj-deck-info span { grid-column: 1; grid-row: 2; min-width: 0; }
 .dj-deck-info:hover { border-color: var(--digital-fg); }
 .dj-digital-swatches {
   position: absolute;
@@ -1262,7 +1314,7 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
 .dj-deck-info[data-digital="orange"] { --digital-fg: #fb923c; }
 .dj-deck-info strong {
   display: block;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--digital-fg);
   text-shadow: 0 0 6px var(--digital-fg);
@@ -1271,49 +1323,54 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   text-overflow: ellipsis;
   max-width: 100%;
   letter-spacing: 0.02em;
+  line-height: 1.25;
 }
 .dj-deck-info span {
   display: block;
-  font-size: 11px;
+  font-size: 9px;
   color: var(--digital-fg);
   opacity: 0.75;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  line-height: 1.25;
 }
 .dj-deck-meta {
+  grid-column: 2;
   display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 2px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  margin-top: 0;
+  margin-right: 10px;
 }
 .dj-deck-remaining {
   display: block;
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--digital-fg);
   text-shadow: 0 0 6px var(--digital-fg);
-  min-height: 14px;
+  min-height: 10px;
 }
 .dj-deck-bpm {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 3px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   color: var(--digital-fg);
   opacity: 0.9;
-  min-height: 13px;
+  min-height: 10px;
 }
-.dj-deck-bpm svg { width: 11px; height: 11px; flex-shrink: 0; }
+.dj-deck-bpm svg { width: 9px; height: 9px; flex-shrink: 0; }
 
-.dj-deck-controls { display: flex; align-items: center; gap: 8px; }
+.dj-deck-controls { display: flex; align-items: center; gap: 5px; }
 .dj-deck-controls button {
-  width: 34px;
-  height: 34px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: linear-gradient(160deg, rgba(255,255,255,0.14), rgba(0,0,0,0.18)), var(--bg);
@@ -1325,32 +1382,41 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   align-items: center;
   justify-content: center;
 }
-.dj-deck-controls button svg { width: 15px; height: 15px; }
+.dj-deck-controls button svg { width: 9px; height: 9px; }
 .dj-deck-controls button:hover { border-color: var(--accent); }
 .dj-deck-controls button[id$="-toggle"] {
   background: #ff0000;
   color: #fff;
   border-color: #ff0000;
-  width: 40px;
-  height: 40px;
+  width: 24px;
+  height: 24px;
   font-size: 16px;
 }
-.dj-deck-controls button[id$="-toggle"] svg { width: 18px; height: 18px; }
+.dj-deck-controls button[id$="-toggle"] svg { width: 11px; height: 11px; }
 
+/* Master-Spalte (9.9., "Breite ausnutzen"): war eine schmale (250px),
+   komplett durchgestapelte Saeule -- jetzt ein 2-spaltiges Grid, das die
+   jetzt freie Breite neben den kompakteren Decks nutzt statt Hoehe zu
+   fressen: Crossfader oben ueber die volle Breite, Lautstaerke + Autofade/
+   Fade-jetzt nebeneinander in einer Zeile, BPM-Sync (.dj-tools-panel) als
+   eigene, INTERN horizontale Zeile ganz unten (siehe dort). */
 .dj-master {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 7px;
-  width: 250px;
-  flex: 0 0 250px;
-  align-self: stretch;
-  padding: 7px 13px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  width: 380px;
+  flex: 0 0 380px;
+  align-self: center;
+  padding: 6px 16px;
   background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 14px rgba(0,0,0,0.25);
 }
+.dj-crossfader { grid-column: 1 / 3; }
+.dj-volume { grid-column: 1; }
+.dj-fade-row { grid-column: 2; justify-content: flex-end; }
+.dj-tools-panel { grid-column: 1 / 3; }
 .dj-crossfader { display: flex; align-items: center; gap: 7px; }
 .dj-crossfader-label { font-size: 12px; font-weight: 800; color: var(--muted); }
 #dj-crossfader, #dj-master-volume {
@@ -1401,7 +1467,7 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px;
+  padding: 3px 10px;
   border-radius: 20px;
   border: 1px solid rgba(239, 68, 68, 0.45);
   background: rgba(239, 68, 68, 0.12);
@@ -1423,8 +1489,8 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
   border-radius: 50%;
   border: 1px solid #ff0000;
@@ -1456,41 +1522,43 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   width: 100%;
   border-top: 1px solid var(--border);
-  padding-top: 8px;
-  margin-top: 2px;
+  padding-top: 5px;
+  margin-top: 1px;
 }
 .dj-tools-title {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.04em;
   color: var(--muted);
   text-transform: uppercase;
   text-align: center;
 }
-.dj-bpm-readout { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.dj-bpm-readout { display: flex; flex-direction: row; gap: 4px; width: 100%; }
 .dj-bpm-readout-row {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  flex: 1;
   font-family: 'Courier New', monospace;
   background: #04120e;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 6px;
-  padding: 5px 3px;
+  padding: 3px 3px;
   box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
 }
-.dj-bpm-readout-label { font-size: 9px; font-weight: 800; color: var(--muted); }
-.dj-bpm-readout-value { font-size: 12px; font-weight: 800; color: #f5a623; font-variant-numeric: tabular-nums; }
+.dj-bpm-readout-label { font-size: 8px; font-weight: 800; color: var(--muted); }
+.dj-bpm-readout-value { font-size: 11px; font-weight: 800; color: #f5a623; font-variant-numeric: tabular-nums; }
 .dj-bpm-match {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   color: var(--muted);
   text-align: center;
-  line-height: 1.35;
+  line-height: 1.2;
 }
 .dj-bpm-match.ok { color: #22c55e; }
 .dj-bpm-sync-btn {
@@ -1498,9 +1566,9 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
   width: 100%;
-  padding: 8px 4px;
+  padding: 5px 4px;
   border-radius: 12px;
   border: 1px solid rgba(124, 92, 255, 0.45);
   background: rgba(124, 92, 255, 0.12);
@@ -1577,10 +1645,32 @@ tr.dq-upcoming.dq-drop-target td { box-shadow: inset 0 2px 0 var(--accent), inse
    ~960px + Kopfzeilen-Padding) zu eng -- dann gestapelt, wie frueher auf
    schmalen Screens. */
 @media (max-width: 1050px) {
-  .dj-player { padding: 10px 16px 12px; }
-  .dj-decks { flex-direction: column; align-items: center; gap: 14px; }
-  .dj-deck { width: 100%; max-width: 360px; }
-  .dj-master { width: 100%; max-width: 360px; flex-basis: auto; margin: 4px auto 0; }
+  .dj-player { padding: 6px 16px 8px; }
+  .dj-decks { flex-direction: column; align-items: center; gap: 10px; }
+  /* Der breite Kanalstreifen (siehe .dj-deck weiter oben) passt nicht auf
+     Handy-Breite -- hier wieder die alte gestapelte Spalte. */
+  .dj-deck {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 300px;
+  }
+  .dj-deck-top, .dj-deck-head, .dj-waveform, .dj-pitch, .dj-deck-controls { order: unset; }
+  .dj-deck-head { flex-direction: column; align-items: flex-start; align-self: stretch; gap: 2px; }
+  .dj-deck-label { writing-mode: horizontal-tb; transform: none; }
+  .dj-master {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+    flex-basis: auto;
+    margin: 4px auto 0;
+  }
+  .dj-crossfader, .dj-volume, .dj-fade-row, .dj-tools-panel { grid-column: unset; }
+  .dj-tools-panel { flex-direction: column; }
 }
 
 @media (max-width: 640px) {

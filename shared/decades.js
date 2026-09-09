@@ -418,13 +418,11 @@ function renderDecadeIndex(cfg) {
 
   var main = document.getElementById('decade-root');
   main.insertAdjacentHTML('beforeend', '' +
-    '<header class="decade-header">' +
-    '  <div class="app-icon-hero" style="background:' + cfg.iconBg + '">' + cfg.icon + '</div>' +
-    '  <p class="decade-logo">' + cfg.name + '</p>' +
-    '  <p class="decade-years">' + cfg.years + '</p>' +
-    '  <p class="decade-tagline">' + cfg.tagline + '</p>' +
-    '  <div class="badges"><span class="badge">' + cfg.badgeText + '</span></div>' +
-    '</header>' +
+    /* Der grosse Hero-Block (Icon/Name/Jahre/Tagline/Badge) ist auf
+       Nutzerwunsch komplett entfernt -- direkt unter der Warteschlangen-
+       Tabelle kommt jetzt sofort der Playlist-Generator, kein Leerraum
+       mehr dazwischen. document.title/meta-description oben bleiben
+       unveraendert (SEO/Tab-Titel, unabhaengig vom sichtbaren Hero). */
     '<main class="decade-main">' +
     '  <div class="info-note"><strong>Woher kommen die Songs?</strong> ' + cfg.sourceNote + '</div>' +
     '</main>' +
