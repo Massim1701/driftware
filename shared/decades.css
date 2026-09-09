@@ -962,7 +962,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   grid-template-columns: auto auto 1fr auto;
   grid-template-areas:
     "head head . ."
-    "pitch ctrl . wave";
+    "pitch ctrl . .";
   align-items: center;
   align-content: start;
   column-gap: 8px;
@@ -974,7 +974,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   grid-template-columns: auto 1fr auto auto;
   grid-template-areas:
     ". . head head"
-    "wave . ctrl pitch";
+    ". . ctrl pitch";
 }
 .dj-deck-head {
   /* Schritt 8 (Nutzer: "Display immer oben in den Ecken platzieren"):
@@ -1008,7 +1008,6 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   overflow: hidden;
 }
 .dj-deck-info { flex: 1 1 auto; min-width: 100px; }
-.dj-waveform { grid-area: wave; }
 .dj-pitch { grid-area: pitch; }
 .dj-deck-controls { grid-area: ctrl; }
 .dj-deck-label {
@@ -1032,8 +1031,17 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   gap: 10px;
 }
 #deck-B .dj-deck-top { right: auto; left: 0; }
+/* Schritt 12 (Nutzer: "diese hier genau unter den Plattentellern rechts
+   und links, nicht groesser als der Plattenteller selbst"): Waveform
+   verlaesst wie der Plattenteller die Grid-Zeilenberechnung und wird
+   direkt darunter verankert -- gleiche rechte/linke Kante wie
+   .dj-deck-top, Breite an die Plattenteller-Groesse gekoppelt (clamp
+   identisch), damit sie nie breiter wird als der Teller. */
 .dj-waveform {
-  width: clamp(75px, 6vw, 100px);
+  position: absolute;
+  top: calc(clamp(80px, 8.8vw, 124px) + 8px);
+  right: 0;
+  width: clamp(80px, 8.8vw, 124px);
   height: 18px;
   border-radius: 6px;
   background: rgba(255,255,255,0.03);
@@ -1042,6 +1050,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   touch-action: none;
   overflow: hidden;
 }
+#deck-B .dj-waveform { right: auto; left: 0; }
 .dj-waveform canvas { display: block; width: 100%; height: 100%; }
 .dj-waveform:hover { border-color: rgba(255,255,255,0.14); }
 .dj-waveform:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -1260,10 +1269,15 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 }
 .dj-vinyl-video-logo svg { width: 100%; height: 100%; }
 .dj-vinyl-ring {
+  /* Schritt 12b (Nutzer: "Punkt wieder um den Plattenteller rotieren
+     lassen"): z-index ergaenzt, damit der rotierende Punkt bei Songs mit
+     YouTube-Video (eigener Stacking-Context durchs iframe) sicher SICHTBAR
+     ueber dem Video bleibt, statt eventuell darunter zu verschwinden. */
   position: absolute;
   inset: 0;
   border-radius: 50%;
   pointer-events: none;
+  z-index: 3;
 }
 .dj-vinyl-disc.playing .dj-vinyl-ring {
   animation: dj-spin 2.6s linear infinite;
