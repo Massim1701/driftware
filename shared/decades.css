@@ -1627,6 +1627,15 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
     padding: 14px 8px;
     box-shadow: -8px 0 24px rgba(0,0,0,0.3);
   }
+  /* Hero-Header war weiterhin "margin: 0 auto" (Basisregel oben) -- bei
+     Sidebar-Layout stand er dadurch mittig in der Content-Flaeche links
+     vom Player, WAEHREND main.decade-main (siehe dort) schon rechts an
+     den Player/Tools-Panel andockt. Header und Inhalt liefen dadurch
+     nicht mehr auf gleicher Kante, sah nach zwei verschiedenen Layouts
+     uebereinander aus. Nur hier (>1100px, wo die Sidebar existiert)
+     denselben Rechts-Andock-Trick wie main.decade-main -- unter 1100px
+     (kein Sidebar, volle Breite) bleibt der Hero-Header normal mittig. */
+  header.decade-header { margin: 0 0 0 auto; }
 }
 
 @media (max-width: 640px) {
