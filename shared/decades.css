@@ -1513,8 +1513,21 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
    Querformat (Safari-Chrome frisst zusaetzlich Hoehe von den ohnehin nur
    ~820-834px). Die rechte Spalte bleibt bestehen (siehe oben), wird aber
    kompakter, damit beide Decks + Mastersektion ohne internes Scrollen auf
-   einen Bildschirm passen. */
-@media (min-width: 1101px) and (max-height: 860px) {
+   einen Bildschirm passen.
+   "and (pointer: coarse)" ist WICHTIG: eine reine max-height-Abfrage kann
+   nicht zwischen einem echten iPad im Querformat und einem stinknormalen,
+   nicht maximierten Desktop-Browserfenster unterscheiden -- beides ist
+   fuer CSS einfach "Fensterhoehe <= 860px". Genau DAS ist der Bug, der
+   die Player-Verbreiterung dieser Session ausgehebelt hat: bei 1634x858px
+   Fenstergroesse (ganz normales, leicht verkleinertes Browserfenster,
+   keinerlei iPad) griff trotzdem diese "iPad-Kompakt"-Regel und
+   quetschte Vinyl (92px statt bis zu 200px), Deck-Abstaende (2px statt
+   14px+) etc. wieder auf iPad-Niveau zusammen -- unabhaengig von der
+   tatsaechlichen Fensterbreite. pointer:coarse ist auf einem Touchscreen
+   (iPad) wahr, auf einem Desktop mit Maus/Trackpad dagegen immer falsch
+   -- damit greift die Kompakt-Optik nur noch fuer echte Touch-Geraete
+   mit wenig Hoehe, nicht mehr fuer jedes schmale/kurze Desktop-Fenster. */
+@media (min-width: 1101px) and (max-height: 860px) and (pointer: coarse) {
   .dj-player { padding: 6px 10px 8px; }
   .dj-decks { gap: 2px; }
   .dj-deck { gap: 2px; }
