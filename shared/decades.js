@@ -3000,6 +3000,18 @@ function renderPlaylistGenerator(mountRoot, config) {
       songs.forEach(function (s) { s._bucket = currentTheme; });
     }
     var countLabel = songs.length + ' Songs';
+    /* Mix zeigt bewusst nur eine kleine Vorschau (MIX_PER_CATEGORY pro
+       Genre) -- ohne Hinweis wirkt "25 Songs" wie die GESAMTE Bibliothek
+       und sorgt wiederholt fuer Verwirrung/Sorge ("wo sind die restlichen
+       Songs?"), siehe Nutzer-Rueckmeldungen. Deshalb hier zusaetzlich die
+       echte Gesamtzahl aus allen Genres der geladenen Bibliothek anzeigen. */
+    if (currentTheme === MIX_KEY && data) {
+      var totalAll = 0;
+      for (var gk in data) { if (data.hasOwnProperty(gk)) totalAll += (data[gk] || []).length; }
+      if (totalAll > songs.length) {
+        countLabel += ' (Mix-Vorschau von ' + totalAll + ' insgesamt)';
+      }
+    }
     if (linkedDecadeKey) {
       var linkedEntry = DECADE_REGISTRY.filter(function (d) { return d.key === linkedDecadeKey; })[0];
       var linkedLabel = linkedEntry ? linkedEntry.label.replace(' Music', '') : linkedDecadeKey;
