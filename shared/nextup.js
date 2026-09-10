@@ -33,6 +33,25 @@
   var stylesInjected = false;
   var draggingIdx = null; // != null waehrend ein Warteschlangen-Eintrag zum Umsortieren gezogen wird
 
+  /* Nutzerwunsch (10.9.): "Klickfeld einbauen um Warteschlange zu
+     leeren, damit man eine neue laden kann" -- entfernt alle kommenden
+     Songs aus der Warteschlange des aktiven Decks, der aktuell
+     spielende Song bleibt geladen (keine Unterbrechung), damit direkt
+     danach z.B. "Playlist auf Warteschlange laden" eine frische Liste
+     anhaengen kann statt sich mit alten Resten zu vermischen. */
+  function clearQueue() {
+    var deck = pickActiveDeck();
+    if (!deck || !deck.queue) return;
+    if (deck.index > -1 && deck.queue[deck.index]) {
+      deck.queue = [deck.queue[deck.index]];
+      deck.index = 0;
+    } else {
+      deck.queue = [];
+    }
+    lastSignature = null; // sofortiges Neuzeichnen erzwingen
+    render();
+  }
+
   function pickActiveDeck() {
     if (typeof window.DECKS === 'undefined') return null;
     if (window.DECKS.A && window.DECKS.A.isPlaying) return window.DECKS.A;
@@ -245,7 +264,13 @@
       '.gen-history.gen-queue-drag-over{box-shadow:0 0 0 3px var(--accent);border-radius:12px;}' +
       '.gen-queue-upcoming{cursor:grab;}' +
       '.gen-queue-dragging{opacity:.35;}' +
-      '.gen-queue-drop-target{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent);}';
+      '.gen-queue-drop-target{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent);}' +
+      '.gen-queue-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;}' +
+      '.gen-queue-head h3{margin:0;}' +
+      '.gen-queue-clear-btn{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid var(--border);color:var(--muted);font-size:11px;padding:4px 9px;border-radius:14px;cursor:pointer;}' +
+      '.gen-queue-clear-btn svg{width:13px;height:13px;}' +
+      '.gen-queue-clear-btn:hover{color:#f87171;border-color:#f87171;background:rgba(248,113,113,.1);}' +
+      '.gen-queue-clear-btn:focus-visible{outline:1px solid currentColor;}';
     document.head.appendChild(style);
   }
 
@@ -273,12 +298,16 @@
     // Inhalt wird zu unserer kombinierten Liste. decades.js' eigene
     // renderPlayHistory() findet "#gen-history-list" danach nicht mehr und
     // tut nichts mehr (hat einen Null-Check), kein Konflikt.
+    var clearIconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
     nativeHistory.innerHTML =
-      '<h3>' + nextIconSvg + ' Warteschlange</h3>' +
+      '<div class="gen-queue-head"><h3>' + nextIconSvg + ' Warteschlange</h3>' +
+      '<button type="button" id="gen-queue-clear" class="gen-queue-clear-btn" title="Warteschlange leeren, damit eine neue geladen werden kann">' + clearIconSvg + ' Leeren</button></div>' +
       '<ul id="gen-queue-list"><li class="gen-queue-empty">Nichts geladen.</li></ul>';
 
     listEl = document.getElementById('gen-queue-list');
     listEl.addEventListener('click', handleRemoveClick);
+    var clearBtn = document.getElementById('gen-queue-clear');
+    if (clearBtn) clearBtn.addEventListener('click', clearQueue);
     wireDropzone(nativeHistory);
     wireReorder(listEl);
     lastSignature = null; // sofortiges Neuzeichnen fuer die neue Box erzwingen
