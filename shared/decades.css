@@ -859,12 +859,22 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
    Die Chrome-Fader-Verlaufsfarben (siehe Slider-Thumbs weiter unten) sind
    von wheelsofsteel.net (Scott Schiller, BSD-Lizenz) übernommen. ---------- */
 .dj-player {
+  /* Nutzerwunsch (10.9.): "die Player bleiben an der Position wie sie
+     sind... nur die Player optisch kleiner damit beide Player auf der
+     rechten Seite gleichzeitig zu sehen sind" -- "zoom" statt "transform:
+     scale()", weil zoom (anders als transform) auch die Layout-/
+     Scroll-Berechnung (scrollHeight) mitverkleinert: nur damit passen
+     wirklich beide Decks OHNE internen Scroll in die Sidebar, bei
+     gleichbleibender Position (top/right/bottom bleiben unveraendert,
+     da das reine Offsets ohne Laengeneinheit sind, die "zoom" nicht
+     mitskaliert). */
   display: block;
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
   width: 370px;
+  zoom: 0.72;
   overflow-y: auto;
   z-index: 250;
   background: linear-gradient(200deg, var(--panel) 0%, var(--bg) 130%);
