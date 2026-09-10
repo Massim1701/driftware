@@ -2643,12 +2643,23 @@ function playSongInContext(song, contextSongs) {
   loadSongToDeck(song, nextLoadDeck, contextSongs);
 }
 
-/* Ganze aktuelle Auswahl (Genre-Playlist) von vorne auf das nächste freie
-   Deck laden. Startet nicht automatisch (siehe playDeckSong). */
+/* Ganze aktuelle Auswahl (Genre-Playlist) in die Warteschlange (9.9.,
+   Nutzerwunsch: "Playlist auf Warteschlange laden muss noch gefixt
+   werden" -- vorher wurde hier die GESAMTE Deck-Warteschlange ersetzt,
+   genau wie beim alten Kachel-Klick, siehe queueSongFromTile). Aktives
+   Deck vorhanden? Dann alle Songs ans Ende von dessen Warteschlange
+   anhaengen, laufende Wiedergabe bleibt unangetastet. Kein aktives Deck?
+   Dann wie bisher frisch auf das naechste freie Deck laden (erster Song
+   wird aktueller Song, Rest die Warteschlange), ohne Autoplay. */
 function playAllCurrent(songs) {
   var withVideo = (songs || []).filter(function (s) { return !!s.yt; });
   if (!withVideo.length) { alert('Für diese Auswahl wurde noch kein passendes YouTube-Video gefunden.'); return; }
-  loadSongToDeck(withVideo[0], nextLoadDeck, withVideo);
+  var deck = activeDeckForQueue();
+  if (deck && deck.queue && deck.index > -1) {
+    deck.queue = deck.queue.concat(withVideo);
+  } else {
+    loadSongToDeck(withVideo[0], nextLoadDeck, withVideo, false);
+  }
 }
 
 function closeSongModal() {
@@ -3401,7 +3412,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     '</div>' +
     '<div class="generator-actions" id="gen-actions">' +
     '  <span class="generator-count" id="gen-count"></span>' +
-    '  <button id="gen-play-all" type="button">' + PLUS_SVG + ' Playlist auf Deck laden</button>' +
+    '  <button id="gen-play-all" type="button">' + PLUS_SVG + ' Playlist auf Warteschlange laden</button>' +
     '  <button id="gen-shuffle" type="button" title="Reihenfolge neu mischen">' + SHUFFLE_SVG + ' Playlist neu mischen</button>' +
     '  <button id="gen-copy" type="button">' + COPY_SVG + ' Liste kopieren</button>' +
     '  <a id="gen-download" download>' + DOWNLOAD_SVG + ' Als CSV exportieren</a>' +
