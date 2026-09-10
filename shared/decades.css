@@ -1164,6 +1164,12 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   inset: 0;
   border-radius: 50%;
   pointer-events: none;
+  /* Nutzerwunsch (10.9.): "der weisse Punkt rotiert auch nicht mehr auf dem
+     aktiven Player" -- bekannter Safari/WebKit-Bug: CSS-Animationen unter
+     einem gezoomten Vorfahren (siehe .dj-player { zoom: 0.72 }) laufen dort
+     teils nicht. will-change zwingt einen eigenen Compositing-Layer, behebt
+     das zuverlaessig. */
+  will-change: transform;
 }
 .dj-vinyl-disc.playing .dj-vinyl-ring {
   animation: dj-spin 2.6s linear infinite;
@@ -1272,7 +1278,11 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
 .dj-deck-info[data-digital="orange"] { --digital-fg: #fb923c; }
 .dj-deck-info strong {
   display: block;
-  font-size: 13px;
+  /* Nutzerwunsch (10.9.): "die Schrift ist jetzt auch kleiner, kann etwas
+     groesser werden" -- Basisgroesse angehoben (Player insgesamt haengt an
+     .dj-player { zoom: 0.72 }, siehe dort), damit Titel/Interpret nach dem
+     Zoom wieder angenehm lesbar bleiben. */
+  font-size: 16px;
   font-weight: 700;
   color: var(--digital-fg);
   text-shadow: 0 0 6px var(--digital-fg);
@@ -1284,7 +1294,7 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
 }
 .dj-deck-info span {
   display: block;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--digital-fg);
   opacity: 0.75;
   white-space: nowrap;
