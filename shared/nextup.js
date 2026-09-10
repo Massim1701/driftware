@@ -23,7 +23,9 @@
    noetig. */
 
 (function () {
-  var WINDOW_SIZE = 10; // Nutzerwunsch (9.9.): bis zu 10 kommende Songs sichtbar
+  // Nutzerwunsch (10.9.): Box ist jetzt eigenstaendig scrollbar (siehe
+  // injectStyles/.gen-history ul) -- deshalb keine Begrenzung mehr auf
+  // WINDOW_SIZE Songs, die komplette Warteschlange wird geladen.
   var POLL_MS = 1000;
   var listEl = null;
   var lastSignature = null;
@@ -87,7 +89,7 @@
 
     var upcomingEntries = [];
     if (deck && deck.queue && deck.index > -1) {
-      upcomingEntries = deck.queue.slice(deck.index + 1, deck.index + 1 + WINDOW_SIZE)
+      upcomingEntries = deck.queue.slice(deck.index + 1)
         .map(function (s, i) { return { song: s, idx: deck.index + 1 + i }; });
     }
     // Nutzerwunsch (9.9.): On Air ganz oben, darunter die Warteschlange in
