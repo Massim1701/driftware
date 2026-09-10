@@ -64,6 +64,10 @@ var GRID_SVG = '<svg viewBox="0 0 24 24" fill="#8fe3c7" xmlns="http://www.w3.org
 /* Player-Bediensymbole: dezente Linien-/Flaechen-Icons statt Emoji, gleicher
    Grund wie bei den Genre-Kacheln (siehe THEME_ICON_PATHS weiter unten). */
 var PLAY_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+/* Warteschlange-Icon (9.9., Nutzerwunsch: Klick auf die Song-Kachel soll den
+   Song in die Warteschlange legen statt sofort ein Deck zu belegen -- Icon
+   entsprechend von "Play" auf "Hinzufuegen" getauscht, siehe renderSongGrid). */
+var QUEUE_ADD_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
 var EXTERNAL_LINK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>';
 var PAUSE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
 var PREV_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6z"/><path d="M20 5v14l-11-7z"/></svg>';
@@ -2600,9 +2604,41 @@ function deckPause(key) {
   if (deck.player && deck.player.pauseVideo) { try { deck.player.pauseVideo(); } catch (e) {} }
 }
 
+/* Welches Deck die Warteschlange erhaelt, wenn per Klick auf eine
+   Song-Kachel ein einzelner Song hinzugefuegt wird -- dieselbe Auswahl-
+   Logik wie in shared/nextup.js' pickActiveDeck() (dort nicht direkt
+   wiederverwendbar, eigenstaendige Datei), bewusst dupliziert statt eine
+   Modul-Grenze dafuer aufzubrechen. */
+function activeDeckForQueue() {
+  if (DECKS.A && DECKS.A.isPlaying) return DECKS.A;
+  if (DECKS.B && DECKS.B.isPlaying) return DECKS.B;
+  if (DECKS.A && DECKS.A.song) return DECKS.A;
+  if (DECKS.B && DECKS.B.song) return DECKS.B;
+  return null;
+}
+
+/* Song-Kachel-Klick (9.9., Nutzerwunsch: "einzeln Songs auswaehlen, nicht
+   nur die komplette Liste"): haengt NUR diesen einen Song ans Ende der
+   Warteschlange des aktiven Decks, ohne den restlichen Kontext (Genre-
+   Liste) reinzuladen und ohne zu unterbrechen, was gerade laeuft -- fuer
+   das froeher courrant Verhalten (ganze sichtbare Liste ab hier laden)
+   siehe weiterhin playAllCurrent(). Kein aktives Deck? Dann frisch auf
+   das naechste freie Deck laden, ohne Autoplay (wie ein Drag&Drop-Drop
+   auf eine leere Deck-Dropzone). */
+function queueSongFromTile(song) {
+  var deck = activeDeckForQueue();
+  if (deck && deck.queue && deck.index > -1) {
+    deck.queue.push(song);
+  } else {
+    loadSongToDeck(song, nextLoadDeck, [song], false);
+  }
+}
+
 /* Einzelnen Song laden, im Kontext der aktuell sichtbaren Liste (Genre
    oder Suchergebnis) — landet abwechselnd auf Deck A/B. Startet nicht
-   automatisch (siehe playDeckSong). */
+   automatisch (siehe playDeckSong). Wird nicht mehr vom Song-Kachel-Klick
+   aufgerufen (siehe queueSongFromTile), bleibt aber fuer evtl. andere
+   Aufrufer bestehen. */
 function playSongInContext(song, contextSongs) {
   loadSongToDeck(song, nextLoadDeck, contextSongs);
 }
@@ -2848,14 +2884,14 @@ function renderSongGrid(container, songs) {
     var play = document.createElement('span');
     var hasVkFallback = !song.yt && !!song.vk;
     play.className = 'song-tile-play' + ((song.yt || hasVkFallback) ? '' : ' disabled') + (hasVkFallback ? ' song-tile-play-vk' : '');
-    play.innerHTML = hasVkFallback ? EXTERNAL_LINK_SVG : PLAY_SVG;
+    play.innerHTML = hasVkFallback ? EXTERNAL_LINK_SVG : QUEUE_ADD_SVG;
     play.setAttribute('role', 'button');
     play.setAttribute('tabindex', (song.yt || hasVkFallback) ? '0' : '-1');
-    play.setAttribute('aria-label', song.yt ? ('Abspielen: ' + song.a + ' – ' + song.t) : (hasVkFallback ? ('Auf VK ansehen: ' + song.a + ' – ' + song.t) : 'Kein Video gefunden'));
+    play.setAttribute('aria-label', song.yt ? ('Zur Warteschlange hinzufügen: ' + song.a + ' – ' + song.t) : (hasVkFallback ? ('Auf VK ansehen: ' + song.a + ' – ' + song.t) : 'Kein Video gefunden'));
     if (song.yt) {
-      play.addEventListener('click', function (e) { e.stopPropagation(); playSongInContext(song, songs); });
+      play.addEventListener('click', function (e) { e.stopPropagation(); queueSongFromTile(song); });
       play.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); playSongInContext(song, songs); }
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); queueSongFromTile(song); }
       });
     } else if (hasVkFallback) {
       play.addEventListener('click', function (e) { e.stopPropagation(); window.open(song.vk, '_blank', 'noopener'); });
