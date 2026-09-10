@@ -212,6 +212,7 @@ box-shadow: none;
 }
 .utility-label { font-size: 9px; color: var(--muted); }
 .utility-tile.soon { opacity: 0.45; pointer-events: none; }
+  .utility-icon { position: relative; } .hidden-dot { position: absolute; bottom: 2px; right: 2px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
 footer {
 max-width: 720px;
 margin: 0 auto;
@@ -302,10 +303,10 @@ cursor: pointer;
 </div>
 <span class="utility-label">Mail</span>
 </a>
-<div class="utility-tile soon">
-<div class="utility-icon placeholder"></div>
-<span class="utility-label">Bald</span>
-</div>
+<a class="utility-tile" href="/reichweite/">
+  <div class="utility-icon placeholder"><span class="hidden-dot"></span></div>
+  <span class="utility-label">Bald</span>
+</a>
 <div class="utility-tile soon">
 <div class="utility-icon placeholder"></div>
 <span class="utility-label">Bald</span>
