@@ -570,7 +570,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   display: flex;
   flex-direction: column;
   gap: 2px;
-  max-height: 480px;
+  max-height: 651px; /* an Hoehe der Warteschlange (10 sichtbare Songs) angeglichen */
   overflow-y: auto;
   padding: 4px;
 }
