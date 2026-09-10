@@ -2406,9 +2406,18 @@ function playDeckSong(key, song, autoplay) {
        (z.B. der "kein YouTube-Video"-Zweig oben, der mount.innerHTML
        ueberschreibt) verwaist oder ungueltig werden. Ein garantiert neuer,
        leerer Container verhindert, dass YT.Player() an einem kaputten
-       Knoten haengt. */
+       Knoten haengt.
+       BUGFIX (10.9., Nutzerwunsch: "der weisse Punkt rotiert auch nicht
+       mehr auf dem aktiven Player"): .innerHTML hier ersetzte bisher den
+       KOMPLETTEN Inhalt von .dj-vinyl-disc -- inkl. ".dj-vinyl-ring" samt
+       rotierendem Punkt, der urspruenglich nur beim ALLERERSTEN Aufbau der
+       Deck-Leiste (siehe ensureDjPlayer weiter oben) mit eingefuegt wird.
+       Sobald ein zweiter Song auf dasselbe Deck geladen wurde, fehlte der
+       Ring danach dauerhaft -- kein Element mehr da, das haette rotieren
+       koennen. Ring+Punkt hier deshalb IMMER mit neu aufbauen. */
     var discEl = document.getElementById('deck-' + key + '-disc');
-    if (discEl) discEl.innerHTML = '<div class="dj-vinyl-video"><div id="deck-' + key + '-mount"></div></div>';
+    if (discEl) discEl.innerHTML = '<div class="dj-vinyl-video"><div id="deck-' + key + '-mount"></div></div>' +
+      '<div class="dj-vinyl-ring" aria-hidden="true"><span class="dj-vinyl-dot"></span></div>';
   }
 
   function buildPlayer() {
