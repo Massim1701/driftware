@@ -222,7 +222,7 @@
     stylesInjected = true;
     var style = document.createElement('style');
     style.textContent =
-      '.gen-history ul{max-height:none;}' +
+      '.gen-history ul{max-height:480px;overflow-y:auto;}' +
       '.gen-queue-item{display:flex;align-items:baseline;gap:8px;padding:5px 6px;border-radius:6px;}' +
       '.gen-queue-num{opacity:.5;flex:0 0 auto;min-width:16px;text-align:center;}' +
       '.gen-queue-text{display:flex;flex-direction:column;overflow:hidden;}' +
