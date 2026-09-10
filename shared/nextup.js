@@ -2,9 +2,11 @@
    aus decades.js) durch die Warteschlange (kein Verlauf mehr, Nutzerwunsch
    9.9.: "Verlauf brauchen wir nicht mehr ... nur Warteschlange") -- an
    genau derselben Stelle/Groesse, keine zweite Box, keine Luecke.
-   Reihenfolge von oben nach unten: bis zu 5 kommende Songs (am weitesten
-   entfernter zuerst, naechster direkt ueber dem aktuellen Song), dann der
-   aktuelle Song hervorgehoben. Kein Verlauf mehr darunter.
+   Reihenfolge von oben nach unten (Nutzerwunsch 9.9.: "On Air an 1. Stelle,
+   die Lieder die danach kommen da drunter"): zuerst der aktuelle Song
+   hervorgehoben, darunter bis zu 10 kommende Songs in natuerlicher
+   Reihenfolge (naechster direkt darunter, Nutzerwunsch: "10 Lieder
+   sichtbar"). Kein Verlauf mehr.
 
    Interaktion: Songs aus der Song-Kachel-Liste lassen sich per Drag & Drop
    auf die Box ziehen, um sie ans Ende der Warteschlange zu haengen; kommende
@@ -21,7 +23,7 @@
    noetig. */
 
 (function () {
-  var WINDOW_SIZE = 5; // bis zu 5 kommende Songs vor dem aktuellen
+  var WINDOW_SIZE = 10; // Nutzerwunsch (9.9.): bis zu 10 kommende Songs sichtbar
   var POLL_MS = 1000;
   var listEl = null;
   var lastSignature = null;
@@ -88,10 +90,9 @@
       upcomingEntries = deck.queue.slice(deck.index + 1, deck.index + 1 + WINDOW_SIZE)
         .map(function (s, i) { return { song: s, idx: deck.index + 1 + i }; });
     }
-    // Oben in der Liste soll der naechste Song (direkt nach dem aktuellen)
-    // am naehesten am Highlight stehen -- also umgekehrte Reihenfolge, der
-    // am weitesten entfernte kommende Song ganz oben.
-    var upcomingTopDown = upcomingEntries.slice().reverse();
+    // Nutzerwunsch (9.9.): On Air ganz oben, darunter die Warteschlange in
+    // natuerlicher Reihenfolge (naechster Song direkt darunter, danach
+    // weiter absteigend) -- kein Umdrehen mehr noetig.
 
     var signature = upcomingEntries.map(function (e) { return e.song.a + e.song.t; }).join(',') + '||' +
       (current ? current.a + current.t : '');
@@ -104,8 +105,8 @@
     }
 
     var html = '';
-    html += upcomingTopDown.map(function (e) { return songLine(e.song, '+', 'upcoming', e.idx); }).join('');
     if (current) html += songLine(current, '▶', 'current', null);
+    html += upcomingEntries.map(function (e) { return songLine(e.song, '+', 'upcoming', e.idx); }).join('');
     listEl.innerHTML = html;
   }
 
