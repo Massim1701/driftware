@@ -3,438 +3,435 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Driftware — Apps</title>
-<meta name="description" content="Driftware: kleine, unabhängige Apps ohne Schnickschnack. Foto- & Video-Editor Snoxi und weitere Projekte.">
+<title>Schriftgenerator — Driftware</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0c1224;
-    --panel: #141c33;
-    --accent: #3aa8ff;
+    --card: #141c33;
+    --border: rgba(255,255,255,0.08);
     --text: #f5f7fa;
     --muted: #9aa3c0;
-    --border: rgba(255,255,255,0.08);
+    --accent: #3aa8ff;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.5;
-  }
-  header {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 88px 24px 24px;
-    text-align: center;
-  }
-  .brand {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 14px;
-    margin: 0 0 12px;
+    padding: 40px 16px;
+    min-height: 100vh;
   }
-  .brand-mark {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #3aa8ff, #7f5aff);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Space Grotesk', -apple-system, sans-serif;
-    font-weight: 700;
-    font-size: 24px;
-    color: #0c1224;
-    flex-shrink: 0;
-  }
-  .logo {
-    font-family: 'Space Grotesk', -apple-system, sans-serif;
-    font-size: 40px;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    margin: 0;
-    background: linear-gradient(90deg, #3aa8ff, #7f5aff);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .tagline {
-    color: var(--muted);
-    font-size: 17px;
-    margin: 0;
-  }
-  main {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 40px 24px 64px;
-  }
-  .apps {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-  @media (max-width: 720px) {
-    .apps { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 480px) {
-    .apps { grid-template-columns: 1fr; }
-  }
-  .app-card {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 28px;
-    text-decoration: none;
-    color: var(--text);
-    position: relative;
-    transition: transform 0.15s ease, border-color 0.15s ease;
-  }
-  .app-card:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255,255,255,0.16);
-  }
-  .app-card-badge {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(58,168,255,0.14);
-    border: 1px solid rgba(58,168,255,0.35);
-    color: var(--accent);
-    font-size: 11px;
-    font-weight: 700;
-    padding: 5px 10px;
-    border-radius: 20px;
-  }
-  .app-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-  }
-  .app-icon-custom {
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .app-icon-custom svg { width: 30px; height: 30px; }
-  .app-name {
-    font-family: 'Space Grotesk', -apple-system, sans-serif;
-    font-weight: 600;
-    font-size: 19px;
-  }
-  .app-desc {
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1.55;
-    margin: 8px 0 0;
-  }
-  .app-cta {
-    color: var(--accent);
-    font-size: 13px;
-    font-weight: 700;
-    margin-top: auto;
-    padding-top: 8px;
-  }
-  .app-card.soon {
-    opacity: 0.62;
-    cursor: default;
-  }
-  .app-card.soon:hover {
-    transform: none;
-    border-color: var(--border);
-  }
-  .app-card.soon .app-card-badge {
-    background: rgba(255,255,255,0.08);
-    border-color: rgba(255,255,255,0.18);
-    color: var(--muted);
-  }
-  .app-card.soon .app-cta { display: none; }
-  .apps-more {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin: 36px 0 0;
-    color: var(--muted);
-    font-size: 13px;
-  }
-  .apps-more span.dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--border);
-  }
-  .utility-block {
-    position: fixed;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 50;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-  }
-  .utility-tile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    text-decoration: none;
-    color: var(--text);
-    width: 40px;
-  }
-  .utility-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  }
-  .utility-icon svg { width: 18px; height: 18px; }
-  .utility-icon.placeholder {
-    background: rgba(255,255,255,0.06);
-    border: 1px dashed var(--border);
-    box-shadow: none;
-  }
-  .utility-label { font-size: 9px; color: var(--muted); }
-  .utility-tile.soon { opacity: 0.45; pointer-events: none; }
-  footer {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 24px;
-    text-align: center;
-    color: var(--muted);
-    font-size: 13px;
-    border-top: 1px solid var(--border);
-  }
-  footer a { color: var(--accent); text-decoration: none; }
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.55);
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    z-index: 100;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal-panel {
-    background: var(--panel);
+  .wrap { width: 100%; max-width: 640px; }
+  h1 { font-family: "Space Grotesk", sans-serif; font-size: 22px; font-weight: 700; margin: 0 0 4px; }
+  .back { display: inline-block; color: var(--accent); font-size: 13px; font-weight: 700; text-decoration: none; margin-bottom: 18px; }
+  .back:hover { text-decoration: underline; }
+  .sub { color: var(--muted); font-size: 14px; margin: 0 0 24px; }
+  textarea {
+    width: 100%;
+    background: var(--card);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 24px;
-    max-width: 400px;
-    width: 100%;
+    color: var(--text);
+    font-size: 17px;
+    padding: 16px;
+    resize: vertical;
+    min-height: 90px;
+    font-family: inherit;
   }
-  .modal-panel h3 { margin: 0 0 12px; font-size: 17px; }
-  .modal-close {
-    float: right;
-    background: none;
-    border: none;
+  textarea:focus { outline: none; border-color: var(--accent); }
+  .charcount { text-align: right; color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .section-title {
+    margin: 28px 0 10px;
+    font-size: 13px;
+    font-weight: 700;
     color: var(--muted);
-    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .results { display: flex; flex-direction: column; gap: 10px; }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .row .label {
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    width: 96px;
+    flex-shrink: 0;
+  }
+  .row .output { flex: 1; font-size: 16px; word-break: break-word; line-height: 1.4; }
+  .row.empty { opacity: 0.35; }
+  button.copy {
+    flex-shrink: 0;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  button.copy:hover { background: #1c1f23; }
+  button.copy.copied { background: var(--accent); border-color: var(--accent); color: white; }
+  .emoji-search {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text);
+    font-size: 14px;
+    padding: 10px 16px;
+    margin-bottom: 10px;
+    font-family: inherit;
+  }
+  .emoji-search:focus { outline: none; border-color: var(--accent); }
+  .emoji-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 10px;
+    scrollbar-width: thin;
+  }
+  .emoji-tabs button {
+    flex-shrink: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .emoji-tabs button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 4px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .emoji-grid button {
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    font-size: 21px;
+    padding: 7px 0;
     cursor: pointer;
     line-height: 1;
   }
-  .contact-email-line { margin: 0 0 16px; font-size: 14px; color: var(--muted); }
-  .contact-email-line a { color: var(--accent); }
-  .contact-success {
-    background: rgba(58,168,255,.12);
-    border: 1px solid rgba(58,168,255,.3);
-    color: var(--accent);
-    border-radius: 10px;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-    font-size: 14px;
+  .emoji-grid button:hover { background: #1c1f23; }
+  .emoji-count { color: var(--muted); font-size: 11px; margin-top: 6px; text-align: right; }
+  .note {
+    margin-top: 28px;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.5;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
   }
-  .contact-form { display: flex; flex-direction: column; gap: 12px; }
-  .contact-form label { font-size: 13px; color: var(--muted); font-weight: 600; display: flex; flex-direction: column; gap: 6px; }
-  .contact-form input, .contact-form textarea {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 12px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 14px;
-  }
-  .contact-form textarea { min-height: 90px; resize: vertical; }
-  .contact-form button {
-    align-self: flex-start;
-    background: var(--accent);
-    color: #06223d;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 22px;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  .contact-honey { position: absolute; left: -9999px; }
 </style>
 </head>
 <body>
-  <div class="utility-block">
-    <a class="utility-tile" href="/">
-      <div class="utility-icon" style="background:#d98c1f">
-        <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
-      </div>
-      <span class="utility-label">Home</span>
-    </a>
-    <a class="utility-tile" href="#" id="utility-mail">
-      <div class="utility-icon" style="background:#4a90d9">
-        <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
-      </div>
-      <span class="utility-label">Mail</span>
-    </a>
-    <div class="utility-tile soon">
-      <div class="utility-icon placeholder"></div>
-      <span class="utility-label">Bald</span>
-    </div>
-    <div class="utility-tile soon">
-      <div class="utility-icon placeholder"></div>
-      <span class="utility-label">Bald</span>
-    </div>
+<div class="wrap">
+  <a class="back" href="/">← Zurück zu Driftware</a>
+  <h1>Schriftgenerator</h1>
+  <p class="sub">Text eingeben, Stil auswählen, kopieren, überall einfügen.</p>
+
+  <textarea id="input" placeholder="Schreib etwas..." maxlength="280"></textarea>
+  <div class="charcount"><span id="count">0</span>/280</div>
+
+  <div class="section-title">Emoji-Tastatur</div>
+  <input type="text" class="emoji-search" id="emojiSearch" placeholder="Emoji suchen (z.B. herz, feuer, hund)...">
+  <div class="emoji-tabs" id="emojiTabs"></div>
+  <div class="emoji-grid" id="emojiPicker"></div>
+  <div class="emoji-count" id="emojiCount"></div>
+
+  <div class="section-title">Schriftarten</div>
+  <div class="results" id="results"></div>
+
+  <div class="section-title">Emoji-Deko</div>
+  <div class="results" id="decoResults"></div>
+
+  <div class="note">
+    Hinweis: Das sind Unicode-Sonderzeichen, keine echten Schriftarten – funktioniert überall dort, wo normaler Text erlaubt ist (auch X). Nicht jeder Buchstabe/jede Zahl existiert in jedem Stil; nicht unterstützte Zeichen bleiben normal. Screenreader können Sonderzeichen und Emoji-Deko teils nicht korrekt vorlesen.
   </div>
-  <header>
-    <div class="brand">
-      <div class="brand-mark">D</div>
-      <p class="logo">Driftware</p>
-    </div>
-    <p class="tagline">Kleine, unabhängige Apps ohne Schnickschnack.</p>
-  </header>
-  <main>
-    <div class="apps" id="apps-container"></div>
-    <div class="apps-more"><span class="dot"></span><span>Weitere Apps sind in Arbeit</span><span class="dot"></span></div>
-  </main>
-  <footer>
-    &copy; 2026 Driftware
-    <div><a href="#" id="contact-link">Kontakt</a> · <a href="/impressum.html">Impressum</a></div>
-  </footer>
+</div>
 
-  <div class="modal-overlay" id="contact-modal">
-    <div class="modal-panel">
-      <button class="modal-close" id="contact-close" aria-label="Schließen">&times;</button>
-      <h3>Kontakt aufnehmen</h3>
-      <div class="contact-success" id="contact-success" style="display:none;">Danke für deine Nachricht! Wir melden uns so schnell wie möglich bei dir.</div>
-      <form class="contact-form" method="POST" action="https://formsubmit.co/0b4cb7348b4cff5d1891bf8d99f1e757">
-        <input type="hidden" name="_subject" value="Driftware — neue Kontaktanfrage">
-        <input type="hidden" name="_template" value="table">
-        <input type="hidden" name="_next" id="contact-next" value="">
-        <input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">
-        <label><span>Name</span><input type="text" name="name" required></label>
-        <label><span>Deine E-Mail-Adresse</span><input type="email" name="email" required></label>
-        <label><span>Nachricht</span><textarea name="message" required></textarea></label>
-        <button type="submit">Senden</button>
-      </form>
-    </div>
-  </div>
+<script>
+function buildMap(from, to) {
+  const map = {};
+  const f = Array.from(from), t = Array.from(to);
+  f.forEach((ch, i) => { map[ch] = t[i] ?? ch; });
+  return map;
+}
+function mapTransform(map) {
+  return text => Array.from(text).map(ch => map[ch] ?? ch).join("");
+}
+function combiningTransform(mark) {
+  return text => Array.from(text).map(ch => ch + mark).join("");
+}
+const upsideDownMap = {
+  a:"ɐ",b:"q",c:"ɔ",d:"p",e:"ǝ",f:"ɟ",g:"ƃ",h:"ɥ",i:"ᴉ",j:"ɾ",k:"ʞ",l:"l",m:"ɯ",
+  n:"u",o:"o",p:"d",q:"b",r:"ɹ",s:"s",t:"ʇ",u:"n",v:"ʌ",w:"ʍ",x:"x",y:"ʎ",z:"z",
+  A:"ɐ",B:"q",C:"ɔ",D:"p",E:"ǝ",F:"ɟ",G:"ƃ",H:"ɥ",I:"ᴉ",J:"ɾ",K:"ʞ",L:"l",M:"ɯ",
+  N:"u",O:"o",P:"d",Q:"b",R:"ɹ",S:"s",T:"ʇ",U:"n",V:"ʌ",W:"ʍ",X:"x",Y:"ʎ",Z:"z",
+  "0":"0","1":"Ɩ","2":"ᄅ","3":"Ɛ","4":"ㄣ","5":"5","6":"9","7":"Ɫ","8":"8","9":"6",
+  ".":"˙",",":"'","?":"¿","!":"¡","'":",","(" :")",")":"(","[":"]","]":"[","{":"}","}":"{","<":">",">":"<","&":"⅋","_":"‾"
+};
+function upsideDown(text) {
+  return Array.from(text).reverse().map(ch => upsideDownMap[ch] ?? ch).join("");
+}
 
-  <script>
-    (function () {
-      // Neue App hinzufügen: einfach ein Objekt unten in APPS ergänzen.
-      // (Home/Mail sind Utility-Kacheln oben links, nicht Teil dieser Liste.)
-      var APPS = [
-        { href: '/snoxi/', icon: '/snoxi/icon.png', label: 'Snoxi', desc: 'Foto- & Video-Editor ohne Abo — Filter, Sticker, Wasserzeichen, Gesichter unkenntlich machen.', badge: 'Live im App Store' },
-        { href: 'https://collectview.site/', icon: '/collectview/icon.png', label: 'CollectView', desc: 'Barcode scannen oder Cover fotografieren, sofort den Marktwert sehen — komplett kostenlos, ganz ohne Konto.', badge: 'On Air' },
-        { href: '/dekaden/', svg: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><text x="12" y="17" font-size="14" text-anchor="middle">🎵</text></svg>', bg: 'linear-gradient(135deg, #ff2fb3, #7c5cff, #29e2ff)', label: 'Ultimate Music Master', desc: 'Songs nach Jahrzehnt und Stimmung sortiert — Playlisten von den 70ern bis heute, bereit für Spotify, Apple Music & YouTube Music.', badge: 'On Air' },
-        { href: '#', soon: true, svg: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#eafff5"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>', bg: 'linear-gradient(135deg, #14b881, #0891b2)', label: 'Driftmail', desc: 'Sicherer Mail-Client mit KI-Anbindung — verschlüsselt, aufgeräumt, ohne Daten zu sammeln.', badge: 'Bald verfügbar' },
-      ];
+const fontStyles = [
+  { name: "Fett", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    "𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵"
+  ))},
+  { name: "Serif Fett", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    "𝐚𝐛𝐜𝐝𝐞𝐟𝐠𝐡𝐢𝐣𝐤𝐥𝐦𝐧𝐨𝐩𝐪𝐫𝐬𝐭𝐮𝐯𝐰𝐱𝐲𝐳𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙𝟎𝟏𝟐𝟑𝟒𝟓𝟔𝟕𝟖𝟗"
+  ))},
+  { name: "Kursiv", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡"
+  ))},
+  { name: "Serif Kursiv", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "𝑎𝑏𝑐𝑑𝑒𝑓𝑔ℎ𝑖𝑗𝑘𝑙𝑚𝑛𝑜𝑝𝑞𝑟𝑠𝑡𝑢𝑣𝑤𝑥𝑦𝑧𝐴𝐵𝐶𝐷𝐸𝐹𝐺𝐻𝐼𝐽𝐾𝐿𝑀𝑁𝑂𝑃𝑄𝑅𝑆𝑇𝑈𝑉𝑊𝑋𝑌𝑍"
+  ))},
+  { name: "Fett Kursiv", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "𝙖𝙗𝙘𝙙𝙚𝙛𝙜𝙝𝙞𝙟𝙠𝙡𝙢𝙣𝙤𝙥𝙦𝙧𝙨𝙩𝙪𝙫𝙬𝙭𝙮𝙯𝘼𝘽𝘾𝘿𝙀𝙁𝙂𝙃𝙄𝙅𝙆𝙇𝙈𝙉𝙊𝙋𝙌𝙍𝙎𝙏𝙐𝙑𝙒𝙓𝙔𝙕"
+  ))},
+  { name: "Serif Fett Kursiv", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "𝒂𝒃𝒄𝒅𝒆𝒇𝒈𝒉𝒊𝒋𝒌𝒍𝒎𝒏𝒐𝒑𝒒𝒓𝒔𝒕𝒖𝒗𝒘𝒙𝒚𝒛𝑨𝑩𝑪𝑫𝑬𝑭𝑮𝑯𝑰𝑱𝑲𝑳𝑴𝑵𝑶𝑷𝑸𝑹𝑺𝑻𝑼𝑽𝑾𝑿𝒀𝒁"
+  ))},
+  { name: "Schreibschrift", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "𝓪𝓫𝓬𝓭𝓮𝓯𝓰𝓱𝓲𝓳𝓴𝓵𝓶𝓷𝓸𝓹𝓺𝓻𝓼𝓽𝓾𝓿𝔀𝔁𝔂𝔃𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩"
+  ))},
+  { name: "Fraktur", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "𝔞𝔟𝔠𝔡𝔢𝔣𝔤𝔥𝔦𝔧𝔨𝔩𝔪𝔫𝔬𝔭𝔮𝔯𝔰𝔱𝔲𝔳𝔴𝔵𝔶𝔷𝔄𝔅ℭ𝔇𝔈𝔉𝔊ℌℑ𝔍𝔎𝔏𝔐𝔑𝔒𝔓𝔔ℜ𝔖𝔗𝔘𝔙𝔚𝔛𝔜ℨ"
+  ))},
+  { name: "Doppelt", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    "𝕒𝕓𝕔𝕕𝕖𝕗𝕘𝕙𝕚𝕛𝕜𝕝𝕞𝕟𝕠𝕡𝕢𝕣𝕤𝕥𝕦𝕧𝕨𝕩𝕪𝕫𝔸𝔹ℂ𝔻𝔼𝔽𝔾ℍ𝕀𝕁𝕂𝕃𝕄ℕ𝕆ℙℚℝ𝕊𝕋𝕌𝕍𝕎𝕏𝕐ℤ𝟘𝟙𝟚𝟛𝟜𝟝𝟞𝟟𝟠𝟡"
+  ))},
+  { name: "Monospace", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    "𝚊𝚋𝚌𝚍𝚎𝚏𝚐𝚑𝚒𝚓𝚔𝚕𝚖𝚗𝚘𝚙𝚚𝚛𝚜𝚝𝚞𝚟𝚠𝚡𝚢𝚣𝙰𝙱𝙲𝙳𝙴𝙵𝙶𝙷𝙸𝙹𝙺𝙻𝙼𝙽𝙾𝙿𝚀𝚁𝚂𝚃𝚄𝚅𝚆𝚇𝚈𝚉𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿"
+  ))},
+  { name: "Umrandet", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    "ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩⒶⒷⒸⒹⒺⒻⒼⒽⒾⒿⓀⓁⓂⓃⓄⓅⓆⓇⓈⓉⓊⓋⓌⓍⓎⓏ⓪①②③④⑤⑥⑦⑧⑨"
+  ))},
+  { name: "Eckig", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "🅰🅱🅲🅳🅴🅵🅶🅷🅸🅹🅺🅻🅼🅽🅾🅿🆀🆁🆂🆃🆄🆅🆆🆇🆈🆉🅰🅱🅲🅳🅴🅵🅶🅷🅸🅹🅺🅻🅼🅽🅾🅿🆀🆁🆂🆃🆄🆅🆆🆇🆈🆉"
+  ))},
+  { name: "Full-Width", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ",
+    "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ０１２３４５６７８９　"
+  ))},
+  { name: "Kleinkapitälchen", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘQʀꜱᴛᴜᴠᴡxʏᴢABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  ))},
+  { name: "Hoch (x²)", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    "ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖqʳˢᵗᵘᵛʷˣʸᶻᴬᴮCᴰᴱFᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾQᴿSᵀᵁⱽᵂXYZ⁰¹²³⁴⁵⁶⁷⁸⁹"
+  ))},
+  { name: "Tief (x₂)", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    "ₐbcdₑfgₕᵢⱼₖₗₘₙₒₚqᵣₛₜᵤᵥwₓyzABCDEFGHIJKLMNOPQRSTUVWXYZ₀₁₂₃₄₅₆₇₈₉"
+  ))},
+  { name: "Durchgestrichen", fn: combiningTransform("\u0336") },
+  { name: "Unterstrichen", fn: combiningTransform("\u0332") },
+  { name: "Verkehrt herum", fn: upsideDown },
+];
 
-      function renderApps() {
-        var container = document.getElementById('apps-container');
-        if (!container) return;
-        APPS.forEach(function (app) {
-          var a = document.createElement('a');
-          a.className = 'app-card' + (app.soon ? ' soon' : '');
-          a.href = app.href || '#';
-          if (app.soon) {
-            a.addEventListener('click', function (e) { e.preventDefault(); });
-          }
-          if (app.action === 'contact') {
-            a.addEventListener('click', function (e) {
-              e.preventDefault();
-              var link = document.getElementById('contact-link');
-              if (link) link.click();
-            });
-          }
-          if (app.badge) {
-            var badge = document.createElement('span');
-            badge.className = 'app-card-badge';
-            badge.textContent = app.badge;
-            a.appendChild(badge);
-          }
-          if (app.icon) {
-            var img = document.createElement('img');
-            img.className = 'app-icon';
-            img.src = app.icon;
-            img.alt = app.label + ' Icon';
-            a.appendChild(img);
-          } else if (app.svg) {
-            var iconBox = document.createElement('div');
-            iconBox.className = 'app-icon-custom';
-            iconBox.style.background = app.bg || 'var(--accent)';
-            iconBox.innerHTML = app.svg;
-            a.appendChild(iconBox);
-          }
-          var name = document.createElement('span');
-          name.className = 'app-name';
-          name.textContent = app.label;
-          a.appendChild(name);
-          if (app.desc) {
-            var desc = document.createElement('p');
-            desc.className = 'app-desc';
-            desc.textContent = app.desc;
-            a.appendChild(desc);
-          }
-          var cta = document.createElement('span');
-          cta.className = 'app-cta';
-          cta.textContent = 'Ansehen →';
-          a.appendChild(cta);
-          container.appendChild(a);
-        });
-      }
-      renderApps();
-    })();
-  </script>
+const decoStyles = [
+  { name: "Sparkle", fn: t => "✨ " + t + " ✨" },
+  { name: "Feuer", fn: t => "🔥 " + t + " 🔥" },
+  { name: "100", fn: t => "💯 " + t + " 💯" },
+  { name: "Rakete", fn: t => "🚀 " + t + " 🚀" },
+  { name: "Krone", fn: t => "👑 " + t + " 👑" },
+  { name: "Blitz", fn: t => "⚡️ " + t + " ⚡️" },
+  { name: "Ziel", fn: t => "🎯 " + t + " 🎯" },
+  { name: "Stern", fn: t => "🌟 " + t + " 🌟" },
+  { name: "Diamant", fn: t => "💎 " + t + " 💎" },
+  { name: "Warnung", fn: t => "⚠️ " + t + " ⚠️" },
+];
 
-  <script>
-    (function () {
-      var overlay = document.getElementById('contact-modal');
-      var link = document.getElementById('contact-link');
-      var mailTile = document.getElementById('utility-mail');
-      var closeBtn = document.getElementById('contact-close');
-      var nextField = document.getElementById('contact-next');
-      nextField.value = window.location.origin + window.location.pathname + '?contact=success';
+const emojiCategories = {
+  "Smileys": "😀😃😄😁😆😅🤣😂🙂🙃🫠😉😊😇🥰😍🤩😘😗☺️😚😙🥲😋😛😜🤪😝🤑🤗🤭🫢🫣🤫🤔🫡🤐🤨😐😑😶🫥😏😒🙄😬🤥😌😔😪🤤😴😷🤒🤕🤢🤮🤧🥵🥶🥴😵🤯🤠🥳🥸😎🤓🧐😕🫤😟🙁☹️😮😯😲😳🥺🥹😦😧😨😰😥😢😭😱😖😣😞😓😩😫🥱😤😡😠🤬😈👿💀☠️💩🤡👹👺👻👽👾🤖😺😸😹😻😼😽🙀😿😾❤️🧡💛💚💙💜🖤🤍🤎💔❣️💕💞💓💗💖💘💝",
+  "Gesten": "👋🤚🖐️✋🖖👌🤌🤏✌️🤞🫰🤟🤘🤙👈👉👆🖕👇☝️👍👎✊👊🤛🤜👏🙌🫶👐🤲🤝🙏💪🦾🦵🦿🦶👂🦻👃🫀🫁🧠🦷🦴👀👁️👅👄🫦💋👶🧒👦👧🧑👱👨👩🧔👴👵🙍🙎🙅🙆💁🙋🧏🙇🤦🤷👮🕵️💂👷🤴👸👳👲🧕🤵👰🤰🤱👼🎅🤶🦸🦹🧙🧚🧛🧜🧝🧞🧟💆💇🚶🧍🧎🏃💃🕺👯🧖🧗🤺🏇⛷️🏂🏌️🏄🚣🏊⛹️🏋️🚴🚵",
+  "Tiere": "🐶🐱🐭🐹🐰🦊🐻🐼🐨🐯🦁🐮🐷🐽🐸🐵🙈🙉🙊🐒🐔🐧🐦🐤🐣🐥🦆🦅🦉🦇🐺🐗🐴🦄🐝🪱🐛🦋🐌🐞🐜🪰🪲🪳🦟🦗🕷️🕸️🐢🐍🦎🦖🦕🐙🦑🦐🦞🦀🐡🐠🐟🐬🐳🐋🦈🐊🐅🐆🦓🦍🦧🦣🐘🦛🦏🐪🐫🦒🦘🦬🐃🐂🐄🐎🐖🐏🐑🦙🐐🦌🐕🐩🦮🐈🐓🦃🦤🦚🦜🦢🦩🕊️🐇🦝🦨🦡🦫🦦🦥🐁🐀🐿️🦔🐾🐉🐲🌵🎄🌲🌳🌴🌱🌿☘️🍀🎍🪴🎋🍃🍂🍁🍄🐚🪨🌾💐🌷🌹🥀🌺🌸🌼🌻🌞🌝🌛🌜🌚🌕🌖🌗🌘🌑🌒🌓🌔🌙🌎🌍🌏💫⭐🌟✨⚡🔥💥☄️🌈☀️⛅☁️🌧️⛈️🌩️🌨️❄️☃️⛄🌬️💨💧💦☔",
+  "Essen": "🍎🍐🍊🍋🍌🍉🍇🍓🫐🍈🍒🍑🥭🍍🥥🥝🍅🍆🥑🥦🥬🥒🌶️🫑🌽🥕🫒🧄🧅🥔🍠🥐🥯🍞🥖🥨🧀🥚🍳🧈🥞🧇🥓🥩🍗🍖🌭🍔🍟🍕🫓🥪🥙🧆🌮🌯🫔🥗🥘🫕🥫🍝🍜🍲🍛🍣🍱🥟🦪🍤🍙🍚🍘🍥🥠🥮🍢🍡🍧🍨🍦🥧🧁🍰🎂🍮🍭🍬🍫🍿🍩🍪🌰🥜🍯🥛🍼☕🫖🍵🍶🍾🍷🍸🍹🍺🍻🥂🥃🧉🧃🧊🥢🍽️🍴🥄",
+  "Aktivitäten": "⚽🏀🏈⚾🥎🎾🏐🏉🥏🎱🪀🏓🏸🏒🏑🥍🏏🪃🥅⛳🪁🏹🎣🤿🥊🥋🎽🛹🛼🛷⛸️🥌🎿⛷️🏂🪂🏋️🤼🤸⛹️🤺🤾🏌️🏇🧘🏄🏊🤽🚣🧗🚵🚴🏆🥇🥈🥉🏅🎖️🏵️🎗️🎫🎟️🎪🤹🎭🩰🎨🎬🎤🎧🎼🎹🥁🪘🎷🎺🪗🎸🪕🎻🎲♟️🎯🎳🎮🎰🧩🕹️",
+  "Reisen": "🚗🚕🚙🚌🚎🏎️🚓🚑🚒🚐🛻🚚🚛🚜🛴🚲🛵🏍️🛺🚨🚔🚍🚘🚖🚡🚠🚟🚃🚋🚞🚝🚄🚅🚈🚂🚆🚇🚊🚉✈️🛫🛬🛩️💺🛰️🚀🛸🚁🛶⛵🚤🛥️🛳️⛴️🚢⚓🪝⛽🚧🚦🚥🚏🗺️🗿🗽🗼🏰🏯🏟️🎡🎢🎠⛲⛱️🏖️🏝️🏜️🌋⛰️🏔️🗻🏕️⛺🏠🏡🏘️🏚️🏗️🏭🏢🏬🏣🏤🏥🏦🏨🏪🏫🏩💒🏛️⛪🕌🕍🛕🕋⛩️🌅🌄🌠🎇🎆🌇🌆🏙️🌃🌌🌉🌁",
+  "Objekte": "⌚📱📲💻⌨️🖥️🖨️🖱️🖲️🕹️🗜️💽💾💿📀📼📷📸📹🎥📽️🎞️📞☎️📟📠📺📻🎙️🎚️🎛️🧭⏱️⏲️⏰🕰️⌛⏳📡🔋🪫🔌💡🔦🕯️🪔🧯🛢️💸💵💴💶💷🪙💰💳💎⚖️🪜🧰🪛🔧🔨⚒️🛠️⛏️🪚🔩⚙️🪤🧱⛓️🧲🔫💣🧨🪓🔪🗡️⚔️🛡️🚬⚰️🪦⚱️🏺🔮📿🧿💈⚗️🔭🔬🩹🩺💊💉🩸🧬🦠🧫🧪🌡️🧹🪠🧺🧻🪣🧼🫧🪥🧽🧴🔑🗝️🚪🪑🛋️🛏️🛌🖼️🛍️🛒🎁🎈🎏🎀🪄🪅🎊🎉🎎🏮🎐🧧✉️📩📨📧💌📥📤📦🏷️📪📫📬📭📮📯📜📃📄📑🧾📊📈📉🗒️🗓️📆📅🗑️📇🗃️🗳️🗄️📋📁📂🗂️🗞️📰📓📔📒📕📗📘📙📚📖🔖🔗📎🖇️📐📏🧮📌📍✂️🖊️🖋️✒️🖌️🖍️📝✏️🔍🔎🔏🔐🔒🔓",
+  "Symbole": "❌⭕🛑⛔📛🚫💯💢♨️🚷🚯🚳🚱🔞📵🚭❗❕❓❔‼️⁉️🔅🔆〽️⚠️🚸🔱⚜️🔰♻️✅🈯💹❇️✳️❎🌐💠Ⓜ️🌀💤🏧🚾♿🅿️🛗🚹🚺🚼🚻🚮🎦📶🔤🔡🔠🆖🆗🆙🆒🆕🆓0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟🔢#️⃣*️⃣⏏️▶️⏸️⏯️⏹️⏺️⏭️⏮️⏩⏪⏫⏬◀️🔼🔽➡️⬅️⬆️⬇️↗️↘️↙️↖️↕️↔️↪️↩️⤴️⤵️🔀🔁🔂🔄🔃🎵🎶➕➖➗✖️💲™️©️®️〰️➰➿🔚🔙🔛🔝🔜✔️☑️🔘🔴🟠🟡🟢🔵🟣⚫⚪🟤🔺🔻🔸🔹🔶🔷🔳🔲▪️▫️◾◽◼️◻️🟥🟧🟨🟩🟦🟪⬛⬜🟫🔈🔇🔉🔊🔔🔕📣📢💬💭🗯️♠️♣️♥️♦️🃏🎴🀄",
+  "Flaggen": "🏁🚩🎌🏴🏳️🏳️‍🌈🏳️‍⚧️🏴‍☠️🇩🇪🇦🇹🇨🇭🇺🇸🇬🇧🇫🇷🇮🇹🇪🇸🇳🇱🇧🇪🇵🇱🇹🇷🇷🇺🇨🇳🇯🇵🇰🇷🇮🇳🇧🇷🇨🇦🇦🇺🇲🇽🇵🇹🇬🇷🇸🇪🇳🇴🇩🇰🇫🇮🇮🇪🇺🇦"
+};
 
-      function open() { overlay.classList.add('open'); }
-      function close() { overlay.classList.remove('open'); }
+const emojiKeywords = {
+  "❤️":"herz liebe rot","🔥":"feuer fire hot lit","😂":"lachen tränen","😍":"verliebt herzaugen",
+  "🙏":"danke bitte beten","💪":"stark kraft muskel","✅":"haken check ok","❌":"kreuz nein falsch",
+  "⚠️":"warnung achtung","📈":"chart wachstum steigend","📉":"chart fallend sinkend","💡":"idee glühbirne",
+  "🎯":"ziel target","🚀":"rakete start durchstarten","✨":"funkeln sparkle glitzer","👀":"augen schauen",
+  "🤯":"explodierender kopf wow","😎":"cool sonnenbrille","💯":"hundert perfekt","😢":"traurig weinen",
+  "😭":"weinen laut heulen","🥳":"party feiern","🤔":"nachdenken hmm","👍":"daumen hoch gut",
+  "👎":"daumen runter schlecht","👏":"klatschen applaus","🙌":"jubel hände hoch","🤝":"handschlag deal",
+  "😡":"wütend sauer","😱":"schreien schock","🥺":"bitten flehen niedlich","🤣":"lachen rolfl",
+  "😴":"schlafen müde","🤗":"umarmung hug","🤩":"begeistert sterne","😏":"grinsen frech",
+  "💀":"tot skelett lol","👻":"geist gruselig","🐶":"hund","🐱":"katze","🐸":"frosch",
+  "🌟":"stern glitzer","⭐":"stern","🌈":"regenbogen","☀️":"sonne","🌙":"mond",
+  "💰":"geld reich","💵":"geld dollar","💎":"diamant wertvoll","🏆":"pokal sieg gewinner",
+  "🎉":"party feiern konfetti","🎂":"geburtstag kuchen","🎁":"geschenk","🎈":"luftballon",
+  "☕":"kaffee","🍕":"pizza","🍔":"burger","🍺":"bier","🍷":"wein",
+  "⚽":"fußball","🏀":"basketball","🎮":"gaming zocken","🎵":"musik note",
+  "📱":"handy telefon","💻":"laptop computer","📷":"kamera foto","🔗":"link verlinken",
+  "⏰":"wecker zeit","📅":"kalender datum","✍️":"schreiben","📝":"notiz text",
+  "🚗":"auto","✈️":"flugzeug fliegen","🏠":"haus zuhause","🌍":"welt erde global"
+};
 
-      link.addEventListener('click', function (e) { e.preventDefault(); open(); });
-      if (mailTile) mailTile.addEventListener('click', function (e) { e.preventDefault(); open(); });
-      closeBtn.addEventListener('click', close);
-      overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+let currentTab = "Smileys";
 
-      if (/[?&]contact=success/.test(window.location.search)) {
-        document.getElementById('contact-success').style.display = 'block';
-        open();
-      }
-    })();
-  </script>
+const input = document.getElementById("input");
+const results = document.getElementById("results");
+const decoResults = document.getElementById("decoResults");
+const count = document.getElementById("count");
+const emojiPicker = document.getElementById("emojiPicker");
+
+function makeRow(name, output, hasText) {
+  const row = document.createElement("div");
+  row.className = "row" + (hasText ? "" : " empty");
+  const label = document.createElement("div");
+  label.className = "label";
+  label.textContent = name;
+  const out = document.createElement("div");
+  out.className = "output";
+  out.textContent = hasText ? output : "Vorschau erscheint hier";
+  const btn = document.createElement("button");
+  btn.className = "copy";
+  btn.textContent = "Kopieren";
+  btn.disabled = !hasText;
+  btn.onclick = () => {
+    navigator.clipboard.writeText(output).then(() => {
+      btn.textContent = "Kopiert!";
+      btn.classList.add("copied");
+      setTimeout(() => { btn.textContent = "Kopieren"; btn.classList.remove("copied"); }, 1400);
+    });
+  };
+  row.append(label, out, btn);
+  return row;
+}
+
+function render() {
+  const text = input.value;
+  count.textContent = text.length;
+  results.innerHTML = "";
+  decoResults.innerHTML = "";
+
+  fontStyles.forEach(style => {
+    const output = text ? style.fn(text) : "";
+    results.appendChild(makeRow(style.name, output, !!text));
+  });
+
+  decoStyles.forEach(style => {
+    const output = text ? style.fn(text) : "";
+    decoResults.appendChild(makeRow(style.name, output, !!text));
+  });
+}
+
+const emojiTabs = document.getElementById("emojiTabs");
+const emojiSearch = document.getElementById("emojiSearch");
+const emojiCount = document.getElementById("emojiCount");
+
+function splitEmoji(str) {
+  return Array.from(str.matchAll(/\p{Extended_Pictographic}(\u200d\p{Extended_Pictographic})*\uFE0F?|\p{Extended_Pictographic}\uFE0F?/gu)).map(m => m[0]);
+}
+
+Object.keys(emojiCategories).forEach(cat => {
+  const btn = document.createElement("button");
+  btn.textContent = cat;
+  btn.className = cat === currentTab ? "active" : "";
+  btn.onclick = () => {
+    currentTab = cat;
+    emojiSearch.value = "";
+    [...emojiTabs.children].forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    renderEmojiGrid();
+  };
+  emojiTabs.appendChild(btn);
+});
+
+function insertEmoji(emo) {
+  const start = input.selectionStart ?? input.value.length;
+  const end = input.selectionEnd ?? input.value.length;
+  input.value = input.value.slice(0, start) + emo + input.value.slice(end);
+  input.focus();
+  input.selectionStart = input.selectionEnd = start + emo.length;
+  render();
+}
+
+function renderEmojiGrid() {
+  const query = emojiSearch.value.trim().toLowerCase();
+  let list;
+  if (query) {
+    list = Object.entries(emojiKeywords)
+      .filter(([emo, kw]) => kw.includes(query))
+      .map(([emo]) => emo);
+    emojiTabs.style.display = "none";
+  } else {
+    list = splitEmoji(emojiCategories[currentTab]);
+    emojiTabs.style.display = "flex";
+  }
+
+  emojiPicker.innerHTML = "";
+  list.forEach(emo => {
+    const btn = document.createElement("button");
+    btn.textContent = emo;
+    btn.onclick = () => insertEmoji(emo);
+    emojiPicker.appendChild(btn);
+  });
+  emojiCount.textContent = query
+    ? (list.length + " Treffer")
+    : (list.length + " Emoji in \"" + currentTab + "\"");
+}
+
+emojiSearch.addEventListener("input", renderEmojiGrid);
+
+input.addEventListener("input", render);
+render();
+renderEmojiGrid();
+</script>
 </body>
 </html>
