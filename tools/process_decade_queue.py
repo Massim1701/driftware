@@ -14,6 +14,7 @@ Aufruf: DECADE_QUEUE_KEY=70er python3 tools/process_decade_queue.py
 (oder als erstes Kommandozeilenargument, siehe main())."""
 import json
 import os
+import random
 import subprocess
 import sys
 import time
@@ -182,7 +183,7 @@ def main():
             save_json(queue_path, remaining + queue[i:])
             print(f"  Zwischenstand gespeichert ({processed} verarbeitet, {found} gefunden).")
 
-        time.sleep(0.3)
+        time.sleep(random.uniform(1.0, 2.0))  # groessere, gestreute Pause, kein Grund YouTube zu stressen
 
     remaining.extend(queue[i:])
     save_json(catalog_path, catalog)

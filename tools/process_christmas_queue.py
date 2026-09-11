@@ -13,6 +13,7 @@ sich ein Lauf sauber ueber mehrere manuelle Workflow-Starts verteilen kann,
 falls die Warteliste nicht in einem Durchlauf fertig wird."""
 import json
 import os
+import random
 import subprocess
 import time
 
@@ -182,7 +183,7 @@ def main():
             save_json(QUEUE_PATH, remaining + queue[i:])
             print(f"  Zwischenstand gespeichert ({processed} verarbeitet, {found} gefunden).")
 
-        time.sleep(0.3)  # kleine Pause, kein Grund YouTube zu stressen
+        time.sleep(random.uniform(1.0, 2.0))  # groessere, gestreute Pause, kein Grund YouTube zu stressen
 
     remaining.extend(queue[i:])
     save_json(CATALOG_PATH, catalog)
