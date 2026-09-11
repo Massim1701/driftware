@@ -2,6 +2,11 @@ name: Christmas-Playlist erweitern
 
 on:
   workflow_dispatch: {}
+  schedule:
+    # Taeglich um 04:37 UTC (nicht auf :00, weniger Last in der Minute, in
+    # der die meisten Cron-Jobs weltweit feuern -- gleiche Konvention wie
+    # process-missing-songs.yml, nur zeitlich leicht versetzt).
+    - cron: '37 4 * * *'
 
 # Selbe Gruppe wie process-missing-songs.yml: beide Workflows schreiben in
 # einzeilige *-music/songs.json-Dateien (siehe dortiger Kommentar zum
