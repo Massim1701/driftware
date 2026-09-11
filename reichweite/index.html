@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reichweiten-Dashboard — Driftware</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c1224;
+    --card: #141c33;
+    --border: rgba(255,255,255,0.08);
+    --text: #f5f7fa;
+    --muted: #9aa3c0;
+    --accent: #3aa8ff;
+    --good: #16a765;
+    --warn: #ffad47;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 40px 24px 80px;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; }
+  .back { display: inline-block; color: var(--accent); font-size: 13px; font-weight: 700; text-decoration: none; margin-bottom: 18px; }
+  .back:hover { text-decoration: underline; }
+  h1 { font-family: "Space Grotesk", sans-serif; font-size: 26px; font-weight: 700; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 14px; margin: 0 0 32px; }
+
+  .config-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 28px;
+  }
+  .config-box input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    margin-top: 8px;
+  }
+  .config-box label { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .config-box button {
+    margin-top: 14px;
+    background: var(--accent);
+    color: #06223d;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .stat-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .stat-card .value { font-family: "Space Grotesk", sans-serif; font-size: 26px; font-weight: 700; margin-top: 6px; }
+
+  .section-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 36px 0 14px;
+  }
+
+  .best-times { display: flex; flex-direction: column; gap: 8px; }
+  .slot-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .slot-row .rank { color: var(--accent); font-weight: 700; width: 24px; }
+  .slot-row .when { flex: 1; font-size: 14px; }
+  .slot-row .score { color: var(--good); font-weight: 700; font-size: 13px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; }
+  td { padding: 10px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .tweet-text { max-width: 340px; color: var(--text); }
+  .metric { color: var(--muted); }
+  button.likers-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .evergreen-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .evergreen-card .meta { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+  .mention-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .mention-card .author { font-weight: 700; font-size: 13px; }
+  .mention-card .handle { color: var(--muted); font-size: 12px; }
+
+  .loading, .error { text-align: center; color: var(--muted); padding: 60px 0; }
+  .error { color: #ff6b6b; }
+
+  #likersModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 100;
+  }
+  #likersModal.open { display: flex; }
+  .modal-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .modal-panel h3 { margin: 0 0 14px; font-size: 16px; }
+  .modal-close { float: right; background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+  .liker-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .liker-row img { width: 32px; height: 32px; border-radius: 50%; }
+  .liker-row .name { font-size: 13px; font-weight: 600; }
+  .liker-row .handle { font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="/">← Zurück zu Driftware</a>
+  <h1>Reichweiten-Dashboard</h1>
+  <p class="sub">Analytics, Liker-Einsicht und Posting-Empfehlungen — ohne X Premium+.</p>
+
+  <div class="config-box">
+    <label>Backend-URL (dein Server, z.B. https://dein-tool.onrender.com)</label>
+    <input type="text" id="backendUrl" placeholder="https://dein-tool.onrender.com" value="https://reichweite-tool.vercel.app">
+    <button onclick="loadDashboard()">Laden</button>
+  </div>
+
+  <div id="content"></div>
+</div>
+
+<div id="likersModal">
+  <div class="modal-panel">
+    <button class="modal-close" onclick="closeLikers()">&times;</button>
+    <h3 id="likersTitle">Liker</h3>
+    <div id="likersList"></div>
+  </div>
+</div>
+
+<script>
+const DAY_NAMES = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+
+function getBackendUrl() {
+  const saved = localStorage.getItem('reichweiteBackendUrl');
+  const input = document.getElementById('backendUrl');
+  if (saved && !input.value) input.value = saved;
+  return input.value.trim().replace(/\/$/, '');
+}
+
+async function loadDashboard() {
+  const backend = getBackendUrl();
+  if (!backend) { alert('Bitte Backend-URL eintragen.'); return; }
+  localStorage.setItem('reichweiteBackendUrl', backend);
+
+  const content = document.getElementById('content');
+  content.innerHTML = '<div class="loading">Lade Daten...</div>';
+
+  try {
+    const res = await fetch(`${backend}/api/dashboard`);
+    if (!res.ok) throw new Error(`Server antwortete mit ${res.status}`);
+    const data = await res.json();
+    renderDashboard(data, backend);
+  } catch (err) {
+    content.innerHTML = `<div class="error">Fehler beim Laden: ${err.message}<br>Läuft dein Backend-Server und ist die URL korrekt?</div>`;
+  }
+}
+
+function renderDashboard(data, backend) {
+  const content = document.getElementById('content');
+  const tweets = data.tweets || [];
+
+  const totalLikes = tweets.reduce((s, t) => s + (t.public_metrics?.like_count || 0), 0);
+  const totalReposts = tweets.reduce((s, t) => s + (t.public_metrics?.retweet_count || 0), 0);
+  const avgEngagement = tweets.length ? Math.round((totalLikes + totalReposts) / tweets.length * 10) / 10 : 0;
+
+  let html = '';
+
+  html += `<div class="grid">
+    <div class="stat-card"><div class="label">Analysierte Posts</div><div class="value">${data.totalTweetsAnalyzed}</div></div>
+    <div class="stat-card"><div class="label">Likes gesamt</div><div class="value">${totalLikes}</div></div>
+    <div class="stat-card"><div class="label">Reposts gesamt</div><div class="value">${totalReposts}</div></div>
+    <div class="stat-card"><div class="label">⌀ Engagement/Post</div><div class="value">${avgEngagement}</div></div>
+  </div>`;
+
+  if (data.cached) {
+    html += `<p style="color:var(--muted);font-size:12px;">Aus Cache (vor ${data.cacheAgeSeconds}s abgerufen, spart API-Kosten)</p>`;
+  }
+
+  html += '<div class="section-title">🕐 Beste Posting-Zeiten (nach Engagement)</div><div class="best-times">';
+  (data.bestTimes?.topSlots || []).forEach((slot, i) => {
+    html += `<div class="slot-row">
+      <div class="rank">#${i + 1}</div>
+      <div class="when">${DAY_NAMES[slot.day]}, ${String(slot.hour).padStart(2, '0')}:00 Uhr (basierend auf ${slot.sampleSize} Post${slot.sampleSize > 1 ? 's' : ''})</div>
+      <div class="score">⌀ ${slot.avgEngagement} Engagement</div>
+    </div>`;
+  });
+  html += '</div>';
+
+  if (data.evergreen && data.evergreen.length > 0) {
+    html += '<div class="section-title">♻️ Evergreen-Vorschläge (alt, aber stark — wert zum Recyceln)</div>';
+    data.evergreen.forEach(t => {
+      const m = t.public_metrics || {};
+      const date = new Date(t.created_at).toLocaleDateString('de-DE');
+      html += `<div class="evergreen-card">
+        <div class="tweet-text">${escapeHtml(t.text)}</div>
+        <div class="meta">${date} · ❤️ ${m.like_count || 0} · 🔁 ${m.retweet_count || 0} · 💬 ${m.reply_count || 0}</div>
+      </div>`;
+    });
+  }
+
+  html += '<div class="section-title">📊 Letzte Posts</div>';
+  html += `<table><thead><tr>
+    <th>Text</th><th>Datum</th><th>❤️</th><th>🔁</th><th>💬</th><th></th>
+  </tr></thead><tbody>`;
+  tweets.slice(0, 30).forEach(t => {
+    const m = t.public_metrics || {};
+    const date = new Date(t.created_at).toLocaleDateString('de-DE');
+    html += `<tr>
+      <td class="tweet-text">${escapeHtml(t.text)}</td>
+      <td class="metric">${date}</td>
+      <td class="metric">${m.like_count || 0}</td>
+      <td class="metric">${m.retweet_count || 0}</td>
+      <td class="metric">${m.reply_count || 0}</td>
+      <td><button class="likers-btn" onclick="showLikers('${t.id}', '${backend}')">Wer hat geliked?</button></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+
+  if (data.mentions && data.mentions.length > 0) {
+    html += '<div class="section-title">💬 Letzte Erwähnungen</div>';
+    data.mentions.forEach(m => {
+      const author = m.author || {};
+      html += `<div class="mention-card">
+        <div class="author">${escapeHtml(author.name || 'Unbekannt')} <span class="handle">@${escapeHtml(author.username || '?')}</span></div>
+        <div class="tweet-text">${escapeHtml(m.text)}</div>
+      </div>`;
+    });
+  }
+
+  content.innerHTML = html;
+}
+
+async function showLikers(tweetId, backend) {
+  const modal = document.getElementById('likersModal');
+  const list = document.getElementById('likersList');
+  document.getElementById('likersTitle').textContent = 'Lade Liker...';
+  list.innerHTML = '';
+  modal.classList.add('open');
+
+  try {
+    const res = await fetch(`${backend}/api/likers/${tweetId}`);
+    const likers = await res.json();
+    document.getElementById('likersTitle').textContent = `${likers.length} Liker`;
+    if (likers.length === 0) {
+      list.innerHTML = '<p style="color:var(--muted)">Noch keine Likes.</p>';
+      return;
+    }
+    list.innerHTML = likers.map(u => `
+      <div class="liker-row">
+        <img src="${u.profile_image_url || ''}" onerror="this.style.display='none'">
+        <div>
+          <div class="name">${escapeHtml(u.name)}</div>
+          <div class="handle">@${escapeHtml(u.username)}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    document.getElementById('likersTitle').textContent = 'Fehler';
+    list.innerHTML = `<p style="color:#ff6b6b">${err.message}</p>`;
+  }
+}
+
+function closeLikers() {
+  document.getElementById('likersModal').classList.remove('open');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+// Beim Laden gespeicherte Backend-URL automatisch anzeigen
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('reichweiteBackendUrl');
+  if (saved) document.getElementById('backendUrl').value = saved;
+});
+</script>
+</body>
+</html>
