@@ -304,7 +304,14 @@
 
     var deck = pickActiveDeck();
     if (deck && deck.song && deck.queue && deck.index > -1) {
-      deck.queue = deck.queue.concat(toLoad);
+      /* Nutzerwunsch (11.9.): "wenn man eine neue Playlist laden moechte,
+         bleiben die Songs von der alten Playlist drin, das soll verhindert
+         werden, die Songs aus dem Player sollen gekickt werden" -- der
+         aktuell spielende Song laeuft zu Ende (kein harter Schnitt), aber
+         die Warteschlange dahinter wird komplett durch die neue Playlist
+         ersetzt statt angehaengt, alte Restsongs fliegen raus. */
+      deck.queue = [deck.queue[deck.index]].concat(toLoad);
+      deck.index = 0;
     } else if (typeof window.loadSongToDeck === 'function') {
       window.loadSongToDeck(toLoad[0], 'A', toLoad, false);
     } else {
