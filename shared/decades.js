@@ -614,6 +614,7 @@ function preferredServiceObj() {
 
 function updateSendPanel() {
   var sendBtn = document.getElementById('gen-send');
+  var queueBtn = document.getElementById('gen-send-queue');
   var clearBtn = document.getElementById('gen-send-clear');
   if (!sendBtn) return;
   var count = Object.keys(selectedSongs).length;
@@ -625,6 +626,12 @@ function updateSendPanel() {
     sendBtn.textContent = count + (count === 1 ? ' Song ausgewählt – Dienst wählen' : ' Songs ausgewählt – Dienst wählen');
   } else {
     sendBtn.textContent = count + (count === 1 ? ' Song an ' : ' Songs an ') + svc.label + ' senden';
+  }
+  if (queueBtn) {
+    queueBtn.disabled = count === 0;
+    queueBtn.textContent = count === 0
+      ? 'In Warteschlange senden'
+      : count + (count === 1 ? ' Song in Warteschlange senden' : ' Songs in Warteschlange senden');
   }
   if (clearBtn) clearBtn.hidden = count === 0;
 }
@@ -662,6 +669,20 @@ function sendSelection() {
     var q = encodeURIComponent(song.a + ' ' + song.t);
     window.open(svc.url(q), '_blank', 'noopener');
   });
+}
+
+/* Nutzerwunsch (11.9.): "ich gehe die Liste durch was mir gefaellt, dann
+   unten ein Button der die in die Playliste sendet" -- haengt die per
+   gruenem Haken markierten Songs an die Warteschlange des aktiven Decks
+   an (dieselbe Logik wie "Playlist auf Warteschlange laden", nur mit der
+   Auswahl statt der ganzen Genre-Liste als Quelle), statt sie extern bei
+   einem Streaming-Dienst zu oeffnen. Auswahl senden (externer Dienst)
+   bleibt zusaetzlich bestehen, siehe sendSelection(). */
+function sendSelectionToQueue() {
+  var songs = Object.keys(selectedSongs).map(function (id) { return selectedSongs[id]; });
+  if (!songs.length) return;
+  playAllCurrent(songs);
+  clearSelection();
 }
 
 function clearSelection() {
@@ -3417,6 +3438,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     '  <span class="send-panel-label">Dein Dienst:</span>' +
     '  <div class="provider-picker" id="gen-provider-picker"></div>' +
     '  <button class="send-btn" id="gen-send" type="button" disabled>Auswahl senden</button>' +
+    '  <button class="send-btn send-btn-queue" id="gen-send-queue" type="button" disabled>In Warteschlange senden</button>' +
     '  <button class="send-clear" id="gen-send-clear" type="button" hidden>Auswahl leeren</button>' +
     '</div>' +
     '<div class="generator-actions" id="gen-actions">' +
@@ -3467,6 +3489,8 @@ function renderPlaylistGenerator(mountRoot, config) {
 
   renderProviderPicker(section.querySelector('#gen-provider-picker'));
   section.querySelector('#gen-send').addEventListener('click', sendSelection);
+  var sendQueueBtn = section.querySelector('#gen-send-queue');
+  if (sendQueueBtn) sendQueueBtn.addEventListener('click', sendSelectionToQueue);
   section.querySelector('#gen-send-clear').addEventListener('click', clearSelection);
   updateSendPanel();
 

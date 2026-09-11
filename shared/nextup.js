@@ -33,6 +33,30 @@
   var stylesInjected = false;
   var draggingIdx = null; // != null waehrend ein Warteschlangen-Eintrag zum Umsortieren gezogen wird
 
+  /* Nutzerwunsch (11.9.): "wenn man meint das seine selbsterstellte
+     Playlist gut ist, kann man die speichern und beim naechsten mal
+     laden ... es gibt Leute die wollen Playlisten je nach dem speichern
+     wie sie das wollen" -- mehrere benannte Playlisten (nicht nur ein
+     Speicherplatz), Basis ist immer die AKTUELLE WARTESCHLANGE (nicht
+     die gruene Haken-Auswahl), persistiert wie schon der bevorzugte
+     Streaming-Dienst (PREFERRED_SERVICE_KEY in decades.js) in
+     localStorage. */
+  var PLAYLISTS_KEY = 'driftware-saved-playlists';
+
+  function loadSavedPlaylists() {
+    try {
+      var raw = window.localStorage.getItem(PLAYLISTS_KEY);
+      var obj = raw ? JSON.parse(raw) : {};
+      return (obj && typeof obj === 'object') ? obj : {};
+    } catch (err) {
+      return {};
+    }
+  }
+
+  function persistSavedPlaylists(obj) {
+    try { window.localStorage.setItem(PLAYLISTS_KEY, JSON.stringify(obj)); } catch (err) {}
+  }
+
   /* Nutzerwunsch (10.9.): "Klickfeld einbauen um Warteschlange zu
      leeren, damit man eine neue laden kann" -- entfernt alle kommenden
      Songs aus der Warteschlange des aktiven Decks, der aktuell
@@ -238,6 +262,69 @@
     render();
   }
 
+  function refreshPlaylistSelect() {
+    var select = document.getElementById('gen-queue-pl-select');
+    if (!select) return;
+    var playlists = loadSavedPlaylists();
+    var names = Object.keys(playlists).sort(function (a, b) { return a.localeCompare(b, 'de'); });
+    var prevValue = select.value;
+    select.innerHTML = '<option value="">Playlist laden…</option>' +
+      names.map(function (name) {
+        return '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + ' (' + playlists[name].length + ')</option>';
+      }).join('');
+    if (names.indexOf(prevValue) > -1) select.value = prevValue;
+  }
+
+  function savePlaylist() {
+    var deck = pickActiveDeck();
+    var songs = (deck && deck.queue) ? (deck.index > -1 ? deck.queue.slice(deck.index) : deck.queue.slice()) : [];
+    if (!songs.length) {
+      window.alert('Die Warteschlange ist leer -- nichts zu speichern.');
+      return;
+    }
+    var name = window.prompt('Name für diese Playlist:');
+    if (!name) return;
+    name = name.trim();
+    if (!name) return;
+    var playlists = loadSavedPlaylists();
+    if (playlists[name] && !window.confirm('Playlist "' + name + '" existiert schon -- überschreiben?')) return;
+    playlists[name] = songs;
+    persistSavedPlaylists(playlists);
+    refreshPlaylistSelect();
+    var select = document.getElementById('gen-queue-pl-select');
+    if (select) select.value = name;
+  }
+
+  function loadSelectedPlaylist() {
+    var select = document.getElementById('gen-queue-pl-select');
+    if (!select || !select.value) return;
+    var playlists = loadSavedPlaylists();
+    var toLoad = playlists[select.value];
+    if (!toLoad || !toLoad.length) return;
+
+    var deck = pickActiveDeck();
+    if (deck && deck.song && deck.queue && deck.index > -1) {
+      deck.queue = deck.queue.concat(toLoad);
+    } else if (typeof window.loadSongToDeck === 'function') {
+      window.loadSongToDeck(toLoad[0], 'A', toLoad, false);
+    } else {
+      return;
+    }
+    lastSignature = null; // sofortiges Neuzeichnen erzwingen
+    render();
+  }
+
+  function deleteSelectedPlaylist() {
+    var select = document.getElementById('gen-queue-pl-select');
+    if (!select || !select.value) return;
+    var name = select.value;
+    if (!window.confirm('Playlist "' + name + '" wirklich löschen?')) return;
+    var playlists = loadSavedPlaylists();
+    delete playlists[name];
+    persistSavedPlaylists(playlists);
+    refreshPlaylistSelect();
+  }
+
   function injectStyles() {
     if (stylesInjected) return;
     stylesInjected = true;
@@ -270,7 +357,14 @@
       '.gen-queue-clear-btn{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid var(--border);color:var(--muted);font-size:11px;padding:4px 9px;border-radius:14px;cursor:pointer;}' +
       '.gen-queue-clear-btn svg{width:13px;height:13px;}' +
       '.gen-queue-clear-btn:hover{color:#f87171;border-color:#f87171;background:rgba(248,113,113,.1);}' +
-      '.gen-queue-clear-btn:focus-visible{outline:1px solid currentColor;}';
+      '.gen-queue-clear-btn:focus-visible{outline:1px solid currentColor;}' +
+      '.gen-queue-playlist-row{display:flex;align-items:center;gap:6px;margin:0 0 10px;flex-wrap:wrap;}' +
+      '.gen-queue-pl-btn{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid var(--border);color:var(--muted);font-size:11px;padding:4px 9px;border-radius:14px;cursor:pointer;}' +
+      '.gen-queue-pl-btn svg{width:13px;height:13px;}' +
+      '.gen-queue-pl-btn:hover{color:var(--accent);border-color:var(--accent);background:rgba(34,197,94,.1);}' +
+      '.gen-queue-pl-btn:focus-visible{outline:1px solid currentColor;}' +
+      '.gen-queue-pl-select{flex:1 1 120px;min-width:100px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:14px;font-size:11px;padding:4px 9px;}' +
+      '.gen-queue-pl-delete:hover{color:#f87171;border-color:#f87171;background:rgba(248,113,113,.1);}';
     document.head.appendChild(style);
   }
 
@@ -299,15 +393,29 @@
     // renderPlayHistory() findet "#gen-history-list" danach nicht mehr und
     // tut nichts mehr (hat einen Null-Check), kein Konflikt.
     var clearIconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
+    var saveIconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>';
     nativeHistory.innerHTML =
       '<div class="gen-queue-head"><h3>' + nextIconSvg + ' Warteschlange</h3>' +
       '<button type="button" id="gen-queue-clear" class="gen-queue-clear-btn" title="Warteschlange leeren, damit eine neue geladen werden kann">' + clearIconSvg + ' Leeren</button></div>' +
+      '<div class="gen-queue-playlist-row">' +
+      '<button type="button" id="gen-queue-save" class="gen-queue-pl-btn" title="Aktuelle Warteschlange als Playlist speichern">' + saveIconSvg + ' Speichern</button>' +
+      '<select id="gen-queue-pl-select" class="gen-queue-pl-select"><option value="">Playlist laden…</option></select>' +
+      '<button type="button" id="gen-queue-load" class="gen-queue-pl-btn" title="Ausgewählte Playlist an die Warteschlange anhängen">Laden</button>' +
+      '<button type="button" id="gen-queue-delete" class="gen-queue-pl-btn gen-queue-pl-delete" title="Ausgewählte Playlist löschen">' + clearIconSvg + '</button>' +
+      '</div>' +
       '<ul id="gen-queue-list"><li class="gen-queue-empty">Nichts geladen.</li></ul>';
 
     listEl = document.getElementById('gen-queue-list');
     listEl.addEventListener('click', handleRemoveClick);
     var clearBtn = document.getElementById('gen-queue-clear');
     if (clearBtn) clearBtn.addEventListener('click', clearQueue);
+    var saveBtn = document.getElementById('gen-queue-save');
+    if (saveBtn) saveBtn.addEventListener('click', savePlaylist);
+    var loadBtn = document.getElementById('gen-queue-load');
+    if (loadBtn) loadBtn.addEventListener('click', loadSelectedPlaylist);
+    var deleteBtn = document.getElementById('gen-queue-delete');
+    if (deleteBtn) deleteBtn.addEventListener('click', deleteSelectedPlaylist);
+    refreshPlaylistSelect();
     wireDropzone(nativeHistory);
     wireReorder(listEl);
     lastSignature = null; // sofortiges Neuzeichnen fuer die neue Box erzwingen
