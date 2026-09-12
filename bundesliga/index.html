@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bundesliga-Vorhersage — driftware</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0f0c;
+  --card: #101a14;
+  --border: #1f3126;
+  --text: #eafff3;
+  --muted: #7fa891;
+  --accent: #1fae63;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.wrap {
+  max-width: 560px;
+  text-align: center;
+}
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  background: rgba(31,174,99,.08);
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(28px, 5vw, 40px);
+  margin: 0 0 14px;
+}
+p {
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+a.home {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 14px;
+  border-bottom: 1px solid transparent;
+}
+a.home:hover { border-bottom-color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="badge">Im Aufbau</span>
+  <h1>Bundesliga-Vorhersage</h1>
+  <p>Eigene Spieltag-Prognosen aus Formkurve, Heimvorteil und direkten Duellen — mit Trefferquote-Tracking nach jedem Spieltag. Diese Seite entsteht gerade.</p>
+  <a class="home" href="/">← Zurück zu driftware.online</a>
+</div>
+</body>
+</html>
