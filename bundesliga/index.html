@@ -184,6 +184,9 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
 .tab-table td.pkt { font-weight: 700; color: var(--accent); }
 .tab-table tr.cl td.platz { color: #4fd88a; }
 .tab-table tr.abstieg td.platz { color: var(--red); }
+.trend-up { color: #4fd88a; font-weight: 700; }
+.trend-down { color: var(--red); font-weight: 700; }
+.trend-same { color: var(--muted); }
 
 /* Match-Zeilen Mitte/Rechts */
 .match-row {
@@ -451,20 +454,49 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
 
 
   function ladeTabelle() {
-    sb.from("tabelle_aktuell").select("*").then(function (res) {
-      if (res.error || !res.data) {
-        document.getElementById("tabelle").innerHTML = "<div class='loading'>Fehler beim Laden.</div>";
-        return;
+    sb.from("tabelle_verlauf").select("*").then(function (verlaufRes) {
+      var trend = {};
+      if (!verlaufRes.error && verlaufRes.data) {
+        var letzterSpieltag = {};
+        verlaufRes.data.forEach(function (r) {
+          if (!letzterSpieltag[r.team_id] || r.spieltag > letzterSpieltag[r.team_id].spieltag) {
+            letzterSpieltag[r.team_id] = r;
+          }
+        });
+        Object.keys(letzterSpieltag).forEach(function (teamId) {
+          var r = letzterSpieltag[teamId];
+          if (r.vorheriger_platz === null || r.vorheriger_platz === undefined) {
+            trend[teamId] = null;
+          } else if (r.platz < r.vorheriger_platz) {
+            trend[teamId] = "up";
+          } else if (r.platz > r.vorheriger_platz) {
+            trend[teamId] = "down";
+          } else {
+            trend[teamId] = "same";
+          }
+        });
       }
-      var rows = res.data.map(function (r, i) {
-        var platz = i + 1;
-        var klass = platz <= 4 ? "cl" : (platz >= 16 ? "abstieg" : "");
-        return "<tr class='" + klass + "'><td class='platz'>" + platz + "</td><td class='team'>" + r.name +
-          "</td><td class='num'>" + r.spiele + "</td><td class='num'>" + r.tordiff +
-          "</td><td class='num pkt'>" + r.punkte + "</td></tr>";
-      }).join("");
-      document.getElementById("tabelle").innerHTML =
-        "<table class='tab-table'><thead><tr><th></th><th>Team</th><th class='num'>Sp</th><th class='num'>Diff</th><th class='num'>Pkt</th></tr></thead><tbody>" + rows + "</tbody></table>";
+
+      sb.from("tabelle_aktuell").select("*").then(function (res) {
+        if (res.error || !res.data) {
+          document.getElementById("tabelle").innerHTML = "<div class='loading'>Fehler beim Laden.</div>";
+          return;
+        }
+        var rows = res.data.map(function (r, i) {
+          var platz = i + 1;
+          var klass = platz <= 4 ? "cl" : (platz >= 16 ? "abstieg" : "");
+          var t = trend[r.team_id];
+          var trendHtml =
+            t === "up" ? "<span class='trend-up'>▲</span>" :
+            t === "down" ? "<span class='trend-down'>▼</span>" :
+            t === "same" ? "<span class='trend-same'>•</span>" : "";
+          return "<tr class='" + klass + "'><td class='platz'>" + platz + "</td><td class='num'>" + trendHtml + "</td><td class='team'>" + r.name +
+            "</td><td class='num'>" + r.spiele + "</td><td class='num'>" + r.tordiff +
+            "</td><td class='num pkt'>" + r.punkte + "</td></tr>";
+        }).join("");
+        document.getElementById("tabelle").innerHTML =
+          "<table class='tab-table'><thead><tr><th></th><th></th><th>Team</th><th class='num'>Sp</th><th class='num'>Diff</th><th class='num'>Pkt</th></tr></thead><tbody>" + rows + "</tbody></table>";
+      });
     });
   }
 
