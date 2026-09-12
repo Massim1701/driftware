@@ -125,11 +125,13 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
 }
 
 .panel {
-  background: var(--card);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 18px;
 }
+.panel-historie { background: #0d1611; border-color: #1e3327; }
+.panel-vorhersage { background: #0f1c14; border-color: #275a3c; }
+.panel-ergebnis { background: #101f16; border-color: #2f7a4c; }
 .panel h2 {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 15px;
@@ -205,17 +207,17 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
   <div class="spieltag-tabs" id="tabs"></div>
   <div class="trefferquote" id="trefferquote"></div>
   <div class="board">
-    <div class="panel" id="historie-panel">
+    <div class="panel panel-historie" id="historie-panel">
       <h2>Ø letzte 5 Jahre</h2>
       <p class="panel-sub">Saison 2021/22–2025/26, pro Spiel</p>
       <div id="historie"><div class="loading">Lädt …</div></div>
     </div>
-    <div class="panel">
+    <div class="panel panel-vorhersage">
       <h2>Unsere Vorhersage</h2>
       <p class="panel-sub">Vor Anpfiff berechnet und eingefroren</p>
       <div id="vorhersagen"><div class="loading">Lade Spieltag …</div></div>
     </div>
-    <div class="panel">
+    <div class="panel panel-ergebnis">
       <h2>Ergebnis</h2>
       <p class="panel-sub">Wie der Spieltag wirklich lief</p>
       <div id="ergebnisse"><div class="loading">Lade Spieltag …</div></div>
