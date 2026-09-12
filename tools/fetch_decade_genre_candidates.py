@@ -134,10 +134,15 @@ MIN_HAVE = 20  # Qualitaets-Untergrenze: der BESTEHENDE Katalog hat median~400
 # bestehenden Katalog vergleichbaren Qualitaetsniveau statt ihn zu fluten.
 
 
-def fetch_genre(decade_key, genre_key, discogs_styles, seen_ids, existing_ids, existing_title_keys, seen_title_keys):
+def fetch_genre(decade_key, genre_key, discogs_styles, seen_ids, existing_ids, existing_title_keys, seen_title_keys, on_progress=None):
     """Sammelt fuer EIN internes Genre (kann mehrere Discogs-Styles
     umfassen, z.B. NewWavePostPunk = 'New Wave' + 'Post-Punk') alle
-    Kandidaten aus allen Jahren der Dekade."""
+    Kandidaten aus allen Jahren der Dekade. on_progress(candidates_so_far)
+    wird nach jedem Jahr aufgerufen, damit ein Aufrufer zwischenspeichern
+    kann -- unauthentifiziert wird das Discogs-Rate-Limit (429) haeufig
+    getroffen, ein Lauf kann daher laenger dauern als ein einzelner
+    Tool-Call-Timeout und muss ueber mehrere Aufrufe hinweg fortsetzbar
+    sein, ohne bereits gesammelte Kandidaten zu verlieren."""
     candidates = []
     for style in discogs_styles:
         for year in DECADE_YEARS[decade_key]:
@@ -198,6 +203,8 @@ def fetch_genre(decade_key, genre_key, discogs_styles, seen_ids, existing_ids, e
                 page += 1
                 time.sleep(1.1)  # unauthentifiziert: konservativ ~50/min
             time.sleep(1.1)
+            if on_progress:
+                on_progress(candidates)
     return candidates
 
 
@@ -227,18 +234,35 @@ def main():
     seen_title_keys = set(song_id(c.get("a"), c.get("t")) for c in existing_queue)
 
     all_new = []
+
+    def save_progress():
+        merged = existing_queue + all_new
+        tmp = queue_path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(merged, f, separators=(",", ":"), ensure_ascii=False)
+        os.replace(tmp, queue_path)
+
     for spec in genre_specs:
         genre_key, styles_raw = spec.split("=", 1)
         styles = [s.strip() for s in styles_raw.split(",")]
         print(f"-- {genre_key} ({', '.join(styles)}) --")
-        found = fetch_genre(decade_key, genre_key, styles, seen_ids, existing_ids, existing_title_keys, seen_title_keys)
-        print(f"   {len(found)} neue Kandidaten gefunden.")
-        all_new.extend(found)
 
-    merged = existing_queue + all_new
-    with open(queue_path, "w", encoding="utf-8") as f:
-        json.dump(merged, f, separators=(",", ":"), ensure_ascii=False)
-    print(f"Insgesamt {len(all_new)} neue Kandidaten zu {queue_path} hinzugefuegt (jetzt {len(merged)} gesamt).")
+        def on_progress(candidates_so_far, genre_key=genre_key):
+            # ersetzt evtl. schon gespeicherte (unvollstaendige) Kandidaten
+            # dieses Genres aus einem vorherigen, abgebrochenen Lauf durch
+            # den aktuellen (laengeren) Zwischenstand.
+            del all_new[:]
+            all_new.extend(c for c in prior_new if c.get("genre_key") != genre_key)
+            all_new.extend(candidates_so_far)
+            save_progress()
+
+        prior_new = list(all_new)
+        found = fetch_genre(decade_key, genre_key, styles, seen_ids, existing_ids, existing_title_keys, seen_title_keys, on_progress=on_progress)
+        all_new[:] = [c for c in prior_new if c.get("genre_key") != genre_key] + found
+        print(f"   {len(found)} neue Kandidaten gefunden.")
+
+    save_progress()
+    print(f"Insgesamt {len(all_new)} neue Kandidaten zu {queue_path} hinzugefuegt (jetzt {len(existing_queue) + len(all_new)} gesamt).")
 
 
 if __name__ == "__main__":
