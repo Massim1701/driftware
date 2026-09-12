@@ -214,12 +214,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
 .pending { color: var(--muted); font-style: italic; font-size: 13px; }
 .tendenz-ok { color: var(--accent); }
 .tendenz-nok { color: var(--red); }
-.form-zeile { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,.08); font-size: 10px; color: var(--muted); line-height: 1.7; }
-.form-zeile .form-team { display: inline-block; min-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
-.form-badge { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 3px; font-size: 9px; font-weight: 700; margin-right: 2px; color: #06231a; }
-.form-badge.s { background: var(--accent); }
-.form-badge.u { background: #7fa891; color: #06231a; }
-.form-badge.n { background: var(--red); color: #2a0a0a; }
+.h2h-zeile { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,.08); font-size: 11px; color: var(--muted); line-height: 1.6; }
+.h2h-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; margin-right: 5px; color: #06231a; }
+.h2h-badge.s { background: var(--accent); }
+.h2h-badge.u { background: #7fa891; color: #06231a; }
+.h2h-badge.n { background: var(--red); color: #2a0a0a; }
 .loading { text-align: center; color: var(--muted); padding: 40px 0; font-size: 14px; }
 </style>
 </head>
@@ -277,8 +276,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
   var historieEl = document.getElementById("historie");
   var allSpieltage = [];
   var cache = {};
-  var formGuide = {};
-  var formGuideLoaded = false;
+  var h2hCache = {};
 
   function fmtDate(iso) {
     var d = new Date(iso);
@@ -323,15 +321,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
     } else {
       body = "<div class='pending'>Noch nicht berechnet</div>";
     }
-    var formZeile = "";
-    if (m.heim && m.gast) {
-      var fh = formBadges(m.heim_team_id, m.heim.name);
-      var fg = formBadges(m.gast_team_id, m.gast.name);
-      if (fh || fg) {
-        formZeile = "<div class='form-zeile'>" + fh + fg + "</div>";
-      }
+    var h2hZeile = "";
+    if (m.heim_team_id && m.gast_team_id) {
+      h2hZeile = h2hZeileHtml(m.heim_team_id, m.gast_team_id);
     }
-    return "<div class='match-row'><div class='teams'>" + teams + "</div><div class='time'>" + fmtDate(m.anstoss) + "</div>" + body + formZeile + "</div>";
+    return "<div class='match-row'><div class='teams'>" + teams + "</div><div class='time'>" + fmtDate(m.anstoss) + "</div>" + body + h2hZeile + "</div>";
   }
 
   function renderErgebnisRow(m, vorhersage) {
@@ -385,25 +379,25 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
     vorhersagenEl.innerHTML = "<div class='loading'>Lade Spieltag " + nr + " …</div>";
     ergebnisseEl.innerHTML = "";
     trefferquoteEl.innerHTML = "";
-    ladeFormGuide(function () {
-      if (cache[nr]) {
-        draw(cache[nr]);
-        return;
-      }
-      sb.from("spiele")
-        .select("id,spieltag,anstoss,status,tore_heim,tore_gast,heim_team_id,gast_team_id,heim:teams!spiele_heim_team_id_fkey(name,logo_url),gast:teams!spiele_gast_team_id_fkey(name,logo_url),vorhersagen(erwartete_tore_heim,erwartete_tore_gast,wahrscheinlichkeit_heimsieg,wahrscheinlichkeit_unentschieden,wahrscheinlichkeit_gastsieg,tipp_tore_heim,tipp_tore_gast)")
-        .eq("saison", SAISON)
-        .eq("spieltag", nr)
-        .order("anstoss", { ascending: true })
-        .then(function (res) {
-          if (res.error) {
-            vorhersagenEl.innerHTML = "<div class='loading'>Fehler beim Laden. Bitte später erneut versuchen.</div>";
-            return;
-          }
-          cache[nr] = res.data;
-          draw(res.data);
-        });
-    });
+    if (cache[nr]) {
+      var paare = cache[nr].map(function (m) { return { heim: m.heim_team_id, gast: m.gast_team_id }; });
+      ladeH2H(paare, function () { draw(cache[nr]); });
+      return;
+    }
+    sb.from("spiele")
+      .select("id,spieltag,anstoss,status,tore_heim,tore_gast,heim_team_id,gast_team_id,heim:teams!spiele_heim_team_id_fkey(name,logo_url),gast:teams!spiele_gast_team_id_fkey(name,logo_url),vorhersagen(erwartete_tore_heim,erwartete_tore_gast,wahrscheinlichkeit_heimsieg,wahrscheinlichkeit_unentschieden,wahrscheinlichkeit_gastsieg,tipp_tore_heim,tipp_tore_gast)")
+      .eq("saison", SAISON)
+      .eq("spieltag", nr)
+      .order("anstoss", { ascending: true })
+      .then(function (res) {
+        if (res.error) {
+          vorhersagenEl.innerHTML = "<div class='loading'>Fehler beim Laden. Bitte später erneut versuchen.</div>";
+          return;
+        }
+        cache[nr] = res.data;
+        var paare = res.data.map(function (m) { return { heim: m.heim_team_id, gast: m.gast_team_id }; });
+        ladeH2H(paare, function () { draw(res.data); });
+      });
   }
 
   function renderTabs(active) {
@@ -420,36 +414,46 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
     });
   }
 
-  function ladeFormGuide(callback) {
-    if (formGuideLoaded) { callback(); return; }
-    sb.from("spiele")
-      .select("heim_team_id,gast_team_id,tore_heim,tore_gast,anstoss")
-      .eq("saison", SAISON)
-      .eq("status", "beendet")
-      .not("tore_heim", "is", null)
-      .order("anstoss", { ascending: true })
-      .then(function (res) {
-        if (!res.error && res.data) {
-          res.data.forEach(function (m) {
-            var diff = m.tore_heim - m.tore_gast;
-            var heimErg = diff > 0 ? "s" : diff < 0 ? "n" : "u";
-            var gastErg = diff < 0 ? "s" : diff > 0 ? "n" : "u";
-            (formGuide[m.heim_team_id] = formGuide[m.heim_team_id] || []).push(heimErg);
-            (formGuide[m.gast_team_id] = formGuide[m.gast_team_id] || []).push(gastErg);
-          });
-        }
-        formGuideLoaded = true;
-        callback();
+  function ladeH2H(paare, callback) {
+    var todo = paare.filter(function (p) {
+      return !h2hCache[p.heim + "_" + p.gast];
+    });
+    if (!todo.length) { callback(); return; }
+    var remaining = todo.length;
+    todo.forEach(function (p) {
+      Promise.all([
+        sb.from("spiele").select("heim_team_id,gast_team_id,tore_heim,tore_gast")
+          .eq("heim_team_id", p.heim).eq("gast_team_id", p.gast)
+          .eq("status", "beendet").not("tore_heim", "is", null),
+        sb.from("spiele").select("heim_team_id,gast_team_id,tore_heim,tore_gast")
+          .eq("heim_team_id", p.gast).eq("gast_team_id", p.heim)
+          .eq("status", "beendet").not("tore_heim", "is", null),
+      ]).then(function (results) {
+        var alle = (results[0].data || []).concat(results[1].data || []);
+        var s = 0, u = 0, n = 0;
+        alle.forEach(function (m) {
+          var heimTore, gastTore;
+          if (m.heim_team_id === p.heim) { heimTore = m.tore_heim; gastTore = m.tore_gast; }
+          else { heimTore = m.tore_gast; gastTore = m.tore_heim; }
+          if (heimTore > gastTore) s++; else if (heimTore < gastTore) n++; else u++;
+        });
+        h2hCache[p.heim + "_" + p.gast] = { anzahl: alle.length, s: s, u: u, n: n };
+        remaining--;
+        if (remaining === 0) callback();
       });
+    });
   }
 
-  function formBadges(teamId, teamName) {
-    var erg = (formGuide[teamId] || []).slice(-5);
-    if (!erg.length) return "";
-    var badges = erg.map(function (e) {
-      return "<span class='form-badge " + e + "'>" + e.toUpperCase() + "</span>";
-    }).join("");
-    return "<div><span class='form-team'>" + teamName + "</span>" + badges + "</div>";
+  function h2hZeileHtml(heimId, gastId) {
+    var d = h2hCache[heimId + "_" + gastId];
+    if (!d) return "";
+    if (d.anzahl === 0) {
+      return "<div class='h2h-zeile'>Erstes erfasstes Duell dieser beiden Teams</div>";
+    }
+    return "<div class='h2h-zeile'>Bisherige Duelle (" + d.anzahl + "): " +
+      "<span class='h2h-badge s'>" + d.s + " S</span>" +
+      "<span class='h2h-badge u'>" + d.u + " U</span>" +
+      "<span class='h2h-badge n'>" + d.n + " N</span></div>";
   }
 
 
