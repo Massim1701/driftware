@@ -461,24 +461,12 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
 
   function ladeTabelle() {
     sb.from("tabelle_verlauf").select("*").then(function (verlaufRes) {
-      var trend = {};
-      if (!verlaufRes.error && verlaufRes.data) {
-        var letzterSpieltag = {};
+      var vorherigerPlatz = {};
+      if (!verlaufRes.error && verlaufRes.data && verlaufRes.data.length) {
+        var maxSpieltag = Math.max.apply(null, verlaufRes.data.map(function (r) { return r.spieltag; }));
         verlaufRes.data.forEach(function (r) {
-          if (!letzterSpieltag[r.team_id] || r.spieltag > letzterSpieltag[r.team_id].spieltag) {
-            letzterSpieltag[r.team_id] = r;
-          }
-        });
-        Object.keys(letzterSpieltag).forEach(function (teamId) {
-          var r = letzterSpieltag[teamId];
-          if (r.vorheriger_platz === null || r.vorheriger_platz === undefined) {
-            trend[teamId] = null;
-          } else if (r.platz < r.vorheriger_platz) {
-            trend[teamId] = "up";
-          } else if (r.platz > r.vorheriger_platz) {
-            trend[teamId] = "down";
-          } else {
-            trend[teamId] = "same";
+          if (r.spieltag === maxSpieltag) {
+            vorherigerPlatz[r.team_id] = r.platz;
           }
         });
       }
@@ -491,11 +479,14 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
         var rows = res.data.map(function (r, i) {
           var platz = i + 1;
           var klass = platz <= 4 ? "cl" : (platz >= 16 ? "abstieg" : "");
-          var t = trend[r.team_id];
-          var trendHtml =
-            t === "up" ? "<span class='trend-up'>▲</span>" :
-            t === "down" ? "<span class='trend-down'>▼</span>" :
-            t === "same" ? "<span class='trend-same'>•</span>" : "";
+          var vp = vorherigerPlatz[r.team_id];
+          var trendHtml = "";
+          if (vp !== undefined) {
+            trendHtml =
+              platz < vp ? "<span class='trend-up'>▲</span>" :
+              platz > vp ? "<span class='trend-down'>▼</span>" :
+              "<span class='trend-same'>•</span>";
+          }
           return "<tr class='" + klass + "'><td class='platz'>" + platz + "</td><td class='num'>" + trendHtml + "</td><td class='team'>" + r.name +
             "</td><td class='num'>" + r.spiele + "</td><td class='num'>" + r.tordiff +
             "</td><td class='num pkt'>" + r.punkte + "</td></tr>";
