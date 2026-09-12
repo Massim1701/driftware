@@ -211,6 +211,12 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
 .pending { color: var(--muted); font-style: italic; font-size: 13px; }
 .tendenz-ok { color: var(--accent); }
 .tendenz-nok { color: var(--red); }
+.form-zeile { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,.08); font-size: 10px; color: var(--muted); line-height: 1.7; }
+.form-zeile .form-team { display: inline-block; min-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+.form-badge { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 3px; font-size: 9px; font-weight: 700; margin-right: 2px; color: #06231a; }
+.form-badge.s { background: var(--accent); }
+.form-badge.u { background: #7fa891; color: #06231a; }
+.form-badge.n { background: var(--red); color: #2a0a0a; }
 .loading { text-align: center; color: var(--muted); padding: 40px 0; font-size: 14px; }
 </style>
 </head>
@@ -268,6 +274,8 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
   var historieEl = document.getElementById("historie");
   var allSpieltage = [];
   var cache = {};
+  var formGuide = {};
+  var formGuideLoaded = false;
 
   function fmtDate(iso) {
     var d = new Date(iso);
@@ -312,7 +320,15 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
     } else {
       body = "<div class='pending'>Noch nicht berechnet</div>";
     }
-    return "<div class='match-row'><div class='teams'>" + teams + "</div><div class='time'>" + fmtDate(m.anstoss) + "</div>" + body + "</div>";
+    var formZeile = "";
+    if (m.heim && m.gast) {
+      var fh = formBadges(m.heim_team_id, m.heim.name);
+      var fg = formBadges(m.gast_team_id, m.gast.name);
+      if (fh || fg) {
+        formZeile = "<div class='form-zeile'>" + fh + fg + "</div>";
+      }
+    }
+    return "<div class='match-row'><div class='teams'>" + teams + "</div><div class='time'>" + fmtDate(m.anstoss) + "</div>" + body + formZeile + "</div>";
   }
 
   function renderErgebnisRow(m, vorhersage) {
@@ -366,23 +382,25 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
     vorhersagenEl.innerHTML = "<div class='loading'>Lade Spieltag " + nr + " …</div>";
     ergebnisseEl.innerHTML = "";
     trefferquoteEl.innerHTML = "";
-    if (cache[nr]) {
-      draw(cache[nr]);
-      return;
-    }
-    sb.from("spiele")
-      .select("id,spieltag,anstoss,status,tore_heim,tore_gast,heim:teams!spiele_heim_team_id_fkey(name,logo_url),gast:teams!spiele_gast_team_id_fkey(name,logo_url),vorhersagen(erwartete_tore_heim,erwartete_tore_gast,wahrscheinlichkeit_heimsieg,wahrscheinlichkeit_unentschieden,wahrscheinlichkeit_gastsieg,tipp_tore_heim,tipp_tore_gast)")
-      .eq("saison", SAISON)
-      .eq("spieltag", nr)
-      .order("anstoss", { ascending: true })
-      .then(function (res) {
-        if (res.error) {
-          vorhersagenEl.innerHTML = "<div class='loading'>Fehler beim Laden. Bitte später erneut versuchen.</div>";
-          return;
-        }
-        cache[nr] = res.data;
-        draw(res.data);
-      });
+    ladeFormGuide(function () {
+      if (cache[nr]) {
+        draw(cache[nr]);
+        return;
+      }
+      sb.from("spiele")
+        .select("id,spieltag,anstoss,status,tore_heim,tore_gast,heim_team_id,gast_team_id,heim:teams!spiele_heim_team_id_fkey(name,logo_url),gast:teams!spiele_gast_team_id_fkey(name,logo_url),vorhersagen(erwartete_tore_heim,erwartete_tore_gast,wahrscheinlichkeit_heimsieg,wahrscheinlichkeit_unentschieden,wahrscheinlichkeit_gastsieg,tipp_tore_heim,tipp_tore_gast)")
+        .eq("saison", SAISON)
+        .eq("spieltag", nr)
+        .order("anstoss", { ascending: true })
+        .then(function (res) {
+          if (res.error) {
+            vorhersagenEl.innerHTML = "<div class='loading'>Fehler beim Laden. Bitte später erneut versuchen.</div>";
+            return;
+          }
+          cache[nr] = res.data;
+          draw(res.data);
+        });
+    });
   }
 
   function renderTabs(active) {
@@ -398,6 +416,39 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
       tabsEl.appendChild(btn);
     });
   }
+
+  function ladeFormGuide(callback) {
+    if (formGuideLoaded) { callback(); return; }
+    sb.from("spiele")
+      .select("heim_team_id,gast_team_id,tore_heim,tore_gast,anstoss")
+      .eq("saison", SAISON)
+      .eq("status", "beendet")
+      .not("tore_heim", "is", null)
+      .order("anstoss", { ascending: true })
+      .then(function (res) {
+        if (!res.error && res.data) {
+          res.data.forEach(function (m) {
+            var diff = m.tore_heim - m.tore_gast;
+            var heimErg = diff > 0 ? "s" : diff < 0 ? "n" : "u";
+            var gastErg = diff < 0 ? "s" : diff > 0 ? "n" : "u";
+            (formGuide[m.heim_team_id] = formGuide[m.heim_team_id] || []).push(heimErg);
+            (formGuide[m.gast_team_id] = formGuide[m.gast_team_id] || []).push(gastErg);
+          });
+        }
+        formGuideLoaded = true;
+        callback();
+      });
+  }
+
+  function formBadges(teamId, teamName) {
+    var erg = (formGuide[teamId] || []).slice(-5);
+    if (!erg.length) return "";
+    var badges = erg.map(function (e) {
+      return "<span class='form-badge " + e + "'>" + e.toUpperCase() + "</span>";
+    }).join("");
+    return "<div><span class='form-team'>" + teamName + "</span>" + badges + "</div>";
+  }
+
 
   function ladeTabelle() {
     sb.from("tabelle_aktuell").select("*").then(function (res) {
