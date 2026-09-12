@@ -1,0 +1,1707 @@
+/* Gemeinsame Styles fuer alle Dekaden-Seiten (80er, 90er, 2000er, ...).
+   Farben kommen als CSS-Variablen von der jeweiligen Seite (siehe decades.js). */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0c0d11;
+  --panel: #16171d;
+  --accent: #7c5cff;
+  --accent2: #2dd4bf;
+  --text: #f3f3f6;
+  --muted: #94959f;
+  --border: rgba(255,255,255,0.08);
+  --font-display: 'Sora', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  /* Der DJ-Player steht als feste Spalte rechts — Platz lassen, damit
+     Inhalt/Footer nicht darunter verschwinden. Auf schmalen Screens
+     wandert er zurueck an den unteren Rand (siehe Media-Queries).
+     460px = 370px Player + 90px BPM-Sync-Panel (siehe .dj-player /
+     .dj-tools-panel weiter unten). War 380px/290px -- auf breiten
+     Desktop-Screens (>1100px, betrifft KEINE der anderen Breakpoint-Fixes
+     hier) wirkte die schmale 290px-Spalte selbst gestapelt noch eng
+     ("Player zusammengerafft" bezog sich offenbar die ganze Zeit auch auf
+     den normalen Desktop-Fall, nicht nur auf schmale Fenster/iPad). */
+  padding-right: 460px;
+}
+a { color: var(--accent); }
+
+/* Utility-Block oben (Home / Mail / Datenschutz) */
+.utility-block {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+.utility-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--text);
+  width: 40px;
+}
+.utility-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.utility-icon svg { width: 18px; height: 18px; }
+.utility-label { font-size: 9px; color: var(--muted); }
+button.utility-tile { background: none; border: none; padding: 0; font: inherit; cursor: pointer; }
+
+
+/* Hero-Header */
+header.decade-header {
+  position: relative;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 24px 18px;
+  text-align: center;
+}
+.app-icon-hero {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--border);
+  margin: 0 auto 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+.app-icon-hero svg {
+  width: 24px;
+  height: 24px;
+  stroke: #fff;
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.decade-logo {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+.decade-years {
+  display: inline-block;
+  color: var(--accent2);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  margin: 0 0 6px;
+}
+.decade-tagline {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+.badges {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 12px;
+}
+.badge svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+/* Themen-/Feature-Grid */
+main.decade-main {
+  max-width: 1400px;
+  /* War "margin: 0 auto" (mittig zentriert) -- ab ca. 1860px Fensterbreite
+     (max-width 1400px + Sidebar-Player+Tools-Panel 460px) hat "auto" links
+     UND rechts Luft verteilt, wodurch zwischen Inhalt und Player eine immer
+     groessere Luecke entstand (bei 2200px schon 170px), der Player wirkte
+     dadurch "abgehaengt". Jetzt haengt der Inhalt fest am Player/Tools-
+     Panel (0 Luecke bei jeder Breite), ueberschuessiger Platz auf breiten
+     Screens sammelt sich links statt in der Mitte zu klaffen. */
+  margin: 0 0 0 auto;
+  padding: 0 24px 90px;
+}
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  margin: 40px 0;
+}
+.feature {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+}
+.feature h3 { margin: 0 0 8px; font-size: 15px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.feature p { margin: 0; color: var(--muted); font-size: 14px; }
+
+.info-note {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+  margin-top: 16px;
+}
+.info-note strong { color: var(--text); }
+
+footer.decade-footer {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  border-top: 1px solid var(--border);
+}
+footer.decade-footer a { color: var(--accent); text-decoration: none; }
+footer.decade-footer .links { margin-top: 8px; }
+footer.decade-footer .links a { margin: 0 8px; }
+
+/* Impressum / Datenschutz */
+main.legal-main { max-width: 680px; margin: 0 auto; padding: 56px 24px 64px; }
+main.legal-main h1 { font-size: 28px; margin-bottom: 4px; }
+main.legal-main .stand { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+main.legal-main h2 { font-size: 18px; margin-top: 32px; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+main.legal-main p, main.legal-main ul { color: #e4dff0; }
+.back-link { display: inline-block; margin-bottom: 24px; color: var(--muted); text-decoration: none; font-size: 14px; }
+.contact-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin: 32px 0; }
+.contact-form { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.contact-form label { font-size: 13px; color: var(--muted); font-weight: 600; display: flex; flex-direction: column; gap: 6px; }
+.contact-form input, .contact-form textarea { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--text); font-family: inherit; font-size: 14px; }
+.contact-form textarea { min-height: 100px; resize: vertical; }
+.contact-form button { align-self: flex-start; background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 10px 22px; font-weight: 700; font-size: 14px; cursor: pointer; }
+.contact-honey { position: absolute; left: -9999px; }
+
+/* ---------- Playlist-Generator: Themen, Song-Kacheln, Popup ---------- */
+.generator {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  margin-top: 24px;
+}
+.generator h2 { font-family: var(--font-display); margin: 0 0 6px; font-size: 19px; font-weight: 700; }
+.generator .sub { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
+
+/* Suche bleibt in der Dekade; 💡-Hinweis verlinkt auf andere Dekaden bei Treffer dort */
+.search-box { margin-bottom: 10px; position: relative; }
+.search-box-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.search-box-icon svg { width: 100%; height: 100%; }
+.search-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 14px 10px 36px;
+  font-size: 14px;
+}
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus { outline: none; border-color: var(--accent); }
+.search-hint { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+.hint-icon { display: inline-flex; width: 12px; height: 12px; vertical-align: -1px; }
+.hint-icon svg { width: 100%; height: 100%; }
+.search-hint a { color: var(--accent2); font-weight: 700; text-decoration: none; }
+.search-hint a:hover { text-decoration: underline; }
+
+.generator-search {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.generator-search .search-box { margin-bottom: 0; }
+.generator-search .search-hint { margin: 6px 0 0; }
+
+/* Schnellzugriff auf andere Dekaden/Stimmungen, fest zwischen Suchfeld und
+   Genre-Buttons -- Dekaden und Stimmungen je eine eigene, bewusst NICHT
+   umbrechende Zeile (Stimmungen direkt unter Dekaden): bei Platzmangel
+   scrollt die einzelne Zeile horizontal statt sich in die Hoehe zu ziehen.
+   Wechselt per AJAX (siehe navigateToPage), der Player laeuft dabei weiter. */
+.gen-switch-rows { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+
+/* Eigenes Dropdown (Button + Liste) statt <select> -- native Popups lassen
+   sich v.a. auf macOS/Safari gar nicht stylen (immer weiss, immer so lang
+   wie die Liste). Der Trigger-Button sieht aus wie vorher die Pille, das
+   Popup darunter ist bewusst dezent: dunkler Hintergrund, duenner Rand,
+   leichter Schatten -- setzt sich vom Seitenhintergrund ab, aber nicht
+   grell -- und hat eine feste Maximalhoehe, laengere Listen (z.B. Genres)
+   scrollen darin statt die Seite in die Laenge zu ziehen. */
+.gen-dd { position: relative; flex: 1 1 150px; min-width: 110px; }
+.gen-dd-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 22px 5px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--item-color, var(--border));
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cfd3dc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 11px;
+}
+.gen-dd-trigger:hover,
+.gen-dd.open .gen-dd-trigger { background-color: rgba(255,255,255,0.07); }
+.gen-dd-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.gen-dd-label {
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.gen-dd-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--item-color, var(--text));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gen-dd-value.placeholder { color: var(--muted); font-weight: 500; }
+
+.gen-dd-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  /* Ueber dem fixen DJ-Player/Song-Modal (z-index bis 250) -- sonst
+     verschwindet das Popup teilweise dahinter, siehe .dj-player. */
+  z-index: 260;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  max-height: 250px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  background: #14151c;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+}
+.gen-dd-list[hidden] { display: none; }
+.gen-dd-item {
+  padding: 7px 10px;
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+  font-size: 12px;
+  font-weight: 500;
+  color: #f2f3f7;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gen-dd-item:hover { background: rgba(255,255,255,0.08); }
+.gen-dd-item.active {
+  border-left-color: var(--item-color, var(--accent));
+  color: var(--item-color, var(--accent));
+  font-weight: 700;
+  background: rgba(255,255,255,0.05);
+}
+.gen-genre-dd { flex: 0 0 auto; min-width: 230px; max-width: 100%; }
+.decade-link-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.decade-link-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted, #9aa3c0);
+}
+.decade-link-label svg { width: 14px; height: 14px; flex-shrink: 0; }
+.decade-link-chip {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.decade-link-chip:hover { background: rgba(255,255,255,0.06); }
+/* "linked" = per Klick verbundene Nachbar-Dekade (dezenter Umriss).
+   "now-playing" = die Dekade, die GERADE tatsaechlich zu hoeren ist
+   (kraeftige Farbe, siehe currentPlayingDecadeKey() in decades.js) --
+   ueberschreibt "linked" optisch, sobald sie aktiv ist. */
+.decade-link-chip.linked {
+  border-color: var(--accent2);
+  color: var(--accent2);
+}
+.decade-link-chip.now-playing {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.decade-own-chip { font-weight: 700; }
+/* Feste Dekaden-Navigationszeile (ersetzt das fruehere Dekaden-Dropdown
+   oben im Playlist-Generator) -- gleiches Chip-Aussehen wie .decade-link-*
+   oben, aber eigene Klasse: .decade-link-row hat eine eigene Klick-Logik
+   (Dekade verbinden) auf Section-Ebene, die nicht mit reiner
+   Seiten-Navigation vermischt werden darf. */
+.decade-nav-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.decade-nav-chip {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.decade-nav-chip:hover { background: rgba(255,255,255,0.06); }
+.decade-nav-chip.decade-nav-active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  cursor: default;
+  font-weight: 700;
+}
+.theme-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.gen-genre-row { margin-bottom: 18px; }
+.theme-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.theme-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.theme-btn-icon { width: 15px; height: 15px; flex-shrink: 0; }
+.theme-btn-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.theme-btn-mix {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  border-color: transparent;
+  font-weight: 800;
+}
+.theme-btn-mix.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); box-shadow: 0 0 0 2px var(--text) inset; }
+
+.generator-actions {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  flex-wrap: wrap;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.generator-actions.visible { display: flex; }
+.generator-actions button, .generator-actions a {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--accent2);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.generator-actions button svg, .generator-actions a svg { width: 14px; height: 14px; flex-shrink: 0; }
+/* Primaeraktion ("Playlist auf Deck laden") deutlich hervorheben, damit sie
+   sich nicht in den beiden Nebenaktionen (Kopieren/CSV) verliert. */
+#gen-play-all {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+#gen-play-all:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+#gen-play-all:active {
+  transform: translateY(0);
+  filter: brightness(1);
+}
+.generator-count { color: var(--muted); font-size: 13px; }
+
+/* Bevorzugter Dienst + Senden: Auswahl geht ohne Kopieren/CSV direkt zum Anbieter */
+.send-panel {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.send-panel-label { font-size: 12px; font-weight: 700; color: var(--muted); }
+.provider-picker { display: flex; gap: 6px; }
+.provider-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0.5;
+  filter: grayscale(0.6);
+  transition: opacity 0.12s ease, filter 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
+}
+.provider-btn svg { width: 15px; height: 15px; }
+.provider-btn:hover { opacity: 0.8; }
+.provider-btn.active {
+  opacity: 1;
+  filter: none;
+  border-color: var(--text);
+  transform: scale(1.1);
+}
+.send-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.send-btn:disabled { background: var(--bg); color: var(--muted); border: 1px solid var(--border); cursor: not-allowed; }
+.send-clear {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Song-Liste: Zeile fuer Zeile statt Kachel-Grid, Titel zuerst */
+.generator-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+.song-grid {
+  flex: 1;
+  min-width: 0;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding: 4px;
+}
+.song-grid-truncated-notice {
+  padding: 10px 12px;
+  margin-top: 4px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+.gen-history {
+  flex: 1;
+  min-width: 260px;
+  max-width: 340px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.gen-history h3 { margin: 0 0 10px; font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 6px; }
+.gen-history h3 svg { width: 14px; height: 14px; flex-shrink: 0; }
+.gen-history ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 480px; overflow-y: auto; }
+.gen-history li strong { display: block; font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gen-history li span { display: block; font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gen-history-empty { color: var(--muted); font-size: 12px; }
+.song-tile {
+  position: relative;
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 3px 8px;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.song-tile:hover { border-color: var(--accent); background: rgba(255,255,255,0.03); }
+.song-tile.selected { border-color: #22c55e; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35); }
+.song-tile.song-tile-mixable { border-color: #f5a623; box-shadow: 0 0 0 1px rgba(245, 166, 35, 0.45); }
+.song-tile.song-tile-mixable.selected { border-color: #22c55e; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35), 0 0 0 4px rgba(245, 166, 35, 0.4); }
+.song-tile-media { position: relative; flex-shrink: 0; width: 34px; height: 34px; }
+.song-tile img {
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--panel);
+  display: block;
+}
+.song-tile-text { flex: 0 1 auto; max-width: 300px; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.song-tile .song-tile-title { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.song-tile .song-tile-year { font-weight: 700; font-style: italic; color: var(--muted); }
+.song-tile .song-tile-artist { font-size: 11px; color: var(--muted); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.song-tile-decade {
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.08);
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+
+.song-tile-icons { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; }
+.song-tile-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.song-tile.selected .song-tile-check { opacity: 1; transform: scale(1); }
+
+.song-tile-info {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s ease;
+}
+.song-tile-info:hover, .song-tile-info:focus-visible { background: rgba(255,255,255,0.18); }
+
+.song-tile-play {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ff0000;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.12s ease;
+}
+.song-tile-play svg { width: 11px; height: 11px; margin-left: 1px; }
+.song-tile-play:hover { transform: scale(1.1); }
+.song-tile-play.disabled {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255, 255, 255, 0.3);
+  cursor: default;
+}
+
+/* Streaming-Icons: nur im Popup, nur Symbole, Klick oeffnet die Suche beim jeweiligen Dienst */
+.streaming-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.streaming-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  flex-shrink: 0;
+  transition: transform 0.12s ease;
+}
+.streaming-icon:hover { transform: translateY(-1px) scale(1.06); }
+.streaming-icon svg { width: 14px; height: 14px; }
+.song-modal .streaming-row .streaming-icon { width: 30px; height: 30px; }
+.song-modal .streaming-row .streaming-icon svg { width: 18px; height: 18px; }
+
+.song-hint { color: var(--muted); font-size: 12px; margin-top: 12px; }
+.song-hint a { color: var(--accent2); }
+
+/* Popup / Modal mit allen Song-Infos */
+.song-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 200;
+}
+.song-modal-overlay.open { display: flex; }
+.song-modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+}
+.song-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #ff8a8a 0%, #e5342f 45%, #b91c1c 100%);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35), inset 0 -2px 3px rgba(0,0,0,0.25);
+  overflow: hidden;
+  transition: filter 0.12s ease, transform 0.12s ease;
+}
+.song-modal-close:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.song-modal-close::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 5px;
+  right: 5px;
+  height: 42%;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0));
+  pointer-events: none;
+}
+.song-modal-close-x { position: relative; }
+.song-modal img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 12px;
+  background: var(--bg);
+}
+.song-modal-artist { font-family: var(--font-display); font-size: 18px; font-weight: 800; color: var(--text); }
+.song-modal-title { font-size: 15px; color: var(--muted); margin-top: -8px; }
+.song-modal-play {
+  align-self: flex-start;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.song-modal-play svg { width: 15px; height: 15px; flex-shrink: 0; }
+.song-modal-play:disabled { background: var(--bg); color: var(--muted); border: 1px solid var(--border); cursor: not-allowed; }
+.song-modal-meta { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; }
+.song-modal-meta dt { color: var(--muted); }
+.song-modal-meta dd { margin: 0; color: var(--text); }
+.song-modal-edit-genre-toggle {
+  align-self: flex-start;
+  background: none;
+  color: var(--accent2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.song-modal-edit-genre-toggle:hover { border-color: var(--accent2); }
+.song-modal-genre-edit { display: flex; flex-direction: column; gap: 6px; }
+.song-modal-genre-edit[hidden] { display: none; }
+.song-modal-genre-select {
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+.song-modal-genre-select:hover { border-color: var(--accent2); }
+.song-modal-genre-save {
+  align-self: flex-start;
+  background: var(--accent2);
+  color: #0c1a10;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.song-modal-genre-save:disabled { opacity: 0.6; cursor: default; }
+.song-modal-genre-status { margin: 0; font-size: 11px; color: var(--muted); min-height: 14px; }
+.song-modal-link {
+  align-self: flex-start;
+  color: var(--accent2);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* ---------- Eigener DJ-Player: zwei Plattenspieler (Deck A/B) + Crossfader,
+   unten fixiert. Songs per Klick auf ▶ oder per Drag&Drop auf ein Deck
+   laden. Bleibt auch über dem Popup sichtbar. Alles Gespielte landet
+   zusätzlich im "Mein Mix"-Verlauf (Button rechts, Panel klappt darüber
+   auf).
+   Die Chrome-Fader-Verlaufsfarben (siehe Slider-Thumbs weiter unten) sind
+   von wheelsofsteel.net (Scott Schiller, BSD-Lizenz) übernommen. ---------- */
+.dj-player {
+  display: block;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 370px;
+  overflow-y: auto;
+  z-index: 250;
+  background: linear-gradient(200deg, var(--panel) 0%, var(--bg) 130%);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04);
+  padding: 12px 18px 14px;
+}
+/* Player ist "position: fixed", nach einem Reload also immer sichtbar --
+   trotzdem faellt eine fortgesetzte Wiedergabe in der Ecke leicht nicht
+   sofort auf. Kurzer Aufblitz-Effekt statt eines erzwungenen Scrolls (siehe
+   highlightResumedPlayer in decades.js), sobald Song/Warteschlange nach
+   einem Reload wiederhergestellt sind. */
+.dj-player.dj-player-resumed { animation: dj-player-resume-pulse 2.6s ease-out; }
+@keyframes dj-player-resume-pulse {
+  0% { box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04), inset 0 0 0 0 rgba(124,92,255,0); }
+  12% { box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04), inset 0 0 0 2px var(--accent), -8px 0 34px 6px rgba(124,92,255,0.5); }
+  100% { box-shadow: -8px 0 24px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.04), inset 0 0 0 0 rgba(124,92,255,0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dj-player.dj-player-resumed { animation: none; }
+}
+.dj-player::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, var(--accent), var(--accent2), transparent);
+  opacity: 0.7;
+}
+.dj-decks {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.dj-deck {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 334px;
+}
+.dj-deck-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  gap: 3px;
+  text-align: left;
+}
+.dj-deck-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.dj-deck-top {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 10px;
+}
+.dj-waveform {
+  width: clamp(135px, 10vw, 162px);
+  height: 34px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  touch-action: none;
+  overflow: hidden;
+}
+.dj-waveform canvas { display: block; width: 100%; height: 100%; }
+.dj-waveform:hover { border-color: rgba(255,255,255,0.14); }
+.dj-waveform:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.dj-pitch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 180px;
+}
+.dj-pitch-display {
+  position: absolute;
+  left: calc(50% + 33px);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-family: 'Courier New', monospace;
+  background: #04120e;
+  color: #4ade80;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+  padding: 5px 8px;
+  letter-spacing: 0.02em;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
+}
+.dj-slider-wrap { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 3px; flex: 1; }
+.dj-scale { display: flex; align-items: flex-end; justify-content: space-between; padding: 0 1px; pointer-events: none; }
+.dj-scale span { width: 1px; height: 4px; background: var(--border); }
+.dj-scale span.mid { height: 7px; background: var(--accent); }
+
+.dj-knob-wrap { display: flex; align-items: center; justify-content: center; }
+.dj-knob {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #3a3a42, #1a1a1f 60%, #2a2a30);
+  border: 1px solid rgba(0,0,0,0.5);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -2px 4px rgba(0,0,0,0.4);
+  cursor: grab;
+  touch-action: none;
+  flex-shrink: 0;
+}
+.dj-knob:active { cursor: grabbing; }
+.dj-knob:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.dj-knob-ticks span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: 50%;
+  background: var(--border);
+}
+.dj-knob-ticks span.mid { background: var(--accent2); }
+.dj-knob-ticks span:nth-child(1) { transform: rotate(-135deg) translate(0, -29px); }
+.dj-knob-ticks span:nth-child(2) { transform: rotate(-67.5deg) translate(0, -29px); }
+.dj-knob-ticks span:nth-child(3) { transform: rotate(0deg) translate(0, -29px); }
+.dj-knob-ticks span:nth-child(4) { transform: rotate(67.5deg) translate(0, -29px); }
+.dj-knob-ticks span:nth-child(5) { transform: rotate(135deg) translate(0, -29px); }
+.dj-knob-dial {
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #565660, #202024 70%);
+  transition: transform 0.08s ease;
+}
+.dj-knob-pointer {
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  width: 3px;
+  height: 12px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--accent2);
+  box-shadow: 0 0 4px var(--accent2);
+}
+
+/* "Player arbeitet gerade selbststaendig"-Signal: BPM-Sync bewegt einen
+   Regler nur automatisch (nie bei direkter Nutzer-Interaktion) -- Knopf
+   dreht dabei sichtbar sanfter statt zu springen, plus ein pulsierender
+   Schein in der Sync-Farbe, solange die automatische Bewegung laeuft. */
+.dj-knob.auto-glide .dj-knob-dial { transition: transform 0.45s cubic-bezier(.22, 1, .36, 1); }
+.dj-knob.auto-glide {
+  animation: dj-knob-auto-pulse 1.1s ease-in-out infinite;
+}
+@keyframes dj-knob-auto-pulse {
+  0%, 100% {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -2px 4px rgba(0,0,0,0.4), 0 0 0 0 rgba(74,222,128,0.45);
+  }
+  50% {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -2px 4px rgba(0,0,0,0.4), 0 0 0 4px rgba(74,222,128,0.22);
+  }
+}
+.dj-pitch-display.auto-glide {
+  animation: dj-pitch-auto-pulse 1.1s ease-in-out infinite;
+}
+@keyframes dj-pitch-auto-pulse {
+  0%, 100% { box-shadow: inset 0 0 6px rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.1); }
+  50% { box-shadow: inset 0 0 6px rgba(0,0,0,0.6), 0 0 8px rgba(74,222,128,0.55); border-color: rgba(74,222,128,0.65); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dj-knob.auto-glide, .dj-pitch-display.auto-glide { animation: none; }
+}
+
+.dj-vinyl {
+  position: relative;
+  width: clamp(135px, 13vw, 200px);
+  height: clamp(135px, 13vw, 200px);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dj-vinyl.drag-over { box-shadow: 0 0 0 3px var(--accent); }
+.drag-vinyl-ghost {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 4px),
+    conic-gradient(from 200deg at 35% 30%, rgba(255,255,255,0.14), transparent 35%, transparent 65%, rgba(255,255,255,0.06) 80%, transparent 100%),
+    radial-gradient(circle at 35% 30%, #333, #0a0a0a 70%);
+  box-shadow:
+    0 10px 26px rgba(0,0,0,0.5),
+    inset 0 0 0 1px rgba(255,255,255,0.06),
+    inset 0 0 0 6px rgba(0,0,0,0.35),
+    inset 0 0 0 7px rgba(255,255,255,0.09);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.drag-vinyl-ghost-label {
+  width: 46%;
+  height: 46%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 0 0 3px #0a0a0a, 0 0 0 4px rgba(255,255,255,0.15);
+}
+.drag-vinyl-ghost-label img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.dj-vinyl-disc {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 4px),
+    conic-gradient(from 200deg at 35% 30%, rgba(255,255,255,0.14), transparent 35%, transparent 65%, rgba(255,255,255,0.06) 80%, transparent 100%),
+    radial-gradient(circle at 35% 30%, #333, #0a0a0a 70%);
+  box-shadow:
+    0 10px 26px rgba(0,0,0,0.5),
+    inset 0 0 0 1px rgba(255,255,255,0.06),
+    inset 0 0 0 6px rgba(0,0,0,0.35),
+    inset 0 0 0 7px rgba(255,255,255,0.09);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dj-vinyl-video {
+  width: 113px;
+  height: 113px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 0 0 3px #0a0a0a, 0 0 0 4px rgba(255,255,255,0.15);
+}
+/* YouTube haelt beim eingebetteten Player IMMER das Seitenverhaeltnis des
+   Quellvideos ein (letterboxed/pillarboxed) statt den Rahmen randfuellend
+   auszufuellen -- egal wie die Iframe-CSS-Groesse (width/height) gesetzt
+   ist: eine GROESSERE Box aendert nur die Groesse der schwarzen Balken mit,
+   nicht deren Vorhandensein, da YouTube intern relativ zur (weiterhin
+   quadratischen) Box neu letterboxt. Bei 16:9 (die meisten Videos) oder 4:3
+   (aeltere) blieben in unserem QUADRATISCHEN 113x113px-Rahmen dadurch
+   sichtbare schwarze Balken oben/unten -- das Bild wirkte "gequetscht"
+   statt den Kreis auszufuellen. Fix wie bei CSS object-fit: cover, das
+   YouTube dem Iframe-Inhalt selbst nicht erlaubt: NICHT die Iframe-Groesse
+   aendern (s.o.), sondern das FERTIG gerenderte Iframe per CSS-Transform
+   (skaliert das Ergebnis als Ganzes, keine Neu-Letterboxung) ueberskalieren
+   + zentrieren -- ueberstehender Rand wird vom overflow: hidden oben
+   abgeschnitten. scale(1.9) deckt den ungueenstigsten Fall (16:9 in einem
+   quadratischen Rahmen braucht rechnerisch ~1.78) mit Reserve ab -- bei
+   4:3-Videos wird dadurch etwas mehr Bildrand weggeschnitten, aber
+   randfuellend statt mit schwarzen Balken ist hier die bessere Optik. Live
+   an drei echten Songs (16:9 und 4:3) auf driftware.online getestet. */
+.dj-vinyl-video iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  transform: scale(1.9);
+  transform-origin: center center;
+}
+.dj-vinyl-video-logo {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 26%;
+  box-sizing: border-box;
+}
+.dj-vinyl-video-logo svg { width: 100%; height: 100%; }
+.dj-vinyl-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.dj-vinyl-disc.playing .dj-vinyl-ring {
+  animation: dj-spin 2.6s linear infinite;
+}
+@keyframes dj-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.dj-vinyl-dot {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.dj-vinyl-disc.playing .dj-vinyl-dot {
+  background: #fff;
+  box-shadow: 0 0 8px 2px rgba(255,255,255,0.7);
+}
+.dj-vinyl-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 20px;
+  font-size: 11px;
+  color: var(--muted);
+  background: rgba(0,0,0,0.4);
+  border-radius: 50%;
+  opacity: 1;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.dj-deck-loaded .dj-vinyl-hint { opacity: 0; }
+/* Faengt drop-Events fuer ein Deck ab, dessen YouTube-iframe sonst den
+   dragover/drop schlucken kann (siehe dragstart-Kommentar in decades.js).
+   Liegt normal inaktiv (pointer-events: none) ueber dem Deck und wird nur
+   waehrend eines echten Song-Drags (body.dnd-dragging) klickbar/droppable. */
+.dj-vinyl-dragshield {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 5;
+}
+body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
+
+/* Digitales Display (wie eine alte Autoradio-/Weckerklok-LCD-Anzeige) fuer
+   Titel/Interpret/Restzeit/BPM -- per Klick durchschaltbar zwischen vier
+   Farben (siehe wireDigitalDisplay in decades.js), Wahl bleibt pro Deck in
+   localStorage erhalten. Anders als vorher (unterschiedliche Textfarben je
+   Zeile) leuchtet im Digital-Look die GESAMTE Anzeige in nur einer Farbe --
+   genau wie bei einem echten LCD-Display, das nur eine Hintergrundbeleuchtung
+   hat. */
+.dj-deck-info {
+  position: relative;
+  text-align: left;
+  min-height: 26px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 18px 6px 8px;
+  border-radius: 5px;
+  background: #04120e;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.65);
+  font-family: 'Courier New', monospace;
+  cursor: pointer;
+  --digital-fg: #4ade80;
+}
+.dj-deck-info:hover { border-color: var(--digital-fg); }
+.dj-digital-swatches {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dj-digital-swatch {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  width: 5px;
+  height: 5px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.3);
+  cursor: pointer;
+  box-shadow: 0 0 2px rgba(0,0,0,0.6);
+}
+.dj-digital-swatch[data-color="green"] { background: #4ade80; }
+.dj-digital-swatch[data-color="blue"] { background: #38bdf8; }
+.dj-digital-swatch[data-color="yellow"] { background: #facc15; }
+.dj-digital-swatch[data-color="orange"] { background: #fb923c; }
+.dj-digital-swatch:hover { transform: scale(1.25); }
+.dj-digital-swatch.active { border-color: #fff; box-shadow: 0 0 0 1px rgba(255,255,255,0.5), 0 0 4px rgba(255,255,255,0.7); }
+.dj-deck-info[data-digital="blue"] { --digital-fg: #38bdf8; }
+.dj-deck-info[data-digital="green"] { --digital-fg: #4ade80; }
+.dj-deck-info[data-digital="yellow"] { --digital-fg: #facc15; }
+.dj-deck-info[data-digital="orange"] { --digital-fg: #fb923c; }
+.dj-deck-info strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--digital-fg);
+  text-shadow: 0 0 6px var(--digital-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  letter-spacing: 0.02em;
+}
+.dj-deck-info span {
+  display: block;
+  font-size: 11px;
+  color: var(--digital-fg);
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.dj-deck-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.dj-deck-remaining {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--digital-fg);
+  text-shadow: 0 0 6px var(--digital-fg);
+  min-height: 14px;
+}
+.dj-deck-bpm {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--digital-fg);
+  opacity: 0.9;
+  min-height: 13px;
+}
+.dj-deck-bpm svg { width: 11px; height: 11px; flex-shrink: 0; }
+
+.dj-deck-controls { display: flex; align-items: center; gap: 8px; }
+.dj-deck-controls button {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: linear-gradient(160deg, rgba(255,255,255,0.14), rgba(0,0,0,0.18)), var(--bg);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 1px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.35);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dj-deck-controls button svg { width: 15px; height: 15px; }
+.dj-deck-controls button:hover { border-color: var(--accent); }
+.dj-deck-controls button[id$="-toggle"] {
+  background: #ff0000;
+  color: #fff;
+  border-color: #ff0000;
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+}
+.dj-deck-controls button[id$="-toggle"] svg { width: 18px; height: 18px; }
+
+.dj-master {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 7px 13px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 14px rgba(0,0,0,0.25);
+}
+.dj-crossfader { display: flex; align-items: center; gap: 7px; }
+.dj-crossfader-label { font-size: 12px; font-weight: 800; color: var(--muted); }
+#dj-crossfader, #dj-master-volume {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  margin: 0;
+}
+#dj-crossfader::-webkit-slider-thumb, #dj-master-volume::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 22px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #bbb 0%, #888 30%, #d6d6d6 50%, #d1d1d1 51%, #f0f0f0 100%);
+  border: 1px solid rgba(0,0,0,0.4);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  cursor: pointer;
+}
+#dj-crossfader::-moz-range-track, #dj-master-volume::-moz-range-track { height: 4px; background: var(--border); border-radius: 2px; }
+#dj-crossfader::-moz-range-thumb, #dj-master-volume::-moz-range-thumb {
+  width: 16px;
+  height: 22px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #bbb 0%, #888 30%, #d6d6d6 50%, #d1d1d1 51%, #f0f0f0 100%);
+  border: 1px solid rgba(0,0,0,0.4);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  cursor: pointer;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.dj-volume { display: flex; align-items: center; gap: 8px; }
+.dj-volume-label { display: flex; align-items: center; color: var(--muted); }
+.dj-volume-label svg { width: 16px; height: 16px; }
+
+.dj-autofade-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
+}
+.dj-autofade-toggle svg { width: 13px; height: 13px; flex-shrink: 0; }
+.dj-autofade-toggle.active {
+  border-color: #22c55e;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.12);
+}
+.dj-autofade-toggle:hover { border-color: var(--accent); }
+.dj-fade-row { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.dj-manual-fade-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid #ff0000;
+  background: #ff0000;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.dj-manual-fade-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+.dj-manual-fade-btn:hover { transform: scale(1.06); }
+.dj-manual-fade-btn:disabled { opacity: 0.7; cursor: default; transform: none; }
+.dj-manual-fade-btn.blocked { animation: dj-fade-blocked-shake 0.4s ease; }
+@keyframes dj-fade-blocked-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+
+/* BPM-Sync-Flyout: steht links neben der Player-Spalte im selben
+   90px-Streifen, den vorher das Ambient-Panel belegt hat (siehe
+   body padding-right oben) — nur auf breiten Screens, siehe Media-Query. */
+.dj-tools-panel {
+  display: none;
+}
+.dj-tools-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-transform: uppercase;
+  text-align: center;
+}
+.dj-bpm-readout { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.dj-bpm-readout-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-family: 'Courier New', monospace;
+  background: #04120e;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 5px 3px;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
+}
+.dj-bpm-readout-label { font-size: 9px; font-weight: 800; color: var(--muted); }
+.dj-bpm-readout-value { font-size: 12px; font-weight: 800; color: #f5a623; font-variant-numeric: tabular-nums; }
+.dj-bpm-match {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.35;
+}
+.dj-bpm-match.ok { color: #22c55e; }
+.dj-bpm-sync-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 8px 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(124, 92, 255, 0.45);
+  background: rgba(124, 92, 255, 0.12);
+  color: var(--accent);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease, opacity 0.12s ease;
+}
+.dj-bpm-sync-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+.dj-bpm-sync-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(124,92,255,0.2); }
+.dj-bpm-sync-btn:disabled { opacity: 0.35; cursor: default; }
+
+/* Song-Kacheln sind draggable, wenn sie ein Video haben (siehe decades.js) */
+.song-tile[draggable="true"] { cursor: grab; }
+.song-tile.dragging { opacity: 0.4; }
+
+/* Breite Sidebar-Ansicht (>=1101px), aber wenig Hoehe -- z.B. iPad im
+   Querformat (Safari-Chrome frisst zusaetzlich Hoehe von den ohnehin nur
+   ~820-834px). Die rechte Spalte bleibt bestehen (siehe oben), wird aber
+   kompakter, damit beide Decks + Mastersektion ohne internes Scrollen auf
+   einen Bildschirm passen.
+   "and (pointer: coarse)" ist WICHTIG: eine reine max-height-Abfrage kann
+   nicht zwischen einem echten iPad im Querformat und einem stinknormalen,
+   nicht maximierten Desktop-Browserfenster unterscheiden -- beides ist
+   fuer CSS einfach "Fensterhoehe <= 860px". Genau DAS ist der Bug, der
+   die Player-Verbreiterung dieser Session ausgehebelt hat: bei 1634x858px
+   Fenstergroesse (ganz normales, leicht verkleinertes Browserfenster,
+   keinerlei iPad) griff trotzdem diese "iPad-Kompakt"-Regel und
+   quetschte Vinyl (92px statt bis zu 200px), Deck-Abstaende (2px statt
+   14px+) etc. wieder auf iPad-Niveau zusammen -- unabhaengig von der
+   tatsaechlichen Fensterbreite. pointer:coarse ist auf einem Touchscreen
+   (iPad) wahr, auf einem Desktop mit Maus/Trackpad dagegen immer falsch
+   -- damit greift die Kompakt-Optik nur noch fuer echte Touch-Geraete
+   mit wenig Hoehe, nicht mehr fuer jedes schmale/kurze Desktop-Fenster. */
+@media (min-width: 1101px) and (max-height: 860px) and (pointer: coarse) {
+  .dj-player { padding: 6px 10px 8px; }
+  .dj-decks { gap: 2px; }
+  .dj-deck { gap: 2px; }
+  .dj-deck-label { font-size: 9px; }
+  .dj-deck-top { gap: 6px; }
+  .dj-vinyl { width: 92px; height: 92px; }
+  .dj-vinyl-hint { font-size: 9px; }
+  .dj-waveform { width: 92px; height: 22px; }
+  .dj-pitch { width: 132px; gap: 2px; }
+  .dj-pitch-display { font-size: 8px; padding: 3px 6px; }
+  .dj-knob-wrap { padding-top: 2px; }
+  .dj-knob { width: 34px; height: 34px; }
+  .dj-knob-ticks span:nth-child(1) { transform: rotate(-135deg) translate(0, -19px); }
+  .dj-knob-ticks span:nth-child(2) { transform: rotate(-67.5deg) translate(0, -19px); }
+  .dj-knob-ticks span:nth-child(3) { transform: rotate(0deg) translate(0, -19px); }
+  .dj-knob-ticks span:nth-child(4) { transform: rotate(67.5deg) translate(0, -19px); }
+  .dj-knob-ticks span:nth-child(5) { transform: rotate(135deg) translate(0, -19px); }
+  .dj-knob-pointer { height: 8px; top: 3px; }
+  .dj-deck-info { min-height: 0; }
+  .dj-deck-info strong { font-size: 11px; }
+  .dj-deck-info span { font-size: 10px; }
+  .dj-deck-remaining { font-size: 9px; min-height: 0; margin-top: 0; }
+  .dj-deck-bpm { font-size: 9px; min-height: 0; margin-top: 0; }
+  .dj-deck-controls { gap: 5px; }
+  .dj-deck-controls button { width: 26px; height: 26px; }
+  .dj-deck-controls button svg { width: 12px; height: 12px; }
+  .dj-deck-controls button[id$="-toggle"] { width: 32px; height: 32px; }
+  .dj-deck-controls button[id$="-toggle"] svg { width: 15px; height: 15px; }
+  .dj-master { padding: 5px 10px; gap: 4px; }
+  .dj-autofade-toggle { padding: 3px 9px; font-size: 10px; }
+  .dj-manual-fade-btn { width: 26px; height: 26px; }
+  .dj-tools-panel { padding: 8px 8px; gap: 8px; }
+  .dj-bpm-readout { gap: 5px; }
+  .dj-bpm-readout-row { padding: 3px 3px; }
+}
+
+/* Unter 1100px ist rechts kein Platz fuer eine 360px-Spalte. FRUEHER klappte
+   der Player hier in eine fixierte Leiste am unteren Bildschirmrand
+   (position: fixed + max-height in vh) -- das Problem dabei: position:fixed
+   richtet sich IMMER nach dem sichtbaren Viewport, nie nach dem
+   Seiteninhalt oder dem Scrollstand. Egal wie hoch/niedrig max-height
+   gesetzt wurde, es deckte IMMER einen festen Batzen vom unteren
+   Bildschirmrand ab -- bei schmalem Browserfenster/iPad lagen Suchfeld,
+   Dekaden-Reihe, Ambient/Mood-Dropdown, "Dekade verbinden", Genre-Dropdown
+   und "Auswahl senden" direkt darunter und waren dauerhaft verdeckt, ganz
+   unabhaengig vom gewaehlten Prozentwert. Das war der wiederkehrende
+   "Player/Warteschlange"-Bug. Jetzt stattdessen ganz normaler Seitenfluss
+   (position: static): der Player sitzt als eigener Block am Ende der
+   Seite, deckt dadurch NIE etwas anderes ab -- man scrollt einfach zu ihm
+   runter statt dass er permanent im Weg schwebt. */
+@media (max-width: 1100px) {
+  body { padding-right: 0; padding-bottom: 0; }
+  .dj-player {
+    /* relative statt static: bleibt im normalen Seitenfluss (kein
+       Ueberdecken mehr), behaelt aber einen Positionierungskontext fuer
+       den Akzentstrich (::before, position:absolute) am oberen Rand. */
+    position: relative;
+    width: auto;
+    max-height: none;
+    overflow-y: visible;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    padding: 8px 16px 10px;
+    margin-top: 16px;
+  }
+  .dj-player::before {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: auto;
+    width: auto;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+  }
+  /* Frueher hier extra klein geschrumpft (Vinyl 96px, enge Abstaende),
+     NUR damit beide Decks nebeneinander noch in die alte Hoehen-Bremse
+     (60vh, dann 42vh) des fixierten Drawers passten -- siehe Kommentar bei
+     .dj-player oben. Diese Hoehen-Bremse gibt es nicht mehr (normaler
+     Seitenfluss, beliebig hoch), also gibt es auch keinen Grund mehr, die
+     Decks klein zu quetschen. Jetzt gestapelt und in normaler/grosser
+     Groesse -- genau das, was als "Playe zusammengerafft" bemaengelt
+     wurde. */
+  .dj-decks {
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .dj-deck { width: 100%; max-width: 360px; }
+  .dj-master { width: 100%; max-width: 360px; margin: 4px auto 0; }
+  .dj-tools-panel { display: none !important; }
+}
+
+@media (min-width: 1101px) {
+  .dj-tools-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    position: fixed;
+    top: 0;
+    right: 370px;
+    bottom: 0;
+    width: 90px;
+    overflow-y: auto;
+    z-index: 249;
+    background: linear-gradient(200deg, var(--panel) 0%, var(--bg) 130%);
+    border-left: 1px solid var(--border);
+    padding: 14px 8px;
+    box-shadow: -8px 0 24px rgba(0,0,0,0.3);
+  }
+  /* Hero-Header war weiterhin "margin: 0 auto" (Basisregel oben) -- bei
+     Sidebar-Layout stand er dadurch mittig in der Content-Flaeche links
+     vom Player, WAEHREND main.decade-main (siehe dort) schon rechts an
+     den Player/Tools-Panel andockt. Header und Inhalt liefen dadurch
+     nicht mehr auf gleicher Kante, sah nach zwei verschiedenen Layouts
+     uebereinander aus. Nur hier (>1100px, wo die Sidebar existiert)
+     denselben Rechts-Andock-Trick wie main.decade-main -- unter 1100px
+     (kein Sidebar, volle Breite) bleibt der Hero-Header normal mittig. */
+  header.decade-header { margin: 0 0 0 auto; }
+}
+
+@media (max-width: 640px) {
+  /* Kopfbereich: auf dem Handy soll nicht der halbe erste Screen aus
+     Icon + Ueberschrift bestehen. */
+  .decade-header { padding: 16px 14px 10px; }
+  .app-icon-hero { width: 40px; height: 40px; border-radius: 11px; font-size: 18px; margin-bottom: 6px; }
+  .app-icon-hero svg { width: 18px; height: 18px; }
+  .decade-logo { font-size: 19px; margin-bottom: 3px; }
+  .decade-years { font-size: 10px; margin-bottom: 4px; }
+  .decade-tagline { font-size: 12px; margin-bottom: 8px; }
+  .badge { font-size: 11px; padding: 5px 10px; }
+  /* Auf dem Handy nicht mitscrollen lassen — sonst liegt der Block
+     staendig ueber dem Seiteninhalt. */
+  .utility-block { position: absolute; top: 10px; gap: 8px; }
+  .utility-icon { width: 34px; height: 34px; }
+  .utility-icon svg { width: 15px; height: 15px; }
+  .utility-label { font-size: 8px; }
+  .gen-switch-rows { flex-direction: column; }
+  .gen-dd { flex: 0 0 auto; min-width: 0; }
+  .gen-dd-trigger { padding: 6px 22px 6px 10px; }
+  .gen-dd-value { font-size: 11px; }
+  main.decade-main { padding: 0 12px 32px; }
+  .generator { padding: 16px 12px; }
+  .generator h2 { font-size: 17px; }
+  .generator .sub { font-size: 12px; margin-bottom: 12px; }
+  .theme-btn { font-size: 12px; padding: 7px 11px; gap: 6px; }
+  .theme-btn-icon { width: 13px; height: 13px; }
+
+  /* Songliste: volle Breite nutzen, Zeilen etwas luftiger antippbar */
+  .song-tile { padding: 5px 6px; }
+  .song-tile-text { max-width: none; flex: 1; }
+  .song-grid { max-height: 60vh; }
+  .gen-history ul { max-height: 160px; }
+
+  /* Deck-Groesse/Vinyl bleiben ab hier wie im 1100px-Block (gestapelt,
+     grosszuegig) -- fruehere Extra-Schrumpfstufe hier (48%-Spalten, 84px
+     Vinyl) gab's nur wegen der alten Hoehen-Bremse des fixierten Players,
+     die es nicht mehr gibt (siehe Kommentar im 1100px-Block). */
+  .dj-crossfader { width: 100%; justify-content: center; }
+  .dj-volume { width: 100%; justify-content: center; }
+  #dj-crossfader, #dj-master-volume { width: 62%; }
+  /* 16px verhindert, dass iOS beim Antippen ins Feld hineinzoomt */
+  .generator-search .search-input { font-size: 16px; padding: 9px 12px 9px 34px; }
+}
+
+@media (max-width: 900px) {
+  /* Gestapelt statt nebeneinander. align-items muss hier von flex-start
+     auf stretch wechseln: sonst richtet sich die Spaltenbreite nach der
+     laengsten Songzeile statt nach dem Bildschirm — die Seite wird dann
+     breiter als das Handy-Display. */
+  .generator-body { flex-direction: column; align-items: stretch; }
+  .song-grid { max-width: none; width: 100%; box-sizing: border-box; }
+  .gen-history { width: 100%; box-sizing: border-box; }
+  .gen-history ul { max-height: 220px; }
+}

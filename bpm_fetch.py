@@ -71,11 +71,12 @@ def download_clip(yt_id, out_base):
 
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: bpm_fetch.py <decade>  (z.B. 80er)")
+    if len(sys.argv) not in (2, 3):
+        print("Usage: bpm_fetch.py <decade> [genre]  (z.B. 80er, oder 80er ItaloDisco)")
         sys.exit(1)
 
     decade = sys.argv[1]
+    genre = sys.argv[2] if len(sys.argv) == 3 else None
     base_dir = os.path.dirname(os.path.abspath(__file__))
     path = os.path.join(base_dir, f"{decade}-music", "songs.json")
     if not os.path.exists(path):
@@ -83,7 +84,17 @@ def main():
         sys.exit(1)
 
     data = load_songs(path)
-    songs = [s for genre_songs in data.values() for s in genre_songs if s.get("yt")]
+
+    if genre is not None:
+        if genre not in data:
+            print(f"Genre '{genre}' nicht gefunden. Verfuegbare Genres in {decade}:")
+            for key in sorted(data.keys()):
+                print(f"  {key}")
+            sys.exit(1)
+        songs = [s for s in data[genre] if s.get("yt")]
+    else:
+        songs = [s for genre_songs in data.values() for s in genre_songs if s.get("yt")]
+
     # Nach Popularitaet (hv = Discogs-Sammler-Zahl) absteigend sortieren, damit die
     # meistgehoerten/bekanntesten Songs zuerst ein BPM-Feld bekommen -- das Feature
     # ist damit schon frueh fuer den Grossteil der tatsaechlichen Nutzung nutzbar,
@@ -91,7 +102,8 @@ def main():
     songs.sort(key=lambda s: s.get("hv", 0) or 0, reverse=True)
     total = len(songs)
     already = sum(1 for s in songs if s.get("bpm"))
-    print(f"{decade}: {total} Songs mit yt-Feld, {already} bereits mit bpm.")
+    label = f"{decade}/{genre}" if genre else decade
+    print(f"{label}: {total} Songs mit yt-Feld, {already} bereits mit bpm.")
 
     for i, song in enumerate(songs, 1):
         if song.get("bpm"):
