@@ -76,6 +76,28 @@
     render();
   }
 
+  /* Nutzerwunsch (12.9.): "Button fuer die Player der beide leert" --
+     anders als clearQueue() (nur aktives Deck) leert diese Variante
+     BEIDE Decks (A und B), z.B. wenn man komplett neu anfangen will und
+     nicht sicher ist, auf welchem Deck noch alte Reste liegen. Der
+     jeweils aktuell geladene Song pro Deck bleibt (wie bei clearQueue())
+     erhalten -- keine Unterbrechung eines laufenden Songs. */
+  function clearBothQueues() {
+    if (typeof window.DECKS === 'undefined') return;
+    ['A', 'B'].forEach(function (key) {
+      var deck = window.DECKS[key];
+      if (!deck || !deck.queue) return;
+      if (deck.index > -1 && deck.queue[deck.index]) {
+        deck.queue = [deck.queue[deck.index]];
+        deck.index = 0;
+      } else {
+        deck.queue = [];
+      }
+    });
+    lastSignature = null; // sofortiges Neuzeichnen erzwingen
+    render();
+  }
+
   function pickActiveDeck() {
     if (typeof window.DECKS === 'undefined') return null;
     if (window.DECKS.A && window.DECKS.A.isPlaying) return window.DECKS.A;
@@ -361,6 +383,7 @@
       '.gen-queue-drop-target{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent);}' +
       '.gen-queue-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;}' +
       '.gen-queue-head h3{margin:0;}' +
+      '.gen-queue-head-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}' +
       '.gen-queue-clear-btn{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid var(--border);color:var(--muted);font-size:11px;padding:4px 9px;border-radius:14px;cursor:pointer;}' +
       '.gen-queue-clear-btn svg{width:13px;height:13px;}' +
       '.gen-queue-clear-btn:hover{color:#f87171;border-color:#f87171;background:rgba(248,113,113,.1);}' +
@@ -403,7 +426,10 @@
     var saveIconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>';
     nativeHistory.innerHTML =
       '<div class="gen-queue-head"><h3>' + nextIconSvg + ' Warteschlange</h3>' +
-      '<button type="button" id="gen-queue-clear" class="gen-queue-clear-btn" title="Warteschlange leeren, damit eine neue geladen werden kann">' + clearIconSvg + ' Leeren</button></div>' +
+      '<div class="gen-queue-head-actions">' +
+      '<button type="button" id="gen-queue-clear" class="gen-queue-clear-btn" title="Warteschlange leeren, damit eine neue geladen werden kann">' + clearIconSvg + ' Leeren</button>' +
+      '<button type="button" id="gen-queue-clear-both" class="gen-queue-clear-btn" title="Warteschlangen von Deck A UND B leeren">' + clearIconSvg + ' Beide leeren</button>' +
+      '</div></div>' +
       '<div class="gen-queue-playlist-row">' +
       '<button type="button" id="gen-queue-save" class="gen-queue-pl-btn" title="Aktuelle Warteschlange als Playlist speichern">' + saveIconSvg + ' Speichern</button>' +
       '<select id="gen-queue-pl-select" class="gen-queue-pl-select"><option value="">Playlist laden…</option></select>' +
@@ -416,6 +442,8 @@
     listEl.addEventListener('click', handleRemoveClick);
     var clearBtn = document.getElementById('gen-queue-clear');
     if (clearBtn) clearBtn.addEventListener('click', clearQueue);
+    var clearBothBtn = document.getElementById('gen-queue-clear-both');
+    if (clearBothBtn) clearBothBtn.addEventListener('click', clearBothQueues);
     var saveBtn = document.getElementById('gen-queue-save');
     if (saveBtn) saveBtn.addEventListener('click', savePlaylist);
     var loadBtn = document.getElementById('gen-queue-load');
