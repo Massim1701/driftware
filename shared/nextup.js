@@ -433,6 +433,17 @@
 
   window.reinitNextUp = init;
 
+  /* Bug-Fix (12.9.): Gegenstueck zum 'driftware-queue-changed' Event aus
+     decades.js' playAllCurrent() -- dort wurde bisher, anders als bei
+     jeder anderen Queue-Aenderung, kein sofortiges Neuzeichnen
+     angestossen. Sorgt dafuer, dass die Warteschlangen-Anzeige direkt
+     nach "Playlist auf Warteschlange laden" aktuell ist, statt auf den
+     naechsten 1000ms-Poll warten zu muessen. */
+  window.addEventListener('driftware-queue-changed', function () {
+    lastSignature = null;
+    render();
+  });
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

@@ -2690,6 +2690,18 @@ function playAllCurrent(songs) {
   } else {
     loadSongToDeck(withVideo[0], nextLoadDeck, withVideo, false);
   }
+  /* Bug-Fix (12.9., Nutzerbericht "Wechsel der Playlisten geht nicht,
+     Playlisten werden gekickt"): anders als jede andere Queue-Aenderung
+     in nextup.js hatte playAllCurrent() bisher KEIN sofortiges
+     Neuzeichnen der Warteschlangen-Anzeige ausgeloest -- nextup.js ist
+     eine eigenstaendige Datei (siehe Kommentar oben dort) und pollt nur
+     alle 1000ms, was in der Praxis (Tab im Hintergrund/gedrosselt, oder
+     einfach ungluecklicher Timing) dazu fuehren konnte, dass die Liste
+     auf dem Bildschirm veraltet aussah, obwohl die eigentliche
+     Warteschlange (deck.queue) schon korrekt war. Custom Event statt
+     direktem Funktionsaufruf, da decades.js und nextup.js getrennte
+     Scopes sind. */
+  window.dispatchEvent(new Event('driftware-queue-changed'));
 }
 
 function closeSongModal() {
