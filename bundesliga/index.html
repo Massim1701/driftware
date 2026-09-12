@@ -116,7 +116,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
 
 .board {
   display: grid;
-  grid-template-columns: 220px 1fr 1fr 260px;
+  grid-template-columns: 250px 1fr 1fr 260px;
   gap: 18px;
   align-items: start;
 }
@@ -161,7 +161,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
   border-bottom: 1px solid rgba(255,255,255,.04);
 }
 .hist-table tr:last-child td { border-bottom: none; }
-.hist-table td.team { max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hist-table td.team { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .tab-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .tab-table th {
@@ -286,6 +286,14 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
   }
   function pct(x) { return Math.round(x * 100) + "%"; }
 
+  function nameKurz(name) {
+    if (!name) return name;
+    return name
+      .replace("Eintracht Frankfurt", "Eintr. Frankfurt")
+      .replace("Borussia Dortmund", "Bor. Dortmund")
+      .replace("Borussia Mönchengladbach", "Bor. Mönchengladbach");
+  }
+
   function ladeHistorie() {
     sb.from("historie_5jahre").select("*").order("punkte_schnitt", { ascending: false }).then(function (res) {
       if (res.error || !res.data) {
@@ -312,7 +320,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
   }
 
   function renderVorhersageRow(m, vorhersage) {
-    var teams = (m.heim ? m.heim.name : "?") + " <span class='vs'>vs</span> " + (m.gast ? m.gast.name : "?");
+    var teams = (m.heim ? nameKurz(m.heim.name) : "?") + " <span class='vs'>vs</span> " + (m.gast ? nameKurz(m.gast.name) : "?");
     var body;
     if (vorhersage) {
       body =
@@ -331,7 +339,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
   }
 
   function renderErgebnisRow(m, vorhersage) {
-    var teams = (m.heim ? m.heim.name : "?") + " <span class='vs'>vs</span> " + (m.gast ? m.gast.name : "?");
+    var teams = (m.heim ? nameKurz(m.heim.name) : "?") + " <span class='vs'>vs</span> " + (m.gast ? nameKurz(m.gast.name) : "?");
     var now = new Date();
     var hatBegonnen = new Date(m.anstoss) <= now;
     var istBeendet = m.status === "beendet" && m.tore_heim !== null;
@@ -452,7 +460,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
     if (d.anzahl === 0) {
       return "<div class='h2h-zeile'>Erstes erfasstes Duell dieser beiden Teams</div>";
     }
-    return "<div class='h2h-zeile'>Bisherige Duelle (" + d.anzahl + "): " +
+    return "<div class='h2h-zeile'>Duelle seit 2021 (" + d.anzahl + "): " +
       "<span class='h2h-badge s'>" + d.s + " S</span>" +
       "<span class='h2h-badge u'>" + d.u + " U</span>" +
       "<span class='h2h-badge n'>" + d.n + " N</span></div>";
