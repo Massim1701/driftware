@@ -39,7 +39,7 @@ DECADE_QUEUE = {
 }
 
 TIME_BUDGET_SECONDS = int(os.environ.get("DECADE_TIME_BUDGET_SECONDS", "19800"))  # 5.5h
-SAVE_EVERY = 25
+SAVE_EVERY = 5
 START_TS = time.time()
 
 
