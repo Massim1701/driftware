@@ -240,6 +240,15 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
 .pending { color: var(--muted); font-style: italic; font-size: 13px; }
 .tendenz-ok { color: var(--accent); }
 .tendenz-nok { color: var(--red); }
+.treffer-marke {
+  font-size: 34px;
+  font-weight: 800;
+  text-align: center;
+  margin-top: 6px;
+  line-height: 1;
+}
+.treffer-marke.treffer-ok { color: var(--accent); }
+.treffer-marke.treffer-nok { color: var(--red); }
 .h2h-zeile { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,.08); font-size: 11px; color: var(--muted); min-height: 24px; display: flex; align-items: center; flex-wrap: wrap; row-gap: 4px; }
 .h2h-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; margin-right: 5px; color: #06231a; }
 .h2h-badge.s { background: var(--accent); }
@@ -385,7 +394,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
       var echteKlasse = echterCode === 1 ? "tendenz-heim" : echterCode === 0 ? "tendenz-x" : "tendenz-gast";
       body =
         "<div class='score'><span class='tendenz-code " + echteKlasse + "'>" + echterCode + "</span></div>" +
-        (richtig === null ? "" : "<div class='sub " + (richtig ? "tendenz-ok" : "tendenz-nok") + "'>" + (richtig ? "✓ Tendenz richtig" : "✗ Tendenz daneben") + "</div>");
+        (richtig === null ? "" : "<div class='treffer-marke " + (richtig ? "treffer-ok" : "treffer-nok") + "'>" + (richtig ? "✓" : "✗") + "</div>");
     } else if (hatBegonnen) {
       body = "<div class='pending'>Spiel läuft — Ergebnis folgt nach Abpfiff</div>";
     } else {
