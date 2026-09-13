@@ -421,12 +421,19 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
     return "<div class='match-row'><div class='teams'>" + teams + "</div><div class='time'>" + fmtDate(m.anstoss) + "</div>" + body + "</div>";
   }
 
+  function nameKurzRoh(name) {
+    if (!name) return name;
+    return nameKurz(name)
+      .replace("Bayer 04 Leverkusen", "Bayer 04")
+      .replace("FC Bayern München", "FC Bayern");
+  }
+
   function renderRohergebnisse(rows) {
     var el = document.getElementById("rohergebnisse");
     if (!el) return;
     var html = rows.map(function (m) {
-      var heim = m.heim ? nameKurz(m.heim.name) : "?";
-      var gast = m.gast ? nameKurz(m.gast.name) : "?";
+      var heim = m.heim ? nameKurzRoh(m.heim.name) : "?";
+      var gast = m.gast ? nameKurzRoh(m.gast.name) : "?";
       var istBeendet = m.status === "beendet" && m.tore_heim !== null;
       var stand = istBeendet
         ? "<strong>" + m.tore_heim + " : " + m.tore_gast + "</strong>"
