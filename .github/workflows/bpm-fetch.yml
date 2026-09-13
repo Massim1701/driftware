@@ -1,0 +1,142 @@
+name: BPM-Werte ermitteln
+
+on:
+  workflow_dispatch:
+    inputs:
+      decade:
+        description: 'Welche Dekade (leer = automatisch die mit dem geringsten BPM-Fortschritt)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - 70er
+          - 80er
+          - 90er
+          - 2000er
+          - 2010er
+          - 2020er
+  schedule:
+    # Taeglich um 05:52 UTC (nicht auf :00, siehe Kommentar in den anderen
+    # Workflows -- zeitlich versetzt zu deren 04:37, damit nicht alle vier
+    # Jobs gleichzeitig um die geteilte Concurrency-Gruppe konkurrieren).
+    - cron: '52 5 * * *'
+
+# Selbe Gruppe wie expand-christmas-songs.yml / expand-decade-genres.yml /
+# process-missing-songs.yml: alle schreiben in dieselben einzeiligen
+# *-music/songs.json-Dateien -- geteilte Gruppe verhindert, dass sie
+# gleichzeitig laufen und sich beim Push in die Quere kommen.
+concurrency:
+  group: process-missing-songs
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  bpm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Startzeit merken
+        run: echo "JOB_START_TS=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Abhaengigkeiten installieren
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq libsndfile1
+          pip install --quiet yt-dlp librosa numpy
+
+      - name: Dekade bestimmen
+        id: pick
+        env:
+          INPUT_DECADE: ${{ inputs.decade }}
+        run: |
+          if [ -n "$INPUT_DECADE" ]; then
+            echo "decade=$INPUT_DECADE" >> "$GITHUB_OUTPUT"
+          else
+            python3 - <<'EOF' >> "$GITHUB_OUTPUT"
+          import json, os
+          best_key, best_ratio = None, 2.0
+          for d in ["70er", "80er", "90er", "2000er", "2010er", "2020er"]:
+              path = f"{d}-music/songs.json"
+              if not os.path.exists(path):
+                  continue
+              data = json.load(open(path, encoding="utf-8"))
+              songs = [s for g in data.values() for s in g if s.get("yt")]
+              if not songs:
+                  continue
+              have = sum(1 for s in songs if s.get("bpm"))
+              ratio = have / len(songs)
+              if ratio < best_ratio:
+                  best_ratio, best_key = ratio, d
+          print(f"decade={best_key}")
+          EOF
+          fi
+
+      - name: BPM-Werte ermitteln
+        env:
+          BPM_TIME_BUDGET_SECONDS: '20000'
+        run: python3 bpm_fetch.py "${{ steps.pick.outputs.decade }}"
+
+      - name: Aenderungen committen und pushen
+        env:
+          BPM_DECADE_KEY: ${{ steps.pick.outputs.decade }}
+        run: |
+          git config user.name "driftware-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add "${BPM_DECADE_KEY}-music/songs.json"
+          if git diff --cached --quiet; then
+            echo "Keine Aenderungen."
+            exit 0
+          fi
+          git commit -m "BPM-Werte fuer ${BPM_DECADE_KEY} ergaenzt"
+
+          # Gleiche Redo-Strategie wie die anderen Workflows in dieser
+          # Concurrency-Gruppe (siehe expand-decade-genres.yml fuer die
+          # ausfuehrliche Begruendung): bei einem echten Rebase-Konflikt
+          # nicht von Hand zusammenfuehren, sondern auf den frischen
+          # Remote-Stand zuruecksetzen und bpm_fetch.py dort erneut
+          # anstossen -- das Skript ist dafuer bewusst
+          # zustandslos/wiederholbar (ueberspringt Songs mit vorhandenem
+          # bpm-Feld).
+          for i in 1 2 3 4 5; do
+            if git push; then
+              echo "Push erfolgreich (Versuch $i)."
+              exit 0
+            fi
+
+            echo "Push abgelehnt (Versuch $i), hole Remote-Stand..."
+            git fetch origin master
+
+            if git rebase origin/master; then
+              echo "Sauber rebased, versuche erneut zu pushen."
+              continue
+            fi
+
+            echo "Echter Rebase-Konflikt -- Rebase abgebrochen, Lauf wird auf dem neuen Remote-Stand neu aufgesetzt statt blind zusammengefuehrt."
+            git rebase --abort
+            git reset --hard origin/master
+
+            ELAPSED=$(( $(date +%s) - JOB_START_TS ))
+            BUDGET=$(( 20700 - ELAPSED ))
+            if [ "$BUDGET" -lt 120 ]; then
+              echo "Kaum noch Zeit im 6h-Job-Limit uebrig -- Neu-Verarbeitung wird uebersprungen, der naechste Lauf uebernimmt den Rest. Kein Datenverlust, da bereits auf den frischen Remote-Stand zurueckgesetzt."
+              exit 0
+            fi
+
+            BPM_TIME_BUDGET_SECONDS=$BUDGET python3 bpm_fetch.py "${BPM_DECADE_KEY}"
+
+            git add "${BPM_DECADE_KEY}-music/songs.json"
+            if git diff --cached --quiet; then
+              echo "Nach Neu-Verarbeitung auf dem frischen Stand keine eigenen Aenderungen mehr uebrig."
+              exit 0
+            fi
+            git commit -m "BPM-Werte fuer ${BPM_DECADE_KEY} ergaenzt"
+          done
+
+          echo "::error::Push nach mehreren Versuchen fehlgeschlagen, Fortschritt bleibt lokal im Runner (geht verloren)."
+          exit 1

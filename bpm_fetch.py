@@ -13,11 +13,23 @@ import time
 import librosa
 import numpy as np
 
-COOKIE_BROWSER = "chrome"
+
+# Nutzerwunsch (13.9.): Cookies sind nur noch optional -- ueber
+# BPM_COOKIES_BROWSER setzbar, falls lokal auf einem Mac mit Chrome
+# gebraucht (z.B. bei haeufigeren 429ern). Im GitHub-Actions-Runner gibt es
+# keinen Browser, daher dort einfach nicht setzen -- getestet: yt-dlp
+# funktioniert fuer die kurzen Clips auch ohne Cookies zuverlaessig.
+COOKIE_BROWSER = os.environ.get("BPM_COOKIES_BROWSER", "").strip() or None
 CLIP_SECTION = "*30-55"  # 25s statt 45s reichen fuer die BPM-Erkennung, spart Downloadzeit
 DOWNLOAD_TIMEOUT = 120
 SLEEP_BETWEEN = 1.5
 PROGRESS_EVERY = 25
+# Nutzerwunsch (13.9.): analog zu process_christmas_queue.py/process_decade_
+# queue.py -- optionales Zeit-Budget, damit der GitHub-Actions-Job VOR dem
+# 6h-Limit sauber (mit letztem Checkpoint) aufhoert statt abgewuergt zu
+# werden.
+TIME_BUDGET_SECONDS = os.environ.get("BPM_TIME_BUDGET_SECONDS")
+TIME_BUDGET_SECONDS = int(TIME_BUDGET_SECONDS) if TIME_BUDGET_SECONDS else None
 
 
 def load_songs(path):
@@ -55,10 +67,11 @@ def download_clip(yt_id, out_base):
         f"https://www.youtube.com/watch?v={yt_id}",
         "-x", "--audio-format", "wav",
         "--download-sections", CLIP_SECTION,
-        "--cookies-from-browser", COOKIE_BROWSER,
         "-o", out_base,
         "--quiet", "--no-warnings",
     ]
+    if COOKIE_BROWSER:
+        cmd += ["--cookies-from-browser", COOKIE_BROWSER]
     try:
         result = subprocess.run(
             cmd, capture_output=True, text=True, timeout=DOWNLOAD_TIMEOUT
@@ -105,9 +118,14 @@ def main():
     label = f"{decade}/{genre}" if genre else decade
     print(f"{label}: {total} Songs mit yt-Feld, {already} bereits mit bpm.")
 
+    start_ts = time.time()
     for i, song in enumerate(songs, 1):
         if song.get("bpm"):
             continue
+
+        if TIME_BUDGET_SECONDS is not None and (time.time() - start_ts) > TIME_BUDGET_SECONDS:
+            print(f"Zeit-Budget ({TIME_BUDGET_SECONDS}s) erreicht, breche sauber ab (Fortschritt ist gespeichert).")
+            break
 
         yt_id = song["yt"]
         artist = song.get("a", "")
