@@ -40,9 +40,18 @@ jobs:
         # Kein DISCOGS_TOKEN noetig -- die Kandidaten (queue/christmas-
         # erweiterung.json) wurden bereits mit vollstaendigen Discogs-
         # Metadaten befuellt, dieser Schritt sucht nur noch die YouTube-Links.
+        # YOUTUBE_API_KEY (Repo-Secret): YouTube blockt Suchanfragen von den
+        # geteilten GitHub-Runner-IPs fast komplett (yt-dlp's Scraping-Suche
+        # kam nur noch auf ~1 Treffer je Vollpass durch die Warteliste) --
+        # die offizielle Data-API umgeht das. Ohne gesetzten Key faellt das
+        # Skript automatisch auf die alte yt-dlp-Suche zurueck.
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: python3 tools/process_christmas_queue.py
 
       - name: Aenderungen committen und pushen
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
           git config user.name "driftware-bot"
           git config user.email "actions@users.noreply.github.com"

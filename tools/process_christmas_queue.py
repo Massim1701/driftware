@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Verarbeitet queue/christmas-erweiterung.json: fuer jeden Kandidaten (schon
 vollstaendige Discogs-Metadaten aus einer style=Holiday-Suche, siehe
-Erstbefuellung durch Claude/Massimo) per yt-dlp einen YouTube-Link suchen, in
+Erstbefuellung durch Claude/Massimo) per YouTube-Suche einen Link finden, in
 die passende Genre-Kategorie in christmas-music/songs.json einsortieren und
 aus der Warteliste entfernen. KEIN Discogs-API-Aufruf noetig (Metadaten liegen
 schon vor) -- laeuft daher auch ohne DISCOGS_TOKEN. Fehlende Cover/Thumbnails
@@ -10,12 +10,23 @@ das YouTube-Vorschaubild ersetzt, siehe build_song_entry().
 
 Zeitbudget + Zwischenspeicherung wie tools/process_missing_queue.py, damit
 sich ein Lauf sauber ueber mehrere manuelle Workflow-Starts verteilen kann,
-falls die Warteliste nicht in einem Durchlauf fertig wird."""
+falls die Warteliste nicht in einem Durchlauf fertig wird.
+
+Nutzerwunsch (13.9.): yt-dlp-basierte Suche (ytsearch5) wird auf den
+GitHub-Actions-Runnern fast durchgaengig leer zurueckgegeben -- vermutlich
+blockt YouTube die geteilten Rechenzentrums-IPs der Runner bei Suchanfragen
+(Downloads/einzelne Video-Infos scheinen davon nicht betroffen). Deshalb
+zuerst die offizielle YouTube-Data-API (YOUTUBE_API_KEY als Repo-Secret)
+versuchen, und nur wenn kein Key gesetzt ist oder die API fehlschlaegt, auf
+die alte yt-dlp-Suche zurueckfallen -- so bleibt das Skript auch ohne Key
+funktionsfaehig (nur eben mit dem bekannten IP-Problem)."""
 import json
 import os
 import random
 import subprocess
 import time
+import urllib.parse
+import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 QUEUE_PATH = os.path.join(ROOT, "queue", "christmas-erweiterung.json")
@@ -24,6 +35,9 @@ CATALOG_PATH = os.path.join(ROOT, "christmas-music", "songs.json")
 TIME_BUDGET_SECONDS = int(os.environ.get("CHRISTMAS_TIME_BUDGET_SECONDS", "19800"))  # 5.5h, wie process_missing_queue.py
 SAVE_EVERY = 5
 START_TS = time.time()
+
+YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY", "").strip() or None
+YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
 
 
 def load_json(path):
@@ -49,13 +63,72 @@ def _yt_dlp_search(query, player_client=None):
         return None
 
 
+def search_youtube_api(artist, title):
+    """YouTube-Data-API-Suche (v3 search.list) -- funktioniert unabhaengig von
+    der Bot-/Rechenzentrums-IP-Erkennung, die yt-dlp's Scraping-basierte Suche
+    auf GitHub-Actions-Runnern fast immer leer zurueckgeben laesst. Gibt ein
+    zu den yt-dlp-Kandidaten kompatibles Dict zurueck (id/channel/thumbnail)
+    oder None bei Fehler/keinem Treffer."""
+    if not YOUTUBE_API_KEY:
+        return None
+    query = f"{artist} {title}"
+    params = {
+        "part": "snippet",
+        "q": query,
+        "type": "video",
+        "maxResults": "5",
+        "key": YOUTUBE_API_KEY,
+    }
+    url = YOUTUBE_SEARCH_URL + "?" + urllib.parse.urlencode(params)
+    try:
+        with urllib.request.urlopen(url, timeout=20) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except Exception as e:
+        print(f"  YouTube-API fehlgeschlagen: {e}")
+        return None
+
+    items = data.get("items", [])
+    if not items:
+        return None
+
+    candidates = []
+    for item in items:
+        vid = item.get("id", {}).get("videoId")
+        if not vid:
+            continue
+        snippet = item.get("snippet", {})
+        thumbs = snippet.get("thumbnails", {})
+        thumb = (
+            thumbs.get("high", {}).get("url")
+            or thumbs.get("medium", {}).get("url")
+            or thumbs.get("default", {}).get("url")
+        )
+        candidates.append({
+            "id": vid,
+            "channel": snippet.get("channelTitle", ""),
+            "thumbnail": thumb,
+        })
+
+    if not candidates:
+        return None
+    for c in candidates:
+        if "vevo" in c["channel"].lower():
+            return c
+    return candidates[0]
+
+
 def search_youtube(artist, title):
     """Identische Strategie wie tools/process_missing_queue.py::search_youtube
     (Android-Client-Retry gegen die Bot-Erkennung von GitHub-Actions-Runner-IPs,
     VEVO-Praeferenz) -- hier dupliziert statt importiert, damit dieses Skript
-    eigenstaendig bleibt. Gibt (anders als dort) das volle yt-dlp-Info-Dict
+    eigenstaendig bleibt. Gibt (anders als dort) das volle Info-Dict
     zurueck statt nur der ID, weil wir zusaetzlich das Vorschaubild brauchen
-    (siehe build_song_entry)."""
+    (siehe build_song_entry). Versucht zuerst die YouTube-Data-API (siehe
+    search_youtube_api), faellt bei fehlendem Key/Fehler auf yt-dlp zurueck."""
+    api_result = search_youtube_api(artist, title)
+    if api_result is not None:
+        return api_result
+
     query = f"ytsearch5:{artist} {title}"
     out = _yt_dlp_search(query)
     candidates = []
@@ -148,6 +221,8 @@ def main():
         return
     catalog = load_json(CATALOG_PATH)
 
+    print(f"YouTube-Suche via: {'Data API' if YOUTUBE_API_KEY else 'yt-dlp (kein YOUTUBE_API_KEY gesetzt)'}")
+
     processed = 0
     found = 0
     remaining = []
@@ -165,7 +240,7 @@ def main():
         try:
             yt_info = search_youtube(cand["a"], cand["t"])
         except Exception as e:
-            print(f"  Fehler bei yt-dlp: {e}")
+            print(f"  Fehler bei der Suche: {e}")
 
         processed += 1
         if not yt_info:
