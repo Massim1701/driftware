@@ -156,6 +156,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
 .panel-ergebnis { background: #101f16; border-color: #2f7a4c; }
 .panel-tabelle { background: #0c1a13; border-color: #226b40; }
 .panel-rohergebnisse { background: #0c1a13; border-color: #226b40; }
+.panel-spass { background: #1a1408; border-color: #6b5522; }
 .panel h2 {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 15px;
@@ -329,6 +330,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
         <p class="panel-sub" id="tabelle-sub">Saison 2026/27, live</p>
         <div id="tabelle"><div class="loading">Lädt …</div></div>
       </div>
+      <div class="panel panel-spass">
+        <h2>Endtabelle (Spaß)</h2>
+        <p class="panel-sub">Wenn sich unsere Vorhersagen nicht mehr ändern — reine Spielerei, keine echte Prognose</p>
+        <div id="spasstabelle"><div class="loading">Lädt …</div></div>
+      </div>
     </div>
   </div>
 </main>
@@ -392,6 +398,53 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
       historieEl.innerHTML =
         "<table class='hist-table'><thead><tr><th>Team</th><th class='num'>Tore</th><th class='num'>Geg.</th><th class='num'>Pkt.</th></tr></thead><tbody>" + rows + "</tbody></table>" + fussnote;
     });
+  }
+
+  function ladeSpassTabelle() {
+    var el = document.getElementById("spasstabelle");
+    if (!el) return;
+    sb.from("spiele")
+      .select("heim_team_id,gast_team_id,tore_heim,tore_gast,status,heim:teams!spiele_heim_team_id_fkey(name),gast:teams!spiele_gast_team_id_fkey(name),vorhersagen(tipp_tore_heim,tipp_tore_gast)")
+      .eq("saison", SAISON)
+      .eq("liga", "bl1")
+      .then(function (res) {
+        if (res.error || !res.data) {
+          el.innerHTML = "<div class='loading'>Fehler beim Laden.</div>";
+          return;
+        }
+        var teams = {};
+        function eintrag(id, name) {
+          if (!teams[id]) teams[id] = { name: name, sp: 0, tore: 0, gegentore: 0, pkt: 0 };
+          return teams[id];
+        }
+        res.data.forEach(function (m) {
+          var heimName = m.heim ? m.heim.name : "?";
+          var gastName = m.gast ? m.gast.name : "?";
+          var vorhersage = Array.isArray(m.vorhersagen) ? m.vorhersagen[0] : m.vorhersagen;
+          var th, tg;
+          if (m.status === "beendet" && m.tore_heim !== null) {
+            th = m.tore_heim; tg = m.tore_gast;
+          } else if (vorhersage) {
+            th = vorhersage.tipp_tore_heim; tg = vorhersage.tipp_tore_gast;
+          } else {
+            return;
+          }
+          var eh = eintrag(m.heim_team_id, heimName), eg = eintrag(m.gast_team_id, gastName);
+          eh.sp++; eg.sp++;
+          eh.tore += th; eh.gegentore += tg;
+          eg.tore += tg; eg.gegentore += th;
+          if (th > tg) eh.pkt += 3;
+          else if (th < tg) eg.pkt += 3;
+          else { eh.pkt += 1; eg.pkt += 1; }
+        });
+        var rows = Object.keys(teams).map(function (k) { return teams[k]; }).sort(function (a, b) {
+          return b.pkt - a.pkt || (b.tore - b.gegentore) - (a.tore - a.gegentore) || b.tore - a.tore;
+        });
+        el.innerHTML = "<table class='tab-table'><thead><tr><th></th><th>Team</th><th class='num'>Sp</th><th class='num'>Diff</th><th class='num'>Pkt</th></tr></thead><tbody>" +
+          rows.map(function (r, i) {
+            return "<tr><td>" + (i + 1) + "</td><td class='team'>" + nameKurzHistorie(r.name) + "</td><td class='num'>" + r.sp + "</td><td class='num'>" + (r.tore - r.gegentore) + "</td><td class='num'>" + r.pkt + "</td></tr>";
+          }).join("") + "</tbody></table>";
+      });
   }
 
   function tendenzRichtig(m, vorhersage) {
@@ -686,6 +739,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
   }
 
   ladeHistorie();
+  ladeSpassTabelle();
 
   sb.from("spiele")
     .select("spieltag")
