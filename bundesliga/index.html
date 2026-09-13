@@ -358,8 +358,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
         (vorhersage.wahrscheinlichkeit_unentschieden >= vorhersage.wahrscheinlichkeit_gastsieg) ? 0 : 2;
       var tendenzKlasse = tendenzCode === 1 ? "tendenz-heim" : tendenzCode === 0 ? "tendenz-x" : "tendenz-gast";
       body =
-        "<div class='score'>" + vorhersage.tipp_tore_heim + "&nbsp;&nbsp;:&nbsp;&nbsp;" + vorhersage.tipp_tore_gast +
-        "&nbsp;&nbsp;<span class='tendenz-code " + tendenzKlasse + "'>" + tendenzCode + "</span></div>" +
+        "<div class='score'><span class='tendenz-code " + tendenzKlasse + "'>" + tendenzCode + "</span></div>" +
         "<div class='sub'>Heimsieg " + pct(vorhersage.wahrscheinlichkeit_heimsieg) +
         " · Unentschieden " + pct(vorhersage.wahrscheinlichkeit_unentschieden) +
         " · Auswärtssieg " + pct(vorhersage.wahrscheinlichkeit_gastsieg) + "</div>";
@@ -381,8 +380,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
     var body;
     if (istBeendet) {
       var richtig = tendenzRichtig(m, vorhersage);
+      var diff = m.tore_heim - m.tore_gast;
+      var echterCode = diff > 0 ? 1 : diff < 0 ? 2 : 0;
+      var echteKlasse = echterCode === 1 ? "tendenz-heim" : echterCode === 0 ? "tendenz-x" : "tendenz-gast";
       body =
-        "<div class='score'>" + m.tore_heim + "&nbsp;&nbsp;:&nbsp;&nbsp;" + m.tore_gast + "</div>" +
+        "<div class='score'><span class='tendenz-code " + echteKlasse + "'>" + echterCode + "</span></div>" +
         (richtig === null ? "" : "<div class='sub " + (richtig ? "tendenz-ok" : "tendenz-nok") + "'>" + (richtig ? "✓ Tendenz richtig" : "✗ Tendenz daneben") + "</div>");
     } else if (hatBegonnen) {
       body = "<div class='pending'>Spiel läuft — Ergebnis folgt nach Abpfiff</div>";
