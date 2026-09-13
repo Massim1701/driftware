@@ -4,11 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       decade:
-        description: 'Welche Dekade (leer = automatisch die mit dem geringsten BPM-Fortschritt)'
+        description: 'Welche Dekade (auto = automatisch die mit dem geringsten BPM-Fortschritt)'
         required: false
         type: choice
+        default: 'auto'
         options:
-          - ''
+          - auto
           - 70er
           - 80er
           - 90er
@@ -55,26 +56,10 @@ jobs:
         env:
           INPUT_DECADE: ${{ inputs.decade }}
         run: |
-          if [ -n "$INPUT_DECADE" ]; then
+          if [ -n "$INPUT_DECADE" ] && [ "$INPUT_DECADE" != "auto" ]; then
             echo "decade=$INPUT_DECADE" >> "$GITHUB_OUTPUT"
           else
-            python3 - <<'EOF' >> "$GITHUB_OUTPUT"
-          import json, os
-          best_key, best_ratio = None, 2.0
-          for d in ["70er", "80er", "90er", "2000er", "2010er", "2020er"]:
-              path = f"{d}-music/songs.json"
-              if not os.path.exists(path):
-                  continue
-              data = json.load(open(path, encoding="utf-8"))
-              songs = [s for g in data.values() for s in g if s.get("yt")]
-              if not songs:
-                  continue
-              have = sum(1 for s in songs if s.get("bpm"))
-              ratio = have / len(songs)
-              if ratio < best_ratio:
-                  best_ratio, best_key = ratio, d
-          print(f"decade={best_key}")
-          EOF
+            python3 tools/pick_bpm_decade.py >> "$GITHUB_OUTPUT"
           fi
 
       - name: BPM-Werte ermitteln
