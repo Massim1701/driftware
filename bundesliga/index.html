@@ -127,7 +127,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
 
 .board {
   display: grid;
-  grid-template-columns: 250px 1fr 1fr 300px;
+  grid-template-columns: 280px 1fr 1fr 300px;
   gap: 18px;
   align-items: start;
 }
@@ -184,7 +184,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
   border-bottom: 1px solid rgba(255,255,255,.04);
 }
 .hist-table tr:last-child td { border-bottom: none; }
-.hist-table td.team { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hist-table td.team { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .tab-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .tab-table th {
@@ -365,6 +365,17 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
       .replace("Borussia Mönchengladbach", "Bor. Mönchengladbach");
   }
 
+  function nameKurzHistorie(name) {
+    if (!name) return name;
+    return nameKurz(name)
+      .replace("FC Bayern München", "FC Bayern")
+      .replace("Bayer 04 Leverkusen", "Bayer 04")
+      .replace("SC Paderborn 07", "SC Paderborn")
+      .replace("SV 07 Elversberg", "SV Elversberg")
+      .replace("1. FC Union Berlin", "Union Berlin")
+      .replace("SV Werder Bremen", "Werder Bremen");
+  }
+
   function ladeHistorie() {
     sb.from("historie_5jahre").select("*").order("punkte_schnitt", { ascending: false }).then(function (res) {
       if (res.error || !res.data) {
@@ -375,7 +386,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
       var rows = res.data.map(function (r) {
         var stern = "";
         if (r.basis === "Vorsaison 2.Liga") { stern = "*"; hatAufsteiger = true; }
-        return "<tr><td class='team'>" + r.name + stern + "</td><td class='num'>" + r.tore_schnitt + "</td><td class='num'>" + r.gegentore_schnitt + "</td><td class='num'>" + r.punkte_schnitt + "</td></tr>";
+        return "<tr><td class='team'>" + nameKurzHistorie(r.name) + stern + "</td><td class='num'>" + r.tore_schnitt + "</td><td class='num'>" + r.gegentore_schnitt + "</td><td class='num'>" + r.punkte_schnitt + "</td></tr>";
       }).join("");
       var fussnote = hatAufsteiger ? "<div class='h2h-zeile'>* Aufsteiger: Werte aus der 2.-Liga-Vorsaison, kein 5-Jahres-Schnitt</div>" : "";
       historieEl.innerHTML =
