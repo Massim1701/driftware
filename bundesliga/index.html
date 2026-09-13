@@ -226,6 +226,16 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
 }
 .panel-ergebnis .match-row .score { text-align: center; }
 .match-row .sub { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+.tendenz-code {
+  display: inline-block;
+  background: var(--accent);
+  color: #06231a;
+  font-size: 20px;
+  font-weight: 800;
+  padding: 0 8px;
+  border-radius: 8px;
+  vertical-align: middle;
+}
 .pending { color: var(--muted); font-style: italic; font-size: 13px; }
 .tendenz-ok { color: var(--accent); }
 .tendenz-nok { color: var(--red); }
@@ -346,8 +356,9 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
          vorhersage.wahrscheinlichkeit_heimsieg >= vorhersage.wahrscheinlichkeit_gastsieg) ? 1 :
         (vorhersage.wahrscheinlichkeit_unentschieden >= vorhersage.wahrscheinlichkeit_gastsieg) ? 0 : 2;
       body =
-        "<div class='score'>" + vorhersage.tipp_tore_heim + "&nbsp;&nbsp;:&nbsp;&nbsp;" + vorhersage.tipp_tore_gast + "</div>" +
-        "<div class='sub'><strong>" + tendenzCode + "</strong> · Heimsieg " + pct(vorhersage.wahrscheinlichkeit_heimsieg) +
+        "<div class='score'>" + vorhersage.tipp_tore_heim + "&nbsp;&nbsp;:&nbsp;&nbsp;" + vorhersage.tipp_tore_gast +
+        "&nbsp;&nbsp;<span class='tendenz-code'>" + tendenzCode + "</span></div>" +
+        "<div class='sub'>Heimsieg " + pct(vorhersage.wahrscheinlichkeit_heimsieg) +
         " · Unentschieden " + pct(vorhersage.wahrscheinlichkeit_unentschieden) +
         " · Auswärtssieg " + pct(vorhersage.wahrscheinlichkeit_gastsieg) + "</div>";
     } else {
