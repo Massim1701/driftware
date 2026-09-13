@@ -858,6 +858,58 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   text-decoration: none;
 }
 
+/* Nutzerwunsch (13.9.): "endgueltiges Entfernen" eines Songs mit falschem/
+   fehlendem Video aus dem Katalog, direkt aus dem Song-Info-Modal. Deutlich
+   abgesetzt (roter Ton) und mit Bestaetigungsschritt, da irreversibel. */
+.song-modal-remove-box {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.song-modal-remove-btn {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid #b3413a;
+  color: #e2665d;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.song-modal-remove-btn:hover { background: rgba(226, 102, 93, 0.12); }
+.song-modal-remove-confirm[hidden] { display: none; }
+.song-modal-remove-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text);
+}
+.song-modal-remove-confirm-yes,
+.song-modal-remove-confirm-no {
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.song-modal-remove-confirm-yes {
+  background: #b3413a;
+  border: none;
+  color: #fff;
+}
+.song-modal-remove-confirm-no {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.song-modal-remove-status { margin: 0; font-size: 11px; color: var(--muted); min-height: 14px; }
+
 /* ---------- Eigener DJ-Player: zwei Plattenspieler (Deck A/B) + Crossfader,
    unten fixiert. Songs per Klick auf ▶ oder per Drag&Drop auf ein Deck
    laden. Bleibt auch über dem Popup sichtbar. Alles Gespielte landet

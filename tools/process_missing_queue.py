@@ -27,6 +27,12 @@ DISCOGS_TOKEN = os.environ.get("DISCOGS_TOKEN", "").strip()
 
 YOUTUBE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 
+# Sentinel im "g"-Feld eines Warteliste-Eintrags: markiert eine
+# Loesch-Anfrage statt einer Genre-Korrektur (siehe Verwendung unten).
+# Bewusst kein gueltiger Genre-Name, damit es nie mit einem echten Bucket
+# kollidiert.
+REMOVE_SENTINEL = "__REMOVE__"
+
 DECADE_CATALOGS = [
     (1970, 1979, "70er-music/songs.json"),
     (1980, 1989, "80er-music/songs.json"),
@@ -385,6 +391,31 @@ def main():
                 if catalog_path_rel not in changed_catalogs:
                     changed_catalogs[catalog_path_rel] = load_json(catalog_path_abs)
                 catalog_data = changed_catalogs[catalog_path_rel]
+
+                # Nutzerwunsch (13.9.): "endgueltiges Entfernen" eines Songs
+                # aus dem Song-Info-Modal (siehe shared/decades.js
+                # submitSongRemoval) -- kommt ueber denselben Proxy/dieselbe
+                # Warteliste wie die Genre-Korrektur, erkennbar am reservierten
+                # Sentinel-Wert REMOVE_SENTINEL statt eines echten Genre-Keys.
+                # Der Song wird ueberall im Katalog dieser Dekade gesucht
+                # (per song_id) und komplett geloescht -- NICHT nur in einen
+                # anderen Bucket verschoben. Kein Zurueckholen moeglich, daher
+                # bewusst nur per exaktem (Artist, Titel)-Treffer.
+                if manual_genre == REMOVE_SENTINEL:
+                    wanted_id = song_id(artist, title)
+                    removed = False
+                    for bucket_name, songs_list in list(catalog_data.items()):
+                        for i, s in enumerate(songs_list):
+                            if song_id(s.get("a"), s.get("t")) == wanted_id:
+                                songs_list.pop(i)
+                                removed = True
+                                print(f"  entfernt aus {catalog_path_rel} / {bucket_name} (Nutzer-Meldung: falsches/kein Video)")
+                                break
+                        if removed:
+                            break
+                    if not removed:
+                        print(f"  nicht gefunden in {catalog_path_rel} (schon entfernt?), wird aus der Warteliste genommen")
+                    continue
 
                 # Genre-Korrektur eines bereits vorhandenen Katalog-Songs (kommt
                 # vom "Genre bearbeiten"-Button bei Songs ohne Genre, siehe

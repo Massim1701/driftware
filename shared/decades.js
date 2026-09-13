@@ -522,6 +522,15 @@ function ensureSongModal() {
     '  <div class="streaming-row" id="song-modal-streaming"></div>' +
     '  <a class="song-modal-link" id="song-modal-link" target="_blank" rel="noopener">Auf Discogs ansehen →</a>' +
     '  <a class="song-modal-link" id="song-modal-vk-link" target="_blank" rel="noopener">Auf VK ansehen →</a>' +
+    '  <div class="song-modal-remove-box">' +
+    '    <button type="button" class="song-modal-remove-btn" id="song-modal-remove-btn">Song endgültig entfernen</button>' +
+    '    <div class="song-modal-remove-confirm" id="song-modal-remove-confirm" hidden>' +
+    '      <span>Song wirklich unwiderruflich aus dem Katalog entfernen?</span>' +
+    '      <button type="button" class="song-modal-remove-confirm-yes" id="song-modal-remove-confirm-yes">Ja, entfernen</button>' +
+    '      <button type="button" class="song-modal-remove-confirm-no" id="song-modal-remove-confirm-no">Abbrechen</button>' +
+    '    </div>' +
+    '    <p class="song-modal-remove-status" id="song-modal-remove-status"></p>' +
+    '  </div>' +
     '</div>';
   document.body.appendChild(overlay);
   overlay.addEventListener('click', function (e) { if (e.target === overlay) closeSongModal(); });
@@ -2718,6 +2727,59 @@ function closeSongModal() {
    (Cover, YouTube-Link etc.) bleiben erhalten. */
 var GENRE_FIX_PROXY_URL = 'https://driftware-warteliste-proxy.welove80sde.workers.dev/';
 
+/* Nutzerwunsch (13.9.): "in den Playlisten sind auch fragwuerdige Dinger
+   drin ... Videos die keinen Bezug zum Song haben, irgendwelche Werbung,
+   die moechte ich per Hand aus der JSON loeschen koennen." -- nutzt
+   denselben Proxy/dieselbe Warteliste wie die Genre-Korrektur (kein neuer
+   Worker noetig), markiert per Sentinel-Wert im "g"-Feld aber eine
+   Loesch- statt einer Verschiebe-Anfrage (siehe
+   tools/process_missing_queue.py REMOVE_SENTINEL). Muss exakt mit dem
+   dortigen Python-String uebereinstimmen. */
+var REMOVE_SENTINEL = '__REMOVE__';
+
+function submitSongRemoval(song, statusEl, btn) {
+  statusEl.textContent = 'Wird gemeldet …';
+  btn.disabled = true;
+  fetch(GENRE_FIX_PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ a: song.a, t: song.t, g: REMOVE_SENTINEL, y: song.y })
+  })
+    .then(function (r) { if (!r.ok) throw new Error('write-failed'); return r; })
+    .then(function () {
+      statusEl.textContent = 'Gemeldet ✓ -- wird in Kürze (spätestens am nächsten Tag) endgültig aus dem Katalog entfernt.';
+    })
+    .catch(function () {
+      statusEl.textContent = 'Fehlgeschlagen -- bitte später erneut versuchen.';
+      btn.disabled = false;
+    });
+}
+
+/* Verdrahtet den "Song endgültig entfernen"-Bereich im Song-Modal: erst
+   Bestaetigung einblenden (irreversibel, siehe submitSongRemoval), erst
+   nach Klick auf "Ja, entfernen" tatsaechlich melden. */
+function setupRemoveUI(song) {
+  var btn = document.getElementById('song-modal-remove-btn');
+  var confirmBox = document.getElementById('song-modal-remove-confirm');
+  var yesBtn = document.getElementById('song-modal-remove-confirm-yes');
+  var noBtn = document.getElementById('song-modal-remove-confirm-no');
+  var statusEl = document.getElementById('song-modal-remove-status');
+  if (!btn || !confirmBox || !yesBtn || !noBtn || !statusEl) return;
+
+  confirmBox.hidden = true;
+  statusEl.textContent = '';
+  btn.hidden = false;
+  btn.disabled = false;
+
+  btn.onclick = function () { confirmBox.hidden = false; btn.hidden = true; };
+  noBtn.onclick = function () { confirmBox.hidden = true; btn.hidden = false; };
+  yesBtn.onclick = function () {
+    confirmBox.hidden = true;
+    submitSongRemoval(song, statusEl, btn);
+    btn.hidden = false;
+  };
+}
+
 function submitGenreFix(song, genreKey, statusEl, selectEl, saveBtn) {
   statusEl.textContent = 'Wird gespeichert …';
   saveBtn.disabled = true;
@@ -2821,6 +2883,7 @@ function openSongModal(song) {
   }
 
   setupGenreEditUI(song);
+  setupRemoveUI(song);
 
   document.getElementById('song-modal-streaming').innerHTML = streamingLinksHTML(song);
 
