@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bundesliga-Vorhersage — driftware</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0f0c;
+  --card: #101a14;
+  --border: #1f3126;
+  --text: #eafff3;
+  --muted: #7fa891;
+  --accent: #1fae63;
+  --red: #e05a5a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  padding-bottom: 60px;
+}
+header {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 48px 20px 20px;
+  text-align: center;
+}
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  background: rgba(31,174,99,.08);
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 16px;
+}
+h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(26px, 5vw, 36px);
+  margin: 0 0 12px;
+}
+.intro {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 8px;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.integrity-note {
+  max-width: 680px;
+  margin: 20px auto 0;
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(31,174,99,.05);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+  text-align: left;
+}
+.integrity-note strong { color: var(--text); }
+a.home {
+  display: inline-block;
+  margin-top: 18px;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 14px;
+  border-bottom: 1px solid transparent;
+}
+a.home:hover { border-bottom-color: var(--accent); }
+
+main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+
+.spieltag-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 28px 0 16px;
+}
+.spieltag-tab {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.spieltag-tab.active {
+  background: var(--accent);
+  color: #06231a;
+  border-color: var(--accent);
+}
+.spieltag-tab:hover:not(.active) { border-color: rgba(255,255,255,.25); }
+.spieltag-tab .tq { display: block; font-size: 9px; font-weight: 700; margin-top: 2px; opacity: .8; }
+.spieltag-tab.active .tq { opacity: 1; }
+
+.trefferquote {
+  text-align: center;
+  margin: 8px 0 28px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.trefferquote strong { color: var(--accent); font-size: 16px; }
+
+.board {
+  display: grid;
+  grid-template-columns: 250px 1fr 1fr 260px;
+  gap: 18px;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .board { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  main { padding: 0 10px; }
+  .panel { padding: 14px 12px; }
+  .match-row { padding: 12px 10px; }
+  .match-row .teams { font-size: 13px; }
+}
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+}
+.panel-historie { background: #0d1611; border-color: #1e3327; }
+.panel-vorhersage { background: #0f1c14; border-color: #275a3c; }
+.panel-ergebnis { background: #101f16; border-color: #2f7a4c; }
+.panel-tabelle { background: #0c1a13; border-color: #226b40; }
+.panel h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  margin: 0 0 4px;
+}
+.panel .panel-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+
+/* Historie-Tabelle links */
+.hist-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.hist-table th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 4px 4px;
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+.hist-table th.num, .hist-table td.num { text-align: right; }
+.hist-table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.hist-table tr:last-child td { border-bottom: none; }
+.hist-table td.team { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.tab-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.tab-table th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 4px 4px;
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+.tab-table th.num, .tab-table td.num { text-align: right; }
+.tab-table td {
+  padding: 5px 4px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.tab-table tr:last-child td { border-bottom: none; }
+.tab-table td.platz { color: var(--muted); width: 18px; }
+.tab-table td.team { max-width: 108px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tab-table td.pkt { font-weight: 700; color: var(--accent); }
+.tab-table tr.cl td.platz { color: #4fd88a; }
+.tab-table tr.abstieg td.platz { color: var(--red); }
+.trend-up { color: #4fd88a; font-weight: 700; }
+.trend-down { color: var(--red); font-weight: 700; }
+.trend-same { color: var(--muted); }
+
+/* Match-Zeilen Mitte/Rechts */
+.match-row {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  min-height: 148px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+.match-row .teams {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.match-row .teams .vs { color: var(--muted); font-size: 11px; font-weight: 400; }
+.match-row .time { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.match-row .score {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+.panel-ergebnis .match-row .score { text-align: center; }
+.match-row .sub { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+.pending { color: var(--muted); font-style: italic; font-size: 13px; }
+.tendenz-ok { color: var(--accent); }
+.tendenz-nok { color: var(--red); }
+.h2h-zeile { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,.08); font-size: 11px; color: var(--muted); min-height: 24px; display: flex; align-items: center; flex-wrap: wrap; row-gap: 4px; }
+.h2h-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; margin-right: 5px; color: #06231a; }
+.h2h-badge.s { background: var(--accent); }
+.h2h-badge.u { background: #7fa891; color: #06231a; }
+.h2h-badge.n { background: var(--red); color: #2a0a0a; }
+.loading { text-align: center; color: var(--muted); padding: 40px 0; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">Live</span>
+  <h1>Bundesliga-Vorhersage</h1>
+  <p class="intro">Eigene Spieltag-Prognosen aus Formkurve, Heimvorteil und direkten Duellen — mit Trefferquote-Tracking nach jedem Spieltag.</p>
+  <div class="integrity-note">
+    <strong>Wie das funktioniert:</strong> Jede Vorhersage entsteht ausschließlich mit Daten von <em>vor</em> Anpfiff. Sobald ein Spiel beginnt, wird sie eingefroren und nie mehr nachträglich verändert — so bleibt der Vergleich mit dem echten Ergebnis ehrlich. Deshalb siehst du bei laufenden oder anstehenden Spielen bewusst noch kein Ergebnis in der rechten Spalte.
+  </div>
+  <a class="home" href="/">← Zurück zu driftware.online</a>
+</header>
+
+<main>
+  <div class="spieltag-tabs" id="tabs"></div>
+  <div class="trefferquote" id="trefferquote"></div>
+  <div class="board">
+    <div class="panel panel-historie" id="historie-panel">
+      <h2>Ø letzte 5 Jahre</h2>
+      <p class="panel-sub">Saison 2021/22–2025/26, pro Spiel</p>
+      <div id="historie"><div class="loading">Lädt …</div></div>
+    </div>
+    <div class="panel panel-vorhersage">
+      <h2>Unsere Vorhersage</h2>
+      <p class="panel-sub">Vor Anpfiff berechnet und eingefroren</p>
+      <div id="vorhersagen"><div class="loading">Lade Spieltag …</div></div>
+    </div>
+    <div class="panel panel-ergebnis">
+      <h2>Ergebnis</h2>
+      <p class="panel-sub">Wie der Spieltag wirklich lief</p>
+      <div id="ergebnisse"><div class="loading">Lade Spieltag …</div></div>
+    </div>
+    <div class="panel panel-tabelle">
+      <h2>Tabelle</h2>
+      <p class="panel-sub" id="tabelle-sub">Saison 2026/27, live</p>
+      <div id="tabelle"><div class="loading">Lädt …</div></div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  var SUPABASE_URL = "https://cvcxlqbkrkzjzxfzgtqn.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_dgMT-r40GmhTDgCXoScB3g_l7BhrmWb";
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  var SAISON = "2026";
+
+  var tabsEl = document.getElementById("tabs");
+  var vorhersagenEl = document.getElementById("vorhersagen");
+  var ergebnisseEl = document.getElementById("ergebnisse");
+  var trefferquoteEl = document.getElementById("trefferquote");
+  var historieEl = document.getElementById("historie");
+  var allSpieltage = [];
+  var cache = {};
+  var tqBySpieltag = {};
+  var h2hCache = {};
+
+  function fmtDate(iso) {
+    var d = new Date(iso);
+    return d.toLocaleString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) + " Uhr";
+  }
+  function pct(x) { return Math.round(x * 100) + "%"; }
+
+  function nameKurz(name) {
+    if (!name) return name;
+    return name
+      .replace("Eintracht Frankfurt", "Eintr. Frankfurt")
+      .replace("Borussia Dortmund", "Bor. Dortmund")
+      .replace("Borussia Mönchengladbach", "Bor. Mönchengladbach");
+  }
+
+  function ladeHistorie() {
+    sb.from("historie_5jahre").select("*").order("punkte_schnitt", { ascending: false }).then(function (res) {
+      if (res.error || !res.data) {
+        historieEl.innerHTML = "<div class='loading'>Fehler beim Laden.</div>";
+        return;
+      }
+      var hatAufsteiger = false;
+      var rows = res.data.map(function (r) {
+        var stern = "";
+        if (r.basis === "Vorsaison 2.Liga") { stern = "*"; hatAufsteiger = true; }
+        return "<tr><td class='team'>" + r.name + stern + "</td><td class='num'>" + r.tore_schnitt + "</td><td class='num'>" + r.gegentore_schnitt + "</td><td class='num'>" + r.punkte_schnitt + "</td></tr>";
+      }).join("");
+      var fussnote = hatAufsteiger ? "<div class='h2h-zeile'>* Aufsteiger: Werte aus der 2.-Liga-Vorsaison, kein 5-Jahres-Schnitt</div>" : "";
+      historieEl.innerHTML =
+        "<table class='hist-table'><thead><tr><th>Team</th><th class='num'>Tore</th><th class='num'>Geg.</th><th class='num'>Pkt.</th></tr></thead><tbody>" + rows + "</tbody></table>" + fussnote;
+    });
+  }
+
+  function tendenzRichtig(m, vorhersage) {
+    if (!vorhersage || m.tore_heim === null) return null;
+    var diff = m.tore_heim - m.tore_gast;
+    var bestesP = Math.max(vorhersage.wahrscheinlichkeit_heimsieg, vorhersage.wahrscheinlichkeit_unentschieden, vorhersage.wahrscheinlichkeit_gastsieg);
+    var vorhergesagtesTendenz =
+      bestesP === vorhersage.wahrscheinlichkeit_heimsieg ? 1 :
+      bestesP === vorhersage.wahrscheinlichkeit_unentschieden ? 0 : -1;
+    var echteTendenz = diff > 0 ? 1 : diff < 0 ? -1 : 0;
+    return vorhergesagtesTendenz === echteTendenz;
+  }
+
+  function renderVorhersageRow(m, vorhersage) {
+    var teams = (m.heim ? nameKurz(m.heim.name) : "?") + " <span class='vs'>vs</span> " + (m.gast ? nameKurz(m.gast.name) : "?");
+    var body;
+    if (vorhersage) {
+      body =
+        "<div class='score'>" + vorhersage.tipp_tore_heim + "&nbsp;&nbsp;:&nbsp;&nbsp;" + vorhersage.tipp_tore_gast + "</div>" +
+        "<div class='sub'>Heimsieg " + pct(vorhersage.wahrscheinlichkeit_heimsieg) +
+        " · Unentschieden " + pct(vorhersage.wahrscheinlichkeit_unentschieden) +
+        " · Auswärtssieg " + pct(vorhersage.wahrscheinlichkeit_gastsieg) + "</div>";
+    } else {
+      body = "<div class='pending'>Noch nicht berechnet</div>";
+    }
+    var h2hZeile = "";
+    if (m.heim_team_id && m.gast_team_id) {
+      h2hZeile = h2hZeileHtml(m.heim_team_id, m.gast_team_id);
+    }
+    return "<div class='match-row'><div class='teams'>" + teams + "</div><div class='time'>" + fmtDate(m.anstoss) + "</div>" + body + h2hZeile + "</div>";
+  }
+
+  function renderErgebnisRow(m, vorhersage) {
+    var teams = (m.heim ? nameKurz(m.heim.name) : "?") + " <span class='vs'>vs</span> " + (m.gast ? nameKurz(m.gast.name) : "?");
+    var now = new Date();
+    var hatBegonnen = new Date(m.anstoss) <= now;
+    var istBeendet = m.status === "beendet" && m.tore_heim !== null;
+    var body;
+    if (istBeendet) {
+      var richtig = tendenzRichtig(m, vorhersage);
+      body =
+        "<div class='score'>" + m.tore_heim + "&nbsp;&nbsp;:&nbsp;&nbsp;" + m.tore_gast + "</div>" +
+        (richtig === null ? "" : "<div class='sub " + (richtig ? "tendenz-ok" : "tendenz-nok") + "'>" + (richtig ? "✓ Tendenz richtig" : "✗ Tendenz daneben") + "</div>");
+    } else if (hatBegonnen) {
+      body = "<div class='pending'>Spiel läuft — Ergebnis folgt nach Abpfiff</div>";
+    } else {
+      body = "<div class='pending'>Vor Anpfiff</div>";
+    }
+    return "<div class='match-row'><div class='teams'>" + teams + "</div><div class='time'>" + fmtDate(m.anstoss) + "</div>" + body + "</div>";
+  }
+
+  function draw(rows) {
+    if (!rows || !rows.length) {
+      vorhersagenEl.innerHTML = "<div class='loading'>Keine Spiele gefunden.</div>";
+      ergebnisseEl.innerHTML = "";
+      trefferquoteEl.innerHTML = "";
+      return;
+    }
+    var vHtml = "", eHtml = "";
+    var beendeteMitVorhersage = 0, richtigeTendenzen = 0;
+    rows.forEach(function (m) {
+      var vorhersage = Array.isArray(m.vorhersagen) ? m.vorhersagen[0] : (m.vorhersagen || null);
+      vHtml += renderVorhersageRow(m, vorhersage);
+      eHtml += renderErgebnisRow(m, vorhersage);
+      var richtig = tendenzRichtig(m, vorhersage);
+      if (richtig !== null) {
+        beendeteMitVorhersage++;
+        if (richtig) richtigeTendenzen++;
+      }
+    });
+    vorhersagenEl.innerHTML = vHtml;
+    ergebnisseEl.innerHTML = eHtml;
+    if (beendeteMitVorhersage > 0) {
+      trefferquoteEl.innerHTML = "Trefferquote diesen Spieltag: <strong>" + Math.round(richtigeTendenzen / beendeteMitVorhersage * 100) + "%</strong> (" + richtigeTendenzen + " von " + beendeteMitVorhersage + " ausgewerteten Spielen)";
+    } else {
+      trefferquoteEl.innerHTML = "Noch keine ausgewerteten Spiele mit Vorhersage in diesem Spieltag.";
+    }
+  }
+
+  function renderSpieltag(nr) {
+    vorhersagenEl.innerHTML = "<div class='loading'>Lade Spieltag " + nr + " …</div>";
+    ergebnisseEl.innerHTML = "";
+    trefferquoteEl.innerHTML = "";
+    ladeTabelle(nr);
+    if (cache[nr]) {
+      var paare = cache[nr].map(function (m) { return { heim: m.heim_team_id, gast: m.gast_team_id }; });
+      ladeH2H(paare, function () { draw(cache[nr]); });
+      return;
+    }
+    sb.from("spiele")
+      .select("id,spieltag,anstoss,status,tore_heim,tore_gast,heim_team_id,gast_team_id,heim:teams!spiele_heim_team_id_fkey(name,logo_url),gast:teams!spiele_gast_team_id_fkey(name,logo_url),vorhersagen(erwartete_tore_heim,erwartete_tore_gast,wahrscheinlichkeit_heimsieg,wahrscheinlichkeit_unentschieden,wahrscheinlichkeit_gastsieg,tipp_tore_heim,tipp_tore_gast)")
+      .eq("saison", SAISON)
+      .eq("spieltag", nr)
+      .order("anstoss", { ascending: true })
+      .then(function (res) {
+        if (res.error) {
+          vorhersagenEl.innerHTML = "<div class='loading'>Fehler beim Laden. Bitte später erneut versuchen.</div>";
+          return;
+        }
+        cache[nr] = res.data;
+        var paare = res.data.map(function (m) { return { heim: m.heim_team_id, gast: m.gast_team_id }; });
+        ladeH2H(paare, function () { draw(res.data); });
+      });
+  }
+
+  function ladeAlleTrefferquoten(callback) {
+    sb.from("spiele")
+      .select("spieltag,tore_heim,tore_gast,status,vorhersagen(wahrscheinlichkeit_heimsieg,wahrscheinlichkeit_unentschieden,wahrscheinlichkeit_gastsieg)")
+      .eq("saison", SAISON)
+      .eq("status", "beendet")
+      .not("tore_heim", "is", null)
+      .then(function (res) {
+        if (res.error || !res.data) { callback(); return; }
+        var byTag = {};
+        res.data.forEach(function (m) {
+          var vorhersage = Array.isArray(m.vorhersagen) ? m.vorhersagen[0] : m.vorhersagen;
+          var richtig = tendenzRichtig(m, vorhersage);
+          if (richtig === null) return;
+          byTag[m.spieltag] = byTag[m.spieltag] || { r: 0, n: 0 };
+          byTag[m.spieltag].n++;
+          if (richtig) byTag[m.spieltag].r++;
+        });
+        Object.keys(byTag).forEach(function (tag) {
+          tqBySpieltag[tag] = Math.round(byTag[tag].r / byTag[tag].n * 100);
+        });
+        callback();
+      });
+  }
+
+  function renderTabs(active) {
+    tabsEl.innerHTML = "";
+    allSpieltage.forEach(function (nr) {
+      var btn = document.createElement("button");
+      btn.className = "spieltag-tab" + (nr === active ? " active" : "");
+      var tq = tqBySpieltag[nr];
+      btn.innerHTML = nr + (tq !== undefined ? "<span class='tq'>" + tq + "%</span>" : "");
+      btn.addEventListener("click", function () {
+        renderTabs(nr);
+        renderSpieltag(nr);
+      });
+      tabsEl.appendChild(btn);
+    });
+  }
+
+  function ladeH2H(paare, callback) {
+    var todo = paare.filter(function (p) {
+      return !h2hCache[p.heim + "_" + p.gast];
+    });
+    if (!todo.length) { callback(); return; }
+    var remaining = todo.length;
+    todo.forEach(function (p) {
+      Promise.all([
+        sb.from("spiele").select("heim_team_id,gast_team_id,tore_heim,tore_gast")
+          .eq("heim_team_id", p.heim).eq("gast_team_id", p.gast)
+          .eq("status", "beendet").not("tore_heim", "is", null),
+        sb.from("spiele").select("heim_team_id,gast_team_id,tore_heim,tore_gast")
+          .eq("heim_team_id", p.gast).eq("gast_team_id", p.heim)
+          .eq("status", "beendet").not("tore_heim", "is", null),
+      ]).then(function (results) {
+        var alle = (results[0].data || []).concat(results[1].data || []);
+        var s = 0, u = 0, n = 0;
+        alle.forEach(function (m) {
+          var heimTore, gastTore;
+          if (m.heim_team_id === p.heim) { heimTore = m.tore_heim; gastTore = m.tore_gast; }
+          else { heimTore = m.tore_gast; gastTore = m.tore_heim; }
+          if (heimTore > gastTore) s++; else if (heimTore < gastTore) n++; else u++;
+        });
+        h2hCache[p.heim + "_" + p.gast] = { anzahl: alle.length, s: s, u: u, n: n };
+        remaining--;
+        if (remaining === 0) callback();
+      });
+    });
+  }
+
+  function h2hZeileHtml(heimId, gastId) {
+    var d = h2hCache[heimId + "_" + gastId];
+    if (!d) return "<div class='h2h-zeile'>&nbsp;</div>";
+    if (d.anzahl === 0) {
+      return "<div class='h2h-zeile'>Erstes erfasstes Duell dieser beiden Teams</div>";
+    }
+    return "<div class='h2h-zeile'>Duelle gesamt (" + d.anzahl + "): " +
+      "<span class='h2h-badge s'>" + d.s + " S</span>" +
+      "<span class='h2h-badge u'>" + d.u + " U</span>" +
+      "<span class='h2h-badge n'>" + d.n + " N</span></div>";
+  }
+
+
+  var verlaufByTag = {};
+  var verlaufSpieltage = [];
+  var verlaufGeladen = false;
+
+  function renderTabelleRows(rows, vorherigerPlatz) {
+    return rows.map(function (r, i) {
+      var platz = i + 1;
+      var klass = platz <= 4 ? "cl" : (platz >= 16 ? "abstieg" : "");
+      var vp = vorherigerPlatz[r.team_id];
+      var trendHtml = "";
+      if (vp !== undefined) {
+        trendHtml =
+          platz < vp ? "<span class='trend-up'>▲</span>" :
+          platz > vp ? "<span class='trend-down'>▼</span>" :
+          "<span class='trend-same'>•</span>";
+      }
+      return "<tr class='" + klass + "'><td class='platz'>" + platz + "</td><td class='num'>" + trendHtml + "</td><td class='team'>" + r.name +
+        "</td><td class='num'>" + r.spiele + "</td><td class='num'>" + r.tordiff +
+        "</td><td class='num pkt'>" + r.punkte + "</td></tr>";
+    }).join("");
+  }
+
+  function zeichneTabelleAusVerlauf(nr) {
+    var zeilen = verlaufByTag[nr].slice().sort(function (a, b) { return a.platz - b.platz; });
+    var rows = zeilen.map(function (r) { return { team_id: r.team_id, name: r.name, spiele: nr, tordiff: r.tordiff, punkte: r.punkte }; });
+    var vorIdx = verlaufSpieltage.indexOf(nr) - 1;
+    var vorherigerPlatz = {};
+    if (vorIdx >= 0) {
+      verlaufByTag[verlaufSpieltage[vorIdx]].forEach(function (r) { vorherigerPlatz[r.team_id] = r.platz; });
+    }
+    document.getElementById("tabelle-sub").textContent = "Stand nach Spieltag " + nr;
+    document.getElementById("tabelle").innerHTML =
+      "<table class='tab-table'><thead><tr><th></th><th></th><th>Team</th><th class='num'>Sp</th><th class='num'>Diff</th><th class='num'>Pkt</th></tr></thead><tbody>" + renderTabelleRows(rows, vorherigerPlatz) + "</tbody></table>";
+  }
+
+  function zeichneTabelleLive() {
+    var letzterVollstaendiger = verlaufSpieltage.length ? verlaufSpieltage[verlaufSpieltage.length - 1] : null;
+    var vorherigerPlatz = {};
+    if (letzterVollstaendiger !== null) {
+      verlaufByTag[letzterVollstaendiger].forEach(function (r) { vorherigerPlatz[r.team_id] = r.platz; });
+    }
+    sb.from("tabelle_aktuell").select("*").then(function (res) {
+      if (res.error || !res.data) {
+        document.getElementById("tabelle").innerHTML = "<div class='loading'>Fehler beim Laden.</div>";
+        return;
+      }
+      document.getElementById("tabelle-sub").textContent = "Saison 2026/27, live";
+      document.getElementById("tabelle").innerHTML =
+        "<table class='tab-table'><thead><tr><th></th><th></th><th>Team</th><th class='num'>Sp</th><th class='num'>Diff</th><th class='num'>Pkt</th></tr></thead><tbody>" + renderTabelleRows(res.data, vorherigerPlatz) + "</tbody></table>";
+    });
+  }
+
+  function ladeTabelle(nr) {
+    document.getElementById("tabelle").innerHTML = "<div class='loading'>Lädt …</div>";
+    if (!verlaufGeladen) {
+      sb.from("tabelle_verlauf").select("*").then(function (res) {
+        verlaufGeladen = true;
+        if (!res.error && res.data) {
+          res.data.forEach(function (r) {
+            verlaufByTag[r.spieltag] = verlaufByTag[r.spieltag] || [];
+            verlaufByTag[r.spieltag].push(r);
+          });
+          verlaufSpieltage = Object.keys(verlaufByTag).map(Number).sort(function (a, b) { return a - b; });
+        }
+        ladeTabelle(nr);
+      });
+      return;
+    }
+    if (nr !== undefined && verlaufByTag[nr]) {
+      zeichneTabelleAusVerlauf(nr);
+    } else {
+      zeichneTabelleLive();
+    }
+  }
+
+  ladeHistorie();
+
+  sb.from("spiele")
+    .select("spieltag")
+    .eq("saison", SAISON)
+    .order("spieltag", { ascending: true })
+    .then(function (res) {
+      if (res.error || !res.data) {
+        vorhersagenEl.innerHTML = "<div class='loading'>Fehler beim Laden.</div>";
+        return;
+      }
+      var seen = {};
+      res.data.forEach(function (r) { seen[r.spieltag] = true; });
+      allSpieltage = Object.keys(seen).map(Number).sort(function (a, b) { return a - b; });
+
+      sb.from("spiele")
+        .select("spieltag,anstoss,status")
+        .eq("saison", SAISON)
+        .order("spieltag", { ascending: true })
+        .then(function (res2) {
+          var startSpieltag = allSpieltage[0];
+          if (res2.data) {
+            var byTag = {};
+            res2.data.forEach(function (r) {
+              byTag[r.spieltag] = byTag[r.spieltag] || [];
+              byTag[r.spieltag].push(r);
+            });
+            for (var i = 0; i < allSpieltage.length; i++) {
+              var tag = allSpieltage[i];
+              var alleFertig = byTag[tag].every(function (r) { return r.status === "beendet"; });
+              if (!alleFertig) { startSpieltag = tag; break; }
+              startSpieltag = tag;
+            }
+          }
+          renderTabs(startSpieltag);
+          renderSpieltag(startSpieltag);
+          ladeAlleTrefferquoten(function () { renderTabs(startSpieltag); });
+        });
+    });
+})();
+</script>
+</body>
+</html>
