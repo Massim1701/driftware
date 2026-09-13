@@ -341,9 +341,13 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
     var teams = (m.heim ? nameKurz(m.heim.name) : "?") + " <span class='vs'>vs</span> " + (m.gast ? nameKurz(m.gast.name) : "?");
     var body;
     if (vorhersage) {
+      var tendenzCode =
+        (vorhersage.wahrscheinlichkeit_heimsieg >= vorhersage.wahrscheinlichkeit_unentschieden &&
+         vorhersage.wahrscheinlichkeit_heimsieg >= vorhersage.wahrscheinlichkeit_gastsieg) ? 1 :
+        (vorhersage.wahrscheinlichkeit_unentschieden >= vorhersage.wahrscheinlichkeit_gastsieg) ? 0 : 2;
       body =
         "<div class='score'>" + vorhersage.tipp_tore_heim + "&nbsp;&nbsp;:&nbsp;&nbsp;" + vorhersage.tipp_tore_gast + "</div>" +
-        "<div class='sub'>Heimsieg " + pct(vorhersage.wahrscheinlichkeit_heimsieg) +
+        "<div class='sub'><strong>" + tendenzCode + "</strong> · Heimsieg " + pct(vorhersage.wahrscheinlichkeit_heimsieg) +
         " · Unentschieden " + pct(vorhersage.wahrscheinlichkeit_unentschieden) +
         " · Auswärtssieg " + pct(vorhersage.wahrscheinlichkeit_gastsieg) + "</div>";
     } else {
