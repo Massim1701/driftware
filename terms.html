@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nutzungsbedingungen — Driftware</title>
+<style>
+  :root { --bg:#0c1224; --panel:#141c33; --accent:#3aa8ff; --text:#f5f7fa; --muted:#9aa3c0; --border:rgba(255,255,255,0.08); }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+  main { max-width:680px; margin:0 auto; padding:56px 24px 64px; }
+  a { color:var(--accent); }
+  h1 { font-size:28px; margin-bottom:8px; }
+  .stand { color:var(--muted); font-size:14px; margin-bottom:32px; }
+  h2 { font-size:18px; margin-top:32px; color:var(--text); border-bottom:1px solid var(--border); padding-bottom:6px; }
+  p, li { color:#dbe0ee; }
+  ul { padding-left:20px; }
+  .back { display:inline-block; margin-bottom:24px; color:var(--muted); text-decoration:none; font-size:14px; }
+  .contact-panel { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:20px 24px; margin:32px 0; }
+  .contact-form { display:flex; flex-direction:column; gap:12px; margin-top:16px; }
+  .contact-form label { font-size:13px; color:var(--muted); font-weight:600; display:flex; flex-direction:column; gap:6px; }
+  .contact-form input, .contact-form textarea { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-family:inherit; font-size:14px; }
+  .contact-form textarea { min-height:100px; resize:vertical; }
+  .contact-form button { align-self:flex-start; background:var(--accent); color:#06223d; border:none; border-radius:10px; padding:10px 22px; font-weight:700; font-size:14px; cursor:pointer; }
+  .contact-honey { position:absolute; left:-9999px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="/">&larr; Zurück zu Driftware</a>
+  <h1>Nutzungsbedingungen</h1>
+  <p class="stand">Stand: September 2026 · gilt für driftware.online und alle darauf angebotenen Apps und Tools</p>
+
+  <h2>1. Geltungsbereich</h2>
+  <p>Diese Nutzungsbedingungen gelten für driftware.online und alle hier angebotenen Apps, Webseiten und Tools eines Einzelentwicklers (u.&nbsp;a. Musik-Playlisten nach Jahrzehnt/Stimmung, Foto-/Video-Bearbeitung, Sammlungs-Kataloge, Vorhersage- und Textwerkzeuge) — aktuelle wie künftig hinzukommende. Mit der Nutzung erklärst du dich mit diesen Bedingungen einverstanden.</p>
+
+  <h2>2. Angebot</h2>
+  <p>Die Angebote auf driftware.online sind private, unabhängig entwickelte Projekte eines Einzelentwicklers, keine kommerziellen Produkte eines Unternehmens. Sie werden kostenlos ohne Gewähr auf Verfügbarkeit, Richtigkeit oder Vollständigkeit bereitgestellt.</p>
+
+  <h2>3. Externe Inhalte und Drittanbieter</h2>
+  <p>Manche Apps binden externe Inhalte ein oder verweisen auf Drittanbieter, etwa YouTube-Videos zur Wiedergabe von Playlisten-Einträgen oder öffentlich verfügbare Metadaten von Discogs. Für diese externen Inhalte gelten die jeweiligen Nutzungsbedingungen des Anbieters (z.&nbsp;B. die YouTube-Nutzungsbedingungen unter <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">youtube.com/t/terms</a>). Wir sind nicht verantwortlich für Inhalte, Verfügbarkeit oder Richtigkeit dieser Drittanbieter-Inhalte.</p>
+
+  <h2>4. Nutzungsregeln</h2>
+  <p>Die Angebote dürfen nicht missbräuchlich, automatisiert im großen Stil (Scraping über das übliche Maß hinaus) oder zur Umgehung technischer Schutzmaßnahmen genutzt werden. Rechte an eingebundenen Drittinhalten (z.&nbsp;B. YouTube-Videos) verbleiben bei den jeweiligen Rechteinhabern.</p>
+
+  <h2>5. Haftung</h2>
+  <p>Die Nutzung erfolgt auf eigenes Risiko. Es wird keine Haftung für mittelbare oder unmittelbare Schäden übernommen, die aus der Nutzung oder Nichtverfügbarkeit der Angebote entstehen, soweit gesetzlich zulässig.</p>
+
+  <h2>6. Änderungen</h2>
+  <p>Wir behalten uns vor, diese Nutzungsbedingungen bei Bedarf anzupassen, etwa wenn neue Apps oder Funktionen hinzukommen. Die jeweils aktuelle Version ist unter dieser Seite abrufbar.</p>
+
+  <h2>7. Kontakt</h2>
+  <p>Fragen zu diesen Nutzungsbedingungen beantworten wir gerne über das Kontaktformular unten oder im <a href="/impressum.html">Impressum</a>.</p>
+
+  <div class="contact-panel" id="kontakt">
+    <h2 style="margin-top:0;border-bottom:none;padding-bottom:0;">Kontaktformular</h2>
+    <form class="contact-form" method="POST" action="https://formsubmit.co/0b4cb7348b4cff5d1891bf8d99f1e757">
+      <input type="hidden" name="_subject" value="Driftware — neue Anfrage zu den Nutzungsbedingungen">
+      <input type="hidden" name="_template" value="table">
+      <input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">
+      <label><span>Name</span><input type="text" name="name" required></label>
+      <label><span>Deine E-Mail-Adresse</span><input type="email" name="email" required></label>
+      <label><span>Nachricht</span><textarea name="message" required></textarea></label>
+      <button type="submit">Senden</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>
