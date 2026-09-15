@@ -470,9 +470,9 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
       var tendenzKlasse = tendenzCode === 1 ? "tendenz-heim" : tendenzCode === 0 ? "tendenz-x" : "tendenz-gast";
       body =
         "<div class='score'><span class='tendenz-code " + tendenzKlasse + "'>" + tendenzCode + "</span></div>" +
-        "<div class='sub'>Heimsieg " + pct(vorhersage.wahrscheinlichkeit_heimsieg) +
-        " · Unentschieden " + pct(vorhersage.wahrscheinlichkeit_unentschieden) +
-        " · Auswärtssieg " + pct(vorhersage.wahrscheinlichkeit_gastsieg) + "</div>";
+        "<div class='sub'>Heim " + pct(vorhersage.wahrscheinlichkeit_heimsieg) +
+        " · Remis " + pct(vorhersage.wahrscheinlichkeit_unentschieden) +
+        " · Ausw. " + pct(vorhersage.wahrscheinlichkeit_gastsieg) + "</div>";
     } else {
       body = "<div class='pending'>Noch nicht berechnet</div>";
     }
