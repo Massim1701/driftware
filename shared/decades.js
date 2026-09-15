@@ -2775,6 +2775,16 @@ function setupRemoveUI(song) {
   noBtn.onclick = function () { confirmBox.hidden = true; btn.hidden = false; };
   yesBtn.onclick = function () {
     confirmBox.hidden = true;
+    var pw = window.prompt('Zum Löschen bitte Passwort eingeben:');
+    if (pw === null) {
+      btn.hidden = false;
+      return;
+    }
+    if (pw !== 'Master1701') {
+      statusEl.textContent = 'Falsches Passwort -- nicht gelöscht.';
+      btn.hidden = false;
+      return;
+    }
     submitSongRemoval(song, statusEl, btn);
     btn.hidden = false;
   };
