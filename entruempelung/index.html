@@ -305,6 +305,8 @@
     padding:28px 0;
     color:var(--muted);
     font-size:13px;
+  }
+  .footer-inner{
     display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
   }
 
@@ -323,13 +325,44 @@
   .wa-float svg{width:30px;height:30px;}
 
   @media (max-width:860px){
-    .hero-grid{grid-template-columns:1fr;}
-    .hero-visual{display:none;}
+    .wrap{padding:0 20px;}
+    .hero{padding:56px 0 64px;}
+    .hero-grid{grid-template-columns:1fr;gap:36px;}
+    .hero-visual{max-width:220px;margin:0 auto;}
+    .hero-ctas{flex-direction:column;}
+    .hero-ctas .btn{width:100%;justify-content:center;}
+    .hero-facts{gap:22px;}
+    .services,.why,.process,.contact{padding:64px 0;}
+    .sec-head{margin-bottom:36px;}
     .why-grid{grid-template-columns:repeat(2,1fr);}
     .process-grid{grid-template-columns:1fr;gap:30px;}
-    .contact-box{grid-template-columns:1fr;padding:34px;}
-    .service-row{grid-template-columns:40px 1fr;}
+    .contact-box{grid-template-columns:1fr;padding:28px;}
+    .service-row{grid-template-columns:48px 1fr;gap:18px;padding:24px 0;}
+    .icon-circle{width:48px;height:48px;}
+    .icon-circle svg{width:22px;height:22px;}
+    .service-row h3{font-size:19px;}
     .headcall span{display:none;}
+    .headcall{padding:9px 12px;}
+    .footer-inner{flex-direction:column;align-items:flex-start;}
+  }
+  @media (max-width:480px){
+    .headbar{padding:14px 16px;}
+    .brand-logo{height:32px;}
+    .hero{padding:44px 0 52px;}
+    .hero-visual{max-width:170px;}
+    .icon-badge{padding:14%;}
+    .hero-sub{font-size:16px;}
+    .btn{padding:14px 20px;font-size:14px;}
+    .why-grid{grid-template-columns:1fr;}
+    .why-cell{padding:26px 22px;}
+    .contact-box h2{font-size:28px;}
+    .wa-float{width:52px;height:52px;bottom:16px;right:16px;}
+    .wa-float svg{width:26px;height:26px;}
+    .service-row h3{font-size:18px;}
+    .service-row p{font-size:14px;}
+  }
+  @media (hover:none){
+    .btn,.wa-float,.headcall{-webkit-tap-highlight-color:transparent;}
   }
   @media (prefers-reduced-motion: reduce){
     html{scroll-behavior:auto;}
@@ -541,7 +574,7 @@
 </section>
 
 <footer>
-  <div class="wrap" style="display:flex;justify-content:space-between;width:100%;flex-wrap:wrap;gap:10px;">
+  <div class="wrap footer-inner">
     <span>© 2026 Rhein Ruhr Entrümpelung</span>
     <span><a href="impressum.html" style="color:inherit;">Impressum</a> · Wir schaffen Platz für Neues!</span>
   </div>
