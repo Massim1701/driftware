@@ -22,12 +22,17 @@ on:
     # Jobs gleichzeitig um die geteilte Concurrency-Gruppe konkurrieren).
     - cron: '52 5 * * *'
 
-# Selbe Gruppe wie expand-christmas-songs.yml / expand-decade-genres.yml /
-# process-missing-songs.yml: alle schreiben in dieselben einzeiligen
-# *-music/songs.json-Dateien -- geteilte Gruppe verhindert, dass sie
-# gleichzeitig laufen und sich beim Push in die Quere kommen.
+# Eigene Gruppe statt der frueher geteilten "process-missing-songs" --
+# die geteilte Gruppe fuehrte dazu, dass GitHub aeltere, noch wartende
+# Laeufe der anderen drei Workflows canceled hat, sobald ein neuerer
+# Lauf derselben Gruppe in die Warteschlange kam ("higher priority
+# waiting request"). Das urspruengliche Risiko (mehrere Workflows
+# schreiben gleichzeitig in dieselben *-music/songs.json-Dateien und
+# scheitern beim Push) bleibt bei echter zeitlicher Ueberlappung
+# bestehen -- bewusst in Kauf genommen, da die vier Workflows auf
+# unterschiedlichen Cron-Zeiten laufen.
 concurrency:
-  group: process-missing-songs
+  group: bpm-fetch
   cancel-in-progress: false
 
 permissions:
