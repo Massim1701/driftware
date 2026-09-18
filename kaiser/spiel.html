@@ -492,6 +492,7 @@ button {
         html += '<div style="display:flex;align-items:center;gap:8px;">';
         html += '<input type="number" data-export-menge="' + w.key + '" value="' + Math.min(100, Math.floor(w.bestand)) + '" min="1" style="width:70px; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:6px 8px; color:var(--text); font-size:12px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
         html += '<button class="btn-secondary" data-export="' + w.key + '"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Exportieren</button>';
+        html += '<button data-export-all="' + w.key + '" data-bestand="' + w.bestand + '" title="Alles verkaufen"' + (g.status !== 'laufend' || w.bestand <= 0 ? ' disabled' : '') + ' style="width:22px;height:22px;border-radius:50%;background:#3ecf6e;border:1px solid #2fa85a;cursor:pointer;padding:0;"></button>';
         html += '</div></div>';
       });
       if (r.hafen_einnahmen_letzte_runde > 0) {
@@ -824,6 +825,25 @@ button {
         var menge = parseFloat(mengeInput.value) || 0;
         btn.disabled = true;
         sb.rpc('hafen_exportieren', { p_realm_id: state.myRealm.id, p_ware: ware, p_menge: menge }).then(function (res) {
+          var msg = document.getElementById('hafen-msg');
+          if (res.error) {
+            msg.textContent = res.error.message;
+            msg.className = 'msg error';
+            btn.disabled = false;
+            return;
+          }
+          loadAll();
+        });
+      });
+    });
+
+    document.querySelectorAll('[data-export-all]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var ware = btn.getAttribute('data-export-all');
+        var menge = parseFloat(btn.getAttribute('data-bestand')) || 0;
+        if (menge <= 0) return;
+        btn.disabled = true;
+        sb.rpc('hafen_exportieren', { p_realm_id: state.myRealm.id, p_ware: ware, p_menge: Math.floor(menge) }).then(function (res) {
           var msg = document.getElementById('hafen-msg');
           if (res.error) {
             msg.textContent = res.error.message;
