@@ -443,6 +443,12 @@ button {
             return;
           }
           sb.from('realms').insert({ game_player_id: gpRes.data.id }).then(function () {
+            if (maxPlayers === 1) {
+              sb.rpc('start_game', { p_game_id: res.data.id }).then(function () {
+                window.location.href = 'spiel.html?id=' + res.data.id;
+              });
+              return;
+            }
             document.getElementById('create-form').reset();
             document.getElementById('max-players').value = 6;
             msg.textContent = 'Reich "' + realmName + '" gegründet.';

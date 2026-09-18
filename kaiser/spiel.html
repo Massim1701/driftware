@@ -304,7 +304,10 @@ button {
 
                 sb.from('trades').select('*').eq('game_id', gameId).eq('status', 'offen').order('created_at', { ascending: false }).then(function (tradeRes) {
                   state.trades = tradeRes.data || [];
-                  render();
+                  sb.from('events').select('*').eq('game_id', gameId).order('round_number', { ascending: false }).limit(1).then(function (evRes) {
+                    state.lastEvent = evRes.data && evRes.data[0];
+                    render();
+                  });
                 });
               });
             });
@@ -332,6 +335,11 @@ button {
     html += '<div><h1>' + escapeHtml(g.name) + '</h1><div class="sub">' + state.players.length + ' / ' + g.max_players + ' Spieler</div></div>';
     html += '<div class="round-box">' + roundInfo + '</div>';
     html += '</div>';
+
+    if (state.lastEvent && state.lastEvent.round_number === g.current_round - 1) {
+      var evLabel = { missernte: '🌧️ Missernte in der letzten Runde', gute_ernte: '☀️ Gute Ernte in der letzten Runde', seuche: '☠️ Seuche in der letzten Runde', angriff: '⚔️ Angriff in der letzten Runde' };
+      html += '<div class="panel" style="padding:12px 18px; margin-bottom:16px;"><span class="rank-pill">' + (evLabel[state.lastEvent.typ] || state.lastEvent.typ) + '</span></div>';
+    }
 
     if (g.status === 'offen') {
       html += '<div class="panel"><h2>Partie noch nicht gestartet</h2><p class="panel-sub">Sobald genug Spieler beigetreten sind, kann ';
