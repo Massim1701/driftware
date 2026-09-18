@@ -208,6 +208,20 @@ button {
   font-family: inherit;
   width: 100px;
 }
+.karte-zelle {
+  aspect-ratio: 1;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  text-align: center;
+}
+.karte-zelle.self { border-color: var(--gold); }
+.karte-zelle.adjacent { border-color: #a83a5c; }
 .trade-row {
   display: flex;
   justify-content: space-between;
@@ -309,7 +323,10 @@ button {
                   state.trades = tradeRes.data || [];
                   sb.from('events').select('*').eq('game_id', gameId).order('round_number', { ascending: false }).limit(1).then(function (evRes) {
                     state.lastEvent = evRes.data && evRes.data[0];
-                    render();
+                    sb.from('allianzen').select('*').eq('game_id', gameId).then(function (allRes) {
+                      state.allianzen = allRes.data || [];
+                      render();
+                    });
                   });
                 });
               });
@@ -481,6 +498,56 @@ button {
       });
     }
     html += '<div class="msg" id="trade-msg"></div></div>';
+
+    // Karte
+    var maxX = 0, maxY = 0;
+    state.players.forEach(function (p) { if (p.realms) { maxX = Math.max(maxX, p.realms.karte_x); maxY = Math.max(maxY, p.realms.karte_y); } });
+    var grid = {};
+    state.players.forEach(function (p) { if (p.realms) grid[p.realms.karte_x + ',' + p.realms.karte_y] = p; });
+    function allianzZwischen(idA, idB) {
+      return state.allianzen.find(function (a) { return (a.realm_a_id === idA && a.realm_b_id === idB) || (a.realm_a_id === idB && a.realm_b_id === idA); });
+    }
+
+    html += '<div class="panel"><h2>Karte</h2><p class="panel-sub">Angrenzende Reiche kannst du angreifen oder um eine Allianz bitten.</p>';
+    html += '<div style="display:grid; grid-template-columns:repeat(' + (maxX + 1) + ', 1fr); gap:8px; max-width:360px;">';
+    for (var gy = 0; gy <= maxY; gy++) {
+      for (var gx = 0; gx <= maxX; gx++) {
+        var cellP = grid[gx + ',' + gy];
+        var isSelfCell = cellP && cellP.id === state.myPlayer.id;
+        var isAdj = state.myRealm && (Math.abs(gx - state.myRealm.karte_x) + Math.abs(gy - state.myRealm.karte_y)) === 1;
+        html += '<div class="karte-zelle' + (isSelfCell ? ' self' : '') + (isAdj && cellP ? ' adjacent' : '') + '">';
+        if (cellP) {
+          var cCrest = cellP.factions ? '<img src="assets/factions/' + cellP.factions.bild_datei + '" style="width:20px;height:25px;border-radius:3px;">' : '';
+          html += cCrest + '<div style="font-size:11px;margin-top:2px;">' + escapeHtml(cellP.reich_name) + (isSelfCell ? ' (du)' : '') + '</div>';
+          if (isAdj && !isSelfCell && g.status === 'laufend') {
+            var allianz = allianzZwischen(state.myRealm.id, cellP.realms.id);
+            if (allianz && allianz.status === 'aktiv') {
+              html += '<button class="btn-secondary" data-allianz-aufloesen="' + allianz.id + '" style="font-size:10px;padding:3px 6px;margin-top:4px;">Lösen</button>';
+            } else if (allianz && allianz.status === 'angefragt') {
+              html += '<span style="font-size:10px;color:var(--muted);">Anfrage offen</span>';
+            } else {
+              html += '<button class="btn-secondary" data-angreifen="' + cellP.realms.id + '" style="font-size:10px;padding:3px 6px;margin-top:4px;">Angreifen</button>';
+              html += '<button class="btn-secondary" data-allianz-anfragen="' + cellP.realms.id + '" style="font-size:10px;padding:3px 6px;margin-top:2px;">Allianz</button>';
+            }
+          }
+        }
+        html += '</div>';
+      }
+    }
+    html += '</div>';
+
+    var eingehend = state.allianzen.filter(function (a) { return a.status === 'angefragt' && a.realm_b_id === state.myRealm.id; });
+    if (eingehend.length) {
+      html += '<div style="margin-top:14px;">';
+      eingehend.forEach(function (a) {
+        var vonPlayer = state.players.find(function (p) { return p.realms && p.realms.id === a.realm_a_id; });
+        html += '<div class="trade-row"><span>Allianz-Anfrage von ' + escapeHtml(vonPlayer ? vonPlayer.reich_name : '?') + '</span>';
+        html += '<div><button class="btn-primary" data-allianz-annehmen="' + a.id + '" style="padding:6px 12px;font-size:12px;">Annehmen</button> ';
+        html += '<button class="btn-secondary" data-allianz-ablehnen="' + a.id + '" style="padding:6px 12px;font-size:12px;">Ablehnen</button></div></div>';
+      });
+      html += '</div>';
+    }
+    html += '<div class="msg" id="karte-msg"></div></div>';
 
     // Andere Reiche
     html += '<div class="panel"><h2>Reiche in dieser Partie</h2><div class="realm-list">';
@@ -755,6 +822,69 @@ button {
           }
           loadAll();
         });
+      });
+    });
+
+    document.querySelectorAll('[data-angreifen]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (!confirm('Diesen Nachbarn wirklich angreifen?')) return;
+        var zielId = btn.getAttribute('data-angreifen');
+        btn.disabled = true;
+        sb.rpc('angreifen', { p_realm_id: state.myRealm.id, p_ziel_realm_id: zielId }).then(function (res) {
+          var msg = document.getElementById('karte-msg');
+          if (res.error) {
+            msg.textContent = res.error.message;
+            msg.className = 'msg error';
+            btn.disabled = false;
+            return;
+          }
+          var d = res.data;
+          msg.textContent = d.sieg
+            ? 'Sieg! ' + d.land_beute + ' ha und ' + d.taler_beute + ' Taler erobert.'
+            : 'Niederlage — der Angriff wurde zurückgeschlagen.';
+          msg.className = d.sieg ? 'msg success' : 'msg error';
+          loadAll();
+        });
+      });
+    });
+
+    document.querySelectorAll('[data-allianz-anfragen]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var zielId = btn.getAttribute('data-allianz-anfragen');
+        btn.disabled = true;
+        sb.rpc('allianz_anfragen', { p_realm_id: state.myRealm.id, p_ziel_realm_id: zielId }).then(function (res) {
+          var msg = document.getElementById('karte-msg');
+          if (res.error) {
+            msg.textContent = res.error.message;
+            msg.className = 'msg error';
+            btn.disabled = false;
+            return;
+          }
+          loadAll();
+        });
+      });
+    });
+
+    document.querySelectorAll('[data-allianz-annehmen]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-allianz-annehmen');
+        btn.disabled = true;
+        sb.rpc('allianz_antworten', { p_allianz_id: id, p_annehmen: true }).then(function () { loadAll(); });
+      });
+    });
+    document.querySelectorAll('[data-allianz-ablehnen]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-allianz-ablehnen');
+        btn.disabled = true;
+        sb.rpc('allianz_antworten', { p_allianz_id: id, p_annehmen: false }).then(function () { loadAll(); });
+      });
+    });
+    document.querySelectorAll('[data-allianz-aufloesen]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (!confirm('Allianz wirklich auflösen?')) return;
+        var id = btn.getAttribute('data-allianz-aufloesen');
+        btn.disabled = true;
+        sb.rpc('allianz_aufloesen', { p_allianz_id: id }).then(function () { loadAll(); });
       });
     });
 
