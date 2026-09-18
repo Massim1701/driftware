@@ -460,7 +460,8 @@ button {
     html += '</div>';
 
     // Bank
-    html += '<div class="panel"><h2>Bank</h2><p class="panel-sub">Kredit bis zur Höhe deines Landes (' + fmt(r.land_hektar) + ' Taler). 5% Zinsen pro Runde — reicht dein Taler nicht, wächst die Schuld weiter.</p>';
+    html += '<div class="panel"><h2>Bank</h2><p class="panel-sub">Kredit bis zur Höhe deines Landes (' + fmt(r.land_hektar) + ' Taler, beide Linien zusammen). Reicht dein Taler nicht, wächst die Schuld weiter.</p>';
+    html += '<h3 style="font-family:\'Cinzel\',serif; font-size:14px; margin:0 0 8px;">Standardkredit — 5% Zinsen</h3>';
     html += '<div class="stat-grid" style="grid-template-columns:repeat(2,1fr); margin-bottom:12px;">';
     html += stat('Schulden', fmt(r.schulden));
     html += stat('Zinsen letzte Runde', fmt(r.zinsen_letzte_runde));
@@ -469,9 +470,20 @@ button {
     html += '<button class="btn-secondary" id="kredit-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Kredit aufnehmen</button></div>';
     html += '<div style="display:flex; gap:8px;"><input type="number" id="tilgen-betrag" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
     html += '<button class="btn-secondary" id="tilgen-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Tilgen</button></div>';
+
+    html += '<h3 style="font-family:\'Cinzel\',serif; font-size:14px; margin:16px 0 8px;">Günstiger Kredit — 2,5% Zinsen</h3>';
+    html += '<div class="stat-grid" style="grid-template-columns:repeat(2,1fr); margin-bottom:12px;">';
+    html += stat('Schulden', fmt(r.schulden_guenstig));
+    html += stat('Zinsen letzte Runde', fmt(r.zinsen_guenstig_letzte_runde));
+    html += '</div>';
+    html += '<div style="display:flex; gap:8px; margin-bottom:8px;"><input type="number" id="kredit-guenstig-betrag" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+    html += '<button class="btn-secondary" id="kredit-guenstig-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Kredit aufnehmen</button></div>';
+    html += '<div style="display:flex; gap:8px;"><input type="number" id="tilgen-guenstig-betrag" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+    html += '<button class="btn-secondary" id="tilgen-guenstig-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Tilgen</button></div>';
     html += '<div class="msg" id="bank-msg"></div></div>';
 
     html += '</div><div>';
+
 
     // Gebäude
     var BUILDING_MAX = { palast: 10, kathedrale: 15 };
@@ -859,6 +871,41 @@ button {
         });
       });
     });
+
+    var kreditGuenstigBtn = document.getElementById('kredit-guenstig-btn');
+    if (kreditGuenstigBtn) {
+      kreditGuenstigBtn.addEventListener('click', function () {
+        var betrag = parseFloat(document.getElementById('kredit-guenstig-betrag').value) || 0;
+        kreditGuenstigBtn.disabled = true;
+        sb.rpc('bank_kredit_guenstig_aufnehmen', { p_realm_id: state.myRealm.id, p_betrag: betrag }).then(function (res) {
+          var msg = document.getElementById('bank-msg');
+          if (res.error) {
+            msg.textContent = res.error.message;
+            msg.className = 'msg error';
+            kreditGuenstigBtn.disabled = false;
+            return;
+          }
+          loadAll();
+        });
+      });
+    }
+    var tilgenGuenstigBtn = document.getElementById('tilgen-guenstig-btn');
+    if (tilgenGuenstigBtn) {
+      tilgenGuenstigBtn.addEventListener('click', function () {
+        var betrag = parseFloat(document.getElementById('tilgen-guenstig-betrag').value) || 0;
+        tilgenGuenstigBtn.disabled = true;
+        sb.rpc('bank_kredit_guenstig_tilgen', { p_realm_id: state.myRealm.id, p_betrag: betrag }).then(function (res) {
+          var msg = document.getElementById('bank-msg');
+          if (res.error) {
+            msg.textContent = res.error.message;
+            msg.className = 'msg error';
+            tilgenGuenstigBtn.disabled = false;
+            return;
+          }
+          loadAll();
+        });
+      });
+    }
 
     var startBtn = document.getElementById('start-btn');
     if (startBtn) {
