@@ -513,10 +513,11 @@ button {
     var hafenCount = state.buildings.hafen || 0;
     html += '<div class="panel"><h2>Hafen</h2>';
     if (hafenCount < 1) {
-      html += '<p class="panel-sub">Baue einen Hafen, um Holz, Wolle, Eisen, Milch und Fleisch selbst zu exportieren — Preise schwanken jede Runde.</p>';
+      html += '<p class="panel-sub">Baue einen Hafen, um Getreide, Holz, Wolle, Eisen, Milch und Fleisch selbst zu exportieren — Preise schwanken jede Runde.</p>';
     } else {
       html += '<p class="panel-sub">Tagespreise je Einheit — du entscheidest, wie viel du verkaufst.</p>';
       [
+        { key: 'getreide', label: 'Getreide', bestand: r.getreide_vorrat },
         { key: 'holz', label: 'Holz', bestand: r.holz },
         { key: 'wolle', label: 'Wolle', bestand: r.wolle },
         { key: 'eisen', label: 'Eisen', bestand: r.eisen },
