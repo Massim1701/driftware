@@ -482,7 +482,7 @@ button {
     html += '<div style="display:flex; gap:8px;"><input type="text" inputmode="decimal" id="tilgen-betrag" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
     html += '<button class="btn-secondary" id="tilgen-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Tilgen</button></div>';
 
-    html += '<h3 style="font-family:\'Cinzel\',serif; font-size:14px; margin:16px 0 8px;">Sparbuch — 2,5% Zinsen aufs Guthaben</h3>';
+    html += '<h3 style="font-family:\'Cinzel\',serif; font-size:14px; margin:16px 0 8px;">Sparbuch — 2,5% Zinsen aufs Spielkonto</h3>';
     html += '<div class="stat-grid" style="grid-template-columns:repeat(2,1fr); margin-bottom:12px;">';
     html += stat('Guthaben', fmt(r.sparbuch));
     html += stat('Zinsen letzte Runde', fmt(r.sparbuch_zinsen_letzte_runde));
