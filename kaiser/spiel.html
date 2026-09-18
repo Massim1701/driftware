@@ -355,16 +355,25 @@ button {
 
     // Ressourcen
     var myCrest = state.myPlayer.factions ? '<img src="assets/factions/' + state.myPlayer.factions.bild_datei + '" alt="" style="width:28px;height:35px;border-radius:4px;vertical-align:middle;margin-right:8px;">' : '';
+    var bevCap = Math.floor(r.land_hektar * 0.15);
+    var preisProHa = (1 + r.bevoelkerung / 1000).toFixed(2);
     html += '<div class="panel"><h2>' + myCrest + 'Dein Reich</h2><p class="panel-sub">' + escapeHtml(state.myPlayer.reich_name) + '</p>';
     html += '<div class="stat-grid">';
     html += stat('Land', fmt(r.land_hektar) + ' ha');
     html += stat('Taler', fmt(r.taler));
     html += stat('Getreide', fmt(r.getreide_vorrat));
-    html += stat('Bevölkerung', fmt(r.bevoelkerung));
+    html += stat('Bevölkerung', fmt(r.bevoelkerung) + ' / ' + fmt(bevCap));
     html += stat('Holz', fmt(r.holz));
     html += stat('Wolle', fmt(r.wolle));
     html += stat('Eisen', fmt(r.eisen));
     html += '</div><span class="rank-pill">' + (RANK_LABELS[r.rang] || r.rang) + '</span>';
+    html += '<p class="panel-sub" style="margin-top:10px;">Letzte Runde: <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.geburten_letzte_runde) + ' geboren</strong> · <strong style="color:var(--danger);">−' + fmt(r.tote_letzte_runde) + ' verstorben</strong></p>';
+
+    html += '<div style="margin-top:16px;"><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:6px;">Land kaufen — ' + preisProHa + ' Taler/ha (steigt mit der Bevölkerung)</label>';
+    html += '<div style="display:flex; gap:8px;"><input type="number" id="land-hektar" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+    html += '<button class="btn-secondary" id="buy-land-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Kaufen</button></div>';
+    html += '<div class="msg" id="land-msg"></div></div>';
+
     html += '<div style="margin-top:16px;"><label style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:6px;">Steuersatz <span id="tax-value">' + r.steuersatz + '%</span></label>';
     html += '<input type="range" id="tax-slider" min="1" max="50" value="' + r.steuersatz + '" style="width:100%;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
     html += '<p class="panel-sub" style="margin-top:6px;">Hohe Steuern bringen mehr Taler, senken aber die Geburtenrate und erhöhen die Sterblichkeit leicht.</p>';
@@ -476,6 +485,23 @@ button {
   var BUILDING_COSTS = { markt: 500, muehle: 400, hof: 600, mauer: 300, palast: 5000, kathedrale: 4000 };
 
   function bindActions() {
+    var buyLandBtn = document.getElementById('buy-land-btn');
+    if (buyLandBtn) {
+      buyLandBtn.addEventListener('click', function () {
+        var hektar = parseFloat(document.getElementById('land-hektar').value) || 0;
+        buyLandBtn.disabled = true;
+        sb.rpc('buy_land', { p_realm_id: state.myRealm.id, p_hektar: hektar }).then(function (res) {
+          var msg = document.getElementById('land-msg');
+          if (res.error) {
+            msg.textContent = res.error.message;
+            msg.className = 'msg error';
+            buyLandBtn.disabled = false;
+            return;
+          }
+          loadAll();
+        });
+      });
+    }
     var taxSlider = document.getElementById('tax-slider');
     var taxSaveBtn = document.getElementById('tax-save-btn');
     if (taxSlider) {
