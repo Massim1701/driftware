@@ -389,8 +389,6 @@ button {
     html += stat('Milch', fmt(r.milch));
     html += stat('Fleisch', fmt(r.fleisch));
     html += stat('Brot', fmt(r.brot));
-    html += stat('Milch', fmt(r.milch));
-    html += stat('Fleisch', fmt(r.fleisch));
     html += '</div><span class="rank-pill">' + (RANK_LABELS[r.rang] || r.rang) + '</span>';
     html += '<p class="panel-sub" style="margin-top:10px;">Getreide letzte Runde: <strong>+' + fmt(r.getreide_ertrag_letzte_runde) + ' geerntet</strong> · <strong>−' + fmt(r.getreide_bedarf_letzte_runde) + ' verbraucht</strong> (0,5 pro Kopf)' + (r.diebe_letzte_runde > 0 ? ' · <strong style="color:var(--danger);">−' + fmt(r.getreide_gestohlen_letzte_runde) + ' gestohlen (' + fmt(r.diebe_letzte_runde) + ' Diebe)</strong>' : '') + '</p>';
     html += '<p class="panel-sub">Bevölkerung letzte Runde: <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.geburten_letzte_runde) + ' geboren</strong> · <strong style="color:var(--danger);">−' + fmt(r.tote_letzte_runde) + ' verstorben</strong>' + (r.zuwanderer_letzte_runde > 0 ? ' · <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.zuwanderer_letzte_runde) + ' zugewandert</strong>' : '') + (r.auswanderer_letzte_runde > 0 ? ' · <strong style="color:var(--danger);">−' + fmt(r.auswanderer_letzte_runde) + ' abgewandert</strong>' : '') + '</p>';
