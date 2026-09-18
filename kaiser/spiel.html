@@ -374,9 +374,11 @@ button {
     html += '<p class="panel-sub">Bevölkerung letzte Runde: <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.geburten_letzte_runde) + ' geboren</strong> · <strong style="color:var(--danger);">−' + fmt(r.tote_letzte_runde) + ' verstorben</strong>' + (r.zuwanderer_letzte_runde > 0 ? ' · <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.zuwanderer_letzte_runde) + ' zugewandert</strong>' : '') + (r.auswanderer_letzte_runde > 0 ? ' · <strong style="color:var(--danger);">−' + fmt(r.auswanderer_letzte_runde) + ' abgewandert</strong>' : '') + '</p>';
     html += '<p class="panel-sub">Infrastruktur-Versorgung: <strong>' + Math.round(r.versorgungsgrad_letzte_runde * 100) + '%</strong></p>';
 
-    html += '<div style="margin-top:16px;"><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:6px;">Land kaufen — ' + preisProHa + ' Taler/ha (steigt mit der Bevölkerung)</label>';
+    var verkaufsPreisProHa = ((1 + r.bevoelkerung / 1000) * 0.9).toFixed(2);
+    html += '<div style="margin-top:16px;"><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:6px;">Land — Kaufen ' + preisProHa + ' / Verkaufen ' + verkaufsPreisProHa + ' Taler/ha</label>';
     html += '<div style="display:flex; gap:8px;"><input type="number" id="land-hektar" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
-    html += '<button class="btn-secondary" id="buy-land-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Kaufen</button></div>';
+    html += '<button class="btn-secondary" id="buy-land-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Kaufen</button>';
+    html += '<button class="btn-secondary" id="sell-land-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Verkaufen</button></div>';
     html += '<div class="msg" id="land-msg"></div></div>';
 
     html += '<div style="margin-top:16px;"><label style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:6px;">Steuersatz <span id="tax-value">' + r.steuersatz + '%</span></label>';
@@ -559,6 +561,23 @@ button {
             msg.textContent = res.error.message;
             msg.className = 'msg error';
             buyLandBtn.disabled = false;
+            return;
+          }
+          loadAll();
+        });
+      });
+    }
+    var sellLandBtn = document.getElementById('sell-land-btn');
+    if (sellLandBtn) {
+      sellLandBtn.addEventListener('click', function () {
+        var hektar = parseFloat(document.getElementById('land-hektar').value) || 0;
+        sellLandBtn.disabled = true;
+        sb.rpc('sell_land', { p_realm_id: state.myRealm.id, p_hektar: hektar }).then(function (res) {
+          var msg = document.getElementById('land-msg');
+          if (res.error) {
+            msg.textContent = res.error.message;
+            msg.className = 'msg error';
+            sellLandBtn.disabled = false;
             return;
           }
           loadAll();
