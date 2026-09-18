@@ -251,7 +251,7 @@ button {
   var main = document.getElementById('main-content');
 
   var BUILDING_LABELS = {
-    markt: 'Markt', muehle: 'Mühle', mauer: 'Mauer', palast: 'Palast', kathedrale: 'Kathedrale'
+    markt: 'Markt', muehle: 'Mühle', mauer: 'Mauer', palast: 'Palast', kathedrale: 'Kathedrale', hof: 'Hof'
   };
   var RANK_LABELS = { Regent: 'Regent', Fuerst: 'Fürst', Herzog: 'Herzog', Koenig: 'König', Kaiser: 'Kaiser' };
 
@@ -361,11 +361,20 @@ button {
     html += stat('Taler', fmt(r.taler));
     html += stat('Getreide', fmt(r.getreide_vorrat));
     html += stat('Bevölkerung', fmt(r.bevoelkerung));
-    html += '</div><span class="rank-pill">' + (RANK_LABELS[r.rang] || r.rang) + '</span></div>';
+    html += stat('Holz', fmt(r.holz));
+    html += stat('Wolle', fmt(r.wolle));
+    html += stat('Eisen', fmt(r.eisen));
+    html += '</div><span class="rank-pill">' + (RANK_LABELS[r.rang] || r.rang) + '</span>';
+    html += '<div style="margin-top:16px;"><label style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:6px;">Steuersatz <span id="tax-value">' + r.steuersatz + '%</span></label>';
+    html += '<input type="range" id="tax-slider" min="1" max="50" value="' + r.steuersatz + '" style="width:100%;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+    html += '<p class="panel-sub" style="margin-top:6px;">Hohe Steuern bringen mehr Taler, senken aber die Geburtenrate und erhöhen die Sterblichkeit leicht.</p>';
+    html += '<button class="btn-secondary" id="tax-save-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Steuersatz übernehmen</button>';
+    html += '<div class="msg" id="tax-msg"></div></div>';
+    html += '</div>';
 
     // Gebäude
-    html += '<div class="panel"><h2>Gebäude</h2><p class="panel-sub">Markt erhöht Taler-Einkommen, Mühle die Ernte je Runde.</p>';
-    ['markt', 'muehle', 'mauer', 'palast', 'kathedrale'].forEach(function (typ) {
+    html += '<div class="panel"><h2>Gebäude</h2><p class="panel-sub">Markt erhöht Taler-Einkommen, Mühle die Ernte, Hof liefert Getreide, Holz, Wolle und Eisen.</p>';
+    ['hof', 'markt', 'muehle', 'mauer', 'palast', 'kathedrale'].forEach(function (typ) {
       var cost = BUILDING_COSTS[typ];
       var count = state.buildings[typ] || 0;
       html += '<div class="building-row">';
@@ -395,7 +404,7 @@ button {
 
     html += '<div class="panel"><h2>Marktplatz</h2><p class="panel-sub">Angebote anderer Reiche annehmen oder eigenes einstellen.</p>';
     html += '<div class="trade-form">';
-    html += '<div class="field"><label>Ware</label><select id="trade-ware"><option value="getreide">Getreide</option><option value="taler">Taler</option></select></div>';
+    html += '<div class="field"><label>Ware</label><select id="trade-ware"><option value="getreide">Getreide</option><option value="holz">Holz</option><option value="wolle">Wolle</option><option value="eisen">Eisen</option></select></div>';
     html += '<div class="field"><label>Menge</label><input type="number" id="trade-menge" value="100" min="1"></div>';
     html += '<div class="field"><label>Preis je Einheit (Taler)</label><input type="number" id="trade-preis" value="1" min="0" step="0.1"></div>';
     html += '<button class="btn-secondary" id="offer-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Anbieten</button>';
@@ -464,9 +473,34 @@ button {
     return d.innerHTML;
   }
 
-  var BUILDING_COSTS = { markt: 500, muehle: 400, mauer: 300, palast: 5000, kathedrale: 4000 };
+  var BUILDING_COSTS = { markt: 500, muehle: 400, hof: 600, mauer: 300, palast: 5000, kathedrale: 4000 };
 
   function bindActions() {
+    var taxSlider = document.getElementById('tax-slider');
+    var taxSaveBtn = document.getElementById('tax-save-btn');
+    if (taxSlider) {
+      taxSlider.addEventListener('input', function () {
+        document.getElementById('tax-value').textContent = taxSlider.value + '%';
+      });
+    }
+    if (taxSaveBtn) {
+      taxSaveBtn.addEventListener('click', function () {
+        taxSaveBtn.disabled = true;
+        sb.rpc('set_tax_rate', { p_realm_id: state.myRealm.id, p_rate: parseInt(taxSlider.value, 10) }).then(function (res) {
+          var msg = document.getElementById('tax-msg');
+          if (res.error) {
+            msg.textContent = res.error.message;
+            msg.className = 'msg error';
+            taxSaveBtn.disabled = false;
+            return;
+          }
+          msg.textContent = 'Steuersatz übernommen — wirkt ab der nächsten Runde.';
+          msg.className = 'msg success';
+          state.myRealm.steuersatz = parseInt(taxSlider.value, 10);
+          taxSaveBtn.disabled = false;
+        });
+      });
+    }
     var startBtn = document.getElementById('start-btn');
     if (startBtn) {
       startBtn.addEventListener('click', function () {
