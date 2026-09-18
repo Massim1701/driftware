@@ -265,7 +265,7 @@ button {
   var main = document.getElementById('main-content');
 
   var BUILDING_LABELS = {
-    markt: 'Markt', muehle: 'Mühle', mauer: 'Mauer', palast: 'Palast', kathedrale: 'Kathedrale', hof: 'Hof', waffenschmiede: 'Waffenschmiede'
+    markt: 'Markt', muehle: 'Mühle', mauer: 'Mauer', palast: 'Palast', kathedrale: 'Kathedrale', hof: 'Hof', waffenschmiede: 'Waffenschmiede', hafen: 'Hafen'
   };
   var RANK_LABELS = {
     gutsherr: 'Gutsherr', freiherr: 'Freiherr', ritter: 'Ritter', graf: 'Graf', markgraf: 'Markgraf',
@@ -390,6 +390,9 @@ button {
     html += '<p class="panel-sub" style="margin-top:10px;">Getreide letzte Runde: <strong>+' + fmt(r.getreide_ertrag_letzte_runde) + ' geerntet</strong> · <strong>−' + fmt(r.getreide_bedarf_letzte_runde) + ' verbraucht</strong> (0,5 pro Kopf)' + (r.diebe_letzte_runde > 0 ? ' · <strong style="color:var(--danger);">−' + fmt(r.getreide_gestohlen_letzte_runde) + ' gestohlen (' + fmt(r.diebe_letzte_runde) + ' Diebe)</strong>' : '') + '</p>';
     html += '<p class="panel-sub">Bevölkerung letzte Runde: <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.geburten_letzte_runde) + ' geboren</strong> · <strong style="color:var(--danger);">−' + fmt(r.tote_letzte_runde) + ' verstorben</strong>' + (r.zuwanderer_letzte_runde > 0 ? ' · <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.zuwanderer_letzte_runde) + ' zugewandert</strong>' : '') + (r.auswanderer_letzte_runde > 0 ? ' · <strong style="color:var(--danger);">−' + fmt(r.auswanderer_letzte_runde) + ' abgewandert</strong>' : '') + '</p>';
     html += '<p class="panel-sub">Infrastruktur-Versorgung: <strong>' + Math.round(r.versorgungsgrad_letzte_runde * 100) + '%</strong></p>';
+    if (r.hafen_einnahmen_letzte_runde > 0) {
+      html += '<p class="panel-sub">Hafen-Export letzte Runde: <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.hafen_einnahmen_letzte_runde) + ' Taler</strong> (Preise: Wolle ' + fmt(r.exportpreis_wolle) + ', Holz ' + fmt(r.exportpreis_holz) + ', Eisen ' + fmt(r.exportpreis_eisen) + ' je Einheit)</p>';
+    }
 
     var verkaufsPreisProHa = ((1 + r.bevoelkerung / 1000) * 0.9).toFixed(2);
     html += '<div style="margin-top:16px;"><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:6px;">Land — Kaufen ' + preisProHa + ' / Verkaufen ' + verkaufsPreisProHa + ' Taler/ha</label>';
@@ -426,8 +429,8 @@ button {
     // Gebäude
     var BUILDING_MAX = { palast: 10, kathedrale: 15 };
     var BEDARF_KAPAZITAET = { hof: 250, markt: 600, muehle: 800 };
-    html += '<div class="panel"><h2>Gebäude</h2><p class="panel-sub">Markt erhöht Taler-Einkommen, Mühle die Ernte, Hof liefert Getreide/Holz/Wolle/Eisen, Waffenschmiede versorgt deine Soldaten. Palast (10 Stufen) und Kathedrale (15 Stufen) werden Stück für Stück ausgebaut. Reichen Hof/Markt/Mühle nicht für deine Bevölkerung, sinkt ihre Wirkung anteilig.</p>';
-    ['hof', 'markt', 'muehle', 'waffenschmiede', 'mauer', 'palast', 'kathedrale'].forEach(function (typ) {
+    html += '<div class="panel"><h2>Gebäude</h2><p class="panel-sub">Markt erhöht Taler-Einkommen, Mühle die Ernte, Hof liefert Getreide/Holz/Wolle/Eisen, Waffenschmiede versorgt deine Soldaten, Hafen exportiert überschüssiges Holz/Wolle/Eisen automatisch zu schwankenden Preisen. Palast (10 Stufen) und Kathedrale (15 Stufen) werden Stück für Stück ausgebaut. Reichen Hof/Markt/Mühle nicht für deine Bevölkerung, sinkt ihre Wirkung anteilig.</p>';
+    ['hof', 'markt', 'muehle', 'waffenschmiede', 'hafen', 'mauer', 'palast', 'kathedrale'].forEach(function (typ) {
       var cost = BUILDING_COSTS[typ];
       var count = state.buildings[typ] || 0;
       var max = BUILDING_MAX[typ];
@@ -597,7 +600,7 @@ button {
     return d.innerHTML;
   }
 
-  var BUILDING_COSTS = { markt: 500, muehle: 400, hof: 600, waffenschmiede: 700, mauer: 300, palast: 5000, kathedrale: 4000 };
+  var BUILDING_COSTS = { markt: 500, muehle: 400, hof: 600, waffenschmiede: 700, hafen: 800, mauer: 300, palast: 5000, kathedrale: 4000 };
 
   function bindActions() {
     var marryBtn = document.getElementById('marry-btn');
