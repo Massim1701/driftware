@@ -195,6 +195,34 @@ button {
 .realm-row .r-rank { color: var(--gold); font-size: 12px; }
 .realm-row.self { border-color: var(--gold); }
 
+.trade-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 16px; }
+.trade-form .field { display: flex; flex-direction: column; gap: 4px; }
+.trade-form label { font-size: 11px; color: var(--muted); }
+.trade-form select, .trade-form input {
+  background: #0f0709;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  width: 100px;
+}
+.trade-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.trade-row .t-desc strong { color: var(--gold); }
+.trade-row .t-from { color: var(--muted); font-size: 12px; }
 .msg { font-size: 13px; margin-top: 12px; }
 .msg.error { color: var(--danger); }
 .msg.success { color: var(--good); }
@@ -273,7 +301,11 @@ button {
 
               sb.from('military').select('*').eq('realm_id', state.myRealm.id).maybeSingle().then(function (milRes) {
                 state.military = milRes.data || { soldaten: 0, ausruestung_level: 1 };
-                render();
+
+                sb.from('trades').select('*').eq('game_id', gameId).eq('status', 'offen').order('created_at', { ascending: false }).then(function (tradeRes) {
+                  state.trades = tradeRes.data || [];
+                  render();
+                });
               });
             });
           });
@@ -292,7 +324,7 @@ button {
       roundInfo = '<div class="r-label">Status</div><div class="r-time">Wartet auf Start</div>';
     } else if (state.currentRound) {
       var closes = new Date(state.currentRound.closes_at);
-      roundInfo = '<div class="r-label">Runde ' + g.current_round + '</div><div class="r-time">bis ' + closes.toLocaleString('de-DE') + '</div>';
+      roundInfo = '<div class="r-label">Runde ' + g.current_round + ' — endet automatisch</div><div class="r-time">' + closes.toLocaleString('de-DE') + '</div>';
     }
 
     var html = '';
@@ -348,6 +380,33 @@ button {
     html += '<button class="btn-primary" id="recruit-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Anwerben</button></div>';
     html += '<div class="msg" id="recruit-msg"></div></div>';
 
+    // Marktplatz
+    var realmNameById = {};
+    state.players.forEach(function (p) { if (p.realms) realmNameById[p.realms.id] = p.reich_name; });
+
+    html += '<div class="panel"><h2>Marktplatz</h2><p class="panel-sub">Angebote anderer Reiche annehmen oder eigenes einstellen.</p>';
+    html += '<div class="trade-form">';
+    html += '<div class="field"><label>Ware</label><select id="trade-ware"><option value="getreide">Getreide</option><option value="taler">Taler</option></select></div>';
+    html += '<div class="field"><label>Menge</label><input type="number" id="trade-menge" value="100" min="1"></div>';
+    html += '<div class="field"><label>Preis je Einheit (Taler)</label><input type="number" id="trade-preis" value="1" min="0" step="0.1"></div>';
+    html += '<button class="btn-secondary" id="offer-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Anbieten</button>';
+    html += '</div>';
+
+    var myOffers = state.trades.filter(function (t) { return t.from_realm_id === state.myRealm.id; });
+    var otherOffers = state.trades.filter(function (t) { return t.from_realm_id !== state.myRealm.id; });
+
+    if (!state.trades.length) {
+      html += '<div class="empty">Aktuell keine offenen Angebote.</div>';
+    } else {
+      otherOffers.forEach(function (t) {
+        html += tradeRow(t, realmNameById, true);
+      });
+      myOffers.forEach(function (t) {
+        html += tradeRow(t, realmNameById, false);
+      });
+    }
+    html += '<div class="msg" id="trade-msg"></div></div>';
+
     // Andere Reiche
     html += '<div class="panel"><h2>Reiche in dieser Partie</h2><div class="realm-list">';
     state.players.forEach(function (p) {
@@ -359,7 +418,7 @@ button {
     });
     html += '</div>';
     if (isCreator && g.status === 'laufend') {
-      html += '<button class="btn-secondary" id="advance-btn" style="margin-top:14px;">Runde abschließen</button>';
+      html += '<button class="btn-secondary" id="advance-btn" style="margin-top:14px;">Runde vorzeitig abschließen</button>';
       html += '<div class="msg" id="advance-msg"></div>';
     }
     html += '</div>';
@@ -368,6 +427,21 @@ button {
 
     main.innerHTML = html;
     bindActions();
+  }
+
+  function tradeRow(t, realmNameById, showAccept) {
+    var wareLabel = t.ware === 'getreide' ? 'Getreide' : 'Taler';
+    var priceText = t.preis ? (' · ' + fmt(t.preis) + ' Taler/Einheit') : '';
+    var html = '<div class="trade-row">';
+    html += '<div><div class="t-desc"><strong>' + fmt(t.menge) + ' ' + wareLabel + '</strong>' + priceText + '</div>';
+    html += '<div class="t-from">von ' + escapeHtml(realmNameById[t.from_realm_id] || 'Unbekannt') + '</div></div>';
+    if (showAccept) {
+      html += '<button class="btn-primary" style="padding:6px 14px;font-size:12px;" data-accept="' + t.id + '">Annehmen</button>';
+    } else {
+      html += '<span class="t-from">eigenes Angebot</span>';
+    }
+    html += '</div>';
+    return html;
   }
 
   function stat(label, value) {
@@ -434,6 +508,43 @@ button {
         });
       });
     }
+
+    var offerBtn = document.getElementById('offer-btn');
+    if (offerBtn) {
+      offerBtn.addEventListener('click', function () {
+        var ware = document.getElementById('trade-ware').value;
+        var menge = parseFloat(document.getElementById('trade-menge').value) || 0;
+        var preis = parseFloat(document.getElementById('trade-preis').value) || 0;
+        offerBtn.disabled = true;
+        sb.rpc('offer_trade', { p_game_id: gameId, p_ware: ware, p_menge: menge, p_preis: preis }).then(function (res) {
+          var msg = document.getElementById('trade-msg');
+          if (res.error) {
+            msg.textContent = res.error.message;
+            msg.className = 'msg error';
+            offerBtn.disabled = false;
+            return;
+          }
+          loadAll();
+        });
+      });
+    }
+
+    document.querySelectorAll('[data-accept]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var tradeId = btn.getAttribute('data-accept');
+        btn.disabled = true;
+        sb.rpc('accept_trade', { p_trade_id: tradeId }).then(function (res) {
+          var msg = document.getElementById('trade-msg');
+          if (res.error) {
+            msg.textContent = res.error.message;
+            msg.className = 'msg error';
+            btn.disabled = false;
+            return;
+          }
+          loadAll();
+        });
+      });
+    });
 
     var advanceBtn = document.getElementById('advance-btn');
     if (advanceBtn) {
