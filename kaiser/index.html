@@ -57,13 +57,32 @@ header {
 main { max-width: 960px; margin: 0 auto; padding: 24px 20px 80px; }
 
 /* --- Auth --- */
-.auth-wrap {
-  max-width: 380px;
-  margin: 60px auto;
-  background: var(--card);
-  border: 1px solid var(--border);
+.auth-layout {
+  max-width: 900px;
+  margin: 40px auto;
+  display: flex;
+  gap: 0;
   border-radius: 14px;
-  padding: 32px 28px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.auth-hero {
+  flex: 1.1;
+  min-width: 0;
+}
+.auth-hero img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.auth-wrap {
+  flex: 1;
+  max-width: none;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: var(--card);
+  padding: 40px 36px;
+}
+@media (max-width: 720px) {
+  .auth-layout { flex-direction: column; margin: 20px 16px; }
+  .auth-hero { max-height: 200px; }
 }
 .auth-wrap h1 {
   font-family: 'Cinzel', serif;
@@ -185,8 +204,51 @@ button {
 .empty { color: var(--muted); font-size: 13px; padding: 10px 0; }
 .loading { color: var(--muted); font-size: 13px; }
 
+/* --- Fraktionswahl --- */
+.faction-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+}
+.faction-overlay.open { display: flex; }
+.faction-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  max-width: 720px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.faction-panel h3 { font-family: 'Cinzel', serif; margin: 0 0 4px; font-size: 18px; }
+.faction-panel .fp-sub { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
+.faction-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
+}
+.faction-card {
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+}
+.faction-card:hover { border-color: var(--gold); }
+.faction-card img { width: 100%; border-radius: 6px; display: block; margin-bottom: 6px; }
+.faction-card .fc-name { font-size: 12px; font-weight: 600; }
+.faction-card.taken { opacity: .35; cursor: not-allowed; }
+.faction-close { margin-top: 16px; }
+
 @media (max-width: 480px) {
-  .auth-wrap { margin: 30px 16px; padding: 24px 20px; }
+  .auth-wrap { padding: 24px 20px; }
 }
 </style>
 </head>
@@ -200,7 +262,9 @@ button {
 <main>
 
 <div id="auth-view" style="display:none">
-  <div class="auth-wrap">
+  <div class="auth-layout">
+    <div class="auth-hero"><img src="assets/hero.jpg" alt="Kaiser"></div>
+    <div class="auth-wrap">
     <h1 id="auth-title">Anmelden</h1>
     <p class="sub" id="auth-sub">Verwalte dein Reich — bis zu sechs Spieler ringen um die Kaiserkrone.</p>
     <form id="auth-form">
@@ -213,6 +277,7 @@ button {
     <div class="form-msg" id="auth-msg"></div>
     <div class="switch-mode">
       <span id="switch-text">Noch kein Konto?</span> <a id="switch-link">Registrieren</a>
+    </div>
     </div>
   </div>
 </div>
@@ -232,8 +297,9 @@ button {
         <input type="text" id="game-name" required maxlength="40" placeholder="z. B. Rheinlande">
       </div>
       <div class="field">
-        <label for="realm-name">Dein Reichsname</label>
-        <input type="text" id="realm-name" required maxlength="30" placeholder="z. B. Haus Oberhausen">
+        <label>Fraktion</label>
+        <button type="button" class="btn-secondary" id="pick-faction-btn" style="width:100%; text-align:left;">Fraktion wählen …</button>
+        <input type="hidden" id="selected-faction">
       </div>
       <div class="field" style="max-width:120px;">
         <label for="max-players">Spieler</label>
@@ -252,6 +318,15 @@ button {
     <div id="games-list" class="game-list"><div class="loading">Lade Partien …</div></div>
   </div>
 
+</div>
+
+<div class="faction-overlay" id="faction-overlay">
+  <div class="faction-panel">
+    <h3>Fraktion wählen</h3>
+    <p class="fp-sub" id="faction-sub">Bereits vergebene Fraktionen sind ausgegraut.</p>
+    <div class="faction-grid" id="faction-grid"><div class="loading">Lade Fraktionen …</div></div>
+    <button class="btn-secondary faction-close" id="faction-cancel">Abbrechen</button>
+  </div>
 </div>
 
 </main>
@@ -335,6 +410,42 @@ button {
     loadGames();
   }
 
+  var factionOverlay = document.getElementById('faction-overlay');
+  var factionGrid = document.getElementById('faction-grid');
+  var factionCancel = document.getElementById('faction-cancel');
+  var allFactions = null;
+
+  function openFactionPicker(excludeIds, onPick) {
+    factionOverlay.classList.add('open');
+    factionGrid.innerHTML = '<div class="loading">Lade Fraktionen …</div>';
+    var load = allFactions ? Promise.resolve({ data: allFactions }) : sb.from('factions').select('*').order('name');
+    Promise.resolve(load).then(function (res) {
+      allFactions = res.data;
+      factionGrid.innerHTML = '';
+      res.data.forEach(function (f) {
+        var taken = excludeIds.indexOf(f.id) !== -1;
+        var card = document.createElement('div');
+        card.className = 'faction-card' + (taken ? ' taken' : '');
+        card.innerHTML = '<img src="assets/factions/' + f.bild_datei + '" alt="' + escapeHtml(f.name) + '"><div class="fc-name">' + escapeHtml(f.name) + '</div>';
+        if (!taken) {
+          card.addEventListener('click', function () {
+            factionOverlay.classList.remove('open');
+            onPick(f);
+          });
+        }
+        factionGrid.appendChild(card);
+      });
+    });
+  }
+  factionCancel.addEventListener('click', function () { factionOverlay.classList.remove('open'); });
+
+  document.getElementById('pick-faction-btn').addEventListener('click', function () {
+    openFactionPicker([], function (f) {
+      document.getElementById('selected-faction').value = f.id;
+      document.getElementById('pick-faction-btn').textContent = f.name + ' — ändern';
+    });
+  });
+
   var currentUserId = null;
 
   function loadGames() {
@@ -416,8 +527,15 @@ button {
     msg.textContent = '';
     msg.className = 'form-msg';
     var gameName = document.getElementById('game-name').value.trim();
-    var realmName = document.getElementById('realm-name').value.trim();
+    var factionId = document.getElementById('selected-faction').value;
+    var factionName = document.getElementById('pick-faction-btn').textContent.replace(' — ändern', '');
     var maxPlayers = parseInt(document.getElementById('max-players').value, 10) || 6;
+
+    if (!factionId) {
+      msg.textContent = 'Bitte zuerst eine Fraktion wählen.';
+      msg.className = 'form-msg error';
+      return;
+    }
 
     sb.auth.getUser().then(function (userRes) {
       var uid = userRes.data.user.id;
@@ -435,7 +553,8 @@ button {
         sb.from('game_players').insert({
           game_id: res.data.id,
           user_id: uid,
-          reich_name: realmName
+          reich_name: factionName,
+          fraktion: factionId
         }).select().single().then(function (gpRes) {
           if (gpRes.error) {
             msg.textContent = gpRes.error.message;
@@ -451,7 +570,9 @@ button {
             }
             document.getElementById('create-form').reset();
             document.getElementById('max-players').value = 6;
-            msg.textContent = 'Reich "' + realmName + '" gegründet.';
+            document.getElementById('selected-faction').value = '';
+            document.getElementById('pick-faction-btn').textContent = 'Fraktion wählen …';
+            msg.textContent = 'Reich "' + factionName + '" gegründet.';
             msg.className = 'form-msg success';
             loadGames();
           });
@@ -461,21 +582,25 @@ button {
   });
 
   function joinGame(gameId) {
-    var realmName = prompt('Wie soll dein Reich heißen?');
-    if (!realmName) return;
-    sb.auth.getUser().then(function (userRes) {
-      var uid = userRes.data.user.id;
-      sb.from('game_players').insert({
-        game_id: gameId,
-        user_id: uid,
-        reich_name: realmName
-      }).select().single().then(function (res) {
-        if (res.error) {
-          alert(res.error.message);
-          return;
-        }
-        sb.from('realms').insert({ game_player_id: res.data.id }).then(function () {
-          window.location.href = 'spiel.html?id=' + gameId;
+    sb.from('game_players').select('fraktion').eq('game_id', gameId).then(function (res) {
+      var taken = (res.data || []).map(function (r) { return r.fraktion; }).filter(Boolean);
+      openFactionPicker(taken, function (f) {
+        sb.auth.getUser().then(function (userRes) {
+          var uid = userRes.data.user.id;
+          sb.from('game_players').insert({
+            game_id: gameId,
+            user_id: uid,
+            reich_name: f.name,
+            fraktion: f.id
+          }).select().single().then(function (r2) {
+            if (r2.error) {
+              alert(r2.error.message);
+              return;
+            }
+            sb.from('realms').insert({ game_player_id: r2.data.id }).then(function () {
+              window.location.href = 'spiel.html?id=' + gameId;
+            });
+          });
         });
       });
     });

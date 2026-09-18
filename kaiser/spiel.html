@@ -278,7 +278,7 @@ button {
         }
         state.game = gameRes.data;
 
-        sb.from('game_players').select('*, realms(*)').eq('game_id', gameId).then(function (gpRes) {
+        sb.from('game_players').select('*, realms(*), factions(name,bild_datei)').eq('game_id', gameId).then(function (gpRes) {
           if (gpRes.error) {
             main.innerHTML = '<div class="empty">Fehler beim Laden.</div>';
             return;
@@ -354,7 +354,8 @@ button {
     html += '<div class="grid"><div>';
 
     // Ressourcen
-    html += '<div class="panel"><h2>Dein Reich</h2><p class="panel-sub">' + escapeHtml(state.myPlayer.reich_name) + '</p>';
+    var myCrest = state.myPlayer.factions ? '<img src="assets/factions/' + state.myPlayer.factions.bild_datei + '" alt="" style="width:28px;height:35px;border-radius:4px;vertical-align:middle;margin-right:8px;">' : '';
+    html += '<div class="panel"><h2>' + myCrest + 'Dein Reich</h2><p class="panel-sub">' + escapeHtml(state.myPlayer.reich_name) + '</p>';
     html += '<div class="stat-grid">';
     html += stat('Land', fmt(r.land_hektar) + ' ha');
     html += stat('Taler', fmt(r.taler));
@@ -420,7 +421,8 @@ button {
     state.players.forEach(function (p) {
       var isSelf = p.id === state.myPlayer.id;
       html += '<div class="realm-row' + (isSelf ? ' self' : '') + '">';
-      html += '<span class="r-name">' + escapeHtml(p.reich_name) + (isSelf ? ' (du)' : '') + '</span>';
+      var crest = p.factions ? '<img src="assets/factions/' + p.factions.bild_datei + '" alt="" style="width:22px;height:27px;border-radius:3px;vertical-align:middle;margin-right:8px;">' : '';
+      html += '<span class="r-name">' + crest + escapeHtml(p.reich_name) + (isSelf ? ' (du)' : '') + '</span>';
       html += '<span class="r-rank">' + (p.realms ? (RANK_LABELS[p.realms.rang] || p.realms.rang) : '') + '</span>';
       html += '</div>';
     });
