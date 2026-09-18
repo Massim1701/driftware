@@ -479,8 +479,16 @@ button {
         { key: 'fleisch', label: 'Fleisch', bestand: r.fleisch }
       ].forEach(function (w) {
         var preis = r['exportpreis_' + w.key];
+        var preisVorher = r['exportpreis_' + w.key + '_vorher'];
+        var delta = preis - preisVorher;
+        var kurs = '';
+        if (preisVorher > 0) {
+          if (delta > 0) kurs = ' <span style="color:var(--good, #7fbf8f);">▲ +' + fmt(delta) + '</span>';
+          else if (delta < 0) kurs = ' <span style="color:var(--danger);">▼ ' + fmt(delta) + '</span>';
+          else kurs = ' <span style="color:var(--gold);">●</span>';
+        }
         html += '<div class="building-row">';
-        html += '<div><div class="b-name">' + w.label + '</div><div class="b-cost">' + fmt(preis) + ' Taler/Einheit · Bestand: ' + fmt(w.bestand) + '</div></div>';
+        html += '<div><div class="b-name">' + w.label + '</div><div class="b-cost">' + fmt(preis) + ' Taler/Einheit' + kurs + ' · Bestand: ' + fmt(w.bestand) + '</div></div>';
         html += '<div style="display:flex;align-items:center;gap:8px;">';
         html += '<input type="number" data-export-menge="' + w.key + '" value="' + Math.min(100, Math.floor(w.bestand)) + '" min="1" style="width:70px; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:6px 8px; color:var(--text); font-size:12px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
         html += '<button class="btn-secondary" data-export="' + w.key + '"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Exportieren</button>';
