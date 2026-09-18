@@ -379,8 +379,15 @@ button {
     var html = '';
     html += '<div class="game-header">';
     html += '<div><h1>' + escapeHtml(g.name) + '</h1><div class="sub">' + state.players.length + ' / ' + g.max_players + ' Spieler</div></div>';
-    html += '<div class="round-box">' + roundInfo + '</div>';
+    html += '<div class="round-box">' + roundInfo;
+    if (isCreator && g.status === 'laufend') {
+      html += '<button class="btn-secondary" id="advance-btn" style="margin-top:8px; width:100%;">Runde vorzeitig abschließen</button>';
+    }
     html += '</div>';
+    html += '</div>';
+    if (isCreator && g.status === 'laufend') {
+      html += '<div class="msg" id="advance-msg" style="text-align:right; margin-top:-10px; margin-bottom:10px;"></div>';
+    }
 
     if (g.status === 'laufend') {
       var bevCapU = Math.floor(r.land_hektar * 0.15);
@@ -464,43 +471,6 @@ button {
     html += '<button class="btn-secondary" id="tilgen-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Tilgen</button></div>';
     html += '<div class="msg" id="bank-msg"></div></div>';
 
-    // Hafen
-    var hafenCount = state.buildings.hafen || 0;
-    html += '<div class="panel"><h2>Hafen</h2>';
-    if (hafenCount < 1) {
-      html += '<p class="panel-sub">Baue einen Hafen, um Holz, Wolle, Eisen, Milch und Fleisch selbst zu exportieren — Preise schwanken jede Runde.</p>';
-    } else {
-      html += '<p class="panel-sub">Tagespreise je Einheit — du entscheidest, wie viel du verkaufst.</p>';
-      [
-        { key: 'holz', label: 'Holz', bestand: r.holz },
-        { key: 'wolle', label: 'Wolle', bestand: r.wolle },
-        { key: 'eisen', label: 'Eisen', bestand: r.eisen },
-        { key: 'milch', label: 'Milch', bestand: r.milch },
-        { key: 'fleisch', label: 'Fleisch', bestand: r.fleisch }
-      ].forEach(function (w) {
-        var preis = r['exportpreis_' + w.key];
-        var preisVorher = r['exportpreis_' + w.key + '_vorher'];
-        var delta = preis - preisVorher;
-        var kurs = '';
-        if (preisVorher > 0) {
-          if (delta > 0) kurs = ' <span style="color:var(--good, #7fbf8f);">▲ +' + fmt(delta) + '</span>';
-          else if (delta < 0) kurs = ' <span style="color:var(--danger);">▼ ' + fmt(delta) + '</span>';
-          else kurs = ' <span style="color:var(--gold);">●</span>';
-        }
-        html += '<div class="building-row">';
-        html += '<div><div class="b-name">' + w.label + '</div><div class="b-cost">' + fmt(preis) + ' Taler/Einheit' + kurs + ' · Bestand: ' + fmt(w.bestand) + '</div></div>';
-        html += '<div style="display:flex;align-items:center;gap:8px;">';
-        html += '<input type="number" data-export-menge="' + w.key + '" value="' + Math.min(100, Math.floor(w.bestand)) + '" min="1" style="width:70px; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:6px 8px; color:var(--text); font-size:12px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
-        html += '<button class="btn-secondary" data-export="' + w.key + '"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Exportieren</button>';
-        html += '<button data-export-all="' + w.key + '" data-bestand="' + w.bestand + '" title="Alles verkaufen"' + (g.status !== 'laufend' || w.bestand <= 0 ? ' disabled' : '') + ' style="width:22px;height:22px;border-radius:50%;background:#3ecf6e;border:1px solid #2fa85a;cursor:pointer;padding:0;"></button>';
-        html += '</div></div>';
-      });
-      if (r.hafen_einnahmen_letzte_runde > 0) {
-        html += '<p class="panel-sub" style="margin-top:8px;">Diese Runde bereits exportiert: <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.hafen_einnahmen_letzte_runde) + ' Taler</strong></p>';
-      }
-    }
-    html += '<div class="msg" id="hafen-msg"></div></div>';
-
     html += '</div><div>';
 
     // Gebäude
@@ -538,6 +508,43 @@ button {
       html += '<button class="btn-primary" id="marry-btn" style="margin-top:0; width:auto; padding:9px 18px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Heiraten</button>';
     }
     html += '<div class="msg" id="marry-msg"></div></div>';
+
+    // Hafen
+    var hafenCount = state.buildings.hafen || 0;
+    html += '<div class="panel"><h2>Hafen</h2>';
+    if (hafenCount < 1) {
+      html += '<p class="panel-sub">Baue einen Hafen, um Holz, Wolle, Eisen, Milch und Fleisch selbst zu exportieren — Preise schwanken jede Runde.</p>';
+    } else {
+      html += '<p class="panel-sub">Tagespreise je Einheit — du entscheidest, wie viel du verkaufst.</p>';
+      [
+        { key: 'holz', label: 'Holz', bestand: r.holz },
+        { key: 'wolle', label: 'Wolle', bestand: r.wolle },
+        { key: 'eisen', label: 'Eisen', bestand: r.eisen },
+        { key: 'milch', label: 'Milch', bestand: r.milch },
+        { key: 'fleisch', label: 'Fleisch', bestand: r.fleisch }
+      ].forEach(function (w) {
+        var preis = r['exportpreis_' + w.key];
+        var preisVorher = r['exportpreis_' + w.key + '_vorher'];
+        var delta = preis - preisVorher;
+        var kurs = '';
+        if (preisVorher > 0) {
+          if (delta > 0) kurs = ' <span style="color:var(--good, #7fbf8f);">▲ +' + fmt(delta) + '</span>';
+          else if (delta < 0) kurs = ' <span style="color:var(--danger);">▼ ' + fmt(delta) + '</span>';
+          else kurs = ' <span style="color:var(--gold);">●</span>';
+        }
+        html += '<div class="building-row">';
+        html += '<div><div class="b-name">' + w.label + '</div><div class="b-cost">' + fmt(preis) + ' Taler/Einheit' + kurs + ' · Bestand: ' + fmt(w.bestand) + '</div></div>';
+        html += '<div style="display:flex;align-items:center;gap:8px;">';
+        html += '<input type="number" data-export-menge="' + w.key + '" value="' + Math.min(100, Math.floor(w.bestand)) + '" min="1" style="width:70px; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:6px 8px; color:var(--text); font-size:12px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+        html += '<button class="btn-secondary" data-export="' + w.key + '"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Exportieren</button>';
+        html += '<button data-export-all="' + w.key + '" data-bestand="' + w.bestand + '" title="Alles verkaufen"' + (g.status !== 'laufend' || w.bestand <= 0 ? ' disabled' : '') + ' style="width:22px;height:22px;border-radius:50%;background:#3ecf6e;border:1px solid #2fa85a;cursor:pointer;padding:0;"></button>';
+        html += '</div></div>';
+      });
+      if (r.hafen_einnahmen_letzte_runde > 0) {
+        html += '<p class="panel-sub" style="margin-top:8px;">Diese Runde bereits exportiert: <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.hafen_einnahmen_letzte_runde) + ' Taler</strong></p>';
+      }
+    }
+    html += '<div class="msg" id="hafen-msg"></div></div>';
 
     html += '</div><div>';
 
@@ -640,10 +647,6 @@ button {
       html += '</div>';
     });
     html += '</div>';
-    if (isCreator && g.status === 'laufend') {
-      html += '<button class="btn-secondary" id="advance-btn" style="margin-top:14px;">Runde vorzeitig abschließen</button>';
-      html += '<div class="msg" id="advance-msg"></div>';
-    }
     html += '</div>';
 
     html += '</div></div>';
