@@ -538,7 +538,8 @@ button {
     if (hafenCount < 1) {
       html += '<p class="panel-sub">Baue einen Hafen, um Getreide, Holz, Wolle, Eisen, Milch und Fleisch selbst zu exportieren — Preise schwanken jede Runde.</p>';
     } else {
-      html += '<p class="panel-sub">Tagespreise je Einheit — du entscheidest, wie viel du verkaufst.</p>';
+      var hafenBonusPct = Math.min(100, Math.max(0, hafenCount - 1) * 5);
+      html += '<p class="panel-sub">Tagespreise je Einheit — du entscheidest, wie viel du verkaufst. Jeder Hafen über den ersten hebt die Preise um 5%' + (hafenBonusPct > 0 ? ' (aktuell +' + hafenBonusPct + '%)' : '') + '.</p>';
       [
         { key: 'getreide', label: 'Getreide', bestand: r.getreide_vorrat },
         { key: 'holz', label: 'Holz', bestand: r.holz },
