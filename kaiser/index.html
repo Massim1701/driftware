@@ -441,9 +441,9 @@ button {
     <div class="panel help-text">
       <h2>Hilfe</h2>
       <h3>Ziel</h3>
-      <p>Steige vom Gutsherrn zum Kaiser auf — zehn Ränge, die du durch die Größe deines Landes und deiner Bevölkerung erreichst: Gutsherr, Freiherr, Ritter, Graf, Markgraf, Herzog, Kurfürst, Erzherzog, König und schließlich Kaiser. Für König und Kaiser brauchst du zusätzlich genug Taler, und Kaiser nur mit Palast, Kathedrale, 5 Märkten und 3 Mühlen.</p>
+      <p>Steige vom Gutsherrn zum Kaiser auf — zehn Ränge, die du durch die Größe deines Landes und deiner Bevölkerung erreichst: Gutsherr, Freiherr, Ritter, Graf, Markgraf, Herzog, Kurfürst, Erzherzog, König und schließlich Kaiser. König brauchst du zusätzlich einen vollständig ausgebauten Palast, Kaiser zusätzlich eine vollständige Kathedrale sowie genug Taler.</p>
       <h3>Runden</h3>
-      <p>Jede Runde läuft 24 Stunden. In dieser Zeit kannst du bauen, Soldaten anwerben, Steuern festlegen, Land kaufen und handeln. Danach wird automatisch abgerechnet: Ernte, Rohstoffproduktion, Militärversorgung, Steuereinnahmen und Bevölkerungsentwicklung.</p>
+      <p>Jede Runde läuft 24 Stunden. In dieser Zeit kannst du bauen, Soldaten anwerben, Steuern festlegen, Land kaufen und handeln. Danach wird automatisch abgerechnet: Ernte, Rohstoffproduktion, Militärversorgung, Steuereinnahmen, Bevölkerungsentwicklung und Dynastie.</p>
       <h3>Steuersatz</h3>
       <p>Du legst deinen Steuersatz zwischen 1% und 50% selbst fest. Höhere Steuern bringen mehr Taler aus deinem Land, senken aber die Geburtenrate und erhöhen die Sterblichkeit leicht — ein zu gieriges Reich verliert Bevölkerung.</p>
       <h3>Land</h3>
@@ -457,10 +457,13 @@ button {
         <li>Mühle — erhöht deine Ernte zusätzlich je Runde</li>
         <li>Waffenschmiede — hält deine Soldaten mit Holz/Eisen versorgt und verbessert ihre Ausrüstung</li>
         <li>Mauer — Verteidigung</li>
-        <li>Palast &amp; Kathedrale — nötig für den Aufstieg zum Kaiser</li>
+        <li>Palast — 10 Bauabschnitte à 5.000 Taler, Voraussetzung für den Rang König</li>
+        <li>Kathedrale — 15 Bauabschnitte à 4.000 Taler, zusammen mit dem Palast Voraussetzung für den Rang Kaiser</li>
       </ul>
       <h3>Militär</h3>
       <p>Jeder Soldat verbraucht pro Runde 0,2 Holz und 0,3 Eisen — mehr Soldaten heißt mehr Verbrauch. Reicht dein Vorrat nicht, desertieren Soldaten und die Ausrüstung verschlechtert sich. Mit einer Waffenschmiede wird die Truppe zuverlässig versorgt und ihre Ausrüstung steigt mit der Zeit.</p>
+      <h3>Dynastie</h3>
+      <p>Heirate, um Erben zu bekommen — sie entstehen automatisch über die Runden. Alle 20 Runden übernimmt ein bereitstehender Erbe den Thron, mit einem kleinen Verlust an Taler und Bevölkerung beim Übergang. Ohne Erben wird gewartet, bis einer bereitsteht. So kann dein Reich über Generationen hinweg bestehen.</p>
       <h3>Marktplatz</h3>
       <p>Biete Getreide, Holz, Wolle oder Eisen an, andere Spieler deiner Partie können das Angebot annehmen. Der Tausch erfolgt sofort und verbindlich.</p>
       <h3>Zufallsereignisse</h3>
@@ -476,6 +479,16 @@ button {
     <p class="fp-sub" id="faction-sub">Bereits vergebene Fraktionen sind ausgegraut.</p>
     <div class="faction-grid" id="faction-grid"><div class="loading">Lade Fraktionen …</div></div>
     <button class="btn-secondary faction-close" id="faction-cancel">Abbrechen</button>
+  </div>
+</div>
+
+<div class="faction-overlay" id="name-overlay">
+  <div class="faction-panel" style="max-width:420px;">
+    <h3>Wie sollen wir dich nennen?</h3>
+    <p class="fp-sub">Dein Spielername wird auf Dauer gespeichert. Beleidigende oder verbotene Namen sind nicht erlaubt.</p>
+    <input type="text" id="display-name-input" maxlength="24" placeholder="Dein Name" style="width:100%; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-size:14px; margin-bottom:12px;">
+    <button class="btn-primary" id="save-name-btn" style="width:100%; margin-top:0;">Speichern</button>
+    <div class="form-msg" id="name-msg"></div>
   </div>
 </div>
 
@@ -559,7 +572,31 @@ button {
     document.getElementById('who-email').textContent = user.email;
     document.getElementById('settings-email').textContent = user.email;
     showSection(null);
+    checkDisplayName();
   }
+
+  function checkDisplayName() {
+    sb.from('player_profiles').select('display_name').maybeSingle().then(function (res) {
+      if (!res.data) {
+        document.getElementById('name-overlay').classList.add('open');
+      }
+    });
+  }
+
+  document.getElementById('save-name-btn').addEventListener('click', function () {
+    var msg = document.getElementById('name-msg');
+    var name = document.getElementById('display-name-input').value;
+    msg.textContent = '';
+    msg.className = 'form-msg';
+    sb.rpc('set_display_name', { p_name: name }).then(function (res) {
+      if (res.error) {
+        msg.textContent = res.error.message;
+        msg.className = 'form-msg error';
+        return;
+      }
+      document.getElementById('name-overlay').classList.remove('open');
+    });
+  });
 
   var menuScreen = document.getElementById('menu-screen');
   var allSections = document.querySelectorAll('.section-view');

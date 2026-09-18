@@ -386,18 +386,36 @@ button {
     html += '</div>';
 
     // Gebäude
-    html += '<div class="panel"><h2>Gebäude</h2><p class="panel-sub">Markt erhöht Taler-Einkommen, Mühle die Ernte, Hof liefert Getreide/Holz/Wolle/Eisen, Waffenschmiede versorgt deine Soldaten.</p>';
+    var BUILDING_MAX = { palast: 10, kathedrale: 15 };
+    html += '<div class="panel"><h2>Gebäude</h2><p class="panel-sub">Markt erhöht Taler-Einkommen, Mühle die Ernte, Hof liefert Getreide/Holz/Wolle/Eisen, Waffenschmiede versorgt deine Soldaten. Palast (10 Stufen) und Kathedrale (15 Stufen) werden Stück für Stück ausgebaut.</p>';
     ['hof', 'markt', 'muehle', 'waffenschmiede', 'mauer', 'palast', 'kathedrale'].forEach(function (typ) {
       var cost = BUILDING_COSTS[typ];
       var count = state.buildings[typ] || 0;
+      var max = BUILDING_MAX[typ];
+      var maxedOut = max && count >= max;
       html += '<div class="building-row">';
       html += '<div><div class="b-name">' + BUILDING_LABELS[typ] + '</div><div class="b-cost">' + fmt(cost) + ' Taler</div></div>';
       html += '<div style="display:flex;align-items:center;gap:14px;">';
-      html += '<div class="b-count">' + count + '</div>';
-      html += '<button class="btn-secondary" data-build="' + typ + '"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Bauen</button>';
+      html += '<div class="b-count">' + count + (max ? ' / ' + max : '') + '</div>';
+      html += '<button class="btn-secondary" data-build="' + typ + '"' + (g.status !== 'laufend' || maxedOut ? ' disabled' : '') + '>' + (maxedOut ? 'Fertig' : 'Bauen') + '</button>';
       html += '</div></div>';
     });
     html += '<div class="msg" id="build-msg"></div></div>';
+
+    // Dynastie
+    html += '<div class="panel"><h2>Dynastie</h2>';
+    if (r.verheiratet) {
+      html += '<p class="panel-sub">Verheiratet' + (r.ehepartner_name ? ' mit ' + escapeHtml(r.ehepartner_name) : '') + '. Generation ' + fmt(r.generationen) + '.</p>';
+      html += '<div class="stat-grid" style="grid-template-columns:repeat(2,1fr);">';
+      html += stat('Erben bereit', fmt(r.kinder));
+      html += stat('Runden bis Thronwechsel', fmt(Math.max(0, 20 - r.runden_seit_thronbesteigung)));
+      html += '</div><p class="panel-sub" style="margin-top:8px;">Alle 20 Runden übernimmt ein Erbe den Thron — mit kleinem Verlust an Taler und Bevölkerung. Ohne bereitstehenden Erben wird gewartet.</p>';
+    } else {
+      html += '<p class="panel-sub">Noch unverheiratet. Ohne Ehe entstehen keine Erben, und dein Reich endet mit dir.</p>';
+      html += '<input type="text" id="partner-name" maxlength="30" placeholder="Name des Ehepartners (optional)" style="width:100%; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px; margin-bottom:8px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+      html += '<button class="btn-primary" id="marry-btn" style="margin-top:0; width:auto; padding:9px 18px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Heiraten</button>';
+    }
+    html += '<div class="msg" id="marry-msg"></div></div>';
 
     html += '</div><div>';
 
@@ -488,7 +506,23 @@ button {
 
   var BUILDING_COSTS = { markt: 500, muehle: 400, hof: 600, waffenschmiede: 700, mauer: 300, palast: 5000, kathedrale: 4000 };
 
-  function bindActions() {
+    var marryBtn = document.getElementById('marry-btn');
+    if (marryBtn) {
+      marryBtn.addEventListener('click', function () {
+        var partnerName = document.getElementById('partner-name').value;
+        marryBtn.disabled = true;
+        sb.rpc('marry', { p_realm_id: state.myRealm.id, p_partner_name: partnerName }).then(function (res) {
+          var msg = document.getElementById('marry-msg');
+          if (res.error) {
+            msg.textContent = res.error.message;
+            msg.className = 'msg error';
+            marryBtn.disabled = false;
+            return;
+          }
+          loadAll();
+        });
+      });
+    }
     var buyLandBtn = document.getElementById('buy-land-btn');
     if (buyLandBtn) {
       buyLandBtn.addEventListener('click', function () {
