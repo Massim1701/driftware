@@ -508,10 +508,12 @@ button {
       var kap = BEDARF_KAPAZITAET[typ];
       var benoetigt = kap ? Math.ceil(r.bevoelkerung / kap) : null;
       var mangel = benoetigt !== null && count < benoetigt;
+      var vorschlag = mangel ? Math.max(1, benoetigt - count) : 1;
       html += '<div class="building-row">';
       html += '<div><div class="b-name">' + BUILDING_LABELS[typ] + '</div><div class="b-cost">' + fmt(cost) + ' Taler' + (benoetigt !== null ? ' · benötigt: ' + benoetigt : '') + '</div></div>';
-      html += '<div style="display:flex;align-items:center;gap:14px;">';
+      html += '<div style="display:flex;align-items:center;gap:8px;">';
       html += '<div class="b-count"' + (mangel ? ' style="color:var(--danger);"' : '') + '>' + count + (max ? ' / ' + max : '') + '</div>';
+      html += '<input type="text" inputmode="decimal" data-build-menge="' + typ + '" value="' + vorschlag + '" style="width:56px; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:6px 8px; color:var(--text); font-size:12px; text-align:center;"' + (g.status !== 'laufend' || maxedOut ? ' disabled' : '') + '>';
       html += '<button class="btn-secondary" data-build="' + typ + '"' + (g.status !== 'laufend' || maxedOut ? ' disabled' : '') + '>' + (maxedOut ? 'Fertig' : 'Bauen') + '</button>';
       html += '</div></div>';
     });
@@ -939,8 +941,10 @@ button {
     document.querySelectorAll('[data-build]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var typ = btn.getAttribute('data-build');
+        var mengeInput = document.querySelector('[data-build-menge="' + typ + '"]');
+        var anzahl = Math.max(1, Math.floor(parseAmount(mengeInput ? mengeInput.value : '1')) || 1);
         btn.disabled = true;
-        sb.rpc('build_building', { p_realm_id: state.myRealm.id, p_typ: typ }).then(function (res) {
+        sb.rpc('build_building', { p_realm_id: state.myRealm.id, p_typ: typ, p_anzahl: anzahl }).then(function (res) {
           var msg = document.getElementById('build-msg');
           if (res.error) {
             msg.textContent = res.error.message;
