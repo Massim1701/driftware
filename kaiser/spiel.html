@@ -370,8 +370,9 @@ button {
     html += stat('Wolle', fmt(r.wolle));
     html += stat('Eisen', fmt(r.eisen));
     html += '</div><span class="rank-pill">' + (RANK_LABELS[r.rang] || r.rang) + '</span>';
-    html += '<p class="panel-sub" style="margin-top:10px;">Getreide letzte Runde: <strong>+' + fmt(r.getreide_ertrag_letzte_runde) + ' geerntet</strong> · <strong>−' + fmt(r.getreide_bedarf_letzte_runde) + ' verbraucht</strong> (0,5 pro Kopf)</p>';
-    html += '<p class="panel-sub">Bevölkerung letzte Runde: <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.geburten_letzte_runde) + ' geboren</strong> · <strong style="color:var(--danger);">−' + fmt(r.tote_letzte_runde) + ' verstorben</strong></p>';
+    html += '<p class="panel-sub" style="margin-top:10px;">Getreide letzte Runde: <strong>+' + fmt(r.getreide_ertrag_letzte_runde) + ' geerntet</strong> · <strong>−' + fmt(r.getreide_bedarf_letzte_runde) + ' verbraucht</strong> (0,5 pro Kopf)' + (r.diebe_letzte_runde > 0 ? ' · <strong style="color:var(--danger);">−' + fmt(r.getreide_gestohlen_letzte_runde) + ' gestohlen (' + fmt(r.diebe_letzte_runde) + ' Diebe)</strong>' : '') + '</p>';
+    html += '<p class="panel-sub">Bevölkerung letzte Runde: <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.geburten_letzte_runde) + ' geboren</strong> · <strong style="color:var(--danger);">−' + fmt(r.tote_letzte_runde) + ' verstorben</strong>' + (r.zuwanderer_letzte_runde > 0 ? ' · <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.zuwanderer_letzte_runde) + ' zugewandert</strong>' : '') + (r.auswanderer_letzte_runde > 0 ? ' · <strong style="color:var(--danger);">−' + fmt(r.auswanderer_letzte_runde) + ' abgewandert</strong>' : '') + '</p>';
+    html += '<p class="panel-sub">Infrastruktur-Versorgung: <strong>' + Math.round(r.versorgungsgrad_letzte_runde * 100) + '%</strong></p>';
 
     html += '<div style="margin-top:16px;"><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:6px;">Land kaufen — ' + preisProHa + ' Taler/ha (steigt mit der Bevölkerung)</label>';
     html += '<div style="display:flex; gap:8px;"><input type="number" id="land-hektar" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
@@ -380,23 +381,45 @@ button {
 
     html += '<div style="margin-top:16px;"><label style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:6px;">Steuersatz <span id="tax-value">' + r.steuersatz + '%</span></label>';
     html += '<input type="range" id="tax-slider" min="1" max="50" value="' + r.steuersatz + '" style="width:100%;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
-    html += '<p class="panel-sub" style="margin-top:6px;">Hohe Steuern bringen mehr Taler, senken aber die Geburtenrate und erhöhen die Sterblichkeit leicht.</p>';
+    html += '<p class="panel-sub" style="margin-top:6px;">Steuern kommen aus Land und Bevölkerung — je mehr Einwohner, desto mehr Einnahmen insgesamt, aber die Last pro Kopf sinkt. Hohe Sätze senken trotzdem die Geburtenrate und die Zufriedenheit.</p>';
     html += '<button class="btn-secondary" id="tax-save-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Steuersatz übernehmen</button>';
     html += '<div class="msg" id="tax-msg"></div></div>';
+
+    html += '<div style="margin-top:16px;"><label style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:6px;">Justiz-Härte <span id="justiz-value">' + fmt(r.justiz_haerte) + '%</span></label>';
+    html += '<input type="range" id="justiz-slider" min="0" max="100" value="' + r.justiz_haerte + '" style="width:100%;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+    html += '<p class="panel-sub" style="margin-top:6px;">Harte Justiz hält Diebe in Schach, auch wenn du wenig Soldaten hast. Lasche Justiz ohne genug Soldaten führt zu Diebstahl aus deinem Getreidespeicher.</p>';
+    html += '<button class="btn-secondary" id="justiz-save-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Justiz-Härte übernehmen</button>';
+    html += '<div class="msg" id="justiz-msg"></div></div>';
     html += '</div>';
+
+    // Bank
+    html += '<div class="panel"><h2>Bank</h2><p class="panel-sub">Kredit bis zur Höhe deines Landes (' + fmt(r.land_hektar) + ' Taler). 5% Zinsen pro Runde — reicht dein Taler nicht, wächst die Schuld weiter.</p>';
+    html += '<div class="stat-grid" style="grid-template-columns:repeat(2,1fr); margin-bottom:12px;">';
+    html += stat('Schulden', fmt(r.schulden));
+    html += stat('Zinsen letzte Runde', fmt(r.zinsen_letzte_runde));
+    html += '</div>';
+    html += '<div style="display:flex; gap:8px; margin-bottom:8px;"><input type="number" id="kredit-betrag" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+    html += '<button class="btn-secondary" id="kredit-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Kredit aufnehmen</button></div>';
+    html += '<div style="display:flex; gap:8px;"><input type="number" id="tilgen-betrag" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+    html += '<button class="btn-secondary" id="tilgen-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Tilgen</button></div>';
+    html += '<div class="msg" id="bank-msg"></div></div>';
 
     // Gebäude
     var BUILDING_MAX = { palast: 10, kathedrale: 15 };
-    html += '<div class="panel"><h2>Gebäude</h2><p class="panel-sub">Markt erhöht Taler-Einkommen, Mühle die Ernte, Hof liefert Getreide/Holz/Wolle/Eisen, Waffenschmiede versorgt deine Soldaten. Palast (10 Stufen) und Kathedrale (15 Stufen) werden Stück für Stück ausgebaut.</p>';
+    var BEDARF_KAPAZITAET = { hof: 250, markt: 600, muehle: 800 };
+    html += '<div class="panel"><h2>Gebäude</h2><p class="panel-sub">Markt erhöht Taler-Einkommen, Mühle die Ernte, Hof liefert Getreide/Holz/Wolle/Eisen, Waffenschmiede versorgt deine Soldaten. Palast (10 Stufen) und Kathedrale (15 Stufen) werden Stück für Stück ausgebaut. Reichen Hof/Markt/Mühle nicht für deine Bevölkerung, sinkt ihre Wirkung anteilig.</p>';
     ['hof', 'markt', 'muehle', 'waffenschmiede', 'mauer', 'palast', 'kathedrale'].forEach(function (typ) {
       var cost = BUILDING_COSTS[typ];
       var count = state.buildings[typ] || 0;
       var max = BUILDING_MAX[typ];
       var maxedOut = max && count >= max;
+      var kap = BEDARF_KAPAZITAET[typ];
+      var benoetigt = kap ? Math.ceil(r.bevoelkerung / kap) : null;
+      var mangel = benoetigt !== null && count < benoetigt;
       html += '<div class="building-row">';
-      html += '<div><div class="b-name">' + BUILDING_LABELS[typ] + '</div><div class="b-cost">' + fmt(cost) + ' Taler</div></div>';
+      html += '<div><div class="b-name">' + BUILDING_LABELS[typ] + '</div><div class="b-cost">' + fmt(cost) + ' Taler' + (benoetigt !== null ? ' · benötigt: ' + benoetigt : '') + '</div></div>';
       html += '<div style="display:flex;align-items:center;gap:14px;">';
-      html += '<div class="b-count">' + count + (max ? ' / ' + max : '') + '</div>';
+      html += '<div class="b-count"' + (mangel ? ' style="color:var(--danger);"' : '') + '>' + count + (max ? ' / ' + max : '') + '</div>';
       html += '<button class="btn-secondary" data-build="' + typ + '"' + (g.status !== 'laufend' || maxedOut ? ' disabled' : '') + '>' + (maxedOut ? 'Fertig' : 'Bauen') + '</button>';
       html += '</div></div>';
     });
@@ -420,7 +443,8 @@ button {
     html += '</div><div>';
 
     // Militär
-    html += '<div class="panel"><h2>Militär</h2><p class="panel-sub">50 Taler je Soldat. Jeder Soldat verbraucht 0,2 Holz + 0,3 Eisen pro Runde — eine Waffenschmiede hält die Truppe versorgt und verbessert ihre Ausrüstung. Fehlt Nachschub, desertieren Soldaten.</p>';
+    var soldatenBedarf = Math.ceil(r.bevoelkerung / 40);
+    html += '<div class="panel"><h2>Militär</h2><p class="panel-sub">50 Taler je Soldat. Für Ordnung und Sicherheit wird 1 Soldat pro 40 Einwohner benötigt (aktuell: ' + soldatenBedarf + ') — sonst steigt die Zahl der Diebe. Jeder Soldat verbraucht 0,2 Holz + 0,3 Eisen pro Runde — eine Waffenschmiede hält die Truppe versorgt und verbessert ihre Ausrüstung. Fehlt Nachschub, desertieren Soldaten.</p>';
     html += '<div class="stat-grid" style="margin-bottom:14px;">';
     html += stat('Soldaten', fmt(state.military.soldaten));
     html += stat('Ausrüstung', 'Stufe ' + state.military.ausruestung_level);
@@ -562,6 +586,66 @@ button {
           msg.className = 'msg success';
           state.myRealm.steuersatz = parseInt(taxSlider.value, 10);
           taxSaveBtn.disabled = false;
+        });
+      });
+    }
+
+    var justizSlider = document.getElementById('justiz-slider');
+    var justizSaveBtn = document.getElementById('justiz-save-btn');
+    if (justizSlider) {
+      justizSlider.addEventListener('input', function () {
+        document.getElementById('justiz-value').textContent = justizSlider.value + '%';
+      });
+    }
+    if (justizSaveBtn) {
+      justizSaveBtn.addEventListener('click', function () {
+        justizSaveBtn.disabled = true;
+        sb.rpc('set_justiz_haerte', { p_realm_id: state.myRealm.id, p_haerte: parseInt(justizSlider.value, 10) }).then(function (res) {
+          var msg = document.getElementById('justiz-msg');
+          if (res.error) {
+            msg.textContent = res.error.message;
+            msg.className = 'msg error';
+            justizSaveBtn.disabled = false;
+            return;
+          }
+          msg.textContent = 'Justiz-Härte übernommen — wirkt ab der nächsten Runde.';
+          msg.className = 'msg success';
+          justizSaveBtn.disabled = false;
+        });
+      });
+    }
+
+    var kreditBtn = document.getElementById('kredit-btn');
+    if (kreditBtn) {
+      kreditBtn.addEventListener('click', function () {
+        var betrag = parseFloat(document.getElementById('kredit-betrag').value) || 0;
+        kreditBtn.disabled = true;
+        sb.rpc('bank_kredit_aufnehmen', { p_realm_id: state.myRealm.id, p_betrag: betrag }).then(function (res) {
+          var msg = document.getElementById('bank-msg');
+          if (res.error) {
+            msg.textContent = res.error.message;
+            msg.className = 'msg error';
+            kreditBtn.disabled = false;
+            return;
+          }
+          loadAll();
+        });
+      });
+    }
+    var tilgenBtn = document.getElementById('tilgen-btn');
+    if (tilgenBtn) {
+      tilgenBtn.addEventListener('click', function () {
+        var betrag = parseFloat(document.getElementById('tilgen-betrag').value) || 0;
+        tilgenBtn.disabled = true;
+        sb.rpc('bank_kredit_tilgen', { p_realm_id: state.myRealm.id, p_betrag: betrag }).then(function (res) {
+          var msg = document.getElementById('bank-msg');
+          if (res.error) {
+            msg.textContent = res.error.message;
+            msg.className = 'msg error';
+            tilgenBtn.disabled = false;
+            return;
+          }
+          loadAll();
         });
       });
     }
