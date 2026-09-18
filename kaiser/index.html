@@ -335,39 +335,73 @@ button {
     loadGames();
   }
 
+  var currentUserId = null;
+
   function loadGames() {
     var list = document.getElementById('games-list');
     list.innerHTML = '<div class="loading">Lade Partien …</div>';
-    sb.from('games')
-      .select('id,name,status,is_solo,max_players,current_round,game_players(id)')
-      .eq('status', 'offen')
-      .order('created_at', { ascending: false })
-      .then(function (res) {
-        if (res.error) {
-          list.innerHTML = '<div class="empty">Partien konnten nicht geladen werden.</div>';
-          return;
-        }
-        if (!res.data.length) {
-          list.innerHTML = '<div class="empty">Noch keine offene Partie. Gründe die erste.</div>';
-          return;
-        }
-        list.innerHTML = '';
-        res.data.forEach(function (g) {
-          var count = g.game_players ? g.game_players.length : 0;
-          var row = document.createElement('div');
-          row.className = 'game-row';
-          row.innerHTML =
-            '<div><div class="name">' + escapeHtml(g.name) + '</div>' +
-            '<div class="meta">' + count + ' / ' + g.max_players + ' Spieler' + (g.is_solo ? ' · Solo' : '') + '</div></div>' +
-            '<div><span class="badge">Offen</span></div>';
-          var btn = document.createElement('button');
-          btn.className = 'btn-secondary';
-          btn.textContent = 'Beitreten';
-          btn.addEventListener('click', function () { joinGame(g.id); });
-          row.appendChild(btn);
-          list.appendChild(row);
+    sb.auth.getUser().then(function (userRes) {
+      currentUserId = userRes.data.user.id;
+      sb.from('games')
+        .select('id,name,status,is_solo,max_players,current_round,created_by,game_players(id,user_id)')
+        .in('status', ['offen', 'laufend'])
+        .order('created_at', { ascending: false })
+        .then(function (res) {
+          if (res.error) {
+            list.innerHTML = '<div class="empty">Partien konnten nicht geladen werden.</div>';
+            return;
+          }
+          if (!res.data.length) {
+            list.innerHTML = '<div class="empty">Noch keine offene Partie. Gründe die erste.</div>';
+            return;
+          }
+          list.innerHTML = '';
+          res.data.forEach(function (g) {
+            var count = g.game_players ? g.game_players.length : 0;
+            var isMember = g.game_players.some(function (gp) { return gp.user_id === currentUserId; });
+            var isCreator = g.created_by === currentUserId;
+            var row = document.createElement('div');
+            row.className = 'game-row';
+            var badgeText = g.status === 'laufend' ? 'Läuft — Runde ' + g.current_round : 'Offen';
+            row.innerHTML =
+              '<div><div class="name">' + escapeHtml(g.name) + '</div>' +
+              '<div class="meta">' + count + ' / ' + g.max_players + ' Spieler' + (g.is_solo ? ' · Solo' : '') + '</div></div>' +
+              '<div><span class="badge">' + badgeText + '</span></div>';
+            var actions = document.createElement('div');
+            actions.style.display = 'flex';
+            actions.style.gap = '8px';
+
+            if (isMember) {
+              var openBtn = document.createElement('button');
+              openBtn.className = 'btn-secondary';
+              openBtn.textContent = 'Öffnen';
+              openBtn.addEventListener('click', function () { window.location.href = 'spiel.html?id=' + g.id; });
+              actions.appendChild(openBtn);
+              if (isCreator && g.status === 'offen') {
+                var startBtn = document.createElement('button');
+                startBtn.className = 'btn-primary';
+                startBtn.style.cssText = 'margin-top:0;width:auto;padding:8px 14px;font-size:13px;';
+                startBtn.textContent = 'Partie starten';
+                startBtn.addEventListener('click', function () {
+                  sb.rpc('start_game', { p_game_id: g.id }).then(function (r) {
+                    if (r.error) { alert(r.error.message); return; }
+                    window.location.href = 'spiel.html?id=' + g.id;
+                  });
+                });
+                actions.appendChild(startBtn);
+              }
+            } else if (g.status === 'offen') {
+              var joinBtn = document.createElement('button');
+              joinBtn.className = 'btn-secondary';
+              joinBtn.textContent = 'Beitreten';
+              joinBtn.addEventListener('click', function () { joinGame(g.id); });
+              actions.appendChild(joinBtn);
+            }
+            row.appendChild(actions);
+            list.appendChild(row);
+          });
         });
-      });
+    });
   }
 
   function escapeHtml(s) {
@@ -435,7 +469,7 @@ button {
           return;
         }
         sb.from('realms').insert({ game_player_id: res.data.id }).then(function () {
-          loadGames();
+          window.location.href = 'spiel.html?id=' + gameId;
         });
       });
     });
