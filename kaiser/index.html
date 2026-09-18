@@ -6,76 +6,453 @@
 <title>Kaiser — driftware</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg: #12080b;
   --card: #1c1013;
+  --card-2: #221419;
   --border: #3a1f26;
   --text: #f7ecd9;
   --muted: #b89a86;
   --gold: #d4af37;
+  --gold-soft: rgba(212,175,55,.12);
   --wine: #8a1538;
+  --danger: #d9776a;
 }
 * { box-sizing: border-box; }
 body {
   margin: 0;
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle at 50% 30%, #1c0d12, var(--bg) 70%);
+  background: radial-gradient(circle at 50% 0%, #23111a, var(--bg) 65%);
   color: var(--text);
   font-family: 'Inter', system-ui, sans-serif;
-  text-align: center;
-  padding: 24px;
 }
-.wrap { max-width: 520px; }
-.crown { font-size: 48px; margin-bottom: 12px; }
-.badge {
-  display: inline-block;
-  font-size: 12px;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  color: var(--gold);
+a { color: var(--gold); }
+
+header {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 20px 8px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.brand {
+  font-family: 'Cinzel', serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand .crown { font-size: 22px; }
+.homelink { font-size: 13px; color: var(--muted); text-decoration: none; }
+.homelink:hover { color: var(--gold); }
+
+main { max-width: 960px; margin: 0 auto; padding: 24px 20px 80px; }
+
+/* --- Auth --- */
+.auth-wrap {
+  max-width: 380px;
+  margin: 60px auto;
+  background: var(--card);
   border: 1px solid var(--border);
-  background: rgba(212,175,55,.08);
-  padding: 5px 12px;
-  border-radius: 999px;
-  margin-bottom: 18px;
+  border-radius: 14px;
+  padding: 32px 28px;
 }
-h1 {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(30px, 6vw, 44px);
-  margin: 0 0 14px;
-  background: linear-gradient(135deg, var(--gold), #f5d97a);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.auth-wrap h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 22px;
+  margin: 0 0 6px;
 }
-p {
-  color: var(--muted);
-  font-size: 15px;
-  line-height: 1.6;
-  margin: 0 0 28px;
-}
-a.home {
-  display: inline-block;
-  color: var(--gold);
-  text-decoration: none;
+.auth-wrap .sub { color: var(--muted); font-size: 13px; margin: 0 0 24px; }
+label { display: block; font-size: 13px; color: var(--muted); margin: 14px 0 6px; }
+input[type=email], input[type=password], input[type=text] {
+  width: 100%;
+  background: #0f0709;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
   font-size: 14px;
-  border-bottom: 1px solid transparent;
+  font-family: inherit;
 }
-a.home:hover { border-bottom-color: var(--gold); }
+input:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+}
+.btn-primary {
+  width: 100%;
+  margin-top: 22px;
+  background: linear-gradient(135deg, var(--wine), #6e1029);
+  color: #fff2ea;
+  border: 1px solid #a83a5c;
+  border-radius: 8px;
+  padding: 11px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-primary:disabled { opacity: .6; cursor: default; }
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+}
+.btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+.switch-mode {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.switch-mode a { cursor: pointer; text-decoration: none; border-bottom: 1px solid transparent; }
+.switch-mode a:hover { border-bottom-color: var(--gold); }
+.form-msg { font-size: 13px; margin-top: 14px; line-height: 1.5; }
+.form-msg.error { color: var(--danger); }
+.form-msg.success { color: #7fbf8f; }
+
+/* --- Dashboard --- */
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.who { font-size: 13px; color: var(--muted); }
+.who strong { color: var(--text); }
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  margin-bottom: 22px;
+}
+.panel h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 17px;
+  margin: 0 0 4px;
+}
+.panel .panel-sub { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
+
+.create-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.create-row .field { flex: 1; min-width: 160px; }
+.create-row label { margin: 0 0 6px; }
+
+.game-list { display: flex; flex-direction: column; gap: 10px; }
+.game-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  flex-wrap: wrap;
+}
+.game-row .name { font-weight: 600; }
+.game-row .meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.game-row .badge {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: var(--gold);
+  background: var(--gold-soft);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+  margin-right: 8px;
+}
+.empty { color: var(--muted); font-size: 13px; padding: 10px 0; }
+.loading { color: var(--muted); font-size: 13px; }
+
+@media (max-width: 480px) {
+  .auth-wrap { margin: 30px 16px; padding: 24px 20px; }
+}
 </style>
 </head>
 <body>
-<div class="wrap">
-<div class="crown">👑</div>
-<span class="badge">Bald verfügbar</span>
-<h1>Kaiser</h1>
-<p>Wirtschafts- und Aufbaustrategie im Online-Multiplayer. Bis zu sechs Spieler ringen um Land, Handel und die Kaiserkrone — solo oder gegeneinander. Hier entsteht gerade die Neuauflage des Klassikers.</p>
-<a class="home" href="/">← Zurück zu driftware</a>
+
+<header>
+<div class="brand"><span class="crown">👑</span> Kaiser</div>
+<a class="homelink" href="/">← driftware</a>
+</header>
+
+<main>
+
+<div id="auth-view" style="display:none">
+  <div class="auth-wrap">
+    <h1 id="auth-title">Anmelden</h1>
+    <p class="sub" id="auth-sub">Verwalte dein Reich — bis zu sechs Spieler ringen um die Kaiserkrone.</p>
+    <form id="auth-form">
+      <label for="email">E-Mail</label>
+      <input type="email" id="email" required autocomplete="email">
+      <label for="password">Passwort</label>
+      <input type="password" id="password" required autocomplete="current-password" minlength="6">
+      <button type="submit" class="btn-primary" id="auth-submit">Anmelden</button>
+    </form>
+    <div class="form-msg" id="auth-msg"></div>
+    <div class="switch-mode">
+      <span id="switch-text">Noch kein Konto?</span> <a id="switch-link">Registrieren</a>
+    </div>
+  </div>
 </div>
+
+<div id="app-view" style="display:none">
+  <div class="top-row">
+    <div class="who">Angemeldet als <strong id="who-email"></strong></div>
+    <button class="btn-secondary" id="logout-btn">Abmelden</button>
+  </div>
+
+  <div class="panel">
+    <h2>Neues Reich gründen</h2>
+    <p class="panel-sub">Startet eine neue Partie — offen für andere Spieler oder solo.</p>
+    <form id="create-form" class="create-row">
+      <div class="field">
+        <label for="game-name">Name der Partie</label>
+        <input type="text" id="game-name" required maxlength="40" placeholder="z. B. Rheinlande">
+      </div>
+      <div class="field">
+        <label for="realm-name">Dein Reichsname</label>
+        <input type="text" id="realm-name" required maxlength="30" placeholder="z. B. Haus Oberhausen">
+      </div>
+      <div class="field" style="max-width:120px;">
+        <label for="max-players">Spieler</label>
+        <input type="text" id="max-players" value="6" inputmode="numeric" pattern="[1-6]">
+      </div>
+      <div class="field" style="flex:0;">
+        <button type="submit" class="btn-primary" style="margin-top:0; width:auto; padding:11px 20px;">Gründen</button>
+      </div>
+    </form>
+    <div class="form-msg" id="create-msg"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Offene Partien</h2>
+    <p class="panel-sub">Tritt einer laufenden Ausschreibung bei.</p>
+    <div id="games-list" class="game-list"><div class="loading">Lade Partien …</div></div>
+  </div>
+
+</div>
+
+</main>
+
+<script>
+(function () {
+  var SUPABASE_URL = 'https://ffwnxdlncogvlpqsmiib.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_saPgbKa-NyqS4JBuLmOc-A_gJo9y1xS';
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  var authView = document.getElementById('auth-view');
+  var appView = document.getElementById('app-view');
+  var authForm = document.getElementById('auth-form');
+  var authMsg = document.getElementById('auth-msg');
+  var authTitle = document.getElementById('auth-title');
+  var authSubmit = document.getElementById('auth-submit');
+  var switchText = document.getElementById('switch-text');
+  var switchLink = document.getElementById('switch-link');
+  var mode = 'login'; // oder 'signup'
+
+  function setMode(m) {
+    mode = m;
+    if (m === 'login') {
+      authTitle.textContent = 'Anmelden';
+      authSubmit.textContent = 'Anmelden';
+      switchText.textContent = 'Noch kein Konto?';
+      switchLink.textContent = 'Registrieren';
+    } else {
+      authTitle.textContent = 'Registrieren';
+      authSubmit.textContent = 'Konto erstellen';
+      switchText.textContent = 'Schon ein Konto?';
+      switchLink.textContent = 'Anmelden';
+    }
+    authMsg.textContent = '';
+    authMsg.className = 'form-msg';
+  }
+  switchLink.addEventListener('click', function () { setMode(mode === 'login' ? 'signup' : 'login'); });
+
+  authForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value;
+    authSubmit.disabled = true;
+    authMsg.textContent = '';
+    authMsg.className = 'form-msg';
+
+    var action = mode === 'login'
+      ? sb.auth.signInWithPassword({ email: email, password: password })
+      : sb.auth.signUp({ email: email, password: password });
+
+    action.then(function (res) {
+      authSubmit.disabled = false;
+      if (res.error) {
+        authMsg.textContent = res.error.message;
+        authMsg.className = 'form-msg error';
+        return;
+      }
+      if (mode === 'signup' && !res.data.session) {
+        authMsg.textContent = 'Konto erstellt. Bitte bestätige deine E-Mail-Adresse und melde dich dann an.';
+        authMsg.className = 'form-msg success';
+        setMode('login');
+        return;
+      }
+      showApp(res.data.session.user);
+    });
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', function () {
+    sb.auth.signOut().then(function () { showAuth(); });
+  });
+
+  function showAuth() {
+    appView.style.display = 'none';
+    authView.style.display = 'block';
+  }
+
+  function showApp(user) {
+    authView.style.display = 'none';
+    appView.style.display = 'block';
+    document.getElementById('who-email').textContent = user.email;
+    loadGames();
+  }
+
+  function loadGames() {
+    var list = document.getElementById('games-list');
+    list.innerHTML = '<div class="loading">Lade Partien …</div>';
+    sb.from('games')
+      .select('id,name,status,is_solo,max_players,current_round,game_players(id)')
+      .eq('status', 'offen')
+      .order('created_at', { ascending: false })
+      .then(function (res) {
+        if (res.error) {
+          list.innerHTML = '<div class="empty">Partien konnten nicht geladen werden.</div>';
+          return;
+        }
+        if (!res.data.length) {
+          list.innerHTML = '<div class="empty">Noch keine offene Partie. Gründe die erste.</div>';
+          return;
+        }
+        list.innerHTML = '';
+        res.data.forEach(function (g) {
+          var count = g.game_players ? g.game_players.length : 0;
+          var row = document.createElement('div');
+          row.className = 'game-row';
+          row.innerHTML =
+            '<div><div class="name">' + escapeHtml(g.name) + '</div>' +
+            '<div class="meta">' + count + ' / ' + g.max_players + ' Spieler' + (g.is_solo ? ' · Solo' : '') + '</div></div>' +
+            '<div><span class="badge">Offen</span></div>';
+          var btn = document.createElement('button');
+          btn.className = 'btn-secondary';
+          btn.textContent = 'Beitreten';
+          btn.addEventListener('click', function () { joinGame(g.id); });
+          row.appendChild(btn);
+          list.appendChild(row);
+        });
+      });
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  document.getElementById('create-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var msg = document.getElementById('create-msg');
+    msg.textContent = '';
+    msg.className = 'form-msg';
+    var gameName = document.getElementById('game-name').value.trim();
+    var realmName = document.getElementById('realm-name').value.trim();
+    var maxPlayers = parseInt(document.getElementById('max-players').value, 10) || 6;
+
+    sb.auth.getUser().then(function (userRes) {
+      var uid = userRes.data.user.id;
+      sb.from('games').insert({
+        name: gameName,
+        max_players: maxPlayers,
+        is_solo: maxPlayers === 1,
+        created_by: uid
+      }).select().single().then(function (res) {
+        if (res.error) {
+          msg.textContent = res.error.message;
+          msg.className = 'form-msg error';
+          return;
+        }
+        sb.from('game_players').insert({
+          game_id: res.data.id,
+          user_id: uid,
+          reich_name: realmName
+        }).select().single().then(function (gpRes) {
+          if (gpRes.error) {
+            msg.textContent = gpRes.error.message;
+            msg.className = 'form-msg error';
+            return;
+          }
+          sb.from('realms').insert({ game_player_id: gpRes.data.id }).then(function () {
+            document.getElementById('create-form').reset();
+            document.getElementById('max-players').value = 6;
+            msg.textContent = 'Reich "' + realmName + '" gegründet.';
+            msg.className = 'form-msg success';
+            loadGames();
+          });
+        });
+      });
+    });
+  });
+
+  function joinGame(gameId) {
+    var realmName = prompt('Wie soll dein Reich heißen?');
+    if (!realmName) return;
+    sb.auth.getUser().then(function (userRes) {
+      var uid = userRes.data.user.id;
+      sb.from('game_players').insert({
+        game_id: gameId,
+        user_id: uid,
+        reich_name: realmName
+      }).select().single().then(function (res) {
+        if (res.error) {
+          alert(res.error.message);
+          return;
+        }
+        sb.from('realms').insert({ game_player_id: res.data.id }).then(function () {
+          loadGames();
+        });
+      });
+    });
+  }
+
+  sb.auth.getSession().then(function (res) {
+    if (res.data.session) {
+      showApp(res.data.session.user);
+    } else {
+      showAuth();
+    }
+  });
+
+  sb.auth.onAuthStateChange(function (event, session) {
+    if (event === 'SIGNED_OUT') showAuth();
+  });
+})();
+</script>
 </body>
 </html>
