@@ -309,6 +309,17 @@ button {
     return Math.round(n).toLocaleString('de-DE');
   }
 
+  // Interpretiert Eingaben im deutschen Format: "." als Tausendertrennzeichen, "," als Dezimaltrennzeichen.
+  // "23.310" -> 23310, "23,5" -> 23.5, "23310" -> 23310
+  function parseAmount(str) {
+    if (typeof str !== 'string') str = String(str == null ? '' : str);
+    str = str.trim();
+    if (!str) return 0;
+    str = str.replace(/\./g, '').replace(',', '.');
+    var n = parseFloat(str);
+    return isNaN(n) ? 0 : n;
+  }
+
   function loadAll() {
     sb.auth.getUser().then(function (userRes) {
       if (!userRes.data.user) { window.location.href = 'index.html'; return; }
@@ -441,7 +452,7 @@ button {
 
     var verkaufsPreisProHa = ((1 + r.bevoelkerung / 1000) * 0.9).toFixed(2);
     html += '<div style="margin-top:16px;"><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:6px;">Land — Kaufen ' + preisProHa + ' / Verkaufen ' + verkaufsPreisProHa + ' Taler/ha</label>';
-    html += '<div style="display:flex; gap:8px;"><input type="number" id="land-hektar" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+    html += '<div style="display:flex; gap:8px;"><input type="text" inputmode="decimal" id="land-hektar" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
     html += '<button class="btn-secondary" id="buy-land-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Kaufen</button>';
     html += '<button class="btn-secondary" id="sell-land-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Verkaufen</button></div>';
     html += '<div class="msg" id="land-msg"></div></div>';
@@ -466,9 +477,9 @@ button {
     html += stat('Schulden', fmt(r.schulden));
     html += stat('Zinsen letzte Runde', fmt(r.zinsen_letzte_runde));
     html += '</div>';
-    html += '<div style="display:flex; gap:8px; margin-bottom:8px;"><input type="number" id="kredit-betrag" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+    html += '<div style="display:flex; gap:8px; margin-bottom:8px;"><input type="text" inputmode="decimal" id="kredit-betrag" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
     html += '<button class="btn-secondary" id="kredit-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Kredit aufnehmen</button></div>';
-    html += '<div style="display:flex; gap:8px;"><input type="number" id="tilgen-betrag" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+    html += '<div style="display:flex; gap:8px;"><input type="text" inputmode="decimal" id="tilgen-betrag" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
     html += '<button class="btn-secondary" id="tilgen-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Tilgen</button></div>';
 
     html += '<h3 style="font-family:\'Cinzel\',serif; font-size:14px; margin:16px 0 8px;">Sparbuch — 2,5% Zinsen aufs Guthaben</h3>';
@@ -476,9 +487,9 @@ button {
     html += stat('Guthaben', fmt(r.sparbuch));
     html += stat('Zinsen letzte Runde', fmt(r.sparbuch_zinsen_letzte_runde));
     html += '</div>';
-    html += '<div style="display:flex; gap:8px; margin-bottom:8px;"><input type="number" id="sparbuch-einzahlen-betrag" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+    html += '<div style="display:flex; gap:8px; margin-bottom:8px;"><input type="text" inputmode="decimal" id="sparbuch-einzahlen-betrag" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
     html += '<button class="btn-secondary" id="sparbuch-einzahlen-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Einzahlen</button></div>';
-    html += '<div style="display:flex; gap:8px;"><input type="number" id="sparbuch-auszahlen-betrag" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+    html += '<div style="display:flex; gap:8px;"><input type="text" inputmode="decimal" id="sparbuch-auszahlen-betrag" value="1000" min="1" style="flex:1; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
     html += '<button class="btn-secondary" id="sparbuch-auszahlen-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Auszahlen</button></div>';
     html += '<div class="msg" id="bank-msg"></div></div>';
 
@@ -548,7 +559,7 @@ button {
         html += '<div class="building-row">';
         html += '<div><div class="b-name">' + w.label + '</div><div class="b-cost">' + fmt(preis) + ' Taler/Einheit' + kurs + ' · Bestand: ' + fmt(w.bestand) + '</div></div>';
         html += '<div style="display:flex;align-items:center;gap:8px;">';
-        html += '<input type="number" data-export-menge="' + w.key + '" value="' + Math.min(100, Math.floor(w.bestand)) + '" min="1" style="width:70px; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:6px 8px; color:var(--text); font-size:12px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
+        html += '<input type="text" inputmode="decimal" data-export-menge="' + w.key + '" value="' + Math.min(100, Math.floor(w.bestand)) + '" min="1" style="width:70px; background:#0f0709; border:1px solid var(--border); border-radius:8px; padding:6px 8px; color:var(--text); font-size:12px;"' + (g.status !== 'laufend' ? ' disabled' : '') + '>';
         html += '<button class="btn-secondary" data-export="' + w.key + '"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Exportieren</button>';
         html += '<button data-export-all="' + w.key + '" data-bestand="' + w.bestand + '" title="Alles verkaufen"' + (g.status !== 'laufend' || w.bestand <= 0 ? ' disabled' : '') + ' style="width:22px;height:22px;border-radius:50%;background:#3ecf6e;border:1px solid #2fa85a;cursor:pointer;padding:0;"></button>';
         html += '</div></div>';
@@ -568,7 +579,7 @@ button {
     html += stat('Soldaten', fmt(state.military.soldaten));
     html += stat('Ausrüstung', 'Stufe ' + state.military.ausruestung_level);
     html += '</div>';
-    html += '<div class="recruit-row"><input type="number" id="recruit-count" value="10" min="1">';
+    html += '<div class="recruit-row"><input type="text" inputmode="decimal" id="recruit-count" value="10" min="1">';
     html += '<button class="btn-primary" id="recruit-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Anwerben</button></div>';
     html += '<div class="msg" id="recruit-msg"></div></div>';
 
@@ -579,8 +590,8 @@ button {
     html += '<div class="panel"><h2>Marktplatz</h2><p class="panel-sub">Angebote anderer Reiche annehmen oder eigenes einstellen.</p>';
     html += '<div class="trade-form">';
     html += '<div class="field"><label>Ware</label><select id="trade-ware"><option value="getreide">Getreide</option><option value="holz">Holz</option><option value="wolle">Wolle</option><option value="eisen">Eisen</option><option value="milch">Milch</option><option value="fleisch">Fleisch</option></select></div>';
-    html += '<div class="field"><label>Menge</label><input type="number" id="trade-menge" value="100" min="1"></div>';
-    html += '<div class="field"><label>Preis je Einheit (Taler)</label><input type="number" id="trade-preis" value="1" min="0" step="0.1"></div>';
+    html += '<div class="field"><label>Menge</label><input type="text" inputmode="decimal" id="trade-menge" value="100" min="1"></div>';
+    html += '<div class="field"><label>Preis je Einheit (Taler)</label><input type="text" inputmode="decimal" id="trade-preis" value="1" min="0" step="0.1"></div>';
     html += '<button class="btn-secondary" id="offer-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Anbieten</button>';
     html += '</div>';
 
@@ -717,7 +728,7 @@ button {
     var buyLandBtn = document.getElementById('buy-land-btn');
     if (buyLandBtn) {
       buyLandBtn.addEventListener('click', function () {
-        var hektar = parseFloat(document.getElementById('land-hektar').value) || 0;
+        var hektar = parseAmount(document.getElementById('land-hektar').value);
         buyLandBtn.disabled = true;
         sb.rpc('buy_land', { p_realm_id: state.myRealm.id, p_hektar: hektar }).then(function (res) {
           var msg = document.getElementById('land-msg');
@@ -734,7 +745,7 @@ button {
     var sellLandBtn = document.getElementById('sell-land-btn');
     if (sellLandBtn) {
       sellLandBtn.addEventListener('click', function () {
-        var hektar = parseFloat(document.getElementById('land-hektar').value) || 0;
+        var hektar = parseAmount(document.getElementById('land-hektar').value);
         sellLandBtn.disabled = true;
         sb.rpc('sell_land', { p_realm_id: state.myRealm.id, p_hektar: hektar }).then(function (res) {
           var msg = document.getElementById('land-msg');
@@ -802,7 +813,7 @@ button {
     var kreditBtn = document.getElementById('kredit-btn');
     if (kreditBtn) {
       kreditBtn.addEventListener('click', function () {
-        var betrag = parseFloat(document.getElementById('kredit-betrag').value) || 0;
+        var betrag = parseAmount(document.getElementById('kredit-betrag').value);
         kreditBtn.disabled = true;
         sb.rpc('bank_kredit_aufnehmen', { p_realm_id: state.myRealm.id, p_betrag: betrag }).then(function (res) {
           var msg = document.getElementById('bank-msg');
@@ -819,7 +830,7 @@ button {
     var tilgenBtn = document.getElementById('tilgen-btn');
     if (tilgenBtn) {
       tilgenBtn.addEventListener('click', function () {
-        var betrag = parseFloat(document.getElementById('tilgen-betrag').value) || 0;
+        var betrag = parseAmount(document.getElementById('tilgen-betrag').value);
         tilgenBtn.disabled = true;
         sb.rpc('bank_kredit_tilgen', { p_realm_id: state.myRealm.id, p_betrag: betrag }).then(function (res) {
           var msg = document.getElementById('bank-msg');
@@ -838,7 +849,7 @@ button {
       btn.addEventListener('click', function () {
         var ware = btn.getAttribute('data-export');
         var mengeInput = document.querySelector('[data-export-menge="' + ware + '"]');
-        var menge = parseFloat(mengeInput.value) || 0;
+        var menge = parseAmount(mengeInput.value);
         btn.disabled = true;
         sb.rpc('hafen_exportieren', { p_realm_id: state.myRealm.id, p_ware: ware, p_menge: menge }).then(function (res) {
           var msg = document.getElementById('hafen-msg');
@@ -875,7 +886,7 @@ button {
     var sparbuchEinzahlenBtn = document.getElementById('sparbuch-einzahlen-btn');
     if (sparbuchEinzahlenBtn) {
       sparbuchEinzahlenBtn.addEventListener('click', function () {
-        var betrag = parseFloat(document.getElementById('sparbuch-einzahlen-betrag').value) || 0;
+        var betrag = parseAmount(document.getElementById('sparbuch-einzahlen-betrag').value);
         sparbuchEinzahlenBtn.disabled = true;
         sb.rpc('sparbuch_einzahlen', { p_realm_id: state.myRealm.id, p_betrag: betrag }).then(function (res) {
           var msg = document.getElementById('bank-msg');
@@ -892,7 +903,7 @@ button {
     var sparbuchAuszahlenBtn = document.getElementById('sparbuch-auszahlen-btn');
     if (sparbuchAuszahlenBtn) {
       sparbuchAuszahlenBtn.addEventListener('click', function () {
-        var betrag = parseFloat(document.getElementById('sparbuch-auszahlen-betrag').value) || 0;
+        var betrag = parseAmount(document.getElementById('sparbuch-auszahlen-betrag').value);
         sparbuchAuszahlenBtn.disabled = true;
         sb.rpc('sparbuch_auszahlen', { p_realm_id: state.myRealm.id, p_betrag: betrag }).then(function (res) {
           var msg = document.getElementById('bank-msg');
@@ -944,7 +955,7 @@ button {
     var recruitBtn = document.getElementById('recruit-btn');
     if (recruitBtn) {
       recruitBtn.addEventListener('click', function () {
-        var count = parseInt(document.getElementById('recruit-count').value, 10) || 0;
+        var count = Math.floor(parseAmount(document.getElementById('recruit-count').value));
         recruitBtn.disabled = true;
         sb.rpc('recruit_soldiers', { p_realm_id: state.myRealm.id, p_anzahl: count }).then(function (res) {
           var msg = document.getElementById('recruit-msg');
@@ -963,8 +974,8 @@ button {
     if (offerBtn) {
       offerBtn.addEventListener('click', function () {
         var ware = document.getElementById('trade-ware').value;
-        var menge = parseFloat(document.getElementById('trade-menge').value) || 0;
-        var preis = parseFloat(document.getElementById('trade-preis').value) || 0;
+        var menge = parseAmount(document.getElementById('trade-menge').value);
+        var preis = parseAmount(document.getElementById('trade-preis').value);
         offerBtn.disabled = true;
         sb.rpc('offer_trade', { p_game_id: gameId, p_ware: ware, p_menge: menge, p_preis: preis }).then(function (res) {
           var msg = document.getElementById('trade-msg');
