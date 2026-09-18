@@ -386,12 +386,14 @@ button {
     html += stat('Holz', fmt(r.holz));
     html += stat('Wolle', fmt(r.wolle));
     html += stat('Eisen', fmt(r.eisen));
+    html += stat('Milch', fmt(r.milch));
+    html += stat('Fleisch', fmt(r.fleisch));
     html += '</div><span class="rank-pill">' + (RANK_LABELS[r.rang] || r.rang) + '</span>';
     html += '<p class="panel-sub" style="margin-top:10px;">Getreide letzte Runde: <strong>+' + fmt(r.getreide_ertrag_letzte_runde) + ' geerntet</strong> · <strong>−' + fmt(r.getreide_bedarf_letzte_runde) + ' verbraucht</strong> (0,5 pro Kopf)' + (r.diebe_letzte_runde > 0 ? ' · <strong style="color:var(--danger);">−' + fmt(r.getreide_gestohlen_letzte_runde) + ' gestohlen (' + fmt(r.diebe_letzte_runde) + ' Diebe)</strong>' : '') + '</p>';
     html += '<p class="panel-sub">Bevölkerung letzte Runde: <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.geburten_letzte_runde) + ' geboren</strong> · <strong style="color:var(--danger);">−' + fmt(r.tote_letzte_runde) + ' verstorben</strong>' + (r.zuwanderer_letzte_runde > 0 ? ' · <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.zuwanderer_letzte_runde) + ' zugewandert</strong>' : '') + (r.auswanderer_letzte_runde > 0 ? ' · <strong style="color:var(--danger);">−' + fmt(r.auswanderer_letzte_runde) + ' abgewandert</strong>' : '') + '</p>';
     html += '<p class="panel-sub">Infrastruktur-Versorgung: <strong>' + Math.round(r.versorgungsgrad_letzte_runde * 100) + '%</strong></p>';
     if (r.hafen_einnahmen_letzte_runde > 0) {
-      html += '<p class="panel-sub">Hafen-Export letzte Runde: <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.hafen_einnahmen_letzte_runde) + ' Taler</strong> (Preise: Wolle ' + fmt(r.exportpreis_wolle) + ', Holz ' + fmt(r.exportpreis_holz) + ', Eisen ' + fmt(r.exportpreis_eisen) + ' je Einheit)</p>';
+      html += '<p class="panel-sub">Hafen-Export letzte Runde: <strong style="color:var(--good, #7fbf8f);">+' + fmt(r.hafen_einnahmen_letzte_runde) + ' Taler</strong> (Preise: Wolle ' + fmt(r.exportpreis_wolle) + ', Holz ' + fmt(r.exportpreis_holz) + ', Eisen ' + fmt(r.exportpreis_eisen) + ', Milch ' + fmt(r.exportpreis_milch) + ', Fleisch ' + fmt(r.exportpreis_fleisch) + ' je Einheit)</p>';
     }
 
     var verkaufsPreisProHa = ((1 + r.bevoelkerung / 1000) * 0.9).toFixed(2);
@@ -429,7 +431,7 @@ button {
     // Gebäude
     var BUILDING_MAX = { palast: 10, kathedrale: 15 };
     var BEDARF_KAPAZITAET = { hof: 250, markt: 600, muehle: 800 };
-    html += '<div class="panel"><h2>Gebäude</h2><p class="panel-sub">Markt erhöht Taler-Einkommen, Mühle die Ernte, Hof liefert Getreide/Holz/Wolle/Eisen, Waffenschmiede versorgt deine Soldaten, Hafen exportiert überschüssiges Holz/Wolle/Eisen automatisch zu schwankenden Preisen. Palast (10 Stufen) und Kathedrale (15 Stufen) werden Stück für Stück ausgebaut. Reichen Hof/Markt/Mühle nicht für deine Bevölkerung, sinkt ihre Wirkung anteilig.</p>';
+    html += '<div class="panel"><h2>Gebäude</h2><p class="panel-sub">Markt erhöht Taler-Einkommen, Mühle die Ernte, Hof liefert Getreide/Holz/Wolle/Eisen/Milch/Fleisch, Waffenschmiede versorgt deine Soldaten, Hafen exportiert überschüssiges Holz/Wolle/Eisen/Milch/Fleisch automatisch zu schwankenden Preisen. Palast (10 Stufen) und Kathedrale (15 Stufen) werden Stück für Stück ausgebaut. Reichen Hof/Markt/Mühle nicht für deine Bevölkerung, sinkt ihre Wirkung anteilig.</p>';
     ['hof', 'markt', 'muehle', 'waffenschmiede', 'hafen', 'mauer', 'palast', 'kathedrale'].forEach(function (typ) {
       var cost = BUILDING_COSTS[typ];
       var count = state.buildings[typ] || 0;
@@ -481,7 +483,7 @@ button {
 
     html += '<div class="panel"><h2>Marktplatz</h2><p class="panel-sub">Angebote anderer Reiche annehmen oder eigenes einstellen.</p>';
     html += '<div class="trade-form">';
-    html += '<div class="field"><label>Ware</label><select id="trade-ware"><option value="getreide">Getreide</option><option value="holz">Holz</option><option value="wolle">Wolle</option><option value="eisen">Eisen</option></select></div>';
+    html += '<div class="field"><label>Ware</label><select id="trade-ware"><option value="getreide">Getreide</option><option value="holz">Holz</option><option value="wolle">Wolle</option><option value="eisen">Eisen</option><option value="milch">Milch</option><option value="fleisch">Fleisch</option></select></div>';
     html += '<div class="field"><label>Menge</label><input type="number" id="trade-menge" value="100" min="1"></div>';
     html += '<div class="field"><label>Preis je Einheit (Taler)</label><input type="number" id="trade-preis" value="1" min="0" step="0.1"></div>';
     html += '<button class="btn-secondary" id="offer-btn"' + (g.status !== 'laufend' ? ' disabled' : '') + '>Anbieten</button>';
@@ -576,7 +578,8 @@ button {
   }
 
   function tradeRow(t, realmNameById, showAccept) {
-    var wareLabel = t.ware === 'getreide' ? 'Getreide' : 'Taler';
+    var WARE_LABELS = { getreide: 'Getreide', holz: 'Holz', wolle: 'Wolle', eisen: 'Eisen', milch: 'Milch', fleisch: 'Fleisch' };
+    var wareLabel = WARE_LABELS[t.ware] || t.ware;
     var priceText = t.preis ? (' · ' + fmt(t.preis) + ' Taler/Einheit') : '';
     var html = '<div class="trade-row">';
     html += '<div><div class="t-desc"><strong>' + fmt(t.menge) + ' ' + wareLabel + '</strong>' + priceText + '</div>';
