@@ -2673,6 +2673,16 @@ function queueSongFromTile(song) {
   }
 }
 
+/* YouTube-Button in der Song-Kachel (Nutzerwunsch 19.9.: "Button der das
+   Lied direkt im Player abspielt, soll aussehen wie das YouTube Logo") --
+   anders als queueSongFromTile (haengt nur hinten an die Warteschlange an)
+   laedt dieser Button den Song SOFORT auf das naechste freie/abwechselnde
+   Deck (wie ein Drag&Drop) und startet die Wiedergabe direkt (autoplay),
+   statt nur zu laden und auf den manuellen Play-Klick am Deck zu warten. */
+function playSongDirectlyFromTile(song) {
+  loadSongToDeck(song, nextLoadDeck, [song], true);
+}
+
 /* Einzelnen Song laden, im Kontext der aktuell sichtbaren Liste (Genre
    oder Suchergebnis) — landet abwechselnd auf Deck A/B. Startet nicht
    automatisch (siehe playDeckSong). Wird nicht mehr vom Song-Kachel-Klick
@@ -3026,6 +3036,20 @@ function renderSongGrid(container, songs) {
       });
     }
     icons.appendChild(play);
+
+    var ytPlay = document.createElement('span');
+    ytPlay.className = 'song-tile-youtube' + (song.yt ? '' : ' disabled');
+    ytPlay.innerHTML = PLAY_SVG;
+    ytPlay.setAttribute('role', 'button');
+    ytPlay.setAttribute('tabindex', song.yt ? '0' : '-1');
+    ytPlay.setAttribute('aria-label', song.yt ? ('Direkt im Player abspielen: ' + song.a + ' – ' + song.t) : 'Kein Video gefunden');
+    if (song.yt) {
+      ytPlay.addEventListener('click', function (e) { e.stopPropagation(); playSongDirectlyFromTile(song); });
+      ytPlay.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); playSongDirectlyFromTile(song); }
+      });
+    }
+    icons.appendChild(ytPlay);
 
     var check = document.createElement('span');
     check.className = 'song-tile-check';
