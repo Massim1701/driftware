@@ -2939,23 +2939,44 @@ function ensureDragGhost(song) {
 /* Song-Liste: eine Zeile pro Song, Titel zuerst und fett, Interpret
    darunter/daneben klein. Icons (Info/Play/Haken) sind eine normale
    Reihe am rechten Rand statt Overlays auf einem großen Cover. */
-/* Obergrenze fuer gleichzeitig gerenderte Song-Kacheln. Jede Kachel bekommt
-   mehrere addEventListener() (Info, Play, Klick, Drag) -- ein sehr breites
-   Suchergebnis (z.B. ein kurzer/haeufiger Suchbegriff ueber ALLE Dekaden
-   hinweg, das kann leicht mehrere tausend Treffer geben) hat den Tab sonst
-   beim synchronen Aufbau tausender DOM-Knoten in einem Rutsch spuerbar
-   ausgebremst bis hin zum Haengenbleiben. Playlist-Laden/Export (currentSongs())
-   ist davon NICHT betroffen -- nur die sichtbare Kachel-Darstellung wird
-   gekappt, die volle Liste bleibt fuer Deck/CSV etc. erhalten (lastGridSongs
-   haelt trotzdem die volle, ungekuerzte Liste, siehe playSongInContext). */
-var MAX_RENDERED_TILES = 500;
+/* Ab wie vielen Songs die Liste in "Most Wanted" (oben) + "Weitere" (unten)
+   aufgeteilt wird. Frueher wurde ab hier hart auf MAX_RENDERED_TILES
+   abgeschnitten (Performance-Grund: viele addEventListener() pro Kachel,
+   siehe Historie) -- das sorgte aber dafuer, dass bei grossen Dekaden
+   (z.B. 80er mit 6000+ Songs in der "Alle"-Ansicht) ein Grossteil der
+   Bibliothek unsichtbar blieb, ohne erkennbaren Grund welche Songs es
+   waren (Nutzerfrage 20.9.: "6471 Songs, werden aber nicht alle angezeigt").
+   Jetzt wird stattdessen nach Beliebtheit (Discogs-"have"-Zahl, sortByPopularity)
+   sortiert und ALLES gerendert -- die ersten POPULARITY_SPLIT als klar
+   markierter "Most Wanted"-Block, der Rest darunter unter einer zweiten
+   Ueberschrift. Playlist-Laden/Export (currentSongs()) war und ist davon
+   nicht betroffen -- das betrifft nur die Sortierung/Gliederung der
+   sichtbaren Kacheln (lastGridSongs haelt weiterhin die volle Liste in
+   Popularitaets-Reihenfolge, siehe playSongInContext). */
+var POPULARITY_SPLIT = 500;
+
+function sortByPopularity(songs) {
+  return (songs || []).slice().sort(function (a, b) { return (b && b.hv || 0) - (a && a.hv || 0); });
+}
 
 function renderSongGrid(container, songs) {
   lastGridSongs = songs;
   container.innerHTML = '';
-  var truncated = songs.length > MAX_RENDERED_TILES;
-  var visible = truncated ? songs.slice(0, MAX_RENDERED_TILES) : songs;
-  visible.forEach(function (song) {
+  var showMostWanted = songs.length > POPULARITY_SPLIT;
+  var visible = showMostWanted ? sortByPopularity(songs) : songs;
+  if (showMostWanted) {
+    var mwHeading = document.createElement('div');
+    mwHeading.className = 'song-grid-section-heading song-grid-section-heading-mostwanted';
+    mwHeading.innerHTML = '🔥 <strong>Most Wanted</strong> — die ' + POPULARITY_SPLIT + ' gefragtesten Songs (nach Discogs-Sammlerzahl)';
+    container.appendChild(mwHeading);
+  }
+  visible.forEach(function (song, songIdx) {
+    if (showMostWanted && songIdx === POPULARITY_SPLIT) {
+      var restHeading = document.createElement('div');
+      restHeading.className = 'song-grid-section-heading';
+      restHeading.textContent = 'Weitere ' + (visible.length - POPULARITY_SPLIT) + ' Songs';
+      container.appendChild(restHeading);
+    }
     var tile = document.createElement('button');
     tile.className = 'song-tile' + (isSongSelected(song) ? ' selected' : '');
     tile.type = 'button';
@@ -3106,12 +3127,6 @@ function renderSongGrid(container, songs) {
 
     container.appendChild(tile);
   });
-  if (truncated) {
-    var notice = document.createElement('div');
-    notice.className = 'song-grid-truncated-notice';
-    notice.textContent = 'Zeige die ersten ' + MAX_RENDERED_TILES + ' von ' + songs.length + ' Treffern — bitte genauer suchen oder filtern, um den Rest zu sehen.';
-    container.appendChild(notice);
-  }
   refreshMixableHighlight();
 }
 
