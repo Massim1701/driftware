@@ -173,11 +173,8 @@
   <div class="section-title">Schriftarten</div>
   <div class="results" id="results"></div>
 
-  <div class="section-title">Emoji-Deko</div>
-  <div class="results" id="decoResults"></div>
-
   <div class="note">
-    Hinweis: Das sind Unicode-Sonderzeichen, keine echten Schriftarten – funktioniert überall dort, wo normaler Text erlaubt ist (auch X). Nicht jeder Buchstabe/jede Zahl existiert in jedem Stil; nicht unterstützte Zeichen bleiben normal. Screenreader können Sonderzeichen und Emoji-Deko teils nicht korrekt vorlesen.
+    Hinweis: Das sind Unicode-Sonderzeichen, keine echten Schriftarten – funktioniert überall dort, wo normaler Text erlaubt ist (auch X). Nicht jeder Buchstabe/jede Zahl existiert in jedem Stil; nicht unterstützte Zeichen bleiben normal. Screenreader können Sonderzeichen teils nicht korrekt vorlesen.
   </div>
 </div>
 
@@ -274,20 +271,20 @@ const fontStyles = [
   { name: "Durchgestrichen", fn: combiningTransform("\u0336") },
   { name: "Unterstrichen", fn: combiningTransform("\u0332") },
   { name: "Verkehrt herum", fn: upsideDown },
+  { name: "Sans-Serif", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    "𝖺𝖻𝖼𝖽𝖾𝖿𝗀𝗁𝗂𝗃𝗄𝗅𝗆𝗇𝗈𝗉𝗊𝗋𝗌𝗍𝗎𝗏𝗐𝗑𝗒𝗓𝖠𝖡𝖢𝖣𝖤𝖥𝖦𝖧𝖨𝖩𝖪𝖫𝖬𝖭𝖮𝖯𝖰𝖱𝖲𝖳𝖴𝖵𝖶𝖷𝖸𝖹𝟢𝟣𝟤𝟥𝟦𝟧𝟨𝟩𝟪𝟫"
+  ))},
+  { name: "Schreibschrift Dünn", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "𝒶𝒷𝒸𝒹ℯ𝒻ℊ𝒽𝒾𝒿𝓀𝓁𝓂𝓃ℴ𝓅𝓆𝓇𝓈𝓉𝓊𝓋𝓌𝓍𝓎𝓏𝒜ℬ𝒞𝒟ℰℱ𝒢ℋℐ𝒥𝒦ℒℳ𝒩𝒪𝒫𝒬ℛ𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵"
+  ))},
+  { name: "Fraktur Fett", fn: mapTransform(buildMap(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "𝖆𝖇𝖈𝖉𝖊𝖋𝖌𝖍𝖎𝖏𝖐𝖑𝖒𝖓𝖔𝖕𝖖𝖗𝖘𝖙𝖚𝖛𝖜𝖝𝖞𝖟𝕬𝕭𝕮𝕯𝕰𝕱𝕲𝕳𝕴𝕵𝕶𝕷𝕸𝕹𝕺𝕻𝕼𝕽𝕾𝕿𝖀𝖁𝖂𝖃𝖄𝖅"
+  ))},
 ];
 
-const decoStyles = [
-  { name: "Sparkle", fn: t => "✨ " + t + " ✨" },
-  { name: "Feuer", fn: t => "🔥 " + t + " 🔥" },
-  { name: "100", fn: t => "💯 " + t + " 💯" },
-  { name: "Rakete", fn: t => "🚀 " + t + " 🚀" },
-  { name: "Krone", fn: t => "👑 " + t + " 👑" },
-  { name: "Blitz", fn: t => "⚡️ " + t + " ⚡️" },
-  { name: "Ziel", fn: t => "🎯 " + t + " 🎯" },
-  { name: "Stern", fn: t => "🌟 " + t + " 🌟" },
-  { name: "Diamant", fn: t => "💎 " + t + " 💎" },
-  { name: "Warnung", fn: t => "⚠️ " + t + " ⚠️" },
-];
 
 const emojiCategories = {
   "Smileys": "😀😃😄😁😆😅🤣😂🙂🙃🫠😉😊😇🥰😍🤩😘😗☺️😚😙🥲😋😛😜🤪😝🤑🤗🤭🫢🫣🤫🤔🫡🤐🤨😐😑😶🫥😏😒🙄😬🤥😌😔😪🤤😴😷🤒🤕🤢🤮🤧🥵🥶🥴😵🤯🤠🥳🥸😎🤓🧐😕🫤😟🙁☹️😮😯😲😳🥺🥹😦😧😨😰😥😢😭😱😖😣😞😓😩😫🥱😤😡😠🤬😈👿💀☠️💩🤡👹👺👻👽👾🤖😺😸😹😻😼😽🙀😿😾❤️🧡💛💚💙💜🖤🤍🤎💔❣️💕💞💓💗💖💘💝",
@@ -326,7 +323,6 @@ let currentTab = "Smileys";
 
 const input = document.getElementById("input");
 const results = document.getElementById("results");
-const decoResults = document.getElementById("decoResults");
 const count = document.getElementById("count");
 const emojiPicker = document.getElementById("emojiPicker");
 
@@ -358,16 +354,10 @@ function render() {
   const text = input.value;
   count.textContent = text.length;
   results.innerHTML = "";
-  decoResults.innerHTML = "";
 
   fontStyles.forEach(style => {
     const output = text ? style.fn(text) : "";
     results.appendChild(makeRow(style.name, output, !!text));
-  });
-
-  decoStyles.forEach(style => {
-    const output = text ? style.fn(text) : "";
-    decoResults.appendChild(makeRow(style.name, output, !!text));
   });
 }
 
