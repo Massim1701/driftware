@@ -2946,13 +2946,21 @@ function ensureDragGhost(song) {
    (z.B. 80er mit 6000+ Songs in der "Alle"-Ansicht) ein Grossteil der
    Bibliothek unsichtbar blieb, ohne erkennbaren Grund welche Songs es
    waren (Nutzerfrage 20.9.: "6471 Songs, werden aber nicht alle angezeigt").
-   Jetzt wird stattdessen nach Beliebtheit (Discogs-"have"-Zahl, sortByPopularity)
-   sortiert und ALLES gerendert -- die ersten POPULARITY_SPLIT als klar
-   markierter "Most Wanted"-Block, der Rest darunter unter einer zweiten
-   Ueberschrift. Playlist-Laden/Export (currentSongs()) war und ist davon
-   nicht betroffen -- das betrifft nur die Sortierung/Gliederung der
-   sichtbaren Kacheln (lastGridSongs haelt weiterhin die volle Liste in
-   Popularitaets-Reihenfolge, siehe playSongInContext). */
+   Jetzt wird stattdessen nach Beliebtheit (sortByPopularity) die MENGE der
+   Top-POPULARITY_SPLIT-Songs bestimmt, ALLES gerendert -- die ersten als
+   klar markierter "Most Wanted"-Block, der Rest darunter unter einer
+   zweiten Ueberschrift. Die REIHENFOLGE innerhalb jedes Blocks kommt aber
+   von der uebergebenen `songs`-Liste selbst (siehe renderSongGrid), nicht
+   von einer erneuten Popularitaets-Sortierung -- sonst ueberschrieb das
+   den "Playlist neu mischen"-Button jedesmal wieder (Nutzerfrage 20.9.:
+   "Button play neu mischen funktioniert nicht"): reshuffleCurrentPlaylist()
+   mischt currentSongs() durch, aber renderSongGrid sortierte beim Rendern
+   sofort wieder streng nach Popularitaet zurueck -- die Kacheln sprangen
+   optisch in dieselbe Reihenfolge zurueck, obwohl die Playlist im
+   Hintergrund (lastGridSongs) tatsaechlich neu gemischt war. Jetzt bleibt
+   die MITGLIEDSCHAFT im "Most Wanted"-Block (welche 500 das sind) stabil
+   nach Popularitaet, aber ihre Reihenfolge folgt dem Mix-Ergebnis --
+   "neu mischen" mischt sichtbar innerhalb der 500 (und im "Weitere"-Block). */
 var POPULARITY_SPLIT = 500;
 
 /* Beliebtheits-Score pro Song: echte YouTube-Aufrufzahl ('vc', befuellt vom
@@ -2974,10 +2982,26 @@ function sortByPopularity(songs) {
 }
 
 function renderSongGrid(container, songs) {
-  lastGridSongs = songs;
   container.innerHTML = '';
   var showMostWanted = songs.length > POPULARITY_SPLIT;
-  var visible = showMostWanted ? sortByPopularity(songs) : songs;
+  var visible = songs;
+  if (showMostWanted) {
+    /* Mitgliedschaft im Most-Wanted-Block per Popularitaet bestimmen, aber
+       die Reihenfolge INNERHALB jedes Blocks aus der uebergebenen `songs`-
+       Liste uebernehmen (z.B. das Ergebnis von "Playlist neu mischen"),
+       statt die ganze Liste hart nach Popularitaet neu zu sortieren. */
+    var mostWantedIds = {};
+    sortByPopularity(songs).slice(0, POPULARITY_SPLIT).forEach(function (s) {
+      mostWantedIds[songId(s)] = true;
+    });
+    var mwGroup = [];
+    var restGroup = [];
+    songs.forEach(function (s) {
+      (mostWantedIds[songId(s)] ? mwGroup : restGroup).push(s);
+    });
+    visible = mwGroup.concat(restGroup);
+  }
+  lastGridSongs = visible;
   if (showMostWanted) {
     var mwHeading = document.createElement('div');
     mwHeading.className = 'song-grid-section-heading song-grid-section-heading-mostwanted';
