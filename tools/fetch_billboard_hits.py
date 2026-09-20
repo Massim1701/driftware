@@ -163,11 +163,17 @@ def is_in_catalog(index, artist, title):
 
 
 def load_billboard_all():
+    # WICHTIG: hier NIE auf stdout drucken (file=sys.stderr) -- diese
+    # Funktion wird auch von pick_billboard_decade.py aufgerufen, dessen
+    # gesamtes stdout im Workflow per ">> $GITHUB_OUTPUT" umgeleitet wird.
+    # Jede zusaetzliche stdout-Zeile dort ist kein gueltiges key=value und
+    # laesst den Actions-Schritt mit "Unable to process file command
+    # 'output'" fehlschlagen (siehe Bug vom 20.9., Lauf #1).
     if os.path.exists(BILLBOARD_CACHE) and (time.time() - os.path.getmtime(BILLBOARD_CACHE)) < BILLBOARD_CACHE_MAX_AGE:
-        print("Billboard-Archiv aus lokalem Cache geladen.")
+        print("Billboard-Archiv aus lokalem Cache geladen.", file=sys.stderr)
         with open(BILLBOARD_CACHE, "r", encoding="utf-8") as f:
             return json.load(f)
-    print("Lade Billboard-Hot-100-Archiv (~44 MB, einmalig)...")
+    print("Lade Billboard-Hot-100-Archiv (~44 MB, einmalig)...", file=sys.stderr)
     req = urllib.request.Request(BILLBOARD_ALL_URL, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=120) as resp:
         data = json.loads(resp.read().decode("utf-8"))
