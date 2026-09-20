@@ -137,6 +137,25 @@
     color: var(--muted);
     letter-spacing: 0.03em;
   }
+  .hero-stat-live strong { display: flex; align-items: center; gap: 6px; }
+  .hero-stat-live strong::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6);
+    animation: hero-live-pulse 2s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes hero-live-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55); }
+    70% { box-shadow: 0 0 0 7px rgba(52, 211, 153, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-stat-live strong::before { animation: none; }
+  }
   .fetch-control {
     display: flex;
     flex-direction: column;
@@ -278,6 +297,8 @@
       <div class="hero-stat"><strong>76.000+</strong><span>Songs</span></div>
       <div class="hero-stat"><strong>17</strong><span>Playlisten</span></div>
       <div class="hero-stat"><strong>95,6%</strong><span>mit Video</span></div>
+      <div class="hero-stat hero-stat-live"><strong id="online-count">–</strong><span>gerade online</span></div>
+      <div class="hero-stat"><strong id="total-visits">–</strong><span>Besuche gesamt</span></div>
     </div>
     <div class="fetch-control">
       <button id="fetch-btn" class="fetch-btn" type="button">Fetch</button>
@@ -294,6 +315,7 @@
     <div><a href="/impressum.html">Impressum</a></div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script>
     /* Dieselben Linien-Icons wie auf den einzelnen Dekaden-Seiten (siehe
        THEME_ICON_PATHS in shared/decades.js) — hier dupliziert, da diese
@@ -415,6 +437,50 @@
           setTimeout(function () { fetchBtn.disabled = false; }, 60000);
         });
     });
+
+    /* Anonyme Besucherzaehlung (Nutzerfrage 20.9.: "ich möchte sehen wieviel
+       gerade online sind und wieviele die seite besucht haben"), siehe auch
+       /privacy.html Abschnitt 3 fuer die Offenlegung. Zwei getrennte, bewusst
+       minimale Bausteine:
+       - "Besuche gesamt": ein einzelner Zaehler in Supabase (site_stats-
+         Tabelle, ueber increment_total_views()/get_total_views() erreichbar,
+         siehe dortige RLS/SECURITY DEFINER-Konfiguration) -- kein Log pro
+         Besuch, keine IP, kein Cookie, keine Wiedererkennung.
+       - "Gerade online": laeuft komplett ueber Supabase Realtime Presence,
+         OHNE jede Datenbank-Speicherung -- jeder offene Tab meldet sich mit
+         einer zufaelligen, nur fuer diese eine Verbindung gueltigen ID in
+         einem gemeinsamen Kanal an; schliesst der Tab oder verlaesst die
+         Seite, verschwindet der Eintrag automatisch (kein Aufraeum-Job
+         noetig). */
+    (function () {
+      if (!window.supabase || !window.supabase.createClient) return;
+      var SUPABASE_URL = 'https://viyfqufxwmdpggirmbjd.supabase.co';
+      var SUPABASE_ANON_KEY = 'sb_publishable_GG54x-4VLnTtRHVc1alK8w__dUpqxUt';
+      var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      var visitsEl = document.getElementById('total-visits');
+      client.rpc('increment_total_views').then(function (res) {
+        if (!visitsEl || !res || res.error || res.data == null) return;
+        visitsEl.textContent = Number(res.data).toLocaleString('de-DE');
+      }).catch(function () {});
+
+      var onlineEl = document.getElementById('online-count');
+      var presenceKey = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Math.random()).slice(2);
+      var channel = client.channel('driftware-online', { config: { presence: { key: presenceKey } } });
+
+      function updateOnlineCount() {
+        if (!onlineEl) return;
+        var state = channel.presenceState();
+        var count = Object.keys(state).length;
+        onlineEl.textContent = String(Math.max(count, 1));
+      }
+
+      channel
+        .on('presence', { event: 'sync' }, updateOnlineCount)
+        .subscribe(function (status) {
+          if (status === 'SUBSCRIBED') channel.track({ joined: Date.now() });
+        });
+    })();
   </script>
 </body>
 </html>
