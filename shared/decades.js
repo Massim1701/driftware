@@ -2955,8 +2955,22 @@ function ensureDragGhost(song) {
    Popularitaets-Reihenfolge, siehe playSongInContext). */
 var POPULARITY_SPLIT = 500;
 
+/* Beliebtheits-Score pro Song: echte YouTube-Aufrufzahl ('vc', befuellt vom
+   taeglichen fetch-youtube-viewcounts.yml-Workflow) wenn vorhanden, sonst
+   Discogs-"Have"-Zahl ('hv', Sammler-Anzahl) als Uebergangs-Naeherung, bis
+   die YouTube-Zahlen fuer den Song abgerufen wurden. Direktes Mischen beider
+   Skalen in einer Sortierung ist bewusst in Kauf genommen: vc liegt ueblicherweise
+   in Zehn-/Hunderttausenden bis Millionen, hv nur im niedrigen Tausenderbereich --
+   Songs mit echten Aufrufzahlen sortieren sich dadurch praktisch immer vor
+   noch unbefuellten, was fuer die Uebergangszeit ein sinnvolles Verhalten ist
+   und sich nach dem ersten vollstaendigen Durchlauf der Pipeline von selbst
+   erledigt (siehe tools/fetch_youtube_viewcounts.py). */
+function popularityScore(song) {
+  if (song && typeof song.vc === 'number') return song.vc;
+  return (song && song.hv) || 0;
+}
 function sortByPopularity(songs) {
-  return (songs || []).slice().sort(function (a, b) { return (b && b.hv || 0) - (a && a.hv || 0); });
+  return (songs || []).slice().sort(function (a, b) { return popularityScore(b) - popularityScore(a); });
 }
 
 function renderSongGrid(container, songs) {
@@ -2967,7 +2981,7 @@ function renderSongGrid(container, songs) {
   if (showMostWanted) {
     var mwHeading = document.createElement('div');
     mwHeading.className = 'song-grid-section-heading song-grid-section-heading-mostwanted';
-    mwHeading.innerHTML = '🔥 <strong>Most Wanted</strong> — die ' + POPULARITY_SPLIT + ' gefragtesten Songs (nach Discogs-Sammlerzahl)';
+    mwHeading.innerHTML = '🔥 <strong>Most Wanted</strong> — die ' + POPULARITY_SPLIT + ' meistgespielten Songs (nach YouTube-Aufrufen)';
     container.appendChild(mwHeading);
   }
   visible.forEach(function (song, songIdx) {

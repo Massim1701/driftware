@@ -1,0 +1,100 @@
+name: YouTube-Aufrufzahlen aktualisieren
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    # Taeglich um 04:57 UTC -- zeitlich versetzt zu process-missing-songs
+    # (04:17), expand-christmas-songs (04:37), expand-billboard-hits (03:47)
+    # und bpm-fetch (05:52), siehe Kommentar dort/in expand-decade-genres.yml
+    # zur eigenen Concurrency-Gruppe je Workflow.
+    - cron: '57 4 * * *'
+
+# Eigene Gruppe, gleicher Grund wie bei den anderen taeglichen Workflows
+# (siehe expand-decade-genres.yml fuer die ausfuehrliche Begruendung): eine
+# geteilte Gruppe liesse GitHub aeltere, noch wartende Laeufe canceln,
+# sobald ein neuerer Lauf in dieselbe Warteschlange kommt.
+concurrency:
+  group: fetch-youtube-viewcounts
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  update-viewcounts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Startzeit merken
+        run: echo "JOB_START_TS=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: YouTube-Aufrufzahlen abrufen
+        # Siehe tools/fetch_youtube_viewcounts.py fuer den Hintergrund
+        # (Nutzerfrage 20.9.: "nach Beliebtheit sortieren -- die die meist
+        # gespielt werden, weltweit"). Kostet nur ~1 Unit pro 50 Songs
+        # (videos.list/statistics), daher grosszuegiges Zeitbudget statt
+        # knappem Quota-Limit.
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          VIEWCOUNT_TIME_BUDGET_SECONDS: '3600'
+        run: python3 tools/fetch_youtube_viewcounts.py
+
+      - name: Aenderungen committen und pushen
+        run: |
+          git config user.name "driftware-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add '*-music/songs.json'
+          if git diff --cached --quiet; then
+            echo "Keine Aenderungen."
+            exit 0
+          fi
+          git commit -m "YouTube-Aufrufzahlen aktualisiert"
+
+          # Gleiche Redo-Strategie wie die anderen taeglichen Workflows
+          # (siehe expand-decade-genres.yml fuer die ausfuehrliche
+          # Begruendung): bei einem echten Rebase-Konflikt nicht von Hand
+          # zusammenfuehren, sondern auf den frischen Remote-Stand
+          # zuruecksetzen und dort neu anstossen -- das Skript ist dafuer
+          # bewusst zustandslos/wiederholbar (siehe pick_batch-Priorisierung).
+          for i in 1 2 3 4 5; do
+            if git push; then
+              echo "Push erfolgreich (Versuch $i)."
+              exit 0
+            fi
+
+            echo "Push abgelehnt (Versuch $i), hole Remote-Stand..."
+            git fetch origin master
+
+            if git rebase origin/master; then
+              echo "Sauber rebased, versuche erneut zu pushen."
+              continue
+            fi
+
+            echo "Echter Rebase-Konflikt -- Rebase abgebrochen, Lauf wird auf dem neuen Remote-Stand neu aufgesetzt statt blind zusammengefuehrt."
+            git rebase --abort
+            git reset --hard origin/master
+
+            ELAPSED=$(( $(date +%s) - JOB_START_TS ))
+            BUDGET=$(( 20700 - ELAPSED ))
+            if [ "$BUDGET" -lt 120 ]; then
+              echo "Kaum noch Zeit im 6h-Job-Limit uebrig -- Neu-Verarbeitung wird uebersprungen, der naechste Lauf uebernimmt den Rest. Kein Datenverlust, da bereits auf den frischen Remote-Stand zurueckgesetzt."
+              exit 0
+            fi
+
+            VIEWCOUNT_TIME_BUDGET_SECONDS=$BUDGET python3 tools/fetch_youtube_viewcounts.py
+
+            git add '*-music/songs.json'
+            if git diff --cached --quiet; then
+              echo "Nach Neu-Verarbeitung auf dem frischen Stand keine eigenen Aenderungen mehr uebrig."
+              exit 0
+            fi
+            git commit -m "YouTube-Aufrufzahlen aktualisiert"
+          done
+
+          echo "::error::Push nach mehreren Versuchen fehlgeschlagen, Fortschritt bleibt lokal im Runner (geht verloren)."
+          exit 1
