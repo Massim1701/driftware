@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGB — driftmail</title>
+<style>
+  :root { --bg:#0a1512; --panel:#10201c; --accent:#14b881; --text:#f5f7fa; --muted:#9db3ad; --border:rgba(255,255,255,0.08); --warn:#e0a530; --warn-bg:rgba(224,165,48,0.12); }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+  main { max-width:680px; margin:0 auto; padding:56px 24px 64px; }
+  a { color:var(--accent); }
+  h1 { font-size:28px; margin-bottom:4px; }
+  .stand { color:var(--muted); font-size:14px; margin-bottom:24px; }
+  .draft-notice {
+    background: var(--warn-bg); border: 1px solid rgba(224,165,48,0.4); border-radius: 14px;
+    padding: 14px 18px; margin: 0 0 32px; font-size: 14px; color: #f2d9a0;
+  }
+  .draft-notice strong { color: var(--warn); }
+  h2 { font-size:18px; margin-top:32px; color:var(--text); border-bottom:1px solid var(--border); padding-bottom:6px; }
+  p { color:#d7ede6; }
+  .back { display:inline-block; margin-bottom:24px; color:var(--muted); text-decoration:none; font-size:14px; }
+  .contact-panel { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:20px 24px; margin:32px 0; }
+  .contact-form { display:flex; flex-direction:column; gap:12px; margin-top:16px; }
+  .contact-form label { font-size:13px; color:var(--muted); font-weight:600; display:flex; flex-direction:column; gap:6px; }
+  .contact-form input, .contact-form textarea { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-family:inherit; font-size:14px; }
+  .contact-form textarea { min-height:100px; resize:vertical; }
+  .contact-form button { align-self:flex-start; background:var(--accent); color:#06231a; border:none; border-radius:10px; padding:10px 22px; font-weight:700; font-size:14px; cursor:pointer; }
+  .contact-honey { position:absolute; left:-9999px; }
+  .utility-block {
+    position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 50;
+    display: flex; flex-direction: row; gap: 10px;
+  }
+  .utility-tile { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: var(--text); width: 40px; }
+  .utility-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  .utility-icon svg { width: 18px; height: 18px; }
+  .utility-label { font-size: 9px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="utility-block">
+  <a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">
+    <div class="utility-icon" style="background:#d98c1f">
+      <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
+    </div>
+    <span class="utility-label">Home</span>
+  </a>
+  <a class="utility-tile" href="impressum.html#kontakt">
+    <div class="utility-icon" style="background:#4a90d9">
+      <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
+    </div>
+    <span class="utility-label">Kontakt</span>
+  </a>
+  <a class="utility-tile" href="index.html">
+    <div class="utility-icon" style="background:#14b881">
+      <svg viewBox="0 0 24 24" fill="#eafff5" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
+    </div>
+    <span class="utility-label">driftmail</span>
+  </a>
+  <a class="utility-tile" href="privacy.html">
+    <div class="utility-icon" style="background:#6a5acd">
+      <svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>
+    </div>
+    <span class="utility-label">Datenschutz</span>
+  </a>
+</div>
+<main>
+  <a class="back" href="index.html">&larr; Zurück zu driftmail</a>
+  <h1>Allgemeine Geschäftsbedingungen</h1>
+  <p class="stand">Stand: September 2026</p>
+
+  <div class="draft-notice"><strong>Entwurf, in anwaltlicher Prüfung.</strong> Dieser Text wird derzeit rechtlich geprüft und kann sich noch ändern.</div>
+
+  <h2>1. Geltungsbereich</h2>
+  <p>Diese Bedingungen gelten für die Nutzung von driftmail durch registrierte Nutzer.</p>
+
+  <h2>2. Leistungsbeschreibung</h2>
+  <p>driftmail stellt eine Software zur Verwaltung bestehender E-Mail-Konten (Gmail, IMAP-Anbieter) bereit, inklusive automatisierter Sicherheitsfunktionen. driftmail betreibt keinen eigenen Mailserver und versendet/empfängt Mails ausschließlich über die Infrastruktur des jeweiligen Anbieters (Gmail, GMX, web.de, etc.).</p>
+
+  <h2>3. Registrierung und Konto</h2>
+  <p>Der Nutzer ist für die Richtigkeit seiner Zugangsdaten sowie die Geheimhaltung seines driftmail-Zugangs verantwortlich.</p>
+
+  <h2>4. Verfügbarkeit</h2>
+  <p>Eine bestimmte Verfügbarkeit der Software wird nicht zugesichert, insbesondere nicht bei Ausfällen der genutzten Drittanbieter (Mail-Provider).</p>
+
+  <h2>5. Nutzungsbeschränkungen</h2>
+  <p>Die missbräuchliche Nutzung von driftmail, insbesondere zum Versand von Spam, Schadsoftware oder betrügerischen Inhalten, ist untersagt.</p>
+
+  <h2>6. Kündigung</h2>
+  <p>Der Nutzer kann sein Konto jederzeit löschen. driftmail behält sich vor, Konten bei Missbrauch zu sperren.</p>
+
+  <h2>7. Änderungen</h2>
+  <p>Diese AGB können bei wesentlichen Produktänderungen angepasst werden, Nutzer werden hierüber informiert.</p>
+
+  <div class="contact-panel" id="kontakt">
+    <h2 style="margin-top:0;border-bottom:none;padding-bottom:0;">Kontaktformular</h2>
+    <form class="contact-form" method="POST" action="https://formsubmit.co/0b4cb7348b4cff5d1891bf8d99f1e757">
+      <input type="hidden" name="_subject" value="driftmail — neue AGB-Anfrage">
+      <input type="hidden" name="_template" value="table">
+      <input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">
+      <label><span>Name</span><input type="text" name="name" required></label>
+      <label><span>Deine E-Mail-Adresse</span><input type="email" name="email" required></label>
+      <label><span>Nachricht</span><textarea name="message" required></textarea></label>
+      <button type="submit">Senden</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>

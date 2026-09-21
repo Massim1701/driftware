@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bedienungsanleitung — driftmail</title>
+<meta name="description" content="So funktioniert driftmail: Mail-Konto verbinden, Postfach im Überblick, neue Mail schreiben, auf Sicherheitswarnungen reagieren, Einstellungen anpassen.">
+<style>
+  :root {
+    --bg: #0a1512;
+    --panel: #10201c;
+    --accent: #14b881;
+    --text: #f5f7fa;
+    --muted: #9db3ad;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  header { max-width: 720px; margin: 0 auto; padding: 56px 24px 24px; }
+  a.back { color: var(--accent); text-decoration: none; font-size: 14px; }
+  h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; margin: 16px 0 8px; }
+  .tagline { color: var(--muted); font-size: 16px; margin: 0; }
+  main { max-width: 720px; margin: 0 auto; padding: 0 24px 64px; }
+  .req { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin: 32px 0; }
+  .req h2 { margin: 0 0 12px; font-size: 16px; }
+  .req ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+  .req li { margin-bottom: 4px; }
+  .req strong { color: var(--text); }
+  section { margin: 40px 0; }
+  h2.step-title { font-size: 20px; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+  .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%; background: var(--accent);
+    color: #06231a; font-weight: 800; font-size: 14px; flex-shrink: 0;
+  }
+  .step-body { padding-left: 38px; }
+  .step-body p { color: var(--muted); margin: 8px 0; font-size: 15px; }
+  footer {
+    max-width: 720px; margin: 0 auto; padding: 24px; text-align: center;
+    color: var(--muted); font-size: 13px; border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer .links { margin-top: 8px; }
+  footer .links a { margin: 0 8px; }
+  .utility-block {
+    position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 50;
+    display: flex; flex-direction: row; gap: 10px;
+  }
+  .utility-tile { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: var(--text); width: 40px; }
+  .utility-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  .utility-icon svg { width: 18px; height: 18px; }
+  .utility-label { font-size: 9px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <div class="utility-block">
+    <a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">
+      <div class="utility-icon" style="background:#d98c1f">
+        <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
+      </div>
+      <span class="utility-label">Home</span>
+    </a>
+    <a class="utility-tile" href="impressum.html#kontakt">
+      <div class="utility-icon" style="background:#4a90d9">
+        <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
+      </div>
+      <span class="utility-label">Kontakt</span>
+    </a>
+    <a class="utility-tile" href="index.html">
+      <div class="utility-icon" style="background:#14b881">
+        <svg viewBox="0 0 24 24" fill="#eafff5" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
+      </div>
+      <span class="utility-label">driftmail</span>
+    </a>
+    <a class="utility-tile" href="privacy.html">
+      <div class="utility-icon" style="background:#6a5acd">
+        <svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>
+      </div>
+      <span class="utility-label">Datenschutz</span>
+    </a>
+  </div>
+  <header>
+    <a class="back" href="index.html">&larr; Zurück zu driftmail</a>
+    <h1>Bedienungsanleitung</h1>
+    <p class="tagline">So nutzt du driftmail — Schritt für Schritt.</p>
+  </header>
+  <main>
+    <div class="req">
+      <h2>Unterstützte Mail-Anbieter</h2>
+      <ul>
+        <li>Gmail (Google-Anmeldung)</li>
+        <li>iCloud Mail, GMX, web.de</li>
+        <li>Jeder andere IMAP-Anbieter</li>
+      </ul>
+    </div>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">1</span> Konto verbinden</h2>
+      <div class="step-body">
+        <p>Bei driftmail anmelden und deinen Mail-Anbieter auswählen (Gmail, iCloud, GMX, web.de oder ein anderer IMAP-Anbieter). Bei Gmail genügt ein einmaliger Google-Anmelde-Bildschirm. Bei anderen Anbietern gibst du deine E-Mail-Adresse plus ein App-spezifisches Passwort ein (nicht dein normales Passwort) — eine kurze Anleitung dazu ist je nach Anbieter direkt im Formular verlinkt.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">2</span> Erster Blick ins Postfach</h2>
+      <div class="step-body">
+        <p>Deine Mails werden automatisch geladen und in die passenden Ordner sortiert (Eingang, Sonstiges, Quarantäne, Spam).</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">3</span> Neue Mail schreiben</h2>
+      <div class="step-body">
+        <p>Über den „Neue Nachricht"-Button. Bei mehreren verbundenen Konten wählst du aus, von welcher Adresse aus du schreibst.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">4</span> Auf eine Warnung reagieren</h2>
+      <div class="step-body">
+        <p>Sieht eine Mail verdächtig aus (z.B. „Neuer Absender" oder ein Sicherheits-Hinweis), lies dir die Erklärung dazu durch — du kannst den Absender jederzeit mit einem Klick als vertrauenswürdig markieren.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="step-title"><span class="step-num">5</span> Einstellungen</h2>
+      <div class="step-body">
+        <p>Weitere Konten hinzufügen, Darstellung anpassen, die aktiven Sicherheits-Features einsehen und die App-Sperre aktivieren.</p>
+      </div>
+    </section>
+
+    <div class="req">
+      <h2>Hinweis</h2>
+      <ul>
+        <li>driftmail betreibt keinen eigenen Mailserver — Versand und Empfang laufen ausschließlich über die Infrastruktur deines jeweiligen Anbieters.</li>
+        <li>Sicherheitswarnungen sind automatisierte Unterstützung, keine Garantie — siehe <a href="index.html#selfcare" style="color:var(--accent)">„So schützt du dich zusätzlich"</a> auf der Startseite.</li>
+      </ul>
+    </div>
+  </main>
+  <footer>
+    <span>&copy; 2026 Massimo — driftmail</span>
+    <div class="links">
+      <a href="/">Zurück zu Driftware</a> · <a href="index.html">driftmail</a> · <a href="privacy.html">Datenschutz</a> · <a href="agb.html">AGB</a> · <a href="haftungsausschluss.html">Haftungsausschluss</a> · <a href="impressum.html">Impressum</a>
+    </div>
+  </footer>
+</body>
+</html>

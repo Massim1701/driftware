@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>driftmail — Driftware</title>
+<meta name="description" content="driftmail: der Mail-Client, der mitdenkt. Erkennt Spam, Phishing und Betrug automatisch, warnt vor sensiblen Daten und nutzt KI wo möglich direkt auf deinem Gerät statt in der Cloud.">
+<style>
+  :root {
+    --bg: #0a1512;
+    --panel: #10201c;
+    --accent: #14b881;
+    --accent2: #0891b2;
+    --text: #f5f7fa;
+    --muted: #9db3ad;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  .utility-block {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+  .utility-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    text-decoration: none;
+    color: var(--text);
+    width: 40px;
+  }
+  .utility-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .utility-icon svg { width: 18px; height: 18px; }
+  .utility-label { font-size: 9px; color: var(--muted); }
+  header {
+    position: relative;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 72px 24px 32px;
+    text-align: center;
+  }
+  .app-icon {
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--border);
+  }
+  .app-icon svg { width: 46px; height: 46px; }
+  .logo {
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin: 0 0 12px;
+  }
+  .tagline {
+    color: var(--muted);
+    font-size: 18px;
+    margin: 0 0 32px;
+  }
+  .badges {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .badge.soon { opacity: 0.75; }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+  }
+  .hook {
+    text-align: center;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--text);
+    max-width: 560px;
+    margin: 0 auto 36px;
+  }
+  .hook strong { color: var(--accent); }
+  .section-label {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 40px 0 16px;
+  }
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 0 0 8px;
+  }
+  .feature {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .feature h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    color: var(--text);
+  }
+  .feature p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  .selfcare {
+    background: linear-gradient(160deg, rgba(20,184,129,0.14), rgba(8,145,178,0.05));
+    border: 1px solid rgba(20,184,129,0.35);
+    border-radius: 18px;
+    padding: 24px 24px 20px;
+    margin: 8px 0 8px;
+  }
+  .selfcare h2 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    color: var(--text);
+  }
+  .selfcare > p { color: var(--muted); font-size: 14px; margin: 0 0 14px; }
+  .selfcare ul { margin: 0; padding-left: 20px; color: #d7ede6; font-size: 14px; line-height: 1.7; }
+  .selfcare li { margin-bottom: 4px; }
+  .selfcare .closer { margin: 14px 0 0; color: var(--accent); font-weight: 700; font-size: 14px; }
+  .privacy-note {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 24px;
+  }
+  .privacy-note strong { color: var(--text); }
+  footer {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer .links { margin-top: 8px; }
+  footer .links a { margin: 0 8px; }
+</style>
+</head>
+<body>
+  <div class="utility-block">
+    <a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">
+      <div class="utility-icon" style="background:#d98c1f">
+        <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
+      </div>
+      <span class="utility-label">Home</span>
+    </a>
+    <a class="utility-tile" href="impressum.html#kontakt">
+      <div class="utility-icon" style="background:#4a90d9">
+        <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
+      </div>
+      <span class="utility-label">Kontakt</span>
+    </a>
+    <a class="utility-tile" href="anleitung.html">
+      <div class="utility-icon" style="background:#3d9970">
+        <svg viewBox="0 0 24 24" fill="#a8e6c1" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v2H4V4zm0 5h16v2H4V9zm0 5h10v2H4v-2zm0 5h10v2H4v-2z"/></svg>
+      </div>
+      <span class="utility-label">Anleitung</span>
+    </a>
+    <a class="utility-tile" href="privacy.html">
+      <div class="utility-icon" style="background:#6a5acd">
+        <svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>
+      </div>
+      <span class="utility-label">Datenschutz</span>
+    </a>
+  </div>
+  <header>
+    <div class="app-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#eafff5"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
+    </div>
+    <p class="logo">driftmail</p>
+    <p class="tagline">Der Mail-Client, der mitdenkt.</p>
+    <div class="badges">
+      <span class="badge soon">🍎 App Store — in Entwicklung</span>
+      <span class="badge">🌐 Web-App — verfügbar</span>
+    </div>
+  </header>
+  <main>
+    <p class="hook">
+      driftmail ist ein sicherheitsfokussierter E-Mail-Client. Er sortiert, warnt und schützt automatisch im
+      Hintergrund — <strong>ohne dass deine Mail-Inhalte an fremde Cloud-Dienste geschickt werden müssen.</strong>
+    </p>
+
+    <p class="section-label">Was driftmail für dich tut</p>
+    <div class="features">
+      <div class="feature">
+        <h3>🛡️ Spam, Phishing &amp; Betrug erkennen</h3>
+        <p>Eindeutiger Müll wird automatisch aussortiert, Grenzfälle landen mit Warnhinweis in Quarantäne statt gelöscht zu werden — auch klassischer Vorschussbetrug ("Prinz aus Nigeria"-Muster).</p>
+      </div>
+      <div class="feature">
+        <h3>✅ Whitelist</h3>
+        <p>Du entscheidest selbst, welchen Absendern du vertraust.</p>
+      </div>
+      <div class="feature">
+        <h3>⚠️ Warnung vor sensiblen Daten</h3>
+        <p>IBAN, Kreditkartennummern und bald auch Fotos von Ausweisen/Kreditkarten werden vor dem Versand erkannt.</p>
+      </div>
+      <div class="feature">
+        <h3>🎭 Fälschungs-Erkennung</h3>
+        <p>Anzeigename-Fälschung, abweichende Antwort-Adressen und plötzliche IBAN-Wechsel in laufenden Gesprächen (klassischer Rechnungsbetrug).</p>
+      </div>
+      <div class="feature">
+        <h3>🆕 Neue Absender kennzeichnen</h3>
+        <p>Sofort erkennbar, wenn eine Mail von jemandem kommt, mit dem du noch nie Kontakt hattest.</p>
+      </div>
+      <div class="feature">
+        <h3>🦠 Echter Virenscan</h3>
+        <p>Für Anhänge in beide Richtungen — beim Senden und beim Empfangen.</p>
+      </div>
+      <div class="feature">
+        <h3>📷 Schutz vor QR-Code-Phishing</h3>
+        <p>Ein Schutz vor bösartigen Links in QR-Codes und Bildern, den sonst nur teure Unternehmenssoftware bietet.</p>
+      </div>
+      <div class="feature">
+        <h3>🤖 KI direkt auf deinem Gerät</h3>
+        <p>Zusammenfassung, Antwortvorschläge und Vertragserkennung laufen wo möglich lokal — keine Kosten, keine Cloud-Übertragung deiner Mail-Inhalte, es sei denn du bringst ausdrücklich einen eigenen KI-Zugang mit.</p>
+      </div>
+      <div class="feature">
+        <h3>📬 Alle gängigen Anbieter</h3>
+        <p>Gmail, iCloud Mail, GMX, web.de und jeder andere IMAP-Anbieter — mehrere Konten gleichzeitig.</p>
+      </div>
+      <div class="feature">
+        <h3>🔒 App-Sperre</h3>
+        <p>Per Face ID/Touch ID zusätzlich absichern.</p>
+      </div>
+    </div>
+
+    <div class="selfcare" id="selfcare">
+      <h2>🧭 So schützt du dich zusätzlich</h2>
+      <p>driftmail nimmt dir viel Arbeit ab — aber 100%ige Sicherheit gibt es bei keinem Mail-Client, auch nicht bei uns. Angreifer entwickeln ständig neue Tricks. Ein paar einfache Gewohnheiten machen dich zusätzlich sicherer:</p>
+      <ul>
+        <li>Nutze die Whitelist aktiv: markiere Absender, denen du wirklich vertraust, über den „Absender vertrauen"-Button.</li>
+        <li>Sei besonders misstrauisch bei Dringlichkeit: „Sofort handeln", „Konto wird gesperrt", „Letzte Mahnung" — Zeitdruck ist die häufigste Betrugstaktik.</li>
+        <li>Bei Geld-/Bankdaten-Änderungen: immer telefonisch gegenprüfen, unter einer dir bekannten (nicht der in der Mail genannten) Telefonnummer.</li>
+        <li>Klicke keine Links aus Mails, bei denen du unsicher bist — rufe die Webseite stattdessen direkt im Browser auf.</li>
+        <li>Halte dein Gerät/Betriebssystem aktuell — viele Sicherheitslücken werden nur durch Updates geschlossen.</li>
+      </ul>
+      <p class="closer">driftmail warnt dich — die Entscheidung bleibt bei dir.</p>
+    </div>
+
+    <div class="privacy-note">
+      <strong>Deine Mail-Inhalte bleiben bei dir.</strong> KI-Funktionen laufen standardmäßig auf deinem Gerät —
+      nur wenn du freiwillig einen eigenen Zugang zu einem externen KI-Anbieter hinterlegst, werden Inhalte zur
+      Verarbeitung übermittelt, und auch dann nur nach ausdrücklicher Zustimmung. Details siehe
+      <a href="privacy.html" style="color:var(--accent)">Datenschutzerklärung</a>.
+    </div>
+  </main>
+  <footer>
+    &copy; 2026 Massimo — driftmail
+    <div class="links"><a href="/">Zurück zu Driftware</a> · <a href="anleitung.html">Anleitung</a> · <a href="privacy.html">Datenschutz</a> · <a href="agb.html">AGB</a> · <a href="haftungsausschluss.html">Haftungsausschluss</a> · <a href="impressum.html">Impressum</a></div>
+  </footer>
+</body>
+</html>
