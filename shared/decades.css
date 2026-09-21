@@ -1729,6 +1729,18 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
     padding: 8px 16px 10px;
     margin-top: 16px;
+    /* Nutzerfeedback (21.9., Mobile/Safari): Vinyl/Waveform wirkten trotz
+       zentriertem Code sichtbar verschoben -- der zoom:0.72 der
+       Basisregel oben (fuer die Desktop-Sidebar gedacht, damit beide
+       Decks ohne Scroll passen) wurde hier NIE zurueckgesetzt und lief
+       im gestapelten Mobile-Layout einfach weiter mit. Im normalen
+       Seitenfluss (beliebig hoch, kein Scroll-Zwang) bringt der Zoom
+       hier nichts, macht nur alles kleiner -- und WebKit/Safari hat
+       bekannte Darstellungs-Bugs bei zoom + verschachteltem Flexbox
+       (gap/justify-content), was in Chrome/Chromium nicht auffaellt, in
+       Safari aber zu genau so einer sichtbaren Verschiebung fuehren
+       kann. Deshalb hier explizit zurueckgesetzt. */
+    zoom: 1;
   }
   .dj-player::before {
     top: 0;
