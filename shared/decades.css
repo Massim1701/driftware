@@ -1753,6 +1753,13 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
     gap: 14px;
   }
   .dj-deck { width: 100%; max-width: 360px; }
+  /* Nutzerwunsch (21.9.): "kannst du das nicht alle zentrieren" -- im
+     gestapelten Mobile-/Tablet-Layout stand "DECK A"/"DECK B" plus die
+     Titel/Interpret-Anzeige links buendig (Basisregel .dj-deck-head oben,
+     fuer die Desktop-Sidebar so gedacht), waehrend Vinyl/Waveform/Pitch
+     darunter zentriert waren -- wirkte schief. Nur hier (gestapeltes
+     Layout) alles mittig. */
+  .dj-deck-head { align-items: center; text-align: center; }
   .dj-master { width: 100%; max-width: 360px; margin: 4px auto 0; }
   .dj-tools-panel { display: none !important; }
 }
