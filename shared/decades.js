@@ -432,34 +432,20 @@ function renderDecadeIndex(cfg) {
     '</main>' +
     '<footer class="decade-footer">' +
     '  <span>&copy; 2026 Massimo — ' + cfg.name + '</span>' +
-    '  <div class="links"><a href="impressum.html">Impressum</a></div>' +
+    '  <div class="links"><a href="/impressum.html">Impressum</a></div>' +
     '</footer>'
   );
 }
 
-/* ---------- Impressum (impressum.html) ---------- */
+/* ---------- Impressum (impressum.html) ----------
+   Zentralisiert (Massimo, 21.09.): das Impressum ist jetzt EIN einziges,
+   auf /impressum.html gepflegtes Dokument statt 15x identisch dupliziert
+   ueber alle Dekaden-/Stimmungs-Ordner -- diese Funktion leitet nur noch
+   dorthin weiter, statt den Text hier erneut zu rendern. Kein Bestandteil
+   von SITE_PAGES/der AJAX-Seitennavigation (siehe swapDecadePage-Kommentar
+   oben), ein normaler window.location-Redirect ist hier deshalb sicher. */
 function renderDecadeImpressum(cfg) {
-  applyPalette(cfg.colors);
-  document.title = 'Impressum — ' + cfg.name;
-  insertUtilityBlock('privacy.html#kontakt');
-  var main = document.getElementById('decade-root');
-  main.insertAdjacentHTML('beforeend', '' +
-    '<main class="legal-main">' +
-    '  <a class="back-link" href="index.html">&larr; Zurück</a>' +
-    '  <h1>Impressum</h1>' +
-    '  <h2>Angaben gemäß § 5 TMG</h2>' +
-    '  <p>Massimo</p>' +
-    '  <p>Vollständiger Name und ladungsfähige Anschrift werden auf Anfrage über das Kontaktformular unten mitgeteilt.</p>' +
-    '  <h2>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>' +
-    '  <p>Massimo</p>' +
-    '  <h2>Hinweis</h2>' +
-    '  <p>Dieses Impressum wurde als Entwurf für eine Einzelperson (kein Gewerbe) erstellt und ersetzt keine Rechtsberatung. Bei Unsicherheiten zur Impressumspflicht empfiehlt sich eine kurze Prüfung durch einen Anwalt oder einen Generator wie eRecht24.</p>' +
-    '  <div class="contact-panel">' +
-    '    <h2 style="margin-top:0;border-bottom:none;padding-bottom:0;">Kontaktformular</h2>' +
-    contactFormHTML(cfg.name + ' — neue Kontaktanfrage') +
-    '  </div>' +
-    '</main>'
-  );
+  window.location.replace('/impressum.html');
 }
 
 /* ---------- Datenschutz (privacy.html) ---------- */
