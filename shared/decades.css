@@ -955,13 +955,24 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
      wirklich beide Decks OHNE internen Scroll in die Sidebar, bei
      gleichbleibender Position (top/right/bottom bleiben unveraendert,
      da das reine Offsets ohne Laengeneinheit sind, die "zoom" nicht
-     mitskaliert). */
+     mitskaliert).
+     Nutzerwunsch (21.9.): "nutze Platz gut ... sei kreativ" -- zoom
+     verkleinert nicht nur den INHALT, sondern die ganze Box inkl. ihrer
+     eigenen Breite (370px * 0.72 = 266px sichtbar), obwohl links davon
+     immer noch die vollen 370px Platz reserviert sind (body
+     padding-right + .dj-tools-panel bei right:370px, siehe unten) -- es
+     blieb also eine ~104px breite, ungenutzte schwarze Luecke zwischen
+     Seiteninhalt/Tools-Panel und dem sichtbar geschrumpften Player. Fix:
+     die Box VOR dem Zoom genau so viel breiter machen, wie der Zoom sie
+     wieder schrumpft (370px / 0.72) -- sichtbare Breite bleibt exakt
+     370px (stoesst wieder luecklos an .dj-tools-panel), waehrend Hoehe
+     und Zoom-Faktor fuer den Scroll-freien Fit unveraendert bleiben. */
   display: block;
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
-  width: 370px;
+  width: calc(370px / 0.72);
   zoom: 0.72;
   overflow-y: auto;
   z-index: 250;
@@ -1005,7 +1016,10 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  width: 334px;
+  /* War fest 334px (= alte 370px-Box minus Padding) -- die Box ist jetzt
+     breiter (s.o.), das Deck soll die neue Breite auch wirklich fuellen
+     statt als schmale Spalte mit Rand links/rechts darin zu stehen. */
+  width: 100%;
 }
 .dj-deck-head {
   display: flex;
@@ -1028,8 +1042,21 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   justify-content: center;
   gap: 10px;
 }
+.dj-deck-mid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+}
 .dj-waveform {
-  width: clamp(135px, 10vw, 162px);
+  /* War 135-162px UNTER dem Vinyl gestapelt (eigene Zeile) -- steht jetzt
+     neben dem Pitch-Regler (.dj-deck-mid) und darf dadurch breiter
+     werden: nutzt die neu gewonnene Breite, ohne zusaetzliche Hoehe zu
+     kosten (Zeile eingespart statt Zoom weiter zu reduzieren). */
+  width: clamp(150px, 15vw, 210px);
+  flex: 1 1 auto;
+  min-width: 0;
   height: 34px;
   border-radius: 6px;
   background: rgba(255,255,255,0.03);
@@ -1047,6 +1074,7 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   align-items: center;
   justify-content: center;
   width: 180px;
+  flex: 0 0 auto;
 }
 .dj-pitch-display {
   position: absolute;
@@ -1738,9 +1766,21 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
     gap: 12px;
     position: fixed;
     top: 0;
-    right: 370px;
+    /* .dj-tools-panel haengt im DOM UNTER .dj-master, also innerhalb des
+       gezoomten .dj-player (siehe .dj-player { zoom: 0.72 } oben) -- ein
+       "position: fixed"-Nachfahre eines gezoomten Vorfahren wird von
+       Chromium trotzdem mitskaliert (obwohl das eigene computed "zoom"
+       hier 1 bleibt): "right: 370px" landete dadurch effektiv bei
+       370px * 0.72 = 266px vom rechten Rand -- unabhaengig davon, wie
+       breit .dj-player selbst gerade ist. Seit .dj-player wieder auf
+       volle 370px sichtbare Breite gebracht wurde (s.o.), driftete
+       dieses Panel dadurch MITTEN in den Player hinein statt links davon
+       zu sitzen. Gleicher Trick wie bei .dj-player: Wert vorher durch
+       0.72 teilen, damit nach der (geerbten) Stauchung wieder echte
+       370px/90px herauskommen. */
+    right: calc(370px / 0.72);
     bottom: 0;
-    width: 90px;
+    width: calc(90px / 0.72);
     overflow-y: auto;
     z-index: 249;
     background: linear-gradient(200deg, var(--panel) 0%, var(--bg) 130%);

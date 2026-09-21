@@ -1187,19 +1187,21 @@ function deckHTML(key) {
     '      <div class="dj-vinyl-dragshield" id="deck-' + key + '-dragshield" aria-hidden="true"></div>' +
     '    </div>' +
     '  </div>' +
-    '  <div class="dj-waveform" id="deck-' + key + '-waveform" role="slider" tabindex="0" ' +
-    '    aria-label="Deck ' + key + ': Songposition" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
-    '    <canvas id="deck-' + key + '-waveform-canvas"></canvas>' +
-    '  </div>' +
-    '  <div class="dj-pitch">' +
-    '    <div class="dj-knob-wrap">' +
-    '      <div class="dj-knob" id="deck-' + key + '-pitch-knob" role="slider" tabindex="0" ' +
-    '        aria-label="Deck ' + key + ': Pitch" aria-valuemin="-50" aria-valuemax="50" aria-valuenow="0" data-value="0">' +
-    '        <div class="dj-knob-ticks" aria-hidden="true"><span></span><span></span><span class="mid"></span><span></span><span></span></div>' +
-    '        <div class="dj-knob-dial" id="deck-' + key + '-pitch-dial"><div class="dj-knob-pointer"></div></div>' +
-    '      </div>' +
+    '  <div class="dj-deck-mid">' +
+    '    <div class="dj-waveform" id="deck-' + key + '-waveform" role="slider" tabindex="0" ' +
+    '      aria-label="Deck ' + key + ': Songposition" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
+    '      <canvas id="deck-' + key + '-waveform-canvas"></canvas>' +
     '    </div>' +
-    '    <div class="dj-pitch-display" id="deck-' + key + '-pitch-display">0,00</div>' +
+    '    <div class="dj-pitch">' +
+    '      <div class="dj-knob-wrap">' +
+    '        <div class="dj-knob" id="deck-' + key + '-pitch-knob" role="slider" tabindex="0" ' +
+    '          aria-label="Deck ' + key + ': Pitch" aria-valuemin="-50" aria-valuemax="50" aria-valuenow="0" data-value="0">' +
+    '          <div class="dj-knob-ticks" aria-hidden="true"><span></span><span></span><span class="mid"></span><span></span><span></span></div>' +
+    '          <div class="dj-knob-dial" id="deck-' + key + '-pitch-dial"><div class="dj-knob-pointer"></div></div>' +
+    '        </div>' +
+    '      </div>' +
+    '      <div class="dj-pitch-display" id="deck-' + key + '-pitch-display">0,00</div>' +
+    '    </div>' +
     '  </div>' +
     '  <div class="dj-deck-controls">' +
     '    <button type="button" id="deck-' + key + '-prev" aria-label="Deck ' + key + ': voriger Song">' + PREV_SVG + '</button>' +
