@@ -1043,28 +1043,28 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   gap: 10px;
 }
 .dj-deck-mid {
+  /* Nutzerwunsch (22.9., letztes Wort): "der Fortschrittsbalken soll
+     MITTIG unter dem Player sein... der Pitch-Regler kann daneben sein,
+     das ist mir latte" -- vorher stand die Waveform+Pitch-PAARUNG als
+     Gruppe zentriert (justify-content:center auf beide), wodurch die
+     Waveform selbst je nach Pitch-Breite leicht neben der Vinyl-Mitte
+     lag. Jetzt: die Waveform wird UNABHAENGIG vom Pitch-Regler exakt
+     unter dem Vinyl zentriert (margin:0 auto), der Pitch-Regler haengt
+     absolut positioniert rechts daneben und beeinflusst die
+     Waveform-Zentrierung nicht mehr. */
+  position: relative;
+  width: 100%;
+  min-height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  width: 100%;
 }
 .dj-waveform {
-  /* War 135-162px UNTER dem Vinyl gestapelt (eigene Zeile) -- steht jetzt
-     neben dem Pitch-Regler (.dj-deck-mid) und darf dadurch breiter
-     werden: nutzt die neu gewonnene Breite, ohne zusaetzliche Hoehe zu
-     kosten (Zeile eingespart statt Zoom weiter zu reduzieren). */
+  /* War 135-162px UNTER dem Vinyl gestapelt (eigene Zeile), dann neben
+     dem Pitch-Regler -- steht jetzt unabhaengig und exakt zentriert
+     (siehe .dj-deck-mid oben). */
   width: clamp(150px, 15vw, 210px);
-  /* War flex: 1 1 auto -- das liess die Waveform den GESAMTEN
-     Restplatz der Zeile fressen (waechst ueber ihre eigene
-     clamp()-Breite hinaus), wodurch sie links klebte und der
-     Pitch-Regler rechts an den Rand gedrueckt wurde -- die Zeile
-     fuellte dadurch die volle Deck-Breite statt als kompaktes Paar
-     mittig zu stehen (siehe justify-content:center bei .dj-deck-mid,
-     das dadurch wirkungslos blieb). Kein Wachstum mehr (flex: 0 1
-     auto), nur noch Schrumpfen erlaubt, wenn der Platz eng wird. */
-  flex: 0 1 auto;
-  min-width: 0;
+  margin: 0 auto;
   height: 34px;
   border-radius: 6px;
   background: rgba(255,255,255,0.03);
@@ -1077,7 +1077,13 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .dj-waveform:hover { border-color: rgba(255,255,255,0.14); }
 .dj-waveform:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .dj-pitch {
-  position: relative;
+  /* Haengt jetzt absolut rechts neben der zentrierten Waveform (siehe
+     .dj-deck-mid) -- Position ist laut Nutzer nebensaechlich, Hauptsache
+     die Waveform selbst ist exakt mittig. */
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
