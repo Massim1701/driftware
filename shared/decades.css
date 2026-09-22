@@ -1055,7 +1055,15 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
      werden: nutzt die neu gewonnene Breite, ohne zusaetzliche Hoehe zu
      kosten (Zeile eingespart statt Zoom weiter zu reduzieren). */
   width: clamp(150px, 15vw, 210px);
-  flex: 1 1 auto;
+  /* War flex: 1 1 auto -- das liess die Waveform den GESAMTEN
+     Restplatz der Zeile fressen (waechst ueber ihre eigene
+     clamp()-Breite hinaus), wodurch sie links klebte und der
+     Pitch-Regler rechts an den Rand gedrueckt wurde -- die Zeile
+     fuellte dadurch die volle Deck-Breite statt als kompaktes Paar
+     mittig zu stehen (siehe justify-content:center bei .dj-deck-mid,
+     das dadurch wirkungslos blieb). Kein Wachstum mehr (flex: 0 1
+     auto), nur noch Schrumpfen erlaubt, wenn der Platz eng wird. */
+  flex: 0 1 auto;
   min-width: 0;
   height: 34px;
   border-radius: 6px;
