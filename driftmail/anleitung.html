@@ -56,6 +56,26 @@
   .utility-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
   .utility-icon svg { width: 18px; height: 18px; }
   .utility-label { font-size: 9px; color: var(--muted); }
+  .provider-accordion { margin: 16px 0 0; display: flex; flex-direction: column; gap: 10px; }
+  .provider-accordion details {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+  }
+  .provider-accordion summary {
+    cursor: pointer; list-style: none; padding: 14px 20px; font-weight: 700; font-size: 15px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .provider-accordion summary::-webkit-details-marker { display: none; }
+  .provider-accordion summary::after {
+    content: "+"; color: var(--accent); font-size: 20px; font-weight: 400; flex-shrink: 0; margin-left: 12px;
+  }
+  .provider-accordion details[open] summary::after { content: "−"; }
+  .provider-accordion .provider-body { padding: 0 20px 18px; }
+  .provider-accordion ol { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+  .provider-accordion li { margin-bottom: 8px; }
+  .provider-accordion li:last-child { margin-bottom: 0; }
+  .provider-accordion code {
+    background: rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 4px; font-size: 13px; color: var(--text);
+  }
 </style>
 </head>
 <body>
@@ -104,6 +124,83 @@
       <h2 class="step-title"><span class="step-num">1</span> Konto verbinden</h2>
       <div class="step-body">
         <p>Bei driftmail anmelden und deinen Mail-Anbieter auswählen (Gmail, iCloud, GMX, web.de oder ein anderer IMAP-Anbieter). Bei Gmail genügt ein einmaliger Google-Anmelde-Bildschirm. Bei anderen Anbietern gibst du deine E-Mail-Adresse plus ein App-spezifisches Passwort ein (nicht dein normales Passwort) — eine kurze Anleitung dazu ist je nach Anbieter direkt im Formular verlinkt.</p>
+
+        <div class="provider-accordion">
+          <details>
+            <summary>Gmail</summary>
+            <div class="provider-body">
+              <ol>
+                <li>In driftmail „Gmail" bei der Provider-Auswahl anklicken.</li>
+                <li>Der bekannte Google-Anmeldebildschirm öffnet sich in einem neuen Fenster/Tab.</li>
+                <li>Mit der Gmail-Adresse und dem Google-Passwort anmelden.</li>
+                <li>Google zeigt eine Berechtigungsanfrage („driftmail möchte auf dein Gmail-Konto zugreifen") — bestätigen.</li>
+                <li>Fertig, das Postfach lädt automatisch. Kein App-Passwort nötig.</li>
+              </ol>
+            </div>
+          </details>
+
+          <details>
+            <summary>iCloud Mail</summary>
+            <div class="provider-body">
+              <ol>
+                <li>App-spezifisches Passwort erzeugen (einmalig): im Browser <code>appleid.apple.com</code> öffnen, mit der Apple-ID einloggen.</li>
+                <li>Zu „Anmeldung und Sicherheit" scrollen/klicken.</li>
+                <li>„App-spezifische Passwörter" auswählen.</li>
+                <li>„Ein App-spezifisches Passwort erstellen" klicken, einen Namen vergeben (z.B. „driftmail").</li>
+                <li>Das angezeigte Passwort (Format <code>xxxx-xxxx-xxxx-xxxx</code>) kopieren.</li>
+                <li>In driftmail „iCloud Mail" auswählen, die @icloud.com-Adresse eintragen.</li>
+                <li>Als Passwort das gerade erzeugte App-Passwort einfügen (nicht das normale Apple-ID-Passwort).</li>
+                <li>Server-Einstellungen sind schon richtig vorausgefüllt (<code>imap.mail.me.com</code>).</li>
+                <li>„Verbinden" klicken.</li>
+              </ol>
+            </div>
+          </details>
+
+          <details>
+            <summary>GMX</summary>
+            <div class="provider-body">
+              <ol>
+                <li>Bei GMX einloggen, oben rechts auf das Profil-Symbol klicken.</li>
+                <li>Zu den E-Mail-Einstellungen wechseln, Bereich „POP3/IMAP" suchen.</li>
+                <li>IMAP-Zugriff aktivieren (bei GMX/web.de standardmäßig ausgeschaltet, muss einmalig angeschaltet werden).</li>
+                <li>Falls Zwei-Faktor-Authentifizierung aktiv ist: zusätzlich ein App-Passwort in den Sicherheitseinstellungen erzeugen. Ohne 2FA reicht das normale GMX-Passwort.</li>
+                <li>In driftmail „GMX" auswählen, E-Mail-Adresse eintragen.</li>
+                <li>Passwort (normales Passwort oder App-Passwort, je nach vorherigem Schritt) eintragen.</li>
+                <li>Server-Einstellungen sind vorausgefüllt (<code>imap.gmx.net</code>).</li>
+                <li>„Verbinden" klicken.</li>
+              </ol>
+            </div>
+          </details>
+
+          <details>
+            <summary>web.de</summary>
+            <div class="provider-body">
+              <ol>
+                <li>Bei web.de einloggen, oben rechts auf das Namenskürzel klicken.</li>
+                <li>„E-Mail-Einstellungen" auswählen, Bereich „POP3/IMAP" suchen.</li>
+                <li>IMAP-Abruf einschalten (auch hier standardmäßig aus).</li>
+                <li>Falls Zwei-Faktor-Authentifizierung aktiv ist: App-Passwort erzeugen. Ohne 2FA reicht das normale web.de-Passwort.</li>
+                <li>In driftmail „web.de" auswählen, E-Mail-Adresse eintragen.</li>
+                <li>Passwort eintragen.</li>
+                <li>Server-Einstellungen sind vorausgefüllt (<code>imap.web.de</code>).</li>
+                <li>„Verbinden" klicken.</li>
+              </ol>
+            </div>
+          </details>
+
+          <details>
+            <summary>Anderer Anbieter (generisches IMAP)</summary>
+            <div class="provider-body">
+              <ol>
+                <li>Beim eigenen Mail-Anbieter herausfinden: IMAP-Server-Adresse, IMAP-Port (meist 993), SMTP-Server-Adresse, SMTP-Port (meist 587) — steht meist in den Hilfeseiten des Anbieters unter „IMAP-Einstellungen" oder „E-Mail-Programm einrichten".</li>
+                <li>In driftmail „Anderer Anbieter (IMAP)" auswählen.</li>
+                <li>E-Mail-Adresse und Passwort eintragen.</li>
+                <li>IMAP-Server, Port und SMTP-Angaben aus Schritt 1 manuell eintragen.</li>
+                <li>„Verbinden" klicken. Bei Fehler: Angaben nochmal beim Anbieter gegenprüfen, manche verlangen ebenfalls ein App-Passwort statt des normalen Passworts.</li>
+              </ol>
+            </div>
+          </details>
+        </div>
       </div>
     </section>
 
