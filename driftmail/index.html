@@ -10,13 +10,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ink: #10161c;
-  --ink-2: #161d24;
-  --paper: #f0ede6;
-  --paper-dim: #b7b2a4;
-  --line: rgba(240,237,230,0.12);
-  --seal: #b8923f;
-  --seal-dim: #8a6d31;
+  --bg: #faf8f3;
+  --bg-2: #f2efe6;
+  --ink: #33322c;
+  --ink-dim: #6f6d62;
+  --line: rgba(51,50,44,0.12);
+  --sage: #7f9a72;
+  --sage-dark: #5d7752;
+  --sage-tint: rgba(127,154,114,0.12);
   --serif: "Source Serif 4", Georgia, serif;
   --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 }
@@ -24,92 +25,71 @@
 html { scroll-padding-top: 24px; }
 body {
   margin: 0;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--bg);
+  color: var(--ink);
   font-family: var(--sans);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
 a { color: inherit; }
-:focus-visible { outline: 2px solid var(--seal); outline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--sage-dark); outline-offset: 3px; }
 
-.utility-block {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 50;
+nav.topbar {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 24px 0;
   display: flex;
-  justify-content: center;
   gap: 28px;
-  padding: 18px 20px;
-  background: linear-gradient(to bottom, var(--ink) 60%, transparent);
 }
-.utility-tile {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+nav.topbar a {
   text-decoration: none;
-  color: var(--paper-dim);
-  font-size: 13px;
+  color: var(--ink-dim);
+  font-size: 14px;
   font-weight: 500;
-  transition: color 0.15s ease;
 }
-.utility-tile:hover { color: var(--paper); }
-.utility-tile svg { width: 15px; height: 15px; opacity: 0.9; }
+nav.topbar a:hover { color: var(--sage-dark); }
 
 header {
   max-width: 640px;
   margin: 0 auto;
-  padding: 132px 24px 56px;
-  text-align: center;
+  padding: 56px 24px 48px;
 }
-.mark {
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 28px;
-  border: 1.5px solid var(--seal);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.mark svg { width: 24px; height: 24px; }
+.mark { margin: 0 0 24px; }
+.mark svg { width: 54px; height: 40px; }
 .logo {
   font-family: var(--serif);
-  font-size: 44px;
+  font-size: 42px;
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: var(--paper);
-  margin: 0 0 14px;
+  color: var(--ink);
+  margin: 0 0 12px;
 }
 .tagline {
   font-family: var(--serif);
   font-style: italic;
-  color: var(--paper-dim);
+  color: var(--ink-dim);
   font-size: 19px;
-  margin: 0 0 40px;
+  margin: 0 0 32px;
 }
 .badges {
   display: flex;
   gap: 10px;
-  justify-content: center;
   flex-wrap: wrap;
 }
 .badge {
   display: inline-flex;
   align-items: center;
   padding: 9px 18px;
-  border-radius: 3px;
+  border-radius: 20px;
   border: 1px solid var(--line);
-  color: var(--paper-dim);
+  color: var(--ink-dim);
   text-decoration: none;
   font-size: 13px;
   font-weight: 500;
-  letter-spacing: 0.01em;
+  background: var(--bg-2);
 }
-.badge:not(.soon) { border-color: var(--seal-dim); color: var(--paper); }
-.badge.soon { opacity: 0.6; }
+.badge:not(.soon) { border-color: var(--sage); color: var(--sage-dark); background: var(--sage-tint); }
+.badge.soon { opacity: 0.7; }
 
 main {
   max-width: 640px;
@@ -119,22 +99,22 @@ main {
 .hook {
   font-size: 17px;
   line-height: 1.7;
-  color: var(--paper);
-  border-left: 2px solid var(--seal);
+  color: var(--ink);
+  border-left: 3px solid var(--sage);
   padding-left: 20px;
-  margin: 0 0 64px;
+  margin: 0 0 60px;
 }
-.hook strong { color: var(--seal); font-weight: 600; }
+.hook strong { color: var(--sage-dark); font-weight: 600; }
 
 .section-label {
   font-family: var(--serif);
   font-size: 21px;
   font-weight: 600;
-  color: var(--paper);
+  color: var(--ink);
   margin: 0 0 4px;
 }
 .section-sub {
-  color: var(--paper-dim);
+  color: var(--ink-dim);
   font-size: 14px;
   margin: 0 0 28px;
 }
@@ -151,11 +131,11 @@ main {
   margin: 0;
   font-size: 15px;
   font-weight: 600;
-  color: var(--paper);
+  color: var(--ink);
 }
 .clause p {
   margin: 0;
-  color: var(--paper-dim);
+  color: var(--ink-dim);
   font-size: 14px;
   line-height: 1.65;
 }
@@ -166,24 +146,24 @@ main {
 .selfcare {
   margin: 56px 0 8px;
   padding: 28px 28px 24px;
-  border: 1px solid var(--seal-dim);
-  border-radius: 4px;
-  background: linear-gradient(180deg, rgba(184,146,63,0.06), transparent 60%);
+  border: 1px solid var(--sage);
+  border-radius: 12px;
+  background: var(--sage-tint);
 }
 .selfcare h2 {
   font-family: var(--serif);
   font-size: 19px;
   font-weight: 600;
-  color: var(--paper);
+  color: var(--ink);
   margin: 0 0 12px;
 }
-.selfcare > p { color: var(--paper-dim); font-size: 14px; line-height: 1.65; margin: 0 0 16px; }
+.selfcare > p { color: var(--ink-dim); font-size: 14px; line-height: 1.65; margin: 0 0 16px; }
 .selfcare ul { margin: 0; padding-left: 0; list-style: none; }
 .selfcare li {
   position: relative;
   padding-left: 18px;
   margin-bottom: 10px;
-  color: var(--paper);
+  color: var(--ink);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -191,11 +171,11 @@ main {
   content: "—";
   position: absolute;
   left: 0;
-  color: var(--seal);
+  color: var(--sage-dark);
 }
 .selfcare .closer {
   margin: 18px 0 0;
-  color: var(--seal);
+  color: var(--sage-dark);
   font-weight: 600;
   font-size: 14px;
   font-family: var(--serif);
@@ -206,50 +186,43 @@ main {
   margin-top: 28px;
   padding-top: 24px;
   border-top: 1px solid var(--line);
-  color: var(--paper-dim);
+  color: var(--ink-dim);
   font-size: 13.5px;
   line-height: 1.6;
 }
-.privacy-note strong { color: var(--paper); font-weight: 600; }
-.privacy-note a { color: var(--seal); text-decoration: underline; text-underline-offset: 2px; }
+.privacy-note strong { color: var(--ink); font-weight: 600; }
+.privacy-note a { color: var(--sage-dark); text-decoration: underline; text-underline-offset: 2px; }
 
 footer {
   max-width: 640px;
   margin: 0 auto;
   padding: 28px 24px 40px;
-  text-align: center;
-  color: var(--paper-dim);
+  color: var(--ink-dim);
   font-size: 12.5px;
   border-top: 1px solid var(--line);
 }
 footer .links { margin-top: 10px; }
-footer .links a { color: var(--paper-dim); text-decoration: none; margin: 0 10px; }
-footer .links a:hover { color: var(--paper); }
+footer .links a { color: var(--ink-dim); text-decoration: none; margin: 0 10px 0 0; }
+footer .links a:hover { color: var(--sage-dark); }
 </style>
 </head>
 <body>
-<div class="utility-block">
-<a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">
-<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
-Home
-</a>
-<a class="utility-tile" href="/impressum.html#kontakt">
-<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
-Kontakt
-</a>
-<a class="utility-tile" href="anleitung.html">
-<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v2H4V4zm0 5h16v2H4V9zm0 5h10v2H4v-2zm0 5h10v2H4v-2z"/></svg>
-Anleitung
-</a>
-<a class="utility-tile" href="privacy.html">
-<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>
-Datenschutz
-</a>
-</div>
+<nav class="topbar">
+<a href="/">Home</a>
+<a href="/impressum.html#kontakt">Kontakt</a>
+<a href="anleitung.html">Anleitung</a>
+<a href="privacy.html">Datenschutz</a>
+</nav>
 
 <header>
 <div class="mark" aria-hidden="true">
-<svg viewBox="0 0 24 24" fill="none" stroke="#b8923f" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4z"/></svg>
+<svg viewBox="0 0 64 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="2" y="10" width="60" height="34" rx="3" stroke="#7f9a72" stroke-width="2.2"/>
+<path d="M4 12 L32 30 L60 12" stroke="#7f9a72" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M6 6 L32 2 L58 6" stroke="#7f9a72" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<path d="M6 6 L4 12" stroke="#7f9a72" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M58 6 L60 12" stroke="#7f9a72" stroke-width="2.2" stroke-linecap="round"/>
+</svg>
 </div>
 <p class="logo">driftmail</p>
 <p class="tagline">Der Mail-Client, der mitdenkt.</p>
