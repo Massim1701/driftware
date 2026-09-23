@@ -4,91 +4,76 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Haftungsausschluss — driftmail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#0a1512; --panel:#10201c; --accent:#14b881; --text:#f5f7fa; --muted:#9db3ad; --border:rgba(255,255,255,0.08); --warn:#e0a530; --warn-bg:rgba(224,165,48,0.12); }
-  * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
-  main { max-width:680px; margin:0 auto; padding:56px 24px 64px; }
-  a { color:var(--accent); }
-  h1 { font-size:28px; margin-bottom:4px; }
-  .stand { color:var(--muted); font-size:14px; margin-bottom:24px; }
-  .draft-notice {
-    background: var(--warn-bg); border: 1px solid rgba(224,165,48,0.4); border-radius: 14px;
-    padding: 14px 18px; margin: 0 0 32px; font-size: 14px; color: #f2d9a0;
-  }
-  .draft-notice strong { color: var(--warn); }
-  h2 { font-size:18px; margin-top:32px; color:var(--text); border-bottom:1px solid var(--border); padding-bottom:6px; }
-  p { color:#d7ede6; }
-  .back { display:inline-block; margin-bottom:24px; color:var(--muted); text-decoration:none; font-size:14px; }
-  .contact-panel { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:20px 24px; margin:32px 0; }
-  .contact-form { display:flex; flex-direction:column; gap:12px; margin-top:16px; }
-  .contact-form label { font-size:13px; color:var(--muted); font-weight:600; display:flex; flex-direction:column; gap:6px; }
-  .contact-form input, .contact-form textarea { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-family:inherit; font-size:14px; }
-  .contact-form textarea { min-height:100px; resize:vertical; }
-  .contact-form button { align-self:flex-start; background:var(--accent); color:#06231a; border:none; border-radius:10px; padding:10px 22px; font-weight:700; font-size:14px; cursor:pointer; }
-  .contact-honey { position:absolute; left:-9999px; }
-  .utility-block {
-    position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 50;
-    display: flex; flex-direction: row; gap: 10px;
-  }
-  .utility-tile { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: var(--text); width: 40px; }
-  .utility-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-  .utility-icon svg { width: 18px; height: 18px; }
-  .utility-label { font-size: 9px; color: var(--muted); }
+:root {
+  --bg: #faf8f3; --bg-2: #f2efe6; --ink: #33322c; --ink-dim: #6f6d62;
+  --line: rgba(51,50,44,0.12); --sage: #7f9a72; --sage-dark: #5d7752; --sage-tint: rgba(127,154,114,0.12);
+  --warn: #a9762c; --warn-bg: rgba(169,118,44,0.1);
+  --serif: "Source Serif 4", Georgia, serif;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+a { color: var(--sage-dark); }
+nav.topbar { max-width: 680px; margin: 0 auto; padding: 28px 24px 0; display: flex; gap: 28px; }
+nav.topbar a { text-decoration: none; color: var(--ink-dim); font-size: 14px; font-weight: 500; }
+nav.topbar a:hover { color: var(--sage-dark); }
+main { max-width: 680px; margin: 0 auto; padding: 40px 24px 64px; }
+h1 { font-family: var(--serif); font-size: 30px; font-weight: 600; margin-bottom: 4px; color: var(--ink); }
+.stand { color: var(--ink-dim); font-size: 14px; margin-bottom: 24px; }
+.draft-notice { background: var(--warn-bg); border: 1px solid rgba(169,118,44,0.35); border-radius: 10px; padding: 14px 18px; margin: 0 0 32px; font-size: 14px; color: var(--warn); }
+.draft-notice strong { color: var(--warn); }
+h2 { font-family: var(--serif); font-size: 18px; font-weight: 600; margin-top: 32px; color: var(--ink); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+p { color: var(--ink-dim); }
+.back { display: inline-block; margin-bottom: 24px; color: var(--ink-dim); text-decoration: none; font-size: 14px; }
+.contact-panel { background: var(--sage-tint); border: 1px solid var(--sage); border-radius: 12px; padding: 20px 24px; margin: 32px 0; }
+.contact-form { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.contact-form label { font-size: 13px; color: var(--ink-dim); font-weight: 600; display: flex; flex-direction: column; gap: 6px; }
+.contact-form input, .contact-form textarea { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; color: var(--ink); font-family: inherit; font-size: 14px; }
+.contact-form textarea { min-height: 100px; resize: vertical; }
+.contact-form button { align-self: flex-start; background: var(--sage-dark); color: #fff; border: none; border-radius: 8px; padding: 10px 22px; font-weight: 600; font-size: 14px; cursor: pointer; }
+.contact-honey { position: absolute; left: -9999px; }
+footer { max-width: 680px; margin: 0 auto; padding: 24px; color: var(--ink-dim); font-size: 13px; border-top: 1px solid var(--line); }
 </style>
 </head>
 <body>
-<div class="utility-block">
-  <a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">
-    <div class="utility-icon" style="background:#d98c1f">
-      <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
-    </div>
-    <span class="utility-label">Home</span>
-  </a>
-  <a class="utility-tile" href="/impressum.html#kontakt">
-    <div class="utility-icon" style="background:#4a90d9">
-      <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
-    </div>
-    <span class="utility-label">Kontakt</span>
-  </a>
-  <a class="utility-tile" href="index.html">
-    <div class="utility-icon" style="background:#14b881">
-      <svg viewBox="0 0 24 24" fill="#eafff5" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
-    </div>
-    <span class="utility-label">driftmail</span>
-  </a>
-  <a class="utility-tile" href="privacy.html">
-    <div class="utility-icon" style="background:#6a5acd">
-      <svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>
-    </div>
-    <span class="utility-label">Datenschutz</span>
-  </a>
-</div>
+<nav class="topbar">
+<a href="/">Home</a>
+<a href="/impressum.html#kontakt">Kontakt</a>
+<a href="index.html">driftmail</a>
+<a href="privacy.html">Datenschutz</a>
+</nav>
 <main>
-  <a class="back" href="index.html">&larr; Zurück zu driftmail</a>
-  <h1>Haftungsausschluss</h1>
-  <p class="stand">Stand: September 2026</p>
+<a class="back" href="index.html">&larr; Zurück zu driftmail</a>
+<h1>Haftungsausschluss</h1>
+<p class="stand">Stand: September 2026</p>
 
-  <div class="draft-notice"><strong>Entwurf, in anwaltlicher Prüfung.</strong> Dieser Text wird derzeit rechtlich geprüft und kann sich noch ändern.</div>
+<div class="draft-notice"><strong>Entwurf, in anwaltlicher Prüfung.</strong> Dieser Text wird derzeit rechtlich geprüft und kann sich noch ändern.</div>
 
-  <p>driftmail ist ein in Entwicklung befindliches Produkt. Trotz sorgfältiger technischer Umsetzung der Sicherheitsfunktionen (Spam-/Phishing-Erkennung, Virenscan, Betrugserkennung) kann keine Garantie für die vollständige Erkennung aller Bedrohungen übernommen werden. Die Nutzung erfolgt auf eigene Verantwortung. Für Schäden, die durch nicht erkannte Schadsoftware, Phishing-Versuche oder Betrugsmails entstehen, wird — soweit gesetzlich zulässig — keine Haftung übernommen, außer bei Vorsatz oder grober Fahrlässigkeit. Für die Inhalte verlinkter externer Webseiten (z.&nbsp;B. in empfangenen E-Mails) wird keine Verantwortung übernommen.</p>
+<p>driftmail ist ein in Entwicklung befindliches Produkt. Trotz sorgfältiger technischer Umsetzung der Sicherheitsfunktionen (Spam-/Phishing-Erkennung, Virenscan, Betrugserkennung) kann keine Garantie für die vollständige Erkennung aller Bedrohungen übernommen werden. Die Nutzung erfolgt auf eigene Verantwortung. Für Schäden, die durch nicht erkannte Schadsoftware, Phishing-Versuche oder Betrugsmails entstehen, wird — soweit gesetzlich zulässig — keine Haftung übernommen, außer bei Vorsatz oder grober Fahrlässigkeit. Für die Inhalte verlinkter externer Webseiten (z.&nbsp;B. in empfangenen E-Mails) wird keine Verantwortung übernommen.</p>
 
-  <h2>Eigenverantwortung des Nutzers</h2>
-  <p>driftmail bietet automatisierte Unterstützung bei der Erkennung von Spam, Phishing und Betrugsversuchen, kann jedoch keine vollständige oder dauerhafte Sicherheit gewährleisten. Angreifer entwickeln fortlaufend neue Methoden, die zum Zeitpunkt der Nutzung möglicherweise noch nicht erkennbar sind. Der Nutzer bleibt selbst dafür verantwortlich, bei verdächtigen Nachrichten — unabhängig von einer angezeigten oder nicht angezeigten Warnung — eigene Vorsicht walten zu lassen, insbesondere bei Zahlungsaufforderungen, Preisgabe persönlicher Daten und Änderungen von Bankverbindungen.</p>
-  <p>Eine praktische Übersicht dazu, wie du dich zusätzlich schützen kannst, findest du auf der <a href="index.html#selfcare">Startseite unter „So schützt du dich zusätzlich"</a>.</p>
+<h2>Eigenverantwortung des Nutzers</h2>
+<p>driftmail bietet automatisierte Unterstützung bei der Erkennung von Spam, Phishing und Betrugsversuchen, kann jedoch keine vollständige oder dauerhafte Sicherheit gewährleisten. Angreifer entwickeln fortlaufend neue Methoden, die zum Zeitpunkt der Nutzung möglicherweise noch nicht erkennbar sind. Der Nutzer bleibt selbst dafür verantwortlich, bei verdächtigen Nachrichten — unabhängig von einer angezeigten oder nicht angezeigten Warnung — eigene Vorsicht walten zu lassen, insbesondere bei Zahlungsaufforderungen, Preisgabe persönlicher Daten und Änderungen von Bankverbindungen.</p>
+<p>Eine praktische Übersicht dazu, wie du dich zusätzlich schützen kannst, findest du auf der <a href="index.html#selfcare">Startseite unter „So schützt du dich zusätzlich"</a>.</p>
 
-  <div class="contact-panel" id="kontakt">
-    <h2 style="margin-top:0;border-bottom:none;padding-bottom:0;">Kontaktformular</h2>
-    <form class="contact-form" method="POST" action="https://formsubmit.co/0b4cb7348b4cff5d1891bf8d99f1e757">
-      <input type="hidden" name="_subject" value="driftmail — neue Anfrage zum Haftungsausschluss">
-      <input type="hidden" name="_template" value="table">
-      <input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">
-      <label><span>Name</span><input type="text" name="name" required></label>
-      <label><span>Deine E-Mail-Adresse</span><input type="email" name="email" required></label>
-      <label><span>Nachricht</span><textarea name="message" required></textarea></label>
-      <button type="submit">Senden</button>
-    </form>
-  </div>
+<div class="contact-panel" id="kontakt">
+<h2 style="margin-top:0;border-bottom:none;padding-bottom:0;">Kontaktformular</h2>
+<form class="contact-form" method="POST" action="https://formsubmit.co/0b4cb7348b4cff5d1891bf8d99f1e757">
+<input type="hidden" name="_subject" value="driftmail — neue Anfrage zum Haftungsausschluss">
+<input type="hidden" name="_template" value="table">
+<input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">
+<label><span>Name</span><input type="text" name="name" required></label>
+<label><span>Deine E-Mail-Adresse</span><input type="email" name="email" required></label>
+<label><span>Nachricht</span><textarea name="message" required></textarea></label>
+<button type="submit">Senden</button>
+</form>
+</div>
 </main>
+<footer>
+&copy; 2026 Massimo — driftmail
+</footer>
 </body>
 </html>
