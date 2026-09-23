@@ -5,246 +5,211 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bedienungsanleitung — driftmail</title>
 <meta name="description" content="So funktioniert driftmail: Mail-Konto verbinden, Postfach im Überblick, neue Mail schreiben, auf Sicherheitswarnungen reagieren, Einstellungen anpassen.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a1512;
-    --panel: #10201c;
-    --accent: #14b881;
-    --text: #f5f7fa;
-    --muted: #9db3ad;
-    --border: rgba(255,255,255,0.08);
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.6;
-  }
-  header { max-width: 720px; margin: 0 auto; padding: 56px 24px 24px; }
-  a.back { color: var(--accent); text-decoration: none; font-size: 14px; }
-  h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; margin: 16px 0 8px; }
-  .tagline { color: var(--muted); font-size: 16px; margin: 0; }
-  main { max-width: 720px; margin: 0 auto; padding: 0 24px 64px; }
-  .req { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin: 32px 0; }
-  .req h2 { margin: 0 0 12px; font-size: 16px; }
-  .req ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
-  .req li { margin-bottom: 4px; }
-  .req strong { color: var(--text); }
-  section { margin: 40px 0; }
-  h2.step-title { font-size: 20px; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
-  .step-num {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 28px; height: 28px; border-radius: 50%; background: var(--accent);
-    color: #06231a; font-weight: 800; font-size: 14px; flex-shrink: 0;
-  }
-  .step-body { padding-left: 38px; }
-  .step-body p { color: var(--muted); margin: 8px 0; font-size: 15px; }
-  footer {
-    max-width: 720px; margin: 0 auto; padding: 24px; text-align: center;
-    color: var(--muted); font-size: 13px; border-top: 1px solid var(--border);
-  }
-  footer a { color: var(--accent); text-decoration: none; }
-  footer .links { margin-top: 8px; }
-  footer .links a { margin: 0 8px; }
-  .utility-block {
-    position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 50;
-    display: flex; flex-direction: row; gap: 10px;
-  }
-  .utility-tile { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: var(--text); width: 40px; }
-  .utility-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-  .utility-icon svg { width: 18px; height: 18px; }
-  .utility-label { font-size: 9px; color: var(--muted); }
-  .provider-accordion { margin: 16px 0 0; display: flex; flex-direction: column; gap: 10px; }
-  .provider-accordion details {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
-  }
-  .provider-accordion summary {
-    cursor: pointer; list-style: none; padding: 14px 20px; font-weight: 700; font-size: 15px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .provider-accordion summary::-webkit-details-marker { display: none; }
-  .provider-accordion summary::after {
-    content: "+"; color: var(--accent); font-size: 20px; font-weight: 400; flex-shrink: 0; margin-left: 12px;
-  }
-  .provider-accordion details[open] summary::after { content: "−"; }
-  .provider-accordion .provider-body { padding: 0 20px 18px; }
-  .provider-accordion ol { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
-  .provider-accordion li { margin-bottom: 8px; }
-  .provider-accordion li:last-child { margin-bottom: 0; }
-  .provider-accordion code {
-    background: rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 4px; font-size: 13px; color: var(--text);
-  }
+:root {
+  --bg: #faf8f3;
+  --bg-2: #f2efe6;
+  --ink: #33322c;
+  --ink-dim: #6f6d62;
+  --line: rgba(51,50,44,0.12);
+  --sage: #7f9a72;
+  --sage-dark: #5d7752;
+  --sage-tint: rgba(127,154,114,0.12);
+  --serif: "Source Serif 4", Georgia, serif;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+a { color: var(--sage-dark); }
+nav.topbar { max-width: 720px; margin: 0 auto; padding: 28px 24px 0; display: flex; gap: 28px; }
+nav.topbar a { text-decoration: none; color: var(--ink-dim); font-size: 14px; font-weight: 500; }
+nav.topbar a:hover { color: var(--sage-dark); }
+header { max-width: 720px; margin: 0 auto; padding: 40px 24px 24px; }
+a.back { color: var(--ink-dim); text-decoration: none; font-size: 14px; }
+h1 { font-family: var(--serif); font-size: 34px; font-weight: 600; letter-spacing: -0.01em; margin: 16px 0 8px; color: var(--ink); }
+.tagline { color: var(--ink-dim); font-size: 16px; margin: 0; font-family: var(--serif); font-style: italic; }
+main { max-width: 720px; margin: 0 auto; padding: 0 24px 64px; }
+.req { background: var(--sage-tint); border: 1px solid var(--sage); border-radius: 12px; padding: 20px 24px; margin: 32px 0; }
+.req h2 { margin: 0 0 12px; font-size: 16px; font-family: var(--serif); }
+.req ul { margin: 0; padding-left: 20px; color: var(--ink-dim); font-size: 14px; }
+.req li { margin-bottom: 4px; }
+.req strong { color: var(--ink); }
+section { margin: 40px 0; }
+h2.step-title { font-family: var(--serif); font-size: 21px; font-weight: 600; margin: 0 0 4px; display: flex; align-items: center; gap: 12px; }
+.step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--sage);
+  color: var(--sage-dark); font-weight: 700; font-size: 14px; flex-shrink: 0; font-family: var(--sans);
+}
+.step-body { padding-left: 40px; }
+.step-body p { color: var(--ink-dim); margin: 8px 0; font-size: 15px; }
+footer { max-width: 720px; margin: 0 auto; padding: 24px; color: var(--ink-dim); font-size: 13px; border-top: 1px solid var(--line); }
+footer .links { margin-top: 8px; }
+footer .links a { margin: 0 8px 0 0; color: var(--ink-dim); text-decoration: none; }
+footer .links a:hover { color: var(--sage-dark); }
+.provider-accordion { margin: 16px 0 0; display: flex; flex-direction: column; gap: 10px; padding-left: 0; }
+.provider-accordion details { background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.provider-accordion summary { cursor: pointer; list-style: none; padding: 14px 20px; font-weight: 600; font-size: 15px; color: var(--ink); display: flex; align-items: center; justify-content: space-between; }
+.provider-accordion summary::-webkit-details-marker { display: none; }
+.provider-accordion summary::after { content: "+"; color: var(--sage-dark); font-size: 20px; font-weight: 400; flex-shrink: 0; margin-left: 12px; }
+.provider-accordion details[open] summary::after { content: "−"; }
+.provider-accordion .provider-body { padding: 0 20px 18px; }
+.provider-accordion ol { margin: 0; padding-left: 20px; color: var(--ink-dim); font-size: 14px; }
+.provider-accordion li { margin-bottom: 8px; }
+.provider-accordion li:last-child { margin-bottom: 0; }
+.provider-accordion code { background: var(--bg-2); padding: 1px 6px; border-radius: 4px; font-size: 13px; color: var(--ink); }
 </style>
 </head>
 <body>
-  <div class="utility-block">
-    <a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">
-      <div class="utility-icon" style="background:#d98c1f">
-        <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
-      </div>
-      <span class="utility-label">Home</span>
-    </a>
-    <a class="utility-tile" href="/impressum.html#kontakt">
-      <div class="utility-icon" style="background:#4a90d9">
-        <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
-      </div>
-      <span class="utility-label">Kontakt</span>
-    </a>
-    <a class="utility-tile" href="index.html">
-      <div class="utility-icon" style="background:#14b881">
-        <svg viewBox="0 0 24 24" fill="#eafff5" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
-      </div>
-      <span class="utility-label">driftmail</span>
-    </a>
-    <a class="utility-tile" href="privacy.html">
-      <div class="utility-icon" style="background:#6a5acd">
-        <svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>
-      </div>
-      <span class="utility-label">Datenschutz</span>
-    </a>
-  </div>
-  <header>
-    <a class="back" href="index.html">&larr; Zurück zu driftmail</a>
-    <h1>Bedienungsanleitung</h1>
-    <p class="tagline">So nutzt du driftmail — Schritt für Schritt.</p>
-  </header>
-  <main>
-    <div class="req">
-      <h2>Unterstützte Mail-Anbieter</h2>
-      <ul>
-        <li>Gmail (Google-Anmeldung)</li>
-        <li>iCloud Mail, GMX, web.de</li>
-        <li>Jeder andere IMAP-Anbieter</li>
-      </ul>
-    </div>
+<nav class="topbar">
+<a href="/">Home</a>
+<a href="/impressum.html#kontakt">Kontakt</a>
+<a href="index.html">driftmail</a>
+<a href="privacy.html">Datenschutz</a>
+</nav>
+<header>
+<a class="back" href="index.html">&larr; Zurück zu driftmail</a>
+<h1>Bedienungsanleitung</h1>
+<p class="tagline">So nutzt du driftmail — Schritt für Schritt.</p>
+</header>
+<main>
+<div class="req">
+<h2>Unterstützte Mail-Anbieter</h2>
+<ul>
+<li>Gmail (Google-Anmeldung)</li>
+<li>iCloud Mail, GMX, web.de</li>
+<li>Jeder andere IMAP-Anbieter</li>
+</ul>
+</div>
 
-    <section>
-      <h2 class="step-title"><span class="step-num">1</span> Konto verbinden</h2>
-      <div class="step-body">
-        <p>Bei driftmail anmelden und deinen Mail-Anbieter auswählen (Gmail, iCloud, GMX, web.de oder ein anderer IMAP-Anbieter). Bei Gmail genügt ein einmaliger Google-Anmelde-Bildschirm. Bei anderen Anbietern gibst du deine E-Mail-Adresse plus ein App-spezifisches Passwort ein (nicht dein normales Passwort) — eine kurze Anleitung dazu ist je nach Anbieter direkt im Formular verlinkt.</p>
+<section>
+<h2 class="step-title"><span class="step-num">1</span> Konto verbinden</h2>
+<div class="step-body">
+<p>Bei driftmail anmelden und deinen Mail-Anbieter auswählen (Gmail, iCloud, GMX, web.de oder ein anderer IMAP-Anbieter). Bei Gmail genügt ein einmaliger Google-Anmelde-Bildschirm. Bei anderen Anbietern gibst du deine E-Mail-Adresse plus ein App-spezifisches Passwort ein (nicht dein normales Passwort) — eine kurze Anleitung dazu ist je nach Anbieter direkt im Formular verlinkt.</p>
 
-        <div class="provider-accordion">
-          <details>
-            <summary>Gmail</summary>
-            <div class="provider-body">
-              <ol>
-                <li>In driftmail „Gmail" bei der Provider-Auswahl anklicken.</li>
-                <li>Der bekannte Google-Anmeldebildschirm öffnet sich in einem neuen Fenster/Tab.</li>
-                <li>Mit der Gmail-Adresse und dem Google-Passwort anmelden.</li>
-                <li>Google zeigt eine Berechtigungsanfrage („driftmail möchte auf dein Gmail-Konto zugreifen") — bestätigen.</li>
-                <li>Fertig, das Postfach lädt automatisch. Kein App-Passwort nötig.</li>
-              </ol>
-            </div>
-          </details>
+<div class="provider-accordion">
+<details>
+<summary>Gmail</summary>
+<div class="provider-body">
+<ol>
+<li>In driftmail „Gmail" bei der Provider-Auswahl anklicken.</li>
+<li>Der bekannte Google-Anmeldebildschirm öffnet sich in einem neuen Fenster/Tab.</li>
+<li>Mit der Gmail-Adresse und dem Google-Passwort anmelden.</li>
+<li>Google zeigt eine Berechtigungsanfrage („driftmail möchte auf dein Gmail-Konto zugreifen") — bestätigen.</li>
+<li>Fertig, das Postfach lädt automatisch. Kein App-Passwort nötig.</li>
+</ol>
+</div>
+</details>
 
-          <details>
-            <summary>iCloud Mail</summary>
-            <div class="provider-body">
-              <ol>
-                <li>App-spezifisches Passwort erzeugen (einmalig): im Browser <code>appleid.apple.com</code> öffnen, mit der Apple-ID einloggen.</li>
-                <li>Zu „Anmeldung und Sicherheit" scrollen/klicken.</li>
-                <li>„App-spezifische Passwörter" auswählen.</li>
-                <li>„Ein App-spezifisches Passwort erstellen" klicken, einen Namen vergeben (z.B. „driftmail").</li>
-                <li>Das angezeigte Passwort (Format <code>xxxx-xxxx-xxxx-xxxx</code>) kopieren.</li>
-                <li>In driftmail „iCloud Mail" auswählen, die @icloud.com-Adresse eintragen.</li>
-                <li>Als Passwort das gerade erzeugte App-Passwort einfügen (nicht das normale Apple-ID-Passwort).</li>
-                <li>Server-Einstellungen sind schon richtig vorausgefüllt (<code>imap.mail.me.com</code>).</li>
-                <li>„Verbinden" klicken.</li>
-              </ol>
-            </div>
-          </details>
+<details>
+<summary>iCloud Mail</summary>
+<div class="provider-body">
+<ol>
+<li>App-spezifisches Passwort erzeugen (einmalig): im Browser <code>appleid.apple.com</code> öffnen, mit der Apple-ID einloggen.</li>
+<li>Zu „Anmeldung und Sicherheit" scrollen/klicken.</li>
+<li>„App-spezifische Passwörter" auswählen.</li>
+<li>„Ein App-spezifisches Passwort erstellen" klicken, einen Namen vergeben (z.B. „driftmail").</li>
+<li>Das angezeigte Passwort (Format <code>xxxx-xxxx-xxxx-xxxx</code>) kopieren.</li>
+<li>In driftmail „iCloud Mail" auswählen, die @icloud.com-Adresse eintragen.</li>
+<li>Als Passwort das gerade erzeugte App-Passwort einfügen (nicht das normale Apple-ID-Passwort).</li>
+<li>Server-Einstellungen sind schon richtig vorausgefüllt (<code>imap.mail.me.com</code>).</li>
+<li>„Verbinden" klicken.</li>
+</ol>
+</div>
+</details>
 
-          <details>
-            <summary>GMX</summary>
-            <div class="provider-body">
-              <ol>
-                <li>Bei GMX einloggen, oben rechts auf das Profil-Symbol klicken.</li>
-                <li>Zu den E-Mail-Einstellungen wechseln, Bereich „POP3/IMAP" suchen.</li>
-                <li>IMAP-Zugriff aktivieren (bei GMX/web.de standardmäßig ausgeschaltet, muss einmalig angeschaltet werden).</li>
-                <li>Falls Zwei-Faktor-Authentifizierung aktiv ist: zusätzlich ein App-Passwort in den Sicherheitseinstellungen erzeugen. Ohne 2FA reicht das normale GMX-Passwort.</li>
-                <li>In driftmail „GMX" auswählen, E-Mail-Adresse eintragen.</li>
-                <li>Passwort (normales Passwort oder App-Passwort, je nach vorherigem Schritt) eintragen.</li>
-                <li>Server-Einstellungen sind vorausgefüllt (<code>imap.gmx.net</code>).</li>
-                <li>„Verbinden" klicken.</li>
-              </ol>
-            </div>
-          </details>
+<details>
+<summary>GMX</summary>
+<div class="provider-body">
+<ol>
+<li>Bei GMX einloggen, oben rechts auf das Profil-Symbol klicken.</li>
+<li>Zu den E-Mail-Einstellungen wechseln, Bereich „POP3/IMAP" suchen.</li>
+<li>IMAP-Zugriff aktivieren (bei GMX/web.de standardmäßig ausgeschaltet, muss einmalig angeschaltet werden).</li>
+<li>Falls Zwei-Faktor-Authentifizierung aktiv ist: zusätzlich ein App-Passwort in den Sicherheitseinstellungen erzeugen. Ohne 2FA reicht das normale GMX-Passwort.</li>
+<li>In driftmail „GMX" auswählen, E-Mail-Adresse eintragen.</li>
+<li>Passwort (normales Passwort oder App-Passwort, je nach vorherigem Schritt) eintragen.</li>
+<li>Server-Einstellungen sind vorausgefüllt (<code>imap.gmx.net</code>).</li>
+<li>„Verbinden" klicken.</li>
+</ol>
+</div>
+</details>
 
-          <details>
-            <summary>web.de</summary>
-            <div class="provider-body">
-              <ol>
-                <li>Bei web.de einloggen, oben rechts auf das Namenskürzel klicken.</li>
-                <li>„E-Mail-Einstellungen" auswählen, Bereich „POP3/IMAP" suchen.</li>
-                <li>IMAP-Abruf einschalten (auch hier standardmäßig aus).</li>
-                <li>Falls Zwei-Faktor-Authentifizierung aktiv ist: App-Passwort erzeugen. Ohne 2FA reicht das normale web.de-Passwort.</li>
-                <li>In driftmail „web.de" auswählen, E-Mail-Adresse eintragen.</li>
-                <li>Passwort eintragen.</li>
-                <li>Server-Einstellungen sind vorausgefüllt (<code>imap.web.de</code>).</li>
-                <li>„Verbinden" klicken.</li>
-              </ol>
-            </div>
-          </details>
+<details>
+<summary>web.de</summary>
+<div class="provider-body">
+<ol>
+<li>Bei web.de einloggen, oben rechts auf das Namenskürzel klicken.</li>
+<li>„E-Mail-Einstellungen" auswählen, Bereich „POP3/IMAP" suchen.</li>
+<li>IMAP-Abruf einschalten (auch hier standardmäßig aus).</li>
+<li>Falls Zwei-Faktor-Authentifizierung aktiv ist: App-Passwort erzeugen. Ohne 2FA reicht das normale web.de-Passwort.</li>
+<li>In driftmail „web.de" auswählen, E-Mail-Adresse eintragen.</li>
+<li>Passwort eintragen.</li>
+<li>Server-Einstellungen sind vorausgefüllt (<code>imap.web.de</code>).</li>
+<li>„Verbinden" klicken.</li>
+</ol>
+</div>
+</details>
 
-          <details>
-            <summary>Anderer Anbieter (generisches IMAP)</summary>
-            <div class="provider-body">
-              <ol>
-                <li>Beim eigenen Mail-Anbieter herausfinden: IMAP-Server-Adresse, IMAP-Port (meist 993), SMTP-Server-Adresse, SMTP-Port (meist 587) — steht meist in den Hilfeseiten des Anbieters unter „IMAP-Einstellungen" oder „E-Mail-Programm einrichten".</li>
-                <li>In driftmail „Anderer Anbieter (IMAP)" auswählen.</li>
-                <li>E-Mail-Adresse und Passwort eintragen.</li>
-                <li>IMAP-Server, Port und SMTP-Angaben aus Schritt 1 manuell eintragen.</li>
-                <li>„Verbinden" klicken. Bei Fehler: Angaben nochmal beim Anbieter gegenprüfen, manche verlangen ebenfalls ein App-Passwort statt des normalen Passworts.</li>
-              </ol>
-            </div>
-          </details>
-        </div>
-      </div>
-    </section>
+<details>
+<summary>Anderer Anbieter (generisches IMAP)</summary>
+<div class="provider-body">
+<ol>
+<li>Beim eigenen Mail-Anbieter herausfinden: IMAP-Server-Adresse, IMAP-Port (meist 993), SMTP-Server-Adresse, SMTP-Port (meist 587) — steht meist in den Hilfeseiten des Anbieters unter „IMAP-Einstellungen" oder „E-Mail-Programm einrichten".</li>
+<li>In driftmail „Anderer Anbieter (IMAP)" auswählen.</li>
+<li>E-Mail-Adresse und Passwort eintragen.</li>
+<li>IMAP-Server, Port und SMTP-Angaben aus Schritt 1 manuell eintragen.</li>
+<li>„Verbinden" klicken. Bei Fehler: Angaben nochmal beim Anbieter gegenprüfen, manche verlangen ebenfalls ein App-Passwort statt des normalen Passworts.</li>
+</ol>
+</div>
+</details>
+</div>
+</div>
+</section>
 
-    <section>
-      <h2 class="step-title"><span class="step-num">2</span> Erster Blick ins Postfach</h2>
-      <div class="step-body">
-        <p>Deine Mails werden automatisch geladen und in die passenden Ordner sortiert (Eingang, Sonstiges, Quarantäne, Spam).</p>
-      </div>
-    </section>
+<section>
+<h2 class="step-title"><span class="step-num">2</span> Erster Blick ins Postfach</h2>
+<div class="step-body">
+<p>Deine Mails werden automatisch geladen und in die passenden Ordner sortiert (Eingang, Sonstiges, Quarantäne, Spam).</p>
+</div>
+</section>
 
-    <section>
-      <h2 class="step-title"><span class="step-num">3</span> Neue Mail schreiben</h2>
-      <div class="step-body">
-        <p>Über den „Neue Nachricht"-Button. Bei mehreren verbundenen Konten wählst du aus, von welcher Adresse aus du schreibst.</p>
-      </div>
-    </section>
+<section>
+<h2 class="step-title"><span class="step-num">3</span> Neue Mail schreiben</h2>
+<div class="step-body">
+<p>Über den „Neue Nachricht"-Button. Bei mehreren verbundenen Konten wählst du aus, von welcher Adresse aus du schreibst.</p>
+</div>
+</section>
 
-    <section>
-      <h2 class="step-title"><span class="step-num">4</span> Auf eine Warnung reagieren</h2>
-      <div class="step-body">
-        <p>Sieht eine Mail verdächtig aus (z.B. „Neuer Absender" oder ein Sicherheits-Hinweis), lies dir die Erklärung dazu durch — du kannst den Absender jederzeit mit einem Klick als vertrauenswürdig markieren.</p>
-      </div>
-    </section>
+<section>
+<h2 class="step-title"><span class="step-num">4</span> Auf eine Warnung reagieren</h2>
+<div class="step-body">
+<p>Sieht eine Mail verdächtig aus (z.B. „Neuer Absender" oder ein Sicherheits-Hinweis), lies dir die Erklärung dazu durch — du kannst den Absender jederzeit mit einem Klick als vertrauenswürdig markieren.</p>
+</div>
+</section>
 
-    <section>
-      <h2 class="step-title"><span class="step-num">5</span> Einstellungen</h2>
-      <div class="step-body">
-        <p>Weitere Konten hinzufügen, Darstellung anpassen, die aktiven Sicherheits-Features einsehen und die App-Sperre aktivieren.</p>
-      </div>
-    </section>
+<section>
+<h2 class="step-title"><span class="step-num">5</span> Einstellungen</h2>
+<div class="step-body">
+<p>Weitere Konten hinzufügen, Darstellung anpassen, die aktiven Sicherheits-Features einsehen und die App-Sperre aktivieren.</p>
+</div>
+</section>
 
-    <div class="req">
-      <h2>Hinweis</h2>
-      <ul>
-        <li>driftmail betreibt keinen eigenen Mailserver — Versand und Empfang laufen ausschließlich über die Infrastruktur deines jeweiligen Anbieters.</li>
-        <li>Sicherheitswarnungen sind automatisierte Unterstützung, keine Garantie — siehe <a href="index.html#selfcare" style="color:var(--accent)">„So schützt du dich zusätzlich"</a> auf der Startseite.</li>
-      </ul>
-    </div>
-  </main>
-  <footer>
-    <span>&copy; 2026 Massimo — driftmail</span>
-    <div class="links">
-      <a href="/">Zurück zu Driftware</a> · <a href="index.html">driftmail</a> · <a href="privacy.html">Datenschutz</a> · <a href="agb.html">AGB</a> · <a href="haftungsausschluss.html">Haftungsausschluss</a> · <a href="/impressum.html">Impressum</a>
-    </div>
-  </footer>
+<div class="req">
+<h2>Hinweis</h2>
+<ul>
+<li>driftmail betreibt keinen eigenen Mailserver — Versand und Empfang laufen ausschließlich über die Infrastruktur deines jeweiligen Anbieters.</li>
+<li>Sicherheitswarnungen sind automatisierte Unterstützung, keine Garantie — siehe <a href="index.html#selfcare">„So schützt du dich zusätzlich"</a> auf der Startseite.</li>
+</ul>
+</div>
+</main>
+<footer>
+<span>&copy; 2026 Massimo — driftmail</span>
+<div class="links">
+<a href="/">Zurück zu Driftware</a> · <a href="index.html">driftmail</a> · <a href="privacy.html">Datenschutz</a> · <a href="agb.html">AGB</a> · <a href="haftungsausschluss.html">Haftungsausschluss</a> · <a href="/impressum.html">Impressum</a>
+</div>
+</footer>
 </body>
 </html>
