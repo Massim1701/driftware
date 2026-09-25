@@ -1,0 +1,43 @@
+name: Supabase-Analytics wachhalten
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    # Taeglich um 06:12 UTC -- zeitlich versetzt zu den anderen taeglichen
+    # Workflows (03:47/04:17/04:37/04:57/05:52), siehe dort zur eigenen
+    # Concurrency-Gruppe je Workflow. Grund fuer diesen Workflow (25.9.,
+    # Nutzerwunsch nach dem Fund, dass die "gerade online"/"Besuche
+    # gesamt"-Zaehler auf dekaden/index.html stillstanden -- Ursache war
+    # NICHT ein Code-Fehler, sondern dass Supabase das Projekt
+    # "driftware-analytics" (viyfqufxwmdpggirmbjd) im kostenlosen Free-Tier
+    # nach laengerer Inaktivitaet automatisch pausiert, siehe
+    # https://supabase.com/docs/guides/platform/going-into-prod#project-pausing):
+    # ein taeglicher, unauffaelliger Request an die REST-API reicht als
+    # "Aktivitaet", damit das Projekt nie wieder in die Pause faellt.
+    - cron: '12 6 * * *'
+
+# Eigene Gruppe wie bei den anderen taeglichen Workflows -- verhindert,
+# dass GitHub einen noch wartenden Lauf cancelt, sobald ein neuerer in
+# dieselbe Warteschlange kommt (hier zwar unwahrscheinlich bei einem so
+# kurzen Job, aber konsistent mit den anderen Workflows gehalten).
+concurrency:
+  group: ping-supabase-analytics
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Supabase-REST-Endpunkt anpingen
+        # Reiner Lese-/Erreichbarkeits-Request (kein RPC-Aufruf, keine
+        # Zaehler-Erhoehung) -- der oeffentliche "publishable"/anon-Key ist
+        # bewusst kein Secret, er steht bereits clientseitig sichtbar in
+        # dekaden/index.html (siehe dort). Schlaegt der Request fehl
+        # (Netzwerk/DNS), bricht der Schritt NICHT den ganzen Job ab --
+        # ein einzelner verpasster Tag ist unkritisch, der naechste Lauf
+        # holt es nach.
+        run: |
+          curl -sS -o /dev/null -w "HTTP-Status: %{http_code}\n" \
+            "https://viyfqufxwmdpggirmbjd.supabase.co/rest/v1/" \
+            -H "apikey: sb_publishable_GG54x-4VLnTtRHVc1alK8w__dUpqxUt" \
+            || echo "Ping fehlgeschlagen (Netzwerk) -- naechster taeglicher Lauf versucht es erneut."
