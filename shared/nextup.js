@@ -84,14 +84,28 @@
      erhalten -- keine Unterbrechung eines laufenden Songs. */
   function clearBothQueues() {
     if (typeof window.DECKS === 'undefined') return;
+    /* Nutzerwunsch (25.9.): "Player werden nicht geleert ... weil einer
+       drin bleibt und blockiert" -- anders als noch im Kommentar oben
+       beschrieben soll "Beide leeren" jetzt NICHT mehr nur die
+       Warteschlangen leeren und den geladenen Song stehen lassen,
+       sondern beide Decks wirklich komplett stoppen/leeren (Player
+       inklusive), fuer einen echten kompletten Neuanfang. Nutzt
+       decades.js' stopAndClearDeck() (dort definiert, hier nur
+       aufgerufen -- keine Duplikation der Player-Teardown-Logik). */
     ['A', 'B'].forEach(function (key) {
-      var deck = window.DECKS[key];
-      if (!deck || !deck.queue) return;
-      if (deck.index > -1 && deck.queue[deck.index]) {
-        deck.queue = [deck.queue[deck.index]];
-        deck.index = 0;
+      if (typeof window.stopAndClearDeck === 'function') {
+        window.stopAndClearDeck(key);
       } else {
-        deck.queue = [];
+        // Fallback, falls decades.js aus irgendeinem Grund noch nicht
+        // geladen ist: wenigstens die Warteschlange leeren wie bisher.
+        var deck = window.DECKS[key];
+        if (!deck || !deck.queue) return;
+        if (deck.index > -1 && deck.queue[deck.index]) {
+          deck.queue = [deck.queue[deck.index]];
+          deck.index = 0;
+        } else {
+          deck.queue = [];
+        }
       }
     });
     lastSignature = null; // sofortiges Neuzeichnen erzwingen
@@ -428,7 +442,7 @@
       '<div class="gen-queue-head"><h3>' + nextIconSvg + ' Warteschlange</h3>' +
       '<div class="gen-queue-head-actions">' +
       '<button type="button" id="gen-queue-clear" class="gen-queue-clear-btn" title="Warteschlange leeren, damit eine neue geladen werden kann">' + clearIconSvg + ' Leeren</button>' +
-      '<button type="button" id="gen-queue-clear-both" class="gen-queue-clear-btn" title="Warteschlangen von Deck A UND B leeren">' + clearIconSvg + ' Beide leeren</button>' +
+      '<button type="button" id="gen-queue-clear-both" class="gen-queue-clear-btn" title="Player A und B komplett stoppen und leeren">' + clearIconSvg + ' Player leeren</button>' +
       '</div></div>' +
       '<div class="gen-queue-playlist-row">' +
       '<button type="button" id="gen-queue-save" class="gen-queue-pl-btn" title="Aktuelle Warteschlange als Playlist speichern">' + saveIconSvg + ' Speichern</button>' +

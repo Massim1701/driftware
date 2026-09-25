@@ -2631,6 +2631,38 @@ function deckPause(key) {
   if (deck.player && deck.player.pauseVideo) { try { deck.player.pauseVideo(); } catch (e) {} }
 }
 
+/* Nutzerwunsch (25.9.): "Beide leeren" (shared/nextup.js) leerte bisher
+   NUR die Warteschlangen -- der aktuell im Player geladene/laufende Song
+   blieb bewusst erhalten (siehe clearBothQueues()-Kommentar dort). Das
+   fuehrte dazu, dass beim "kompletten Neuanfang" trotzdem noch ein Song
+   im Deck haengen blieb und den Player blockierte ("einer drin bleibt
+   und blockiert"). stopAndClearDeck() raeumt jetzt EIN Deck wirklich
+   komplett leer: laufendes Auto-Fade/Pitch-Gleiten abbrechen, YouTube-
+   Player zerstoeren (wie beim Songende in tryGaplessHandoff/
+   advanceAlternating), Mount auf das Logo zuruecksetzen (wie im
+   "kein YouTube-Video gefunden"-Zweig von playDeckSong) und alle
+   Deck-Felder (song/queue/index/isPlaying) zuruecksetzen. Wird global
+   (window.stopAndClearDeck) bereitgestellt, damit shared/nextup.js sie
+   nutzen kann, ohne decades.js' interne Struktur zu duplizieren. */
+function stopAndClearDeck(key) {
+  var deck = DECKS[key];
+  if (!deck) return;
+  cancelActiveAutoFade(key);
+  cancelPitchGlide(key);
+  if (deck.player) { try { deck.player.destroy(); } catch (e) {} deck.player = null; }
+  var mount = document.getElementById('deck-' + key + '-mount');
+  if (mount) mount.innerHTML = '<div class="dj-vinyl-video-logo">' + DRIFTWARE_LOGO_SVG + '</div>';
+  deck.song = null;
+  deck.queue = [];
+  deck.index = -1;
+  deck.isPlaying = false;
+  deck.historyLogged = false;
+  deck.preloadedFor = null;
+  if (deck.rate && deck.rate !== 1) setDeckPitch(key, 1);
+  updateDeckInfoUI(key);
+}
+window.stopAndClearDeck = stopAndClearDeck;
+
 /* Welches Deck die Warteschlange erhaelt, wenn per Klick auf eine
    Song-Kachel ein einzelner Song hinzugefuegt wird -- dieselbe Auswahl-
    Logik wie in shared/nextup.js' pickActiveDeck() (dort nicht direkt
