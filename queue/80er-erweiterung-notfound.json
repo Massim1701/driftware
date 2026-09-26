@@ -1,1 +1,378 @@
-[["adam & the ants","stand and deliver"],["agnetha faltskog","can't shake loose"],["boy george","live my life (from the film \"hiding out\")"],["brenda russell featuring joe esposito","piano in the dark"],["bruce hornsby & the range","every little kiss"],["bruce hornsby & the range","mandolin rain"],["bruce hornsby & the range","the way it is"],["buster poindexter & his banshees of blue","hot hot hot"],["chicago","you're not alone"],["david foster","love theme from st. elmo's fire (instrumental)"],["expose","come go with me"],["expose","let me be the one"],["expose","seasons change"],["expose","what you don't know"],["expose","when i looked at him"],["fine young cannibals","don't look back"],["frankie goes to hollywood","lax"],["george michael and aretha franklin","i knew you were waiting (for me)"],["gloria estefan & miami sound machine","1-2-3"],["gloria estefan & miami sound machine","anything for you"],["gloria estefan & miami sound machine","can't stay away from you"],["graham parker & the shot","wake up (next to you)"],["gtr","when the heart rules the mind"],["huey lewis & the news","hope you love me like you say you do"],["huey lewis & the news","jacob's ladder"],["huey lewis & the news","workin' for a livin'"],["inxs & jimmy barnes","good times (from \"the lost boys\")"],["jackie wilson","et petite {1986}"],["james taylor & j.d. souther","her town too"],["jim capaldi","that's love"],["jive bunny & the mastermixers","swing the mood"],["joe dolce music theatre","shaddup you face"],["john cafferty & the beaver brown band","c-i-t-y"],["john cafferty & the beaver brown band","tough all over"],["john cougar mellencamp","the authority song"],["john mellencamp","check it out"],["john mellencamp","cherry bomb"],["john mellencamp","jackie brown"],["john mellencamp","lonely ol' night"],["john mellencamp","paper in fire"],["john mellencamp","pink houses"],["john mellencamp","pop singer"],["john mellencamp","r.o.c.k. in the u.s.a. (a salute to 60's rock)"],["john mellencamp","rain on the scarecrow"],["john mellencamp","rumbleseat"],["john mellencamp","small town"],["katrina and the waves","that's the way"],["kenny g. (vocal by lenny williams)","don't make me wait for love"],["kix","don't close your eyes"],["linda ronstadt & james ingram","somewhere out there (from \"an american tail\")"],["m","pop muzik"],["mel and kim","respectable"],["mel and kim","spectable"],["merry clayton","yes (from the motion picture \"dirty dancing\")"],["michael jackson and paul mccartney","the girl is mine"],["michael stanley band","he can't love you"],["motley crue","girls, girls, girls"],["motley crue","smokin' in the boys room"],["neil diamond","i'm alive"],["night ranger","four in the morning (i can't take anymore)"],["olivia newton-john and electric light orchestra","xanadu"],["player","it's for you"],["queen and david bowie","under pressure"],["renee and renato","save your love"],["rick james","can't stop"],["rick pinette & oak","king of the hill"],["rick springfield","don't walk away"],["robert ellis orral with carlene carter","i couldn't say no"],["sammy hagar","i'll fall in love again"],["scandal featuring patty smyth","beat of a heart"],["scandal featuring patty smyth","hands tied"],["scandal featuring patty smyth","the warrior"],["scarlett & black","you don't know"],["so","are you sure"],["tane cain","holdin' on"],["teddy pendergrass and whitney houston","hold me"],["teena marie","lover girl"],["the bangles","be with you"],["the breakfast club","kiss and tell"],["the pointer sisters","american music"],["the pointer sisters","i need you"],["the specials","too much too young (the special aka live! ep)"],["the steve miller band","heart like a wheel"],["thirty eight special","back to paradise (from \"revenge of the nerds ii\")"],["thirty eight special","back where you belong"],["thirty eight special","if i'd been the one"],["thirty eight special","like no other night"],["thirty eight special","somebody like you"],["tom petty & the heartbreakers with stevie nicks","needles and pins"],["tony toni tone","little walter"],["ub40 featuring chrissie hynde","i got you babe ft chrissie hynde"],["wax","right between the eyes"]]
+[
+  [
+    "adam & the ants",
+    "stand and deliver"
+  ],
+  [
+    "agnetha faltskog",
+    "can't shake loose"
+  ],
+  [
+    "boy george",
+    "live my life (from the film \"hiding out\")"
+  ],
+  [
+    "brenda russell featuring joe esposito",
+    "piano in the dark"
+  ],
+  [
+    "bruce hornsby & the range",
+    "every little kiss"
+  ],
+  [
+    "bruce hornsby & the range",
+    "mandolin rain"
+  ],
+  [
+    "bruce hornsby & the range",
+    "the way it is"
+  ],
+  [
+    "buster poindexter & his banshees of blue",
+    "hot hot hot"
+  ],
+  [
+    "chicago",
+    "you're not alone"
+  ],
+  [
+    "david foster",
+    "love theme from st. elmo's fire (instrumental)"
+  ],
+  [
+    "expose",
+    "come go with me"
+  ],
+  [
+    "expose",
+    "let me be the one"
+  ],
+  [
+    "expose",
+    "seasons change"
+  ],
+  [
+    "expose",
+    "what you don't know"
+  ],
+  [
+    "expose",
+    "when i looked at him"
+  ],
+  [
+    "fine young cannibals",
+    "don't look back"
+  ],
+  [
+    "frankie goes to hollywood",
+    "lax"
+  ],
+  [
+    "george michael and aretha franklin",
+    "i knew you were waiting (for me)"
+  ],
+  [
+    "giorgio moroder feat. paul engemann",
+    "reach out"
+  ],
+  [
+    "gloria estefan & miami sound machine",
+    "1-2-3"
+  ],
+  [
+    "gloria estefan & miami sound machine",
+    "anything for you"
+  ],
+  [
+    "gloria estefan & miami sound machine",
+    "can't stay away from you"
+  ],
+  [
+    "graham parker & the shot",
+    "wake up (next to you)"
+  ],
+  [
+    "gtr",
+    "when the heart rules the mind"
+  ],
+  [
+    "huey lewis & the news",
+    "hope you love me like you say you do"
+  ],
+  [
+    "huey lewis & the news",
+    "jacob's ladder"
+  ],
+  [
+    "huey lewis & the news",
+    "workin' for a livin'"
+  ],
+  [
+    "inxs & jimmy barnes",
+    "good times (from \"the lost boys\")"
+  ],
+  [
+    "jackie wilson",
+    "et petite {1986}"
+  ],
+  [
+    "james taylor & j.d. souther",
+    "her town too"
+  ],
+  [
+    "jim capaldi",
+    "that's love"
+  ],
+  [
+    "jive bunny & the mastermixers",
+    "swing the mood"
+  ],
+  [
+    "joe dolce music theatre",
+    "shaddup you face"
+  ],
+  [
+    "john cafferty & the beaver brown band",
+    "c-i-t-y"
+  ],
+  [
+    "john cafferty & the beaver brown band",
+    "tough all over"
+  ],
+  [
+    "john cougar mellencamp",
+    "the authority song"
+  ],
+  [
+    "john mellencamp",
+    "check it out"
+  ],
+  [
+    "john mellencamp",
+    "cherry bomb"
+  ],
+  [
+    "john mellencamp",
+    "jackie brown"
+  ],
+  [
+    "john mellencamp",
+    "lonely ol' night"
+  ],
+  [
+    "john mellencamp",
+    "paper in fire"
+  ],
+  [
+    "john mellencamp",
+    "pink houses"
+  ],
+  [
+    "john mellencamp",
+    "pop singer"
+  ],
+  [
+    "john mellencamp",
+    "r.o.c.k. in the u.s.a. (a salute to 60's rock)"
+  ],
+  [
+    "john mellencamp",
+    "rain on the scarecrow"
+  ],
+  [
+    "john mellencamp",
+    "rumbleseat"
+  ],
+  [
+    "john mellencamp",
+    "small town"
+  ],
+  [
+    "katrina and the waves",
+    "that's the way"
+  ],
+  [
+    "kenny g. (vocal by lenny williams)",
+    "don't make me wait for love"
+  ],
+  [
+    "kix",
+    "don't close your eyes"
+  ],
+  [
+    "linda ronstadt & james ingram",
+    "somewhere out there (from \"an american tail\")"
+  ],
+  [
+    "m",
+    "pop muzik"
+  ],
+  [
+    "mel and kim",
+    "respectable"
+  ],
+  [
+    "mel and kim",
+    "spectable"
+  ],
+  [
+    "merry clayton",
+    "yes (from the motion picture \"dirty dancing\")"
+  ],
+  [
+    "michael jackson and paul mccartney",
+    "the girl is mine"
+  ],
+  [
+    "michael stanley band",
+    "he can't love you"
+  ],
+  [
+    "motley crue",
+    "girls, girls, girls"
+  ],
+  [
+    "motley crue",
+    "smokin' in the boys room"
+  ],
+  [
+    "neil diamond",
+    "i'm alive"
+  ],
+  [
+    "night ranger",
+    "four in the morning (i can't take anymore)"
+  ],
+  [
+    "olivia newton-john and electric light orchestra",
+    "xanadu"
+  ],
+  [
+    "player",
+    "it's for you"
+  ],
+  [
+    "queen and david bowie",
+    "under pressure"
+  ],
+  [
+    "renee and renato",
+    "save your love"
+  ],
+  [
+    "rick james",
+    "can't stop"
+  ],
+  [
+    "rick pinette & oak",
+    "king of the hill"
+  ],
+  [
+    "rick springfield",
+    "don't walk away"
+  ],
+  [
+    "robert ellis orral with carlene carter",
+    "i couldn't say no"
+  ],
+  [
+    "sammy hagar",
+    "i'll fall in love again"
+  ],
+  [
+    "scandal featuring patty smyth",
+    "beat of a heart"
+  ],
+  [
+    "scandal featuring patty smyth",
+    "hands tied"
+  ],
+  [
+    "scandal featuring patty smyth",
+    "the warrior"
+  ],
+  [
+    "scarlett & black",
+    "you don't know"
+  ],
+  [
+    "so",
+    "are you sure"
+  ],
+  [
+    "stéphanie",
+    "irresistible"
+  ],
+  [
+    "tane cain",
+    "holdin' on"
+  ],
+  [
+    "teddy pendergrass and whitney houston",
+    "hold me"
+  ],
+  [
+    "teena marie",
+    "lover girl"
+  ],
+  [
+    "the bangles",
+    "be with you"
+  ],
+  [
+    "the breakfast club",
+    "kiss and tell"
+  ],
+  [
+    "the pointer sisters",
+    "american music"
+  ],
+  [
+    "the pointer sisters",
+    "i need you"
+  ],
+  [
+    "the specials",
+    "too much too young (the special aka live! ep)"
+  ],
+  [
+    "the steve miller band",
+    "heart like a wheel"
+  ],
+  [
+    "thirty eight special",
+    "back to paradise (from \"revenge of the nerds ii\")"
+  ],
+  [
+    "thirty eight special",
+    "back where you belong"
+  ],
+  [
+    "thirty eight special",
+    "if i'd been the one"
+  ],
+  [
+    "thirty eight special",
+    "like no other night"
+  ],
+  [
+    "thirty eight special",
+    "somebody like you"
+  ],
+  [
+    "tom petty & the heartbreakers with stevie nicks",
+    "needles and pins"
+  ],
+  [
+    "tony toni tone",
+    "little walter"
+  ],
+  [
+    "ub40 featuring chrissie hynde",
+    "i got you babe ft chrissie hynde"
+  ],
+  [
+    "wax",
+    "right between the eyes"
+  ]
+]
