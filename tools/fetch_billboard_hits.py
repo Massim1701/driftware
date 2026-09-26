@@ -68,6 +68,21 @@ DECADE_QUEUE = {
     "2020er": "queue/2020er-erweiterung.json",
 }
 
+# Songs, die bei einem frueheren Lauf KEINEN Discogs-Treffer hatten (z.B.
+# Ein-Wochen-Chart-Eintraege, Live-Versionen, nie auf Vinyl/CD veroeffentlicht).
+# Ohne dieses Gedaechtnis wuerde jeder neue Lauf dieselben aussichtslosen
+# Discogs-Anfragen erneut stellen und so einen Grossteil seines Zeitbudgets
+# an bereits bekannte Fehlschlaege verschwenden (Nutzerfund 26.9.: von ~40
+# Songs pro 100s-Lauf waren ~28 wiederholt dieselben Nicht-Treffer).
+DECADE_NOTFOUND = {
+    "70er": "queue/70er-erweiterung-notfound.json",
+    "80er": "queue/80er-erweiterung-notfound.json",
+    "90er": "queue/90er-erweiterung-notfound.json",
+    "2000er": "queue/2000er-erweiterung-notfound.json",
+    "2010er": "queue/2010er-erweiterung-notfound.json",
+    "2020er": "queue/2020er-erweiterung-notfound.json",
+}
+
 BILLBOARD_ALL_URL = "https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/all.json"
 # Bewusst AUSSERHALB des Repos (nicht unter ROOT) -- die ~44 MB Roh-Chartdaten
 # sind nur ein Zwischenstand fuer diesen Lauf, kein Katalog-Inhalt, und sollen
@@ -333,11 +348,24 @@ def main():
     for c in existing_queue:
         queue_index.setdefault(artist_key(c.get("a")), set()).update(title_variants(c.get("t")))
 
+    notfound_path = os.path.join(ROOT, DECADE_NOTFOUND[decade_key])
+    notfound_keys = set()
+    if os.path.exists(notfound_path):
+        with open(notfound_path, "r", encoding="utf-8") as f:
+            notfound_keys = set(tuple(k) for k in json.load(f))
+
     missing = [
         hit for hit in hits.values()
         if not is_in_catalog(catalog_index, hit["a"], hit["t"])
         and not is_in_catalog(queue_index, hit["a"], hit["t"])
+        and song_id(hit["a"], hit["t"]) not in notfound_keys
     ]
+    skipped_notfound = len(hits) - len(missing) - sum(
+        1 for hit in hits.values()
+        if is_in_catalog(catalog_index, hit["a"], hit["t"]) or is_in_catalog(queue_index, hit["a"], hit["t"])
+    )
+    if skipped_notfound > 0:
+        print(f"{decade_key}: {skipped_notfound} Songs uebersprungen (bereits als 'kein Discogs-Treffer' bekannt).")
     # Groesste Hits zuerst (niedrigste peak_position) -- bei Zeitbudget-Abbruch
     # bleiben so die wichtigsten Luecken zuerst geschlossen.
     missing.sort(key=lambda h: h["peak"])
@@ -354,7 +382,16 @@ def main():
             json.dump(merged, f, separators=(",", ":"), ensure_ascii=False)
         os.replace(tmp, queue_path)
 
+    def save_notfound(keys):
+        merged = sorted(notfound_keys | keys)
+        tmp = notfound_path + ".tmp"
+        os.makedirs(os.path.dirname(notfound_path), exist_ok=True)
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump([list(k) for k in merged], f, separators=(",", ":"), ensure_ascii=False)
+        os.replace(tmp, notfound_path)
+
     new_candidates = []
+    new_notfound = set()
     not_found = 0
     i = 0
     while i < len(missing):
@@ -369,12 +406,16 @@ def main():
             print(f"  [{i}/{len(missing)}] + {hit['a']} - {hit['t']} (Peak #{hit['peak']})")
         else:
             not_found += 1
+            new_notfound.add(song_id(hit["a"], hit["t"]))
             print(f"  [{i}/{len(missing)}] kein Discogs-Treffer: {hit['a']} - {hit['t']}")
         if len(new_candidates) and len(new_candidates) % SAVE_EVERY == 0:
             save_progress(new_candidates)
+        if len(new_notfound) and len(new_notfound) % SAVE_EVERY == 0:
+            save_notfound(new_notfound)
         time.sleep(1.1)
 
     save_progress(new_candidates)
+    save_notfound(new_notfound)
     print(f"Fertig fuer diesen Lauf ({decade_key}): {len(new_candidates)} neue Kandidaten in die Warteliste, "
           f"{not_found} ohne Discogs-Treffer uebersprungen, {len(missing) - i} bleiben fuer den naechsten Lauf.")
 
