@@ -88,8 +88,17 @@ START_TS = time.time()
 
 
 def api_get(url, retries=5):
+    headers = {"User-Agent": USER_AGENT}
+    # Discogs' unauthentifiziertes Rate-Limit (~25 req/min) macht diesen
+    # Lauf ueber tausende Songs praktisch unbrauchbar langsam (Nutzerfund
+    # 26.9., massenhafte 429er beim Billboard-Top-50-Import der 80er).
+    # Mit Token (60 req/min, aus dem eigenen Account) deutlich schneller --
+    # optional, Skript faellt ohne Token auf unauthentifiziert zurueck.
+    discogs_token = os.environ.get("DISCOGS_TOKEN")
+    if discogs_token:
+        headers["Authorization"] = "Discogs token=" + discogs_token
     for attempt in range(retries):
-        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        req = urllib.request.Request(url, headers=headers)
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
                 return json.loads(resp.read().decode("utf-8"))
@@ -246,6 +255,25 @@ def discogs_search_release(artist, title):
     bei "The 5th Dimension" auf 0 Treffer ab) -- die Interpret-Pruefung
     passiert stattdessen selbst in _pick_matching_release(). Fallback: freie
     'q'-Suche, falls die gezielte Suche nichts Passendes findet."""
+    # ERSTER Versuch (26.9., Nutzerfund/Bugfix): Discogs' eigene 'artist'+
+    # 'track'-Suchfelder statt Freitext -- bei sehr bekannten Kuenstlern
+    # (z.B. Olivia Newton-John, Bryan Adams) ist die Single im Katalog von
+    # deren eigenen Greatest-Hits-/Soundtrack-Alben komplett ueberdeckt,
+    # sobald nach 'have' (Sammler-Popularitaet) sortiert wird -- die Alben
+    # haben oft ein Vielfaches an 'have', die Single faellt aus den ersten
+    # 20-25 Ergebnissen raus, obwohl sie existiert (beobachtet: "Olivia
+    # Newton-John - Magic" landet erst bei 'artist'+'track' unter den
+    # Top-Treffern, bei 'release_title'/'q' gar nicht in 25 Ergebnissen).
+    # Discogs' eigener Feld-Matcher filtert hier schon serverseitig auf
+    # Artist+Titel, KEIN sort=have noetig/gewuenscht.
+    if artist:
+        params = {"artist": artist, "track": title, "type": "release", "per_page": "20"}
+        url = "https://api.discogs.com/database/search?" + urllib.parse.urlencode(params)
+        data = api_get(url)
+        match = _pick_matching_release((data or {}).get("results", []), artist, title)
+        if match:
+            return match
+
     params = {"release_title": title, "type": "release", "sort": "have", "sort_order": "desc", "per_page": "25"}
     url = "https://api.discogs.com/database/search?" + urllib.parse.urlencode(params)
     data = api_get(url)
