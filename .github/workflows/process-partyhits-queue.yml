@@ -1,0 +1,89 @@
+name: Partyhits-Warteliste abarbeiten (einmalig)
+
+# Einmaliger Job (kein taeglicher Cron): Nutzerwunsch 26.9. "Partyhits aller
+# Dekaden" -- Phase A (tools/fetch_mood_playlist_top.py, Top-250 pro Style
+# ueber Disco/Italo-Disco/Boogie/Eurodance/Dance-pop/House/Hi-NRG/Eurobeat/
+# Funk/Soul, nur Format "Single") ist bereits abgeschlossen und committet
+# (queue/partyhits-erweiterung.json). Dieser Workflow loest nur noch Phase B
+# (YouTube-Aufloesung, tools/process_mood_queue.py) auf, manuell per Browser
+# angestossen -- bei Bedarf mehrfach, bis die Warteliste leer ist.
+
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: process-partyhits-queue
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Startzeit merken
+        run: echo "JOB_START_TS=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Abhaengigkeiten installieren
+        run: pip install --quiet yt-dlp
+
+      - name: YouTube-Links aufloesen (Phase B)
+        env:
+          MOOD_TIME_BUDGET_SECONDS: '20700'
+        run: python3 tools/process_mood_queue.py partyhits
+
+      - name: Aenderungen committen und pushen
+        run: |
+          git config user.name "driftware-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add "queue/partyhits-erweiterung.json" "partyhits-music/songs.json"
+          if git diff --cached --quiet; then
+            echo "Keine Aenderungen."
+            exit 0
+          fi
+          git commit -m "Partyhits: YouTube-Links nachgezogen"
+
+          for i in 1 2 3 4 5; do
+            if git push; then
+              echo "Push erfolgreich (Versuch $i)."
+              exit 0
+            fi
+
+            echo "Push abgelehnt (Versuch $i), hole Remote-Stand..."
+            git fetch origin master
+
+            if git rebase origin/master; then
+              echo "Sauber rebased, versuche erneut zu pushen."
+              continue
+            fi
+
+            echo "Echter Rebase-Konflikt -- Rebase abgebrochen, Lauf wird auf dem neuen Remote-Stand neu aufgesetzt."
+            git rebase --abort
+            git reset --hard origin/master
+
+            ELAPSED=$(( $(date +%s) - JOB_START_TS ))
+            BUDGET=$(( 20700 - ELAPSED ))
+            if [ "$BUDGET" -lt 120 ]; then
+              echo "Kaum noch Zeit uebrig -- naechster manueller Lauf uebernimmt den Rest. Kein Datenverlust, bereits auf frischen Remote-Stand zurueckgesetzt."
+              exit 0
+            fi
+
+            MOOD_TIME_BUDGET_SECONDS=$BUDGET python3 tools/process_mood_queue.py partyhits
+
+            git add "queue/partyhits-erweiterung.json" "partyhits-music/songs.json"
+            if git diff --cached --quiet; then
+              echo "Nach Neu-Verarbeitung keine eigenen Aenderungen mehr uebrig."
+              exit 0
+            fi
+            git commit -m "Partyhits: YouTube-Links nachgezogen"
+          done
+
+          echo "::error::Push nach mehreren Versuchen fehlgeschlagen."
+          exit 1

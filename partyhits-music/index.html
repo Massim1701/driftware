@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Partyhits</title>
+<meta name="description" content="Partyhits: Disco, Italo-Disco, Boogie, Eurodance, Dance-Pop, House, Hi-NRG, Eurobeat, Funk und Soul aus allen Jahrzehnten — die groessten Tanzflaechen-Hits, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=107">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=95"></script>
+<script src="../shared/midi.js?v=4"></script>
+<script src="../shared/manualadd.js?v=12"></script>
+<script src="../shared/continuity.js?v=4"></script>
+<script src="../shared/nextup.js?v=22"></script>
+<script>
+renderDecadeIndex({
+  name: 'Partyhits',
+  years: 'Alle Jahrzehnte',
+  icon: rawIconSVG('disco'),
+  iconBg: 'linear-gradient(135deg, #ff2ea6, #ffb703)',
+  tagline: 'Disco, Italo-Disco, Boogie, Eurodance, Dance-Pop, House, Hi-NRG, Eurobeat, Funk und Soul aus allen Jahrzehnten — die groessten Tanzflaechen-Hits auf einer Playlist.',
+  badgeText: rawIconSVG('disco') + ' 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#180a1f',
+    panel: '#241131',
+    accent: '#ff2ea6',
+    accent2: '#ffb703',
+    text: '#fdf3ff',
+    muted: '#b48fc2'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (Disco/Italo-Disco/Boogie, Eurodance/Dance-Pop/House, Hi-NRG/Eurobeat, Funk/Soul) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🕺', title: 'Disco / Italo / Boogie', desc: 'Die Tanzflaechen-Klassiker der 70er/80er.' },
+    { emoji: '🎉', title: 'Eurodance / Dance-Pop / House', desc: 'Clubhits der 90er bis heute.' },
+    { emoji: '✨', title: 'Hi-NRG / Eurobeat', desc: 'Treibende Uptempo-Partymusik.' },
+    { emoji: '🎷', title: 'Funk / Soul', desc: 'Tanzbare Funk- und Soul-Klassiker.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'Partyhits',
+  themes: [
+    { key: 'DiscoItaloBoogie', label: 'Disco / Italo / Boogie' },
+    { key: 'EurodanceHouse', label: 'Eurodance / Dance-Pop / House' },
+    { key: 'HiNRGEurobeat', label: 'Hi-NRG / Eurobeat' },
+    { key: 'FunkSoul', label: 'Funk / Soul' }
+  ]
+});
+</script>
+</body>
+</html>
