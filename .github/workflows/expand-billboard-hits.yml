@@ -69,6 +69,11 @@ jobs:
         # Hintergrund (Nutzerfrage "haben wir alles von discogs gezogen?").
         env:
           BILLBOARD_TIME_BUDGET_SECONDS: '3600'
+          # Nutzerfund 26.9.: der Discogs-Token liegt schon als Repo-Secret
+          # vor (fuer process-missing-songs.yml eingerichtet), wurde hier
+          # aber nie durchgereicht -- ohne ihn lief dieser Workflow bisher
+          # unnoetig unauthentifiziert/gedrosselt.
+          DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
         run: python3 tools/fetch_billboard_hits.py "${{ steps.pick.outputs.decade }}"
 
       - name: YouTube-Links aufloesen (Phase B)

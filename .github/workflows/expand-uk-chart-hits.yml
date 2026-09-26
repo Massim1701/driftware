@@ -60,6 +60,9 @@ jobs:
         # Billboard-Import (Nutzerentscheidung 26.9., Top 50 statt Top 40).
         env:
           UKCHARTS_TIME_BUDGET_SECONDS: '3600'
+          # Gleicher Token wie beim Billboard-Import (Repo-Secret, bereits
+          # fuer process-missing-songs.yml eingerichtet).
+          DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
         run: python3 tools/fetch_uk_chart_hits.py "${{ steps.pick.outputs.decade }}" --min-peak 50
 
       - name: YouTube-Links aufloesen (Phase B)
