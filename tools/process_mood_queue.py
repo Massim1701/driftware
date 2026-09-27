@@ -18,7 +18,7 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 TIME_BUDGET_SECONDS = int(os.environ.get("MOOD_TIME_BUDGET_SECONDS", "1500"))
-SAVE_EVERY = 5
+SAVE_EVERY = 1
 START_TS = time.time()
 
 
@@ -108,6 +108,7 @@ def main():
     catalog_path = os.path.join(ROOT, f"{project}-music", "songs.json")
 
     queue = load_json(queue_path, [])
+    random.shuffle(queue)
     if not queue:
         print("Warteliste leer -- nichts zu tun.")
         return
