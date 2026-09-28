@@ -240,6 +240,35 @@
     box-shadow: 0 6px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06) inset;
   }
   .decade-icon svg { width: 26px; height: 26px; stroke: #fff; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .decade-icon--party {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #ff2e93, #ff8a00 55%, #7c3aed) !important;
+  }
+  .decade-icon--party svg { position: relative; z-index: 2; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35)); }
+  .confetti-piece {
+    position: absolute;
+    top: -14px;
+    left: var(--cx);
+    width: var(--cw);
+    height: var(--ch);
+    background: var(--cc);
+    border-radius: 1px;
+    opacity: 0;
+    animation: confetti-fall var(--cd) linear infinite;
+    animation-delay: var(--cdelay);
+    pointer-events: none;
+    z-index: 1;
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(-14px) rotate(0deg); opacity: 0; }
+    8% { opacity: 1; }
+    92% { opacity: 1; }
+    100% { transform: translateY(66px) rotate(340deg); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .confetti-piece { animation: none; display: none; }
+  }
   .decade-photo {
     aspect-ratio: 1 / 1;
     width: 100%;
@@ -358,7 +387,7 @@
       { href: 'focuswork-music/', icon: ICONS.brain, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Focus & Work', years: 'Alle Jahrzehnte', desc: 'Ambient, Downtempo, Lo-Fi & IDM.', live: true },
       { href: 'latenight-music/', icon: ICONS.moon, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Late Night', years: 'Alle Jahrzehnte', desc: 'Trip Hop, Contemporary R&B, Downtempo & Dream Pop.', live: true },
       { href: 'morning-music/', icon: ICONS.sun, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Morning', years: 'Alle Jahrzehnte', desc: 'Folk, Acoustic, Indie Folk & Bossa Nova.', live: true },
-      { href: 'partyhits-music/', icon: ICONS.confetti, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Partyhits', years: 'Alle Jahrzehnte', desc: 'Disco, Eurodance, Hi-NRG, Funk & Soul.', live: true },
+      { href: 'partyhits-music/', icon: ICONS.confetti, bg: 'linear-gradient(135deg, #ff2e93, #ff8a00 55%, #7c3aed)', name: 'Partyhits', years: 'Alle Jahrzehnte', desc: 'Disco, Eurodance, Hi-NRG, Funk & Soul.', live: true, party: true },
       { href: 'roadtrip-music/', icon: ICONS.car, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Road Trip', years: 'Alle Jahrzehnte', desc: 'Classic Rock, AOR & Synthwave.', live: true },
       { href: 'workout-music/', icon: ICONS.runner, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Workout & Running', years: 'Alle Jahrzehnte', desc: 'Hi NRG, Eurodance, Drum\'n\'Bass & Progressive House.', live: true }
     ];
@@ -381,9 +410,23 @@
           icon.appendChild(img);
         } else {
           icon = document.createElement('div');
-          icon.className = 'decade-icon';
+          icon.className = 'decade-icon' + (d.party ? ' decade-icon--party' : '');
           icon.style.background = d.bg;
           icon.innerHTML = d.icon;
+          if (d.party) {
+            var confettiColors = ['#fff', '#ffd166', '#06d6a0', '#fff', '#ff2e93'];
+            for (var ci = 0; ci < 10; ci++) {
+              var piece = document.createElement('span');
+              piece.className = 'confetti-piece';
+              piece.style.setProperty('--cx', (5 + Math.random() * 85) + '%');
+              piece.style.setProperty('--cw', (3 + Math.random() * 3) + 'px');
+              piece.style.setProperty('--ch', (6 + Math.random() * 5) + 'px');
+              piece.style.setProperty('--cc', confettiColors[ci % confettiColors.length]);
+              piece.style.setProperty('--cd', (1.6 + Math.random() * 1.4) + 's');
+              piece.style.setProperty('--cdelay', (Math.random() * -3) + 's');
+              icon.appendChild(piece);
+            }
+          }
         }
         a.appendChild(icon);
 
