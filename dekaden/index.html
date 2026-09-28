@@ -224,10 +224,19 @@
     position: relative;
     transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
   }
+  .decade-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 18px 18px 0 0;
+    background: var(--dc, var(--accent));
+    opacity: 0.85;
+  }
   .decade-card:hover {
     transform: translateY(-3px);
     border-color: rgba(255,255,255,0.18);
-    box-shadow: 0 14px 32px rgba(0,0,0,0.35);
+    box-shadow: 0 14px 32px rgba(0,0,0,0.35), 0 0 0 1px var(--dc, rgba(255,255,255,0.18)) inset;
   }
   .decade-icon {
     width: 52px;
@@ -295,7 +304,7 @@
     font-weight: 600;
     font-size: 17px;
   }
-  .decade-years { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: 0.03em; }
+  .decade-years { color: var(--dc, var(--muted)); font-size: 12px; font-weight: 600; letter-spacing: 0.03em; }
   .decade-desc { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 0; }
   footer {
     max-width: 720px;
@@ -357,39 +366,39 @@
       bass: icon('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="0.8"/>'),
       headphones: icon('<path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="3" y="13" width="4" height="7" rx="1.5"/><rect x="17" y="13" width="4" height="7" rx="1.5"/>'),
       globe: icon('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>'),
-      sunset: icon('<circle cx="12" cy="12" r="4"/><path d="M2 18h20"/><path d="M5 15l1.5-1.5M19 15l-1.5-1.5M12 6V4M7 8l-1-1M17 8l1-1"/>'),
-      cocktail: icon('<path d="M4 4h16L12 12 4 4z"/><path d="M12 12v6"/><path d="M8.5 18h7"/>'),
-      brain: icon('<path d="M9 3a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 5.5 1.5V4.5A3 3 0 0 0 9 3z"/><path d="M15 3a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-5.5 1.5V4.5A3 3 0 0 1 15 3z"/>'),
-      runner: icon('<circle cx="14" cy="4" r="1.8"/><path d="M9 21l2-5 3-2-1-5-4 2-1 4"/><path d="M11 14l4 1 3 4"/>'),
-      wineGlass: icon('<path d="M7 3h10l-1 6a4 4 0 0 1-8 0L7 3z"/><path d="M12 13v6M8.5 19h7"/>'),
-      tree: icon('<path d="M12 3L9 8h6z"/><path d="M12 7L8 13h8z"/><path d="M12 11L7 18h10z"/><rect x="10.5" y="18" width="3" height="3"/>'),
-      moon: icon('<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/>'),
-      sun: icon('<circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8"/>'),
-      car: icon('<path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/><path d="M6 11h12"/>'),
-      confetti: icon('<path d="M4 20l4-4"/><path d="M9 20l2-6"/><path d="M14 20l1-4"/><circle cx="17" cy="6" r="1.3"/><circle cx="10" cy="4" r="1.3"/><circle cx="20" cy="11" r="1.3"/><path d="M13 8l7-4"/>'),
+      sunset: icon('<path d="M12 10V2"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m16 6-4 4-4-4"/><path d="M16 18a4 4 0 0 0-8 0"/>'),
+      cocktail: icon('<path d="M12 12 4.207 4.207A.707.707 0 0 1 4.707 3h14.586a.707.707 0 0 1 .5 1.207z"/><path d="M12 12v10"/><path d="M7 22h10"/>'),
+      brain: icon('<path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M9 13a4.5 4.5 0 0 0 3-4"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .585-.396"/><path d="M6 18a4 4 0 0 1-1.967-.516"/><path d="M12 13h4"/><path d="M12 18h6a2 2 0 0 1 2 2v1"/><path d="M12 8h8"/><path d="M16 8V5a2 2 0 0 1 2-2"/><circle cx="16" cy="13" r=".5" fill="#fff"/><circle cx="18" cy="3" r=".5" fill="#fff"/><circle cx="20" cy="21" r=".5" fill="#fff"/><circle cx="20" cy="8" r=".5" fill="#fff"/>'),
+      runner: icon('<path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/>'),
+      wineGlass: icon('<path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z"/>'),
+      tree: icon('<path d="M12 3L9 8h6z"/><path d="M12 7L8 13h8z"/><path d="M12 11L7 18h10z"/><rect x="10.5" y="18" width="3" height="3"/><circle cx="10.3" cy="14.6" r=".55" fill="#fff"/><circle cx="13.6" cy="16.8" r=".55" fill="#fff"/><g transform="translate(13.3,1) scale(0.34)"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" fill="#fff"/></g>'),
+      moon: icon('<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/><g transform="translate(2.8,2.8) scale(0.28)"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" fill="#fff"/></g>'),
+      sun: icon('<path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 6 4-4 4 4"/><path d="M16 18a4 4 0 0 0-8 0"/>'),
+      car: icon('<path d="M2 12.5h1.5M1.5 15h1"/><path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/><path d="M6 11h12"/>'),
+      confetti: icon('<path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/>'),
       palm: icon('<path d="M12 22V12"/><path d="M12 12c0-4-3-6-7-6 1 3 3 5 7 6z"/><path d="M12 12c0-5 3-7 8-7-1 3-4 6-8 7z"/><path d="M12 12c0-3-2-5-5-5 1 2 2 4 5 5z"/>')
     };
 
     var DECADES = [
-      { href: '70er-music/', photo: 'img/70er.jpg', name: '70er Music', years: '1970–1979', desc: 'Disco, Rock, Soul und mehr.', live: true },
-      { href: '80er-music/', photo: 'img/80er.jpg', name: '80er Music', years: '1980–1989', desc: 'Party, Rock, Romantic und mehr.', live: true },
-      { href: '90er-music/', photo: 'img/90er.jpg', name: '90er Music', years: '1990–1999', desc: 'Grunge, Eurodance, HipHop und mehr.', live: true },
-      { href: '2000er-music/', photo: 'img/2000er.jpg', name: '2000er Music', years: '2000–2009', desc: 'Indie Rock, Crunk, Dubstep und mehr.', live: true },
-      { href: '2010er-music/', photo: 'img/2010er.jpg', name: '2010er Music', years: '2010–2019', desc: 'Indie, EDM, Trap und mehr.', live: true },
-      { href: '2020er-music/', photo: 'img/2020er.jpg', name: '2020er Music', years: '2020–heute', desc: 'Hyperpop, Phonk, Amapiano und mehr.', live: true }
+      { href: '70er-music/', photo: 'img/70er.jpg', name: '70er Music', years: '1970–1979', desc: 'Disco, Rock, Soul und mehr.', live: true, accent: '#e08a2c' },
+      { href: '80er-music/', photo: 'img/80er.jpg', name: '80er Music', years: '1980–1989', desc: 'Party, Rock, Romantic und mehr.', live: true, accent: '#ff2e93' },
+      { href: '90er-music/', photo: 'img/90er.jpg', name: '90er Music', years: '1990–1999', desc: 'Grunge, Eurodance, HipHop und mehr.', live: true, accent: '#84cc16' },
+      { href: '2000er-music/', photo: 'img/2000er.jpg', name: '2000er Music', years: '2000–2009', desc: 'Indie Rock, Crunk, Dubstep und mehr.', live: true, accent: '#38bdf8' },
+      { href: '2010er-music/', photo: 'img/2010er.jpg', name: '2010er Music', years: '2010–2019', desc: 'Indie, EDM, Trap und mehr.', live: true, accent: '#fb7185' },
+      { href: '2020er-music/', photo: 'img/2020er.jpg', name: '2020er Music', years: '2020–heute', desc: 'Hyperpop, Phonk, Amapiano und mehr.', live: true, accent: '#a3e635' }
     ];
 
     var AMBIENTS = [
-      { href: 'afterwork-music/', icon: ICONS.wineGlass, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Afterwork', years: 'Alle Jahrzehnte', desc: 'Soul, Neo Soul, Acid Jazz & Smooth Jazz.', live: true },
-      { href: 'chillhouse-music/', icon: ICONS.sunset, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Chill House', years: 'Alle Jahrzehnte', desc: 'Deep House, Ambient House, Nu-Disco, Lounge & Balearic.', live: true },
-      { href: 'christmas-music/', icon: ICONS.tree, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Christmas', years: 'Alle Jahrzehnte', desc: 'Über 900 Weihnachtssongs, Klassiker bis modern.', live: true },
-      { href: 'dinnerparty-music/', icon: ICONS.cocktail, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Dinner Party', years: 'Alle Jahrzehnte', desc: 'Disco, Funk, Boogie & Nu-Disco.', live: true },
-      { href: 'focuswork-music/', icon: ICONS.brain, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Focus & Work', years: 'Alle Jahrzehnte', desc: 'Ambient, Downtempo, Lo-Fi & IDM.', live: true },
-      { href: 'latenight-music/', icon: ICONS.moon, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Late Night', years: 'Alle Jahrzehnte', desc: 'Trip Hop, Contemporary R&B, Downtempo & Dream Pop.', live: true },
-      { href: 'morning-music/', icon: ICONS.sun, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Morning', years: 'Alle Jahrzehnte', desc: 'Folk, Acoustic, Indie Folk & Bossa Nova.', live: true },
-      { href: 'partyhits-music/', icon: ICONS.confetti, bg: 'linear-gradient(135deg, #ff2e93, #ff8a00 55%, #7c3aed)', name: 'Partyhits', years: 'Alle Jahrzehnte', desc: 'Disco, Eurodance, Hi-NRG, Funk & Soul.', live: true, party: true },
-      { href: 'roadtrip-music/', icon: ICONS.car, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Road Trip', years: 'Alle Jahrzehnte', desc: 'Classic Rock, AOR & Synthwave.', live: true },
-      { href: 'workout-music/', icon: ICONS.runner, bg: 'linear-gradient(135deg, #8b6bff, #5a3fd9)', name: 'Workout & Running', years: 'Alle Jahrzehnte', desc: 'Hi NRG, Eurodance, Drum\'n\'Bass & Progressive House.', live: true }
+      { href: 'afterwork-music/', icon: ICONS.wineGlass, bg: 'linear-gradient(135deg, #f59e0b, #7c2d12)', accent: '#f59e0b', name: 'Afterwork', years: 'Alle Jahrzehnte', desc: 'Soul, Neo Soul, Acid Jazz & Smooth Jazz.', live: true },
+      { href: 'chillhouse-music/', icon: ICONS.sunset, bg: 'linear-gradient(135deg, #14b8a6, #f97316)', accent: '#14b8a6', name: 'Chill House', years: 'Alle Jahrzehnte', desc: 'Deep House, Ambient House, Nu-Disco, Lounge & Balearic.', live: true },
+      { href: 'christmas-music/', icon: ICONS.tree, bg: 'linear-gradient(135deg, #16a34a, #dc2626)', accent: '#dc2626', name: 'Christmas', years: 'Alle Jahrzehnte', desc: 'Über 900 Weihnachtssongs, Klassiker bis modern.', live: true },
+      { href: 'dinnerparty-music/', icon: ICONS.cocktail, bg: 'linear-gradient(135deg, #9333ea, #db2777)', accent: '#c026d3', name: 'Dinner Party', years: 'Alle Jahrzehnte', desc: 'Disco, Funk, Boogie & Nu-Disco.', live: true },
+      { href: 'focuswork-music/', icon: ICONS.brain, bg: 'linear-gradient(135deg, #1e3a8a, #3b82f6)', accent: '#3b82f6', name: 'Focus & Work', years: 'Alle Jahrzehnte', desc: 'Ambient, Downtempo, Lo-Fi & IDM.', live: true },
+      { href: 'latenight-music/', icon: ICONS.moon, bg: 'linear-gradient(135deg, #1e1b4b, #6d28d9)', accent: '#6366f1', name: 'Late Night', years: 'Alle Jahrzehnte', desc: 'Trip Hop, Contemporary R&B, Downtempo & Dream Pop.', live: true },
+      { href: 'morning-music/', icon: ICONS.sun, bg: 'linear-gradient(135deg, #fbbf24, #fb7185)', accent: '#fbbf24', name: 'Morning', years: 'Alle Jahrzehnte', desc: 'Folk, Acoustic, Indie Folk & Bossa Nova.', live: true },
+      { href: 'partyhits-music/', icon: ICONS.confetti, bg: 'linear-gradient(135deg, #ff2e93, #ff8a00 55%, #7c3aed)', accent: '#ff2e93', name: 'Partyhits', years: 'Alle Jahrzehnte', desc: 'Disco, Eurodance, Hi-NRG, Funk & Soul.', live: true, party: true },
+      { href: 'roadtrip-music/', icon: ICONS.car, bg: 'linear-gradient(135deg, #f97316, #0ea5e9)', accent: '#f97316', name: 'Road Trip', years: 'Alle Jahrzehnte', desc: 'Classic Rock, AOR & Synthwave.', live: true },
+      { href: 'workout-music/', icon: ICONS.runner, bg: 'linear-gradient(135deg, #ef4444, #f97316)', accent: '#ef4444', name: 'Workout & Running', years: 'Alle Jahrzehnte', desc: 'Hi NRG, Eurodance, Drum\'n\'Bass & Progressive House.', live: true }
     ];
 
     function renderCards(list, containerId) {
@@ -398,6 +407,7 @@
         var a = document.createElement('a');
         a.className = 'decade-card';
         a.href = '/' + d.href;
+        if (d.accent) a.style.setProperty('--dc', d.accent);
 
         var icon;
         if (d.photo) {
