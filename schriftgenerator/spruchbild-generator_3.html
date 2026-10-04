@@ -37,10 +37,13 @@ button.primary{background:var(--accent);border-color:var(--accent);color:#fff;fo
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .bgname{font-size:13px;color:var(--muted);text-align:center}
 input[type=file]{display:none}
+.home{grid-column:1/-1;justify-self:start;color:var(--accent);font-size:14px;font-weight:700;text-decoration:none}
+.home:hover{text-decoration:underline}
 </style>
 </head>
 <body>
 <main>
+  <a class="home" href="/">← Zurück zu Driftware</a>
   <section class="stage">
     <canvas id="c" width="1080" height="1080" aria-label="Vorschau"></canvas>
   </section>
