@@ -114,7 +114,6 @@ var SITE_PAGES = [
   { slug: 'focuswork', folder: 'focuswork-music', label: 'Focus & Work', group: 'Stimmungen', color: '#4ecdc4' },
   { slug: 'latenight', folder: 'latenight-music', label: 'Late Night', group: 'Stimmungen', color: '#6a5acd' },
   { slug: 'morning', folder: 'morning-music', label: 'Morning', group: 'Stimmungen', color: '#f2b705' },
-  { slug: 'partyhits', folder: 'partyhits-music', label: 'Party Hits', group: 'Stimmungen', color: '#ff2e93' },
   { slug: 'roadtrip', folder: 'roadtrip-music', label: 'Road Trip', group: 'Stimmungen', color: '#e8712f' },
   { slug: 'workout', folder: 'workout-music', label: 'Workout & Running', group: 'Stimmungen', color: '#e2472d' }
 ];

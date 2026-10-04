@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spruchbild-Generator</title>
+<style>
+:root{
+  --bg:#f3f3f1; --panel:#ffffff; --ink:#1a1a1a; --muted:#6b6b6b; --line:#d9d9d5; --accent:#1f4fd8;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#141414;--panel:#1e1e1e;--ink:#f1f1ee;--muted:#9a9a96;--line:#333;--accent:#7fa2ff}
+}
+:root[data-theme="dark"]{--bg:#141414;--panel:#1e1e1e;--ink:#f1f1ee;--muted:#9a9a96;--line:#333;--accent:#7fa2ff}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:20px;display:grid;gap:20px;grid-template-columns:minmax(0,1fr) minmax(0,340px);align-items:start}
+@media (max-width:760px){main{grid-template-columns:minmax(0,1fr)}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+canvas{display:block;width:100%;height:auto;border-radius:6px}
+.controls{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:14px}
+label{display:grid;gap:6px;font-size:14px;color:var(--muted)}
+textarea{width:100%;min-height:110px;resize:vertical;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+input[type=range]{width:100%}
+input[type=color]{width:100%;height:36px;border:1px solid var(--line);border-radius:6px;background:var(--bg);padding:2px}
+input[type=text]{width:100%;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+select{padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+button{padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bgname{font-size:13px;color:var(--muted);text-align:center}
+input[type=file]{display:none}
+</style>
+</head>
+<body>
+<main>
+  <section class="stage">
+    <canvas id="c" width="1080" height="1080" aria-label="Vorschau"></canvas>
+  </section>
+
+  <section class="controls">
+    <label>Text
+      <textarea id="text">One-Night-Stand klingt immer so negativ.
+
+Wie wäre es stattdessen mit Stichprobe?</textarea>
+    </label>
+
+    <label>Schriftgröße: <span id="sizeVal">64</span>
+      <input type="range" id="size" min="28" max="120" value="64">
+    </label>
+
+    <label>Schriftart
+      <select id="font">
+        <option value="'Trebuchet MS', 'Segoe UI', sans-serif">Trebuchet</option>
+        <option value="Arial, Helvetica, sans-serif">Arial</option>
+        <option value="'Arial Black', Gadget, sans-serif">Arial Black</option>
+        <option value="Verdana, Geneva, sans-serif">Verdana</option>
+        <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+        <option value="Futura, 'Century Gothic', 'Trebuchet MS', sans-serif">Futura</option>
+        <option value="Impact, 'Arial Narrow Bold', sans-serif">Impact</option>
+        <option value="Georgia, 'Times New Roman', serif">Georgia</option>
+        <option value="'Times New Roman', Times, serif">Times</option>
+        <option value="Palatino, 'Palatino Linotype', 'Book Antiqua', serif">Palatino</option>
+        <option value="Garamond, 'Hoefler Text', Baskerville, serif">Garamond</option>
+        <option value="Didot, 'Bodoni MT', 'Playfair Display', serif">Didot</option>
+        <option value="Rockwell, 'Courier Bold', Georgia, serif">Rockwell</option>
+        <option value="Copperplate, 'Copperplate Gothic Light', fantasy">Copperplate</option>
+        <option value="'Courier New', Courier, monospace">Courier</option>
+        <option value="'Brush Script MT', 'Lucida Handwriting', cursive">Schreibschrift</option>
+        <option value="'Bradley Hand', 'Segoe Print', 'Comic Sans MS', cursive">Handschrift</option>
+        <option value="'Marker Felt', 'Chalkduster', 'Comic Sans MS', fantasy">Marker</option>
+        <option value="'Comic Sans MS', 'Comic Sans', cursive">Comic Sans</option>
+        <option value="Papyrus, fantasy">Papyrus</option>
+        <option value="system-ui, sans-serif">System</option>
+      </select>
+    </label>
+
+    <label>Textfarbe
+      <input type="color" id="color" value="#ffffff">
+    </label>
+
+    <label>Schatten
+      <select id="shStyle">
+        <option value="soft" selected>Weich</option>
+        <option value="hard">Hart</option>
+        <option value="double">Doppelt</option>
+        <option value="long">Lang</option>
+        <option value="glow">Leuchten</option>
+        <option value="outline">Kontur</option>
+        <option value="none">Kein Schatten</option>
+      </select>
+    </label>
+
+    <label>Schattenfarbe
+      <input type="color" id="shColor" value="#000000">
+    </label>
+
+    <label>Schattenstärke: <span id="shSizeVal">12</span>
+      <input type="range" id="shSize" min="2" max="40" value="12">
+    </label>
+
+    <label>Abdunklung: <span id="dimVal">45</span>%
+      <input type="range" id="dim" min="0" max="80" value="45">
+    </label>
+
+    <label>Wasserzeichen
+      <input type="text" id="wm" value="@Massimo_71_">
+    </label>
+
+    <label>Rahmen
+      <select id="frameStyle">
+        <option value="none">Kein Rahmen</option>
+        <option value="solid" selected>Durchgezogen</option>
+        <option value="double">Doppelt</option>
+        <option value="dashed">Gestrichelt</option>
+        <option value="dotted">Gepunktet</option>
+        <option value="stripes">Schrägstreifen</option>
+        <option value="checks">Schachbrett</option>
+        <option value="triple">Dreifach</option>
+        <option value="dashdot">Strich-Punkt</option>
+        <option value="rounded">Abgerundet</option>
+        <option value="neon">Neon</option>
+        <option value="corners">Ecken</option>
+        <option value="zigzag">Zickzack</option>
+        <option value="waves">Wellen</option>
+        <option value="pearls">Perlen</option>
+        <option value="film">Filmstreifen</option>
+        <option value="mat">Passepartout</option>
+      </select>
+    </label>
+
+    <label>Rahmenfarbe
+      <input type="color" id="frameColor" value="#ffffff">
+    </label>
+
+    <label>Rahmenstärke: <span id="frameWVal">24</span>
+      <input type="range" id="frameW" min="6" max="80" value="24">
+    </label>
+
+    <div>
+      <div class="row">
+        <button id="prev" type="button">← Zurück</button>
+        <button id="rand" type="button">Zufall</button>
+        <button id="next" type="button">Weiter →</button>
+      </div>
+      <div class="bgname" id="bgname"></div>
+    </div>
+
+    <label class="row" style="display:flex">
+      <button type="button" id="uploadBtn">Eigenes Bild</button>
+      <button type="button" id="resetBtn">Eigenes Bild entfernen</button>
+    </label>
+    <input type="file" id="file" accept="image/*">
+
+    <button class="primary" id="download" type="button">Als PNG speichern</button>
+  </section>
+</main>
+
+<script>
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+
+function rng(seed){ let s = seed >>> 0; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
+
+const backgrounds = [
+  { name: 'Nebel', draw(c,r){
+      const g = c.createLinearGradient(0,0,0,H); g.addColorStop(0,'#2b2f33'); g.addColorStop(1,'#0e1012');
+      c.fillStyle = g; c.fillRect(0,0,W,H);
+      for(let i=0;i<14;i++){
+        const x=r()*W, y=r()*H, rad=200+r()*300;
+        const rg=c.createRadialGradient(x,y,0,x,y,rad);
+        rg.addColorStop(0,'rgba(190,200,210,.14)'); rg.addColorStop(1,'rgba(190,200,210,0)');
+        c.fillStyle=rg; c.fillRect(0,0,W,H);
+      }
+  }},
+  { name: 'Nachthimmel', draw(c,r){
+      const g = c.createLinearGradient(0,0,0,H); g.addColorStop(0,'#05070f'); g.addColorStop(1,'#1b2a4a');
+      c.fillStyle=g; c.fillRect(0,0,W,H);
+      for(let i=0;i<260;i++){
+        c.fillStyle='rgba(255,255,255,'+(.3+r()*.7)+')';
+        const s=r()<.1?2.4:1.2; c.fillRect(r()*W,r()*H*.85,s,s);
+      }
+  }},
+  { name: 'Sonnenuntergang', draw(c,r){
+      const g = c.createLinearGradient(0,0,0,H);
+      g.addColorStop(0,'#2a0f3d'); g.addColorStop(.5,'#c2410c'); g.addColorStop(.75,'#f59e0b'); g.addColorStop(1,'#1c1917');
+      c.fillStyle=g; c.fillRect(0,0,W,H);
+      c.fillStyle='#120d0a'; c.beginPath(); c.moveTo(0,H);
+      let y=H*.82; for(let x=0;x<=W;x+=40){ y+=(r()-.5)*40; y=Math.max(H*.74,Math.min(H*.9,y)); c.lineTo(x,y); }
+      c.lineTo(W,H); c.fill();
+  }},
+  { name: 'Regen', draw(c,r){
+      const g = c.createLinearGradient(0,0,W,H); g.addColorStop(0,'#1d2630'); g.addColorStop(1,'#0a0e12');
+      c.fillStyle=g; c.fillRect(0,0,W,H);
+      c.strokeStyle='rgba(200,215,230,.22)'; c.lineWidth=1.4;
+      for(let i=0;i<420;i++){ const x=r()*W, y=r()*H, l=20+r()*40; c.beginPath(); c.moveTo(x,y); c.lineTo(x-l*.25,y+l); c.stroke(); }
+  }},
+  { name: 'Lichter', draw(c,r){
+      c.fillStyle='#0b0b12'; c.fillRect(0,0,W,H);
+      const cols=['255,90,140','90,160,255','255,190,80','140,255,200'];
+      for(let i=0;i<34;i++){
+        const x=r()*W,y=r()*H,rad=30+r()*110,col=cols[Math.floor(r()*cols.length)];
+        const rg=c.createRadialGradient(x,y,0,x,y,rad);
+        rg.addColorStop(0,'rgba('+col+',.55)'); rg.addColorStop(1,'rgba('+col+',0)');
+        c.fillStyle=rg; c.beginPath(); c.arc(x,y,rad,0,7); c.fill();
+      }
+  }},
+  { name: 'Beton', draw(c,r){
+      c.fillStyle='#3a3a3a'; c.fillRect(0,0,W,H);
+      const id=c.getImageData(0,0,W,H), d=id.data;
+      for(let i=0;i<d.length;i+=4){ const n=(r()-.5)*46; d[i]+=n; d[i+1]+=n; d[i+2]+=n; }
+      c.putImageData(id,0,0);
+      const vg=c.createRadialGradient(W/2,H/2,H*.2,W/2,H/2,H*.75);
+      vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.55)');
+      c.fillStyle=vg; c.fillRect(0,0,W,H);
+  }},
+  { name: 'Meer', draw(c,r){
+      const g=c.createLinearGradient(0,0,0,H); g.addColorStop(0,'#0d2538'); g.addColorStop(1,'#04131f');
+      c.fillStyle=g; c.fillRect(0,0,W,H);
+      for(let k=0;k<9;k++){
+        const base=H*.35+k*H*.075, amp=10+k*3, ph=r()*6;
+        c.beginPath(); c.moveTo(0,H);
+        for(let x=0;x<=W;x+=10) c.lineTo(x, base+Math.sin(x/90+ph)*amp);
+        c.lineTo(W,H); c.fillStyle='rgba(40,110,150,'+(.08+k*.02)+')'; c.fill();
+      }
+  }},
+  { name: 'Wald', draw(c,r){
+      const g=c.createLinearGradient(0,0,0,H); g.addColorStop(0,'#27402f'); g.addColorStop(1,'#0a140d');
+      c.fillStyle=g; c.fillRect(0,0,W,H);
+      for(let layer=0;layer<3;layer++){
+        c.fillStyle='rgba(5,14,8,'+(.35+layer*.2)+')';
+        for(let i=0;i<16;i++){
+          const x=r()*W, w=30+r()*50, h=H*(.45+r()*.4);
+          c.beginPath(); c.moveTo(x-w,H); c.lineTo(x,H-h); c.lineTo(x+w,H); c.fill();
+        }
+      }
+  }}
+];
+
+let idx = 0, seed = 1, userImg = null;
+const bgCache = document.createElement('canvas');
+bgCache.width = W; bgCache.height = H;
+const bgc = bgCache.getContext('2d', { willReadFrequently: true });
+
+function buildBackground(){
+  bgc.clearRect(0,0,W,H);
+  if(userImg){
+    const s = Math.max(W/userImg.width, H/userImg.height);
+    const w = userImg.width*s, h = userImg.height*s;
+    bgc.drawImage(userImg, (W-w)/2, (H-h)/2, w, h);
+    document.getElementById('bgname').textContent = 'Eigenes Bild';
+  } else {
+    backgrounds[idx].draw(bgc, rng(seed));
+    document.getElementById('bgname').textContent = backgrounds[idx].name + ' (' + (idx+1) + '/' + backgrounds.length + ')';
+  }
+  render();
+}
+
+function wrapLines(text, maxW){
+  const out = [];
+  text.split('\n').forEach(par => {
+    if(!par.trim()){ out.push(''); return; }
+    let line = '';
+    par.split(' ').forEach(word => {
+      const t = line ? line + ' ' + word : word;
+      if(ctx.measureText(t).width > maxW && line){ out.push(line); line = word; } else line = t;
+    });
+    out.push(line);
+  });
+  return out;
+}
+
+function render(){
+  ctx.drawImage(bgCache,0,0);
+  const dim = +document.getElementById('dim').value / 100;
+  ctx.fillStyle = 'rgba(0,0,0,'+dim+')'; ctx.fillRect(0,0,W,H);
+
+  ctx.save();
+  ctx.translate(W/2, H/2); ctx.rotate(-Math.PI/5);
+  ctx.font = '700 150px system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.10)';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(document.getElementById('wm').value, 0, 0);
+  ctx.restore();
+
+  const size = +document.getElementById('size').value;
+  const font = document.getElementById('font').value;
+  ctx.font = '700 '+size+'px '+font;
+  ctx.fillStyle = document.getElementById('color').value;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const lines = wrapLines(document.getElementById('text').value, W*0.8);
+  const lh = size*1.25;
+  const y0 = H/2 - (lines.length-1)*lh/2;
+  const textColor = ctx.fillStyle;
+  const each = (dx, dy) => lines.forEach((l,i) => ctx.fillText(l, W/2+dx, y0+i*lh+dy));
+
+  const st = document.getElementById('shStyle').value;
+  const sc = document.getElementById('shColor').value;
+  const n = +document.getElementById('shSize').value;
+
+  if(st === 'soft'){
+    ctx.shadowColor = sc; ctx.shadowBlur = n; ctx.shadowOffsetY = n/6;
+    each(0,0);
+  } else if(st === 'hard'){
+    ctx.fillStyle = sc; each(n/2, n/2);
+    ctx.fillStyle = textColor; each(0,0);
+  } else if(st === 'double'){
+    ctx.fillStyle = sc; ctx.globalAlpha = .45; each(n, n);
+    ctx.globalAlpha = .8; each(n/2, n/2);
+    ctx.globalAlpha = 1; ctx.fillStyle = textColor; each(0,0);
+  } else if(st === 'long'){
+    ctx.fillStyle = sc;
+    for(let i=n*2; i>=1; i--) each(i*.7, i*.7);
+    ctx.fillStyle = textColor; each(0,0);
+  } else if(st === 'glow'){
+    ctx.shadowColor = sc; ctx.shadowBlur = n*1.6;
+    each(0,0); each(0,0);
+  } else if(st === 'outline'){
+    ctx.lineJoin = 'round'; ctx.strokeStyle = sc; ctx.lineWidth = Math.max(2, n*.8);
+    lines.forEach((l,i) => ctx.strokeText(l, W/2, y0+i*lh));
+    each(0,0);
+  } else {
+    each(0,0);
+  }
+  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+  drawFrame();
+}
+
+function drawFrame(){
+  const style = document.getElementById('frameStyle').value;
+  if(style === 'none') return;
+  const t = +document.getElementById('frameW').value;
+  const col = document.getElementById('frameColor').value;
+  ctx.save();
+  ctx.strokeStyle = col; ctx.fillStyle = col;
+
+  if(style === 'solid'){
+    ctx.lineWidth = t; ctx.strokeRect(t/2, t/2, W-t, H-t);
+  }
+  else if(style === 'double'){
+    const l = t/3;
+    ctx.lineWidth = l;
+    ctx.strokeRect(l/2, l/2, W-l, H-l);
+    ctx.strokeRect(2*l+l/2, 2*l+l/2, W-5*l, H-5*l);
+  }
+  else if(style === 'dashed'){
+    ctx.lineWidth = t; ctx.setLineDash([t*2, t]);
+    ctx.strokeRect(t/2, t/2, W-t, H-t);
+  }
+  else if(style === 'dotted'){
+    ctx.lineWidth = t*.8; ctx.lineCap = 'round'; ctx.setLineDash([0, t*1.6]);
+    ctx.strokeRect(t/2, t/2, W-t, H-t);
+  }
+  else if(style === 'triple'){
+    const l = t/5;
+    ctx.lineWidth = l;
+    [0,2,4].forEach(k => ctx.strokeRect(k*l+l/2, k*l+l/2, W-2*k*l-l, H-2*k*l-l));
+  }
+  else if(style === 'dashdot'){
+    ctx.lineWidth = t*.6; ctx.setLineDash([t*2.5, t*.7, t*.4, t*.7]);
+    ctx.strokeRect(t/2, t/2, W-t, H-t);
+  }
+  else if(style === 'rounded'){
+    ctx.lineWidth = t; ctx.beginPath();
+    ctx.roundRect(t/2, t/2, W-t, H-t, t*2.5); ctx.stroke();
+  }
+  else if(style === 'neon'){
+    ctx.lineWidth = Math.max(4, t/3);
+    ctx.shadowColor = col; ctx.shadowBlur = t*1.6;
+    for(let i=0;i<3;i++) ctx.strokeRect(t, t, W-2*t, H-2*t);
+    ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = Math.max(2, t/10);
+    ctx.strokeRect(t, t, W-2*t, H-2*t);
+  }
+  else if(style === 'corners'){
+    const len = t*5, o = t;
+    ctx.lineWidth = t/2; ctx.lineCap = 'square';
+    [[o,o,1,1],[W-o,o,-1,1],[o,H-o,1,-1],[W-o,H-o,-1,-1]].forEach(([x,y,dx,dy]) => {
+      ctx.beginPath(); ctx.moveTo(x+dx*len,y); ctx.lineTo(x,y); ctx.lineTo(x,y+dy*len); ctx.stroke();
+    });
+  }
+  else if(style === 'zigzag' || style === 'waves'){
+    const edges = [[0,0,0,W],[W,0,Math.PI/2,H],[W,H,Math.PI,W],[0,H,-Math.PI/2,H]];
+    edges.forEach(([ex,ey,rot,len]) => {
+      ctx.save(); ctx.translate(ex,ey); ctx.rotate(rot);
+      ctx.beginPath(); ctx.moveTo(0,0);
+      if(style === 'zigzag'){
+        for(let x=0; x<len; x+=t) { ctx.lineTo(x+t/2, t); ctx.lineTo(Math.min(x+t,len), 0); }
+      } else {
+        for(let x=0; x<=len; x+=4) ctx.lineTo(x, t*.55 + Math.sin(x/t*1.6)*t*.45);
+      }
+      ctx.lineTo(len,0); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    });
+  }
+  else if(style === 'pearls'){
+    const r = t/2, step = t*1.4, o = t/2;
+    const dot = (x,y) => { ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); };
+    for(let x=o; x<=W-o; x+=step){ dot(x,o); dot(x,H-o); }
+    for(let y=o+step; y<=H-o-step/2; y+=step){ dot(o,y); dot(W-o,y); }
+  }
+  else if(style === 'film'){
+    const b = t*1.6, h = b*.38, gap = b*.85;
+    ctx.beginPath();
+    ctx.rect(0,0,W,H); ctx.rect(b,b,W-2*b,H-2*b);
+    const c0 = (b-h)/2;
+    for(let x=c0; x<W-h; x+=gap){ ctx.rect(x,c0,h,h); ctx.rect(x,H-c0-h,h,h); }
+    for(let y=c0+gap; y<H-h-gap/2; y+=gap){ ctx.rect(c0,y,h,h); ctx.rect(W-c0-h,y,h,h); }
+    ctx.fill('evenodd');
+  }
+  else if(style === 'mat'){
+    const b = t*2;
+    ctx.beginPath(); ctx.rect(0,0,W,H); ctx.rect(b,b,W-2*b,H-2*b); ctx.fill('evenodd');
+    ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = Math.max(2, t/8);
+    ctx.strokeRect(b, b, W-2*b, H-2*b);
+  }
+  else if(style === 'stripes' || style === 'checks'){
+    // Bereich nur im Rahmenstreifen
+    ctx.beginPath();
+    ctx.rect(0,0,W,H); ctx.rect(t,t,W-2*t,H-2*t);
+    ctx.clip('evenodd');
+    if(style === 'stripes'){
+      ctx.lineWidth = t*.6;
+      for(let x=-H; x<W+H; x+=t*1.4){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x+H,H); ctx.stroke(); }
+    } else {
+      for(let y=0; y<H; y+=t/2) for(let x=0; x<W; x+=t/2){
+        if(((x/(t/2))+(y/(t/2)))%2===0) ctx.fillRect(x,y,t/2,t/2);
+      }
+    }
+  }
+  ctx.restore();
+}
+
+const $ = id => document.getElementById(id);
+['text','font','color','wm','frameStyle','frameColor','shStyle','shColor'].forEach(id => $(id).addEventListener('input', render));
+$('shSize').addEventListener('input', e => { $('shSizeVal').textContent = e.target.value; render(); });
+$('frameW').addEventListener('input', e => { $('frameWVal').textContent = e.target.value; render(); });
+$('size').addEventListener('input', e => { $('sizeVal').textContent = e.target.value; render(); });
+$('dim').addEventListener('input', e => { $('dimVal').textContent = e.target.value; render(); });
+
+$('next').onclick = () => { userImg = null; idx = (idx+1) % backgrounds.length; seed++; buildBackground(); };
+$('prev').onclick = () => { userImg = null; idx = (idx-1+backgrounds.length) % backgrounds.length; seed++; buildBackground(); };
+$('rand').onclick = () => { userImg = null; idx = Math.floor(Math.random()*backgrounds.length); seed = Math.floor(Math.random()*1e6); buildBackground(); };
+
+$('uploadBtn').onclick = () => $('file').click();
+$('file').addEventListener('change', e => {
+  const f = e.target.files[0]; if(!f) return;
+  const img = new Image();
+  img.onload = () => { userImg = img; buildBackground(); };
+  img.src = URL.createObjectURL(f);
+});
+$('resetBtn').onclick = () => { userImg = null; buildBackground(); };
+
+$('download').onclick = () => {
+  const a = document.createElement('a');
+  a.href = cv.toDataURL('image/png');
+  a.download = 'spruchbild.png';
+  a.click();
+};
+
+buildBackground();
+</script>
+</body>
+</html>
