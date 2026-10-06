@@ -871,7 +871,53 @@ function searchAllDecades(query, ownKey) {
 var ytApiLoading = false;
 var ytApiReady = false;
 
+/* Datenschutz (EU/DSGVO): Das YouTube-Skript wird erst nach ausdruecklicher
+   Zustimmung geladen. Die Zustimmung wird im Browser gemerkt (localStorage,
+   Schluessel dw_yt_consent) und kann auf /privacy.html widerrufen werden.
+   Ohne Zustimmung findet KEINE Verbindung zu YouTube/Google statt. */
+var YT_CONSENT_KEY = 'dw_yt_consent';
+var ytConsentPending = [];
+var ytConsentModalOpen = false;
+function ytConsentGiven() {
+  try { return localStorage.getItem(YT_CONSENT_KEY) === '1'; } catch (e) { return window.__dwYtConsent === true; }
+}
+function askYouTubeConsent(onYes) {
+  ytConsentPending.push(onYes);
+  if (ytConsentModalOpen) return;
+  ytConsentModalOpen = true;
+  var wrap = document.createElement('div');
+  wrap.setAttribute('role', 'dialog');
+  wrap.setAttribute('aria-modal', 'true');
+  wrap.setAttribute('aria-label', 'YouTube-Einwilligung');
+  wrap.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(5,6,10,0.72);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);';
+  wrap.innerHTML = '<div style="max-width:440px;width:100%;background:var(--panel,#16171d);color:var(--text,#f3f3f6);border:1px solid var(--border,rgba(255,255,255,0.14));border-radius:16px;padding:22px 22px 18px;box-shadow:0 24px 60px rgba(0,0,0,0.55);font:14px/1.5 Inter,system-ui,sans-serif;">' +
+    '<div style="font:700 17px Sora,Inter,system-ui,sans-serif;margin-bottom:8px;">Video von YouTube abspielen?</div>' +
+    '<p style="margin:0 0 10px;color:var(--muted,#a8a9b3);">Zum Abspielen laden wir den Player von YouTube (Google). Dabei wird deine IP-Adresse an Google übertragen, und es können Cookies bzw. Browser-Speicher von YouTube genutzt werden. Ohne dein Okay wird nichts geladen.</p>' +
+    '<p style="margin:0 0 16px;font-size:12.5px;color:var(--muted,#a8a9b3);">Deine Entscheidung wird in deinem Browser gespeichert und lässt sich in der <a href="/privacy.html#youtube" style="color:var(--accent,#8b9bff);">Datenschutzerklärung</a> widerrufen.</p>' +
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">' +
+    '<button type="button" data-yt="no" style="cursor:pointer;background:transparent;color:inherit;border:1px solid var(--border,rgba(255,255,255,0.22));border-radius:10px;padding:10px 16px;font:600 14px Inter,system-ui,sans-serif;">Abbrechen</button>' +
+    '<button type="button" data-yt="yes" style="cursor:pointer;background:var(--accent,#7c5cff);color:#fff;border:0;border-radius:10px;padding:10px 18px;font:700 14px Inter,system-ui,sans-serif;">Einverstanden &amp; abspielen</button>' +
+    '</div></div>';
+  function close() { ytConsentModalOpen = false; if (wrap.parentNode) wrap.parentNode.removeChild(wrap); document.removeEventListener('keydown', onKey); }
+  function onKey(e) { if (e.key === 'Escape') { ytConsentPending = []; close(); } }
+  wrap.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-yt]') : null;
+    if (e.target === wrap) { ytConsentPending = []; close(); return; }
+    if (!t) return;
+    if (t.getAttribute('data-yt') === 'yes') {
+      window.__dwYtConsent = true;
+      try { localStorage.setItem(YT_CONSENT_KEY, '1'); } catch (err) {}
+      var cbs = ytConsentPending; ytConsentPending = []; close();
+      cbs.forEach(function (cb) { loadYouTubeAPI(cb); });
+    } else { ytConsentPending = []; close(); }
+  });
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(wrap);
+  var yes = wrap.querySelector('[data-yt="yes"]'); if (yes) yes.focus();
+}
+
 function loadYouTubeAPI(onReady) {
+  if (!ytConsentGiven() && window.__dwYtConsent !== true) { askYouTubeConsent(onReady); return; }
   if (ytApiReady && window.YT && window.YT.Player) { onReady(); return; }
   var prevCb = window.onYouTubeIframeAPIReady;
   window.onYouTubeIframeAPIReady = function () {
@@ -1767,7 +1813,8 @@ function maybePreloadNext(key) {
         width: '100%',
         height: '100%',
         videoId: nextSong.yt,
-        playerVars: { rel: 0, playsinline: 1, autoplay: 0, start: introSkipFor(nextSong) },
+        host: 'https://www.youtube-nocookie.com',
+      playerVars: { rel: 0, playsinline: 1, autoplay: 0, start: introSkipFor(nextSong) },
         events: {
           onReady: function (e) {
             /* Wurde waehrend des Vorladens (siehe deckTogglePlay) bereits ein
@@ -2453,6 +2500,7 @@ function playDeckSong(key, song, autoplay) {
       width: '100%',
       height: '100%',
       videoId: song.yt,
+      host: 'https://www.youtube-nocookie.com',
       playerVars: { rel: 0, playsinline: 1, autoplay: autoplay ? 1 : 0, start: introSkipFor(song) },
       events: {
         onReady: function (e) {

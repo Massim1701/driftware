@@ -1,6 +1,6 @@
 /* Gemeinsame Styles fuer alle Dekaden-Seiten (80er, 90er, 2000er, ...).
    Farben kommen als CSS-Variablen von der jeweiligen Seite (siehe decades.js). */
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import url('/fonts/fonts.css?v=1');
 :root {
   --bg: #0c0d11;
   --panel: #16171d;

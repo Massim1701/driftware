@@ -23,13 +23,16 @@
   .contact-form textarea { min-height:100px; resize:vertical; }
   .contact-form button { align-self:flex-start; background:var(--accent); color:#06223d; border:none; border-radius:10px; padding:10px 22px; font-weight:700; font-size:14px; cursor:pointer; }
   .contact-honey { position:absolute; left:-9999px; }
+  h3 { font-size:15px; margin:18px 0 6px; }
+  .revoke-btn { cursor:pointer; background:transparent; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:8px 14px; font:600 13px inherit; }
+  .revoke-btn:hover { border-color:var(--accent); }
 </style>
 </head>
 <body>
 <main>
   <a class="back" href="/">&larr; Zurück zu Driftware</a>
   <h1>Datenschutzerklärung</h1>
-  <p class="stand">Stand: September 2026 · gilt für driftware.online und alle darauf angebotenen Apps und Tools</p>
+  <p class="stand">Stand: Oktober 2026 · gilt für driftware.online und alle darauf angebotenen Apps und Tools</p>
 
   <h2>1. Verantwortlicher</h2>
   <p>Massimo. Vollständiger Name und ladungsfähige Anschrift werden auf Anfrage über das Kontaktformular unten mitgeteilt.</p>
@@ -38,12 +41,26 @@
   <p>Driftware ist eine Sammlung eigenständiger Apps, Webseiten und Tools eines Einzelentwicklers (u.&nbsp;a. Musik-Playlisten nach Jahrzehnt/Stimmung, Foto-/Video-Bearbeitung, Sammlungs-Kataloge, Vorhersage- und Textwerkzeuge). Diese Erklärung gilt einheitlich für driftware.online und alle Unterseiten/Apps, die hier aktuell angeboten werden oder künftig hinzukommen — eine einzelne, produktspezifische Erklärung entfällt damit.</p>
 
   <h2>3. Datenverarbeitung</h2>
-  <p>Die meisten Angebote auf driftware.online verwenden kein Nutzerkonto, kein Tracking und keine Analyse- oder Werbe-SDKs. Es werden keine Gerätekennungen, Standortdaten oder Nutzungsstatistiken erhoben, gespeichert oder übertragen. Einzelne Apps verarbeiten Daten ausschließlich lokal auf dem Gerät der Nutzerin/des Nutzers (z.&nbsp;B. Fotos/Videos bei der Bearbeitung) und übertragen dabei nichts an uns oder Dritte. Wo eine App zusätzliche, produktspezifische Datenverarbeitung hat (z.&nbsp;B. Kamera-/Mikrofonzugriff für die Aufnahme), wird das in der jeweiligen App selbst erläutert.</p>
+  <p>Die meisten Angebote auf driftware.online verwenden kein Nutzerkonto, kein seitenübergreifendes Tracking und keine Werbe-SDKs. Es werden keine Gerätekennungen oder Standortdaten erhoben. Technische Dienste und Ausnahmen (z.&nbsp;B. die anonyme Besucherzahl) sind in Abschnitt 4 beschrieben. Einzelne Apps verarbeiten Daten ausschließlich lokal auf dem Gerät der Nutzerin/des Nutzers (z.&nbsp;B. Fotos/Videos bei der Bearbeitung) und übertragen dabei nichts an uns oder Dritte. Wo eine App zusätzliche, produktspezifische Datenverarbeitung hat (z.&nbsp;B. Kamera-/Mikrofonzugriff für die Aufnahme), wird das in der jeweiligen App selbst erläutert.</p>
   <p>Für Playlisten-/Katalog-Tools werden ausschließlich öffentlich verfügbare Metadaten (z.&nbsp;B. von Discogs oder YouTube) verarbeitet — keine personenbezogenen Daten von Besucher:innen.</p>
   <p>Ausnahme: Auf der Playlisten-Übersichtsseite ("Ultimate Music Master") wird eine anonyme, aggregierte Besucherzahl angezeigt — ein einzelner Gesamt-Zähler für Seitenaufrufe (kein Zeitstempel pro Besuch, keine IP-Adresse, keine Cookies) sowie eine Live-Anzeige, wie viele Personen die Seite gerade geöffnet haben. Letztere läuft über eine zufällige, nur für die Dauer des Seitenbesuchs gültige Sitzungs-ID, die beim Verlassen der Seite sofort wieder verschwindet und nirgends dauerhaft gespeichert wird. Technisch genutzt wird dafür der Dienst Supabase (Hosting in Frankfurt, EU); es werden dabei keine personenbezogenen Daten übertragen oder gespeichert.</p>
 
-  <h2>4. Externe Inhalte (z.&nbsp;B. eingebettete Videos)</h2>
-  <p>Manche Apps binden externe Inhalte ein, etwa YouTube-Videos zur Wiedergabe von Playlisten-Einträgen. Beim Abspielen eines eingebetteten Videos kann der jeweilige Anbieter (z.&nbsp;B. Google/YouTube) technisch bedingt Daten verarbeiten; dafür gilt dessen eigene Datenschutzerklärung.</p>
+  <h2>4. Externe Inhalte und technische Dienste</h2>
+  <h3 id="youtube">YouTube-Videos (nur mit deiner Einwilligung)</h3>
+  <p>Zum Abspielen der Playlisten-Einträge wird der Player von YouTube (Google) verwendet. Er wird erst geladen, wenn du auf „Einverstanden &amp; abspielen“ klickst. Vorher findet keine Verbindung zu YouTube oder Google statt. Nach deiner Einwilligung wird deine IP-Adresse an Google übertragen, und es können Cookies bzw. Browser-Speicher von YouTube genutzt werden; wir binden den Player über die datensparsame Domain youtube-nocookie.com ein. Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO, § 25 Abs. 1 TDDDG). Es gilt ergänzend die Datenschutzerklärung von Google. Deine Entscheidung wird in deinem Browser gespeichert (Schlüssel „dw_yt_consent“).</p>
+  <p><button type="button" id="yt-revoke" class="revoke-btn">YouTube-Einwilligung widerrufen</button> <span id="yt-revoke-status" class="stand"></span></p>
+
+  <h3>Schriften</h3>
+  <p>Die verwendeten Schriften (u.&nbsp;a. Inter, Sora, Space Grotesk) werden von unserem eigenen Server ausgeliefert. Es besteht keine Verbindung zu Google Fonts.</p>
+
+  <h3>Browser-Speicher (localStorage)</h3>
+  <p>Für die gewünschten Funktionen speichern die Playlisten-Seiten Einstellungen lokal in deinem Browser, z.&nbsp;B. den bevorzugten Streamingdienst, den zuletzt gespielten Song samt Position, den „Mein Mix“-Verlauf, Farbeinstellungen, den Verbindungsstatus oder bei Snoxi die Sprachwahl. Diese Daten verlassen dein Gerät nicht und sind für die jeweilige Funktion erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Du kannst sie jederzeit in den Einstellungen deines Browsers löschen.</p>
+
+  <h3>Besucherzähler und „gerade online“</h3>
+  <p>Auf der Übersichtsseite „Ultimate Music Master“ werden die Besucherzahl und die Zahl der aktuell geöffneten Seiten über den Dienst Supabase abgefragt. Dazu wird die Supabase-Bibliothek über das Content-Delivery-Network jsDelivr geladen. Bei beiden Abrufen wird technisch bedingt deine IP-Adresse an den jeweiligen Betreiber übertragen; wir speichern sie nicht. Rechtsgrundlage ist unser berechtigtes Interesse an einem sicheren und funktionsfähigen Angebot (Art. 6 Abs. 1 lit. f DSGVO).</p>
+
+  <h3>Reichweitenmessung bei Snoxi</h3>
+  <p>Auf der Snoxi-Seite wird der Dienst GoatCounter ohne Cookies zur anonymen Zählung von Seitenaufrufen eingesetzt (berechtigtes Interesse, Art. 6 Abs. 1 lit. f DSGVO).</p>
 
   <h2>5. Kontaktformular</h2>
   <p>Wenn du uns über das Kontaktformular schreibst, werden Name, E-Mail-Adresse und Nachricht über den Dienst formsubmit.co an uns weitergeleitet und ausschließlich zur Beantwortung deiner Anfrage genutzt.</p>
@@ -73,5 +90,15 @@
     </form>
   </div>
 </main>
+<script>
+(function () {
+  var b = document.getElementById('yt-revoke'), st = document.getElementById('yt-revoke-status');
+  if (!b) return;
+  b.addEventListener('click', function () {
+    try { localStorage.removeItem('dw_yt_consent'); } catch (e) {}
+    st.textContent = 'Widerrufen. Beim nächsten Abspielen wirst du erneut gefragt.';
+  });
+})();
+</script>
 </body>
 </html>
