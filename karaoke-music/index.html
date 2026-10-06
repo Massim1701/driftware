@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Karaoke</title>
+<meta name="description" content="Karaoke: Pop-Hits, Rock-Hymnen, Schlager und Disco-Klassiker aus allen Jahrzehnten — Songs, die jeder mitsingen kann, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=107">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=95"></script>
+<script src="../shared/midi.js?v=4"></script>
+<script src="../shared/manualadd.js?v=12"></script>
+<script src="../shared/continuity.js?v=4"></script>
+<script src="../shared/nextup.js?v=22"></script>
+<script>
+renderDecadeIndex({
+  name: 'Karaoke',
+  years: 'Alle Jahrzehnte',
+  icon: '🎤',
+  iconBg: 'linear-gradient(135deg, #ff3d81, #ffd23f)',
+  tagline: 'Pop-Hits, Rock-Hymnen, Schlager und Disco-Klassiker aus allen Jahrzehnten — Songs, die jeder mitsingen kann.',
+  badgeText: '🎤 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#170a1c',
+    panel: '#2a1230',
+    accent: '#ff3d81',
+    accent2: '#ffd23f',
+    text: '#fff2f8',
+    muted: '#b88fb0'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (Pop-Hits, Rock-Hymnen, Schlager / Volkstümlich, Disco-Singalongs) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🎤', title: 'Pop-Hits', desc: 'Pop Rock, Europop, Power Pop.' },
+    { emoji: '🎸', title: 'Rock-Hymnen', desc: 'Arena Rock, Glam, Hard Rock.' },
+    { emoji: '🍻', title: 'Schlager / Volkstümlich', desc: 'Schlager, Volksmusik, Gute-Laune-Songs.' },
+    { emoji: '🪩', title: 'Disco-Singalongs', desc: 'Disco, Euro-Disco, Reggae-Pop.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'Karaoke',
+  themes: [
+    { key: 'PopHits', label: 'Pop-Hits' },
+    { key: 'RockAnthems', label: 'Rock-Hymnen' },
+    { key: 'SchlagerFolk', label: 'Schlager / Volkstümlich' },
+    { key: 'DiscoSingalong', label: 'Disco-Singalongs' }
+  ]
+});
+</script>
+</body>
+</html>
