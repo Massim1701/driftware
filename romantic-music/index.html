@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Romantic</title>
+<meta name="description" content="Romantic: Balladen, Soul, R&B, Chanson, Lounge und Bolero aus allen Jahrzehnten — Liebeslieder für Date Night, Kerzenschein und zu zweit, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=107">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=95"></script>
+<script src="../shared/midi.js?v=4"></script>
+<script src="../shared/manualadd.js?v=12"></script>
+<script src="../shared/continuity.js?v=4"></script>
+<script src="../shared/nextup.js?v=22"></script>
+<script>
+renderDecadeIndex({
+  name: 'Romantic',
+  years: 'Alle Jahrzehnte',
+  icon: '💕',
+  iconBg: 'linear-gradient(135deg, #e0446b, #7a2a6e)',
+  tagline: 'Balladen, Soul, R&B, Chanson, Lounge und Bolero aus allen Jahrzehnten — Liebeslieder für Date Night, Kerzenschein und zu zweit.',
+  badgeText: '💕 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#1a0b14',
+    panel: '#2e1424',
+    accent: '#e0446b',
+    accent2: '#f2b8a2',
+    text: '#fff0f3',
+    muted: '#b890a0'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (Balladen, Soul / R&B, Vocal / Chanson, Lounge / Bolero) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🕯️', title: 'Balladen', desc: 'Ballads, Power Ballads, Soft Rock.' },
+    { emoji: '🌹', title: 'Soul / R&B', desc: 'Samtige Stimmen, langsame Grooves.' },
+    { emoji: '🥂', title: 'Vocal / Chanson', desc: 'Klassische Liebeslieder.' },
+    { emoji: '🌙', title: 'Lounge / Bolero', desc: 'Smooth Jazz, Lounge, Bolero.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'Romantic',
+  themes: [
+    { key: 'LoveBallads', label: 'Balladen' },
+    { key: 'SoulRnB', label: 'Soul / R&B' },
+    { key: 'VocalChanson', label: 'Vocal / Chanson' },
+    { key: 'LoungeLatin', label: 'Lounge / Bolero' }
+  ]
+});
+</script>
+</body>
+</html>
