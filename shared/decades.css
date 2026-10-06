@@ -1941,3 +1941,20 @@ html[data-device="phone"] body.has-dj-mini { padding-bottom: 72px; }
   .dj-deck-controls button[id$="-toggle"] { width: 48px; height: 48px; }
   .dj-deck-controls button[id$="-toggle"] svg { width: 22px; height: 22px; }
 }
+
+/* Mixer (Mittelteil) am Web-Player groesser */
+@media (pointer: fine) {
+  .dj-master { gap: 12px; padding: 14px 18px; }
+  .dj-crossfader { gap: 10px; }
+  .dj-crossfader-label { font-size: 16px; }
+  #dj-crossfader, #dj-master-volume { height: 6px; border-radius: 3px; }
+  #dj-crossfader::-webkit-slider-thumb, #dj-master-volume::-webkit-slider-thumb { width: 22px; height: 32px; border-radius: 4px; }
+  #dj-crossfader::-moz-range-track, #dj-master-volume::-moz-range-track { height: 6px; }
+  #dj-crossfader::-moz-range-thumb, #dj-master-volume::-moz-range-thumb { width: 22px; height: 32px; border-radius: 4px; }
+  .dj-volume { gap: 10px; }
+  .dj-volume-label svg { width: 22px; height: 22px; }
+  .dj-bpm-readout-label { font-size: 11px; }
+  .dj-bpm-readout-value { font-size: 15px; }
+  .dj-bpm-match { font-size: 12px; }
+  .dj-bpm-sync-btn { padding: 8px 14px; font-size: 13px; }
+}
