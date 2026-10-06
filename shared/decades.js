@@ -3058,6 +3058,27 @@ function sortByPopularity(songs) {
   return (songs || []).slice().sort(function (a, b) { return popularityScore(b) - popularityScore(a); });
 }
 
+/* Favoriten: Herz pro Song, seitenuebergreifend im Browser (localStorage).
+   Gespeichert wird nur das Noetigste (siehe songForStorage). */
+var FAV_KEY = 'dw_favs_v1';
+var favCache = null;
+function favLoad() {
+  if (favCache) return favCache;
+  favCache = {};
+  try { var raw = localStorage.getItem(FAV_KEY); if (raw) favCache = JSON.parse(raw) || {}; } catch (e) { favCache = {}; }
+  return favCache;
+}
+function favSave() { try { localStorage.setItem(FAV_KEY, JSON.stringify(favLoad())); } catch (e) {} }
+function isFav(song) { return Object.prototype.hasOwnProperty.call(favLoad(), songId(song)); }
+function favList() { var m = favLoad(); return Object.keys(m).map(function (k) { return m[k]; }); }
+function toggleFav(song) {
+  var m = favLoad(), id = songId(song);
+  if (m[id]) { delete m[id]; } else { var o = songForStorage(song); o.th = song.th || null; o.cv = song.cv || null; o.favAt = Date.now(); m[id] = o; }
+  favSave();
+  try { document.dispatchEvent(new CustomEvent('dw-favs-changed')); } catch (e) {}
+  return !!m[id];
+}
+
 function renderSongGrid(container, songs) {
   container.innerHTML = '';
   var showMostWanted = songs.length > POPULARITY_SPLIT;
@@ -3140,6 +3161,24 @@ function renderSongGrid(container, songs) {
 
     var icons = document.createElement('span');
     icons.className = 'song-tile-icons';
+
+    var heart = document.createElement('span');
+    heart.className = 'song-tile-fav' + (isFav(song) ? ' on' : '');
+    heart.textContent = isFav(song) ? '\u2665' : '\u2661';
+    heart.setAttribute('role', 'button');
+    heart.setAttribute('tabindex', '0');
+    heart.setAttribute('aria-label', 'Favorit: ' + song.a + ' \u2013 ' + song.t);
+    heart.setAttribute('aria-pressed', isFav(song) ? 'true' : 'false');
+    function doFav(e) {
+      e.stopPropagation();
+      var on = toggleFav(song);
+      heart.classList.toggle('on', on);
+      heart.textContent = on ? '\u2665' : '\u2661';
+      heart.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    heart.addEventListener('click', doFav);
+    heart.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doFav(e); } });
+    icons.appendChild(heart);
 
     var info = document.createElement('span');
     info.className = 'song-tile-info';
@@ -3512,7 +3551,20 @@ function renderPlaylistGenerator(mountRoot, config) {
       .catch(function () { data = {}; return data; });
   }
 
+  var favMode = false;
+  function updateFavBtn() {
+    var n = favList().length, el = document.getElementById('gen-favs-n'), b = document.getElementById('gen-favs');
+    if (el) el.textContent = n ? '(' + n + ')' : '';
+    if (b) b.classList.toggle('active', favMode);
+  }
   function refresh() {
+    updateFavBtn();
+    if (favMode) {
+      var fl = favList().sort(function (a, b) { return (b.favAt || 0) - (a.favAt || 0); });
+      document.getElementById('gen-count').textContent = fl.length + (fl.length === 1 ? ' Favorit' : ' Favoriten') + (fl.length ? '' : ' \u2013 tippe auf das Herz bei einem Song');
+      renderSongGrid(document.getElementById('gen-grid'), fl);
+      return;
+    }
     var songs = currentSongs();
     if (currentTheme && currentTheme !== MIX_KEY && currentTheme !== ALL_KEY) {
       songs.forEach(function (s) { s._bucket = currentTheme; });
@@ -3547,6 +3599,7 @@ function renderPlaylistGenerator(mountRoot, config) {
   }
 
   function selectTheme(key) {
+    favMode = false;
     currentTheme = key;
     if (key === MIX_KEY) mixSongsCache = null;
     if (key === ALL_KEY) allSongsCache = null;
@@ -3568,6 +3621,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     var countEl = document.getElementById('gen-count');
     var gridEl = document.getElementById('gen-grid');
     var myToken = ++searchToken;
+    if (query) favMode = false;
 
     if (!query) {
       hintEl.hidden = true;
@@ -3683,6 +3737,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     '<div class="generator-actions" id="gen-actions">' +
     '  <span class="generator-count" id="gen-count"></span>' +
     '  <button id="gen-play-all" type="button">' + PLUS_SVG + ' Playlist auf Warteschlange laden</button>' +
+    '  <button id="gen-favs" type="button" title="Meine Favoriten anzeigen">\u2665 Favoriten <span id="gen-favs-n"></span></button>' +
     '  <button id="gen-shuffle" type="button" title="Reihenfolge neu mischen">' + SHUFFLE_SVG + ' Playlist neu mischen</button>' +
     '  <button id="gen-copy" type="button">' + COPY_SVG + ' Liste kopieren</button>' +
     '  <a id="gen-download" download>' + DOWNLOAD_SVG + ' Als CSV exportieren</a>' +
@@ -3751,6 +3806,12 @@ function renderPlaylistGenerator(mountRoot, config) {
   section.querySelector('#gen-play-all').addEventListener('click', function () {
     playAllCurrent(currentSongs());
   });
+  section.querySelector('#gen-favs').addEventListener('click', function () {
+    favMode = !favMode;
+    if (favMode) { clearSearchUI(); document.getElementById('gen-actions').classList.add('visible'); }
+    refresh();
+  });
+  document.addEventListener('dw-favs-changed', function () { if (!section.isConnected) return; if (favMode) refresh(); else updateFavBtn(); });
   section.querySelector('#gen-shuffle').addEventListener('click', function () {
     reshuffleCurrentPlaylist();
   });
