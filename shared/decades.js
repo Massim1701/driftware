@@ -1302,6 +1302,7 @@ function ensureDjPlayer() {
     '      title="Automatisches Überblenden 10s vor Songende (nur bei passenden BPM) an/aus">' + REFRESH_SVG + ' Autofade An</button>' +
     '    <button type="button" id="dj-manual-fade" class="dj-manual-fade-btn" aria-label="Fade jetzt" ' +
     '      title="Manuellen Überblend-Vorgang starten (5 Sekunden Verzögerung, dann Crossfade zum anderen Deck)">' + REFRESH_SVG + '</button>' +
+    '    <button type="button" id="dj-sleep-timer" class="dj-manual-fade-btn dj-sleep-btn" title="Sleep-Timer: Musik nach 15/30/60 Minuten pausieren">\u263E Timer</button>' +
     '  </div>' +
     '  <div class="dj-volume">' +
     '    <span class="dj-volume-label">' + SPEAKER_SVG + '</span>' +
@@ -1423,6 +1424,8 @@ function ensureDjPlayer() {
     applyCrossfaderVolumes();
   });
 
+  var sleepBtn = bar.querySelector('#dj-sleep-timer');
+  if (sleepBtn) { sleepBtn.addEventListener('click', sleepCycle); sleepRefreshBtn(); }
   var autoFadeBtn = bar.querySelector('#dj-autofade-toggle');
   autoFadeBtn.addEventListener('click', function () {
     autoFadeEnabled = !autoFadeEnabled;
@@ -1753,6 +1756,69 @@ function refreshMixableHighlight() {
    erfolgreichen Play-Start (PLAYING-Event) wieder auf 0 gesetzt. */
 var deckErrorStreak = { A: 0, B: 0 };
 
+/* Medientasten / Sperrbildschirm (Media Session API) */
+var msLastKey = null;
+function msDeckKey() {
+  if (DECKS.A.isPlaying) return 'A';
+  if (DECKS.B.isPlaying) return 'B';
+  if (msLastKey && DECKS[msLastKey].song) return msLastKey;
+  return DECKS.A.song ? 'A' : (DECKS.B.song ? 'B' : null);
+}
+function updateMediaSession(key) {
+  if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+  var song = DECKS[key] && DECKS[key].song;
+  if (!song) return;
+  msLastKey = key;
+  try {
+    var art = song.th || song.cv;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: song.t || '', artist: song.a || '', album: 'driftware.online',
+      artwork: art ? [{ src: art, sizes: '480x360', type: 'image/jpeg' }] : []
+    });
+  } catch (e) {}
+}
+(function setupMediaSessionHandlers() {
+  if (!('mediaSession' in navigator)) return;
+  function set(action, fn) { try { navigator.mediaSession.setActionHandler(action, fn); } catch (e) {} }
+  set('play', function () { var k = msDeckKey(); if (k && DECKS[k].player && DECKS[k].player.playVideo) DECKS[k].player.playVideo(); });
+  set('pause', function () { var k = msDeckKey(); if (k && DECKS[k].player && DECKS[k].player.pauseVideo) DECKS[k].player.pauseVideo(); });
+  set('nexttrack', function () {
+    var k = msDeckKey();
+    if (!k) return;
+    var d = DECKS[k];
+    if (d.index + 1 >= d.queue.length) return;
+    if (d.player && d.player.pauseVideo) d.player.pauseVideo();
+    advanceAlternating(k);
+  });
+})();
+
+/* Sleep-Timer: Aus -> 15 -> 30 -> 60 Minuten -> Aus. Beim Ablauf werden beide Decks pausiert. */
+var SLEEP_STEPS = [0, 15, 30, 60];
+var sleepStepIdx = 0, sleepEndsAt = 0, sleepTimeout = null, sleepTick = null;
+function sleepLabel() {
+  if (!sleepEndsAt) return '\u263E Timer';
+  return '\u263E ' + Math.max(1, Math.ceil((sleepEndsAt - Date.now()) / 60000)) + ' Min';
+}
+function sleepRefreshBtn() {
+  var b = document.getElementById('dj-sleep-timer');
+  if (!b) return;
+  b.textContent = sleepLabel();
+  b.classList.toggle('active', !!sleepEndsAt);
+}
+function sleepCycle() {
+  clearTimeout(sleepTimeout); clearInterval(sleepTick);
+  sleepStepIdx = (sleepStepIdx + 1) % SLEEP_STEPS.length;
+  var min = SLEEP_STEPS[sleepStepIdx];
+  if (!min) { sleepEndsAt = 0; sleepRefreshBtn(); return; }
+  sleepEndsAt = Date.now() + min * 60000;
+  sleepTimeout = setTimeout(function () {
+    ['A', 'B'].forEach(function (k) { var p = DECKS[k].player; if (p && p.pauseVideo) { try { p.pauseVideo(); } catch (e) {} } });
+    sleepEndsAt = 0; sleepStepIdx = 0; clearInterval(sleepTick); sleepRefreshBtn();
+  }, min * 60000);
+  sleepTick = setInterval(sleepRefreshBtn, 20000);
+  sleepRefreshBtn();
+}
+
 function onDeckStateChange(key) {
   return function (e) {
     var deck = DECKS[key];
@@ -1761,6 +1827,7 @@ function onDeckStateChange(key) {
       deckErrorStreak[key] = 0;
       if (!deck.historyLogged) { logPlayHistory(deck.song); deck.historyLogged = true; }
       maybePreloadNext(key);
+      updateMediaSession(key);
     } else if (e.data === YT.PlayerState.PAUSED) {
       deck.isPlaying = false;
     } else if (e.data === YT.PlayerState.ENDED) {

@@ -1897,3 +1897,7 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
 .song-tile-nofit { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; line-height: 1; color: var(--text); opacity: 0.4; cursor: pointer; flex-shrink: 0; transition: opacity .12s ease, color .12s ease; }
 .song-tile-nofit:hover, .song-tile-nofit:focus-visible { opacity: 1; color: #f59e0b; }
 .song-tile.flagged-out { opacity: 0; transform: scale(0.96); transition: opacity .2s ease, transform .2s ease; }
+
+/* Sleep-Timer */
+.dj-sleep-btn { width: auto; padding: 0 10px; font-size: 12px; white-space: nowrap; }
+.dj-sleep-btn.active { background: rgba(245,158,11,0.2); border-color: #f59e0b; }
