@@ -134,8 +134,8 @@ common: {
       h2_kontakt: "Kontakt",
       h2_verantwortlich: "Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV",
       p_verantwortlich: "Massimo",
-      h2_hinweis: "Hinweis",
-      p_hinweis: "Dieses Impressum wurde als Entwurf für eine Einzelperson (kein Gewerbe) erstellt und ersetzt keine Rechtsberatung. Bei Unsicherheiten zur Impressumspflicht empfiehlt sich eine kurze Prüfung durch einen Anwalt oder einen Generator wie eRecht24."
+      h2_hinweis: "Anfragen",
+      p_hinweis: "Anfragen zum Impressum bitte über das Kontaktformular unten."
     }
   };
 
@@ -259,8 +259,8 @@ common: {
       h2_kontakt: "Contact",
       h2_verantwortlich: "Responsible for content pursuant to § 55 (2) RStV",
       p_verantwortlich: "Massimo",
-      h2_hinweis: "Note",
-      p_hinweis: "This legal notice was drafted for a private individual (not a business) and does not constitute legal advice. If you are unsure about legal notice requirements, we recommend a brief review by a lawyer or a generator such as eRecht24."
+      h2_hinweis: "Enquiries",
+      p_hinweis: "Please send enquiries about this legal notice via the contact form below."
     }
   };
 
@@ -384,8 +384,8 @@ common: {
       h2_kontakt: "Contacto",
       h2_verantwortlich: "Responsable del contenido conforme al § 55 párr. 2 RStV",
       p_verantwortlich: "Massimo",
-      h2_hinweis: "Nota",
-      p_hinweis: "Este aviso legal se ha redactado como borrador para una persona particular (sin actividad comercial) y no sustituye el asesoramiento jurídico. Si tienes dudas sobre la obligación de aviso legal, se recomienda una breve revisión por parte de un abogado o de un generador como eRecht24."
+      h2_hinweis: "Consultas",
+      p_hinweis: "Para consultas sobre este aviso legal, utiliza el formulario de contacto de abajo."
     }
   };
 
@@ -509,8 +509,8 @@ common: {
       h2_kontakt: "Contact",
       h2_verantwortlich: "Responsable du contenu conformément au § 55 al. 2 RStV",
       p_verantwortlich: "Massimo",
-      h2_hinweis: "Remarque",
-      p_hinweis: "Ces mentions légales ont été rédigées comme modèle pour un particulier (sans activité commerciale) et ne remplacent pas un conseil juridique. En cas de doute sur l'obligation de mentions légales, il est recommandé de faire vérifier ce document par un avocat ou un générateur tel qu'eRecht24."
+      h2_hinweis: "Demandes",
+      p_hinweis: "Pour toute question concernant ces mentions légales, merci d'utiliser le formulaire de contact ci-dessous."
     }
   };
 
