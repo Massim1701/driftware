@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Haushalt & Putzen</title>
+<meta name="description" content="Haushalt & Putzen: Dance-Pop, Eurodance, New Wave, Pop Punk, Funk, Beat und Swing aus allen Jahrzehnten — schwungvolle Songs für Putztag, Aufräumen und Hausarbeit, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=107">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=95"></script>
+<script src="../shared/midi.js?v=4"></script>
+<script src="../shared/manualadd.js?v=12"></script>
+<script src="../shared/continuity.js?v=4"></script>
+<script src="../shared/nextup.js?v=22"></script>
+<script>
+renderDecadeIndex({
+  name: 'Haushalt & Putzen',
+  years: 'Alle Jahrzehnte',
+  icon: '🧹',
+  iconBg: 'linear-gradient(135deg, #1fb5a8, #f5c542)',
+  tagline: 'Dance-Pop, Eurodance, New Wave, Pop Punk, Funk, Beat und Swing aus allen Jahrzehnten — schwungvolle Songs für Putztag, Aufräumen und Hausarbeit.',
+  badgeText: '🧹 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#0c1a1c',
+    panel: '#143034',
+    accent: '#1fb5a8',
+    accent2: '#f5c542',
+    text: '#effcfa',
+    muted: '#8dbab6'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (Dance-Pop / Eurodance, New Wave / Pop Punk, Funk / Boogie, Beat / Swing) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🧼', title: 'Dance-Pop / Eurodance', desc: 'Gute-Laune-Pop mit Tempo.' },
+    { emoji: '🎧', title: 'New Wave / Pop Punk', desc: 'Schwung für die große Runde.' },
+    { emoji: '🧽', title: 'Funk / Boogie', desc: 'Groove beim Wischen und Saugen.' },
+    { emoji: '🪣', title: 'Beat / Swing', desc: 'Beat, Mod und Swing-Klassiker.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'Haushalt & Putzen',
+  themes: [
+    { key: 'UpbeatPop', label: 'Dance-Pop / Eurodance' },
+    { key: 'NewWavePunk', label: 'New Wave / Pop Punk' },
+    { key: 'FunkGroove', label: 'Funk / Boogie' },
+    { key: 'BeatSwing', label: 'Beat / Swing' }
+  ]
+});
+</script>
+</body>
+</html>
