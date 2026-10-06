@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gaming</title>
+<meta name="description" content="Gaming: Videospiel-Musik, Chiptune, Synthwave, Drum & Bass und harte Gitarren aus allen Jahrzehnten — Sound zum Zocken, Streamen und Durchhalten, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=107">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=95"></script>
+<script src="../shared/midi.js?v=4"></script>
+<script src="../shared/manualadd.js?v=12"></script>
+<script src="../shared/continuity.js?v=4"></script>
+<script src="../shared/nextup.js?v=22"></script>
+<script>
+renderDecadeIndex({
+  name: 'Gaming',
+  years: 'Alle Jahrzehnte',
+  icon: '🎮',
+  iconBg: 'linear-gradient(135deg, #7c3aed, #22d3ee)',
+  tagline: 'Videospiel-Musik, Chiptune, Synthwave, Drum & Bass und harte Gitarren aus allen Jahrzehnten — Sound zum Zocken, Streamen und Durchhalten.',
+  badgeText: '🎮 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#0d0a1c',
+    panel: '#1a1433',
+    accent: '#8b5cf6',
+    accent2: '#22d3ee',
+    text: '#f1eeff',
+    muted: '#9a93bf'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (Game Soundtracks / Chiptune, Synthwave / Electro, Drum & Bass / Breakbeat, Heavy Rock / Nu Metal) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🕹️', title: 'Game Soundtracks / Chiptune', desc: 'Videospiel-Musik, Chiptune, Soundtracks.' },
+    { emoji: '👾', title: 'Synthwave / Electro', desc: 'Neon-Synthesizer und Electro-Beats.' },
+    { emoji: '⚡', title: 'Drum & Bass / Breakbeat', desc: 'Tempo und Bass für den Flow.' },
+    { emoji: '🤘', title: 'Heavy Rock / Nu Metal', desc: 'Harte Gitarren für den Boss-Fight.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'Gaming',
+  themes: [
+    { key: 'GameSoundtracks', label: 'Game Soundtracks / Chiptune' },
+    { key: 'SynthElectro', label: 'Synthwave / Electro' },
+    { key: 'BassBeats', label: 'Drum & Bass / Breakbeat' },
+    { key: 'HeavyRock', label: 'Heavy Rock / Nu Metal' }
+  ]
+});
+</script>
+</body>
+</html>

@@ -112,6 +112,7 @@ var SITE_PAGES = [
   { slug: 'christmas', folder: 'christmas-music', label: 'Christmas', group: 'Stimmungen', color: '#e0453f' },
   { slug: 'dinnerparty', folder: 'dinnerparty-music', label: 'Dinner Party', group: 'Stimmungen', color: '#d9527c' },
   { slug: 'focuswork', folder: 'focuswork-music', label: 'Focus & Work', group: 'Stimmungen', color: '#4ecdc4' },
+  { slug: 'gaming', folder: 'gaming-music', label: 'Gaming', group: 'Stimmungen', color: '#8b5cf6' },
   { slug: 'grill', folder: 'grill-music', label: 'Grill & Garten', group: 'Stimmungen', color: '#ff6a2b' },
   { slug: 'latenight', folder: 'latenight-music', label: 'Late Night', group: 'Stimmungen', color: '#6a5acd' },
   { slug: 'morning', folder: 'morning-music', label: 'Morning', group: 'Stimmungen', color: '#f2b705' },
