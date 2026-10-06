@@ -1,0 +1,52 @@
+name: Song-Statistik aktualisieren
+
+# Zaehlt alle Songs (tools/count_songs.py) und schreibt dekaden/stats.json,
+# die auf /dekaden/ als Song-Zahl angezeigt wird. Laeuft taeglich (faengt auch
+# Commits der anderen Workflows ab, die per GITHUB_TOKEN keinen Push-Trigger
+# ausloesen), nach jedem Push, der songs.json aendert, und manuell.
+
+on:
+  schedule:
+    - cron: '30 4 * * *'
+  push:
+    branches: [master]
+    paths:
+      - '*-music/songs.json'
+  workflow_dispatch: {}
+
+concurrency:
+  group: update-stats
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Zaehlen
+        run: python3 tools/count_songs.py
+
+      - name: Aenderung committen und pushen
+        run: |
+          git config user.name "driftware-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add dekaden/stats.json
+          if git diff --cached --quiet; then
+            echo "Keine Aenderung."
+            exit 0
+          fi
+          git commit -m "Song-Statistik aktualisiert"
+          for i in 1 2 3 4 5; do
+            if git push; then exit 0; fi
+            git fetch origin master
+            git rebase origin/master || { git rebase --abort; git reset --hard origin/master; python3 tools/count_songs.py; git add dekaden/stats.json; git commit -q -m "Song-Statistik aktualisiert"; }
+          done
+          exit 1
