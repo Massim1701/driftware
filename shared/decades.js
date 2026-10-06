@@ -3855,6 +3855,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     '<div class="generator-actions" id="gen-actions">' +
     '  <span class="generator-count" id="gen-count"></span>' +
     '  <button id="gen-play-all" type="button">' + PLUS_SVG + ' Playlist auf Warteschlange laden</button>' +
+    '  <button id="gen-surprise" type="button" title="Zufallsmix quer durch alle Dekaden und Stimmungen">\uD83C\uDFB2 \u00dcberrasch mich</button>' +
     '  <button id="gen-favs" type="button" title="Meine Favoriten anzeigen">\u2665 Favoriten <span id="gen-favs-n"></span></button>' +
     '  <button id="gen-shuffle" type="button" title="Reihenfolge neu mischen">' + SHUFFLE_SVG + ' Playlist neu mischen</button>' +
     '  <button id="gen-copy" type="button">' + COPY_SVG + ' Liste kopieren</button>' +
@@ -3923,6 +3924,30 @@ function renderPlaylistGenerator(mountRoot, config) {
 
   section.querySelector('#gen-play-all').addEventListener('click', function () {
     playAllCurrent(currentSongs());
+  });
+  section.querySelector('#gen-surprise').addEventListener('click', function (e) {
+    var btn = e.currentTarget;
+    if (btn.disabled) return;
+    btn.disabled = true;
+    var pages = SITE_PAGES.slice().sort(function () { return Math.random() - 0.5; }).slice(0, 3);
+    Promise.all(pages.map(function (pg) {
+      return fetch('/' + pg.folder + '/songs.json').then(function (r) { return r.json(); }).then(function (json) {
+        var top = sortByPopularity(flattenSongs(json).filter(function (x) { return !!x.yt; })).slice(0, 400);
+        top.sort(function () { return Math.random() - 0.5; });
+        return top.slice(0, 12).map(function (x) { x._decade = pg.label; return x; });
+      }).catch(function () { return []; });
+    })).then(function (lists) {
+      var seen = {}, mix = [];
+      lists.forEach(function (l) { l.forEach(function (x) { if (!seen[x.yt]) { seen[x.yt] = 1; mix.push(x); } }); });
+      mix.sort(function () { return Math.random() - 0.5; });
+      btn.disabled = false;
+      if (!mix.length) return;
+      favMode = false; clearSearchUI();
+      document.getElementById('gen-actions').classList.add('visible');
+      document.getElementById('gen-count').textContent = mix.length + ' Songs \u2013 \u00dcberraschungsmix aus ' + pages.map(function (x) { return x.label; }).join(', ');
+      renderSongGrid(document.getElementById('gen-grid'), mix);
+      playAllCurrent(mix);
+    }).catch(function () { btn.disabled = false; });
   });
   section.querySelector('#gen-favs').addEventListener('click', function () {
     favMode = !favMode;
