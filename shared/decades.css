@@ -1902,3 +1902,29 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
 .dj-sleep-btn { width: auto; height: 28px; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: transparent; border: 1px solid rgba(255,255,255,0.18); color: var(--text); }
 .dj-sleep-btn:hover { border-color: var(--accent); }
 .dj-sleep-btn.active { background: rgba(245,158,11,0.18); border-color: #f59e0b; color: #f59e0b; }
+
+/* Kompaktes Handy-Deck (nur html[data-device="phone"]) */
+.dj-phone-toggle { display: none; }
+.dj-mini { display: none; }
+html[data-device="phone"] .dj-phone-toggle {
+  display: block; width: 100%; padding: 12px 14px; border: 0; border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: transparent; color: var(--text); font-size: 14px; font-weight: 600; text-align: center; cursor: pointer;
+}
+/* eingeklappt: Decks bleiben im Layout (Player laufen weiter), nur aus dem Bild geschoben */
+html[data-device="phone"] .dj-player.dj-phone:not(.dj-expanded) .dj-decks {
+  position: absolute; left: -200vw; top: 0; width: 100vw; pointer-events: none;
+}
+html[data-device="phone"] .dj-player.dj-phone:not(.dj-expanded) { height: auto; overflow: visible; }
+html[data-device="phone"] .dj-mini {
+  display: flex; align-items: center; gap: 8px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 900;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); background: var(--panel, #16171d);
+  border-top: 1px solid rgba(255,255,255,0.12); box-shadow: 0 -6px 18px rgba(0,0,0,0.35);
+}
+html[data-device="phone"] .dj-mini[hidden] { display: none; }
+.dj-mini-cover { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; background: rgba(255,255,255,0.08); flex-shrink: 0; }
+.dj-mini-text { flex: 1; min-width: 0; }
+.dj-mini-title { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dj-mini-artist { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dj-mini-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.16); background: transparent; color: var(--text); font-size: 16px; cursor: pointer; flex-shrink: 0; }
+.dj-mini-play { background: #ff0000; border-color: #ff0000; color: #fff; font-size: 14px; }
+html[data-device="phone"] body.has-dj-mini { padding-bottom: 72px; }

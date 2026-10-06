@@ -1279,6 +1279,53 @@ function queuePlayerSpacing() {
 window.addEventListener('resize', queuePlayerSpacing);
 window.addEventListener('orientationchange', queuePlayerSpacing);
 
+/* Kompaktes Handy-Deck: Nur auf Geraeten, die detectDeviceType() als "phone"
+   erkennt (data-device="phone"). Die beiden grossen Decks bleiben im DOM
+   (nur aus dem Blickfeld geschoben, damit die YouTube-Player weiterlaufen),
+   unten klebt eine Mini-Leiste mit Cover, Titel, Zurueck/Play/Weiter. */
+function setupPhoneMini(bar) {
+  if (document.documentElement.getAttribute('data-device') !== 'phone') return;
+  if (document.getElementById('dj-mini')) return;
+  bar.classList.add('dj-phone');
+  var tgl = document.createElement('button');
+  tgl.type = 'button'; tgl.className = 'dj-phone-toggle'; tgl.id = 'dj-phone-toggle';
+  tgl.textContent = '\u25BE DJ-Decks anzeigen';
+  tgl.setAttribute('aria-expanded', 'false');
+  tgl.addEventListener('click', function () {
+    var ex = bar.classList.toggle('dj-expanded');
+    tgl.textContent = ex ? '\u25B4 DJ-Decks ausblenden' : '\u25BE DJ-Decks anzeigen';
+    tgl.setAttribute('aria-expanded', ex ? 'true' : 'false');
+  });
+  bar.insertBefore(tgl, bar.firstChild);
+
+  var mini = document.createElement('div');
+  mini.id = 'dj-mini'; mini.className = 'dj-mini'; mini.hidden = true;
+  mini.innerHTML = '' +
+    '<img class="dj-mini-cover" id="dj-mini-cover" alt="">' +
+    '<div class="dj-mini-text"><div class="dj-mini-title" id="dj-mini-title"></div><div class="dj-mini-artist" id="dj-mini-artist"></div></div>' +
+    '<button type="button" class="dj-mini-btn" id="dj-mini-prev" aria-label="Vorheriger Song">\u23EE</button>' +
+    '<button type="button" class="dj-mini-btn dj-mini-play" id="dj-mini-play" aria-label="Abspielen/Pause">\u25B6</button>' +
+    '<button type="button" class="dj-mini-btn" id="dj-mini-next" aria-label="N\u00e4chster Song">\u23ED</button>';
+  document.body.appendChild(mini);
+  document.body.classList.add('has-dj-mini');
+  function key() { return msDeckKey(); }
+  mini.querySelector('#dj-mini-play').addEventListener('click', function () { var k = key(); if (k) deckTogglePlay(k); });
+  mini.querySelector('#dj-mini-prev').addEventListener('click', function () { var k = key(); if (k) deckStep(k, -1); });
+  mini.querySelector('#dj-mini-next').addEventListener('click', function () { var k = key(); if (k) deckStep(k, 1); });
+  window.__djMiniUpdate = function () {
+    var k = key();
+    var song = k && DECKS[k].song;
+    mini.hidden = !song;
+    if (!song) return;
+    mini.querySelector('#dj-mini-title').textContent = song.t || '';
+    mini.querySelector('#dj-mini-artist').textContent = song.a || '';
+    var img = mini.querySelector('#dj-mini-cover'), src = song.th || song.cv || '';
+    if (img.getAttribute('src') !== src) { if (src) img.src = src; else img.removeAttribute('src'); }
+    mini.querySelector('#dj-mini-play').textContent = DECKS[k].isPlaying ? '\u275A\u275A' : '\u25B6';
+  };
+  window.__djMiniUpdate();
+}
+
 function ensureDjPlayer() {
   var existing = document.getElementById('dj-player');
   if (existing) return existing;
@@ -1343,6 +1390,7 @@ function ensureDjPlayer() {
   var bpmSyncBtn = toolsPanel.querySelector('#dj-bpm-sync-btn');
   if (bpmSyncBtn) bpmSyncBtn.addEventListener('click', syncIdleDeckToPlaying);
   updateBpmSync();
+  setupPhoneMini(bar);
 
   /* Schallplatten-Drag-Bild schon jetzt anlegen (nicht erst beim ersten
      dragstart) -- manche Browser (v.a. Safari) rendern ein Element, das
@@ -1485,6 +1533,7 @@ function setDeckPitch(key, rate) {
 }
 
 function updateDeckInfoUI(key) {
+  if (window.__djMiniUpdate) setTimeout(window.__djMiniUpdate, 0);
   var deck = DECKS[key];
   var artistEl = document.getElementById('deck-' + key + '-artist');
   var titleEl = document.getElementById('deck-' + key + '-title');
