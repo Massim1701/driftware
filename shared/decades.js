@@ -3231,6 +3231,25 @@ function flagSong(song) {
   } catch (e) {}
 }
 
+/* Cover-Fallback: fehlt das Bild oder laedt nicht, zeigt die Kachel einen
+   farbigen Platzhalter mit den Initialen des Interpreten (Farbe aus dem Namen). */
+function coverFallback(media, song) {
+  var name = (song && song.a) || '?';
+  name = name.replace(/\s*\(\d+\)\s*/g, ' ').replace(/\*/g, '').trim() || '?';
+  var h = 0;
+  for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
+  var words = name.replace(/[^A-Za-z\u00C0-\u024F0-9 ]/g, ' ').split(/\s+/).filter(Boolean);
+  if (words.length > 1 && /^(the|die|der|das|les|los|el|la)$/i.test(words[0])) words.shift();
+  var ini = ((words[0] || '?').charAt(0) + (words.length > 1 ? words[1].charAt(0) : '')).toUpperCase();
+  media.innerHTML = '';
+  media.classList.add('cover-fallback');
+  media.style.background = 'linear-gradient(135deg, hsl(' + h + ',55%,38%), hsl(' + ((h + 40) % 360) + ',60%,24%))';
+  var t = document.createElement('span');
+  t.className = 'cover-fallback-ini';
+  t.textContent = ini;
+  media.appendChild(t);
+}
+
 function renderSongGrid(container, songs) {
   songs = songs.filter(function (s) { return !isFlagged(s); });
   container.innerHTML = '';
@@ -3278,7 +3297,9 @@ function renderSongGrid(container, songs) {
     img.src = song.th || song.cv || '';
     img.alt = song.a + ' – ' + song.t;
     img.loading = 'lazy';
+    img.addEventListener('error', function () { coverFallback(media, song); });
     media.appendChild(img);
+    if (!img.getAttribute('src')) coverFallback(media, song);
     tile.appendChild(media);
 
     var text = document.createElement('span');
