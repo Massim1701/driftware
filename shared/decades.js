@@ -115,6 +115,7 @@ var SITE_PAGES = [
   { slug: 'grill', folder: 'grill-music', label: 'Grill & Garten', group: 'Stimmungen', color: '#ff6a2b' },
   { slug: 'latenight', folder: 'latenight-music', label: 'Late Night', group: 'Stimmungen', color: '#6a5acd' },
   { slug: 'morning', folder: 'morning-music', label: 'Morning', group: 'Stimmungen', color: '#f2b705' },
+  { slug: 'cozy', folder: 'cozy-music', label: 'Rainy Day & Cozy', group: 'Stimmungen', color: '#6fa3d8' },
   { slug: 'roadtrip', folder: 'roadtrip-music', label: 'Road Trip', group: 'Stimmungen', color: '#e8712f' },
   { slug: 'romantic', folder: 'romantic-music', label: 'Romantic', group: 'Stimmungen', color: '#e0446b' },
   { slug: 'summer', folder: 'summer-music', label: 'Summer & Beach', group: 'Stimmungen', color: '#ff9e2c' },

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rainy Day & Cozy</title>
+<meta name="description" content="Rainy Day & Cozy: Singer-Songwriter, Trip Hop, Downtempo, Ambient, Jazz und Blues aus allen Jahrzehnten — ruhige Musik für Regentage, Couch und Kerzenlicht, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=107">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=95"></script>
+<script src="../shared/midi.js?v=4"></script>
+<script src="../shared/manualadd.js?v=12"></script>
+<script src="../shared/continuity.js?v=4"></script>
+<script src="../shared/nextup.js?v=22"></script>
+<script>
+renderDecadeIndex({
+  name: 'Rainy Day & Cozy',
+  years: 'Alle Jahrzehnte',
+  icon: '🌧️',
+  iconBg: 'linear-gradient(135deg, #5b7fa6, #b0774a)',
+  tagline: 'Singer-Songwriter, Trip Hop, Downtempo, Ambient, Jazz und Blues aus allen Jahrzehnten — ruhige Musik für Regentage, Couch und Kerzenlicht.',
+  badgeText: '🌧️ 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#10161d',
+    panel: '#1b2530',
+    accent: '#6fa3d8',
+    accent2: '#d9a066',
+    text: '#eef3f8',
+    muted: '#8d9fb0'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (Singer-Songwriter, Trip Hop / Downtempo, Ambient / Neo-Classical, Jazz / Blues) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '☕', title: 'Singer-Songwriter', desc: 'Leise Stimmen, Gitarre, Indie Pop.' },
+    { emoji: '🌧️', title: 'Trip Hop / Downtempo', desc: 'Schwere Beats, weiche Flächen.' },
+    { emoji: '🎹', title: 'Ambient / Neo-Classical', desc: 'Klavier, Streicher, Atmosphäre.' },
+    { emoji: '🎷', title: 'Jazz / Blues', desc: 'Cool Jazz, Blues, Soul-Jazz.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'Rainy Day & Cozy',
+  themes: [
+    { key: 'Songwriter', label: 'Singer-Songwriter' },
+    { key: 'TripHopDowntempo', label: 'Trip Hop / Downtempo' },
+    { key: 'AmbientPiano', label: 'Ambient / Neo-Classical' },
+    { key: 'JazzBlues', label: 'Jazz / Blues' }
+  ]
+});
+</script>
+</body>
+</html>
