@@ -1899,5 +1899,6 @@ body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
 .song-tile.flagged-out { opacity: 0; transform: scale(0.96); transition: opacity .2s ease, transform .2s ease; }
 
 /* Sleep-Timer */
-.dj-sleep-btn { width: auto; padding: 0 10px; font-size: 12px; white-space: nowrap; }
-.dj-sleep-btn.active { background: rgba(245,158,11,0.2); border-color: #f59e0b; }
+.dj-sleep-btn { width: auto; height: 28px; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: transparent; border: 1px solid rgba(255,255,255,0.18); color: var(--text); }
+.dj-sleep-btn:hover { border-color: var(--accent); }
+.dj-sleep-btn.active { background: rgba(245,158,11,0.18); border-color: #f59e0b; color: #f59e0b; }
