@@ -2876,6 +2876,27 @@ function queueSongFromTile(song) {
    Deck (wie ein Drag&Drop) und startet die Wiedergabe direkt (autoplay),
    statt nur zu laden und auf den manuellen Play-Klick am Deck zu warten. */
 function playSongDirectlyFromTile(song) {
+  /* Ist schon eine Warteschlange da (aktives Deck mit Song), wird der Song
+     DORT als naechster Eintrag eingefuegt und sofort gespielt -- die
+     Warteschlange bleibt erhalten und laeuft danach weiter. Frueher wurde
+     er allein auf das andere Deck geladen (Warteschlange nur [dieser Song]);
+     die Anzeige folgt dem spielenden Deck, die eigentliche Playlist
+     "verschwand" und das freie Deck lud nichts vor. */
+  var deck = activeDeckForQueue();
+  if (deck && deck.song && deck.queue && deck.queue.length && deck.index > -1) {
+    var key = (deck === DECKS.A) ? 'A' : 'B';
+    var pos = deck.isPlaying ? deck.index + 1 : deck.index;
+    var sid = songId(song);
+    /* Duplikat direkt dahinter vermeiden (z.B. Song stand schon als naechster in der Liste) */
+    if (deck.queue[pos] && songId(deck.queue[pos]) === sid) {
+      deck.queue.splice(pos, 1);
+    }
+    deck.queue.splice(pos, 0, song);
+    deck.index = pos;
+    playDeckSong(key, song, true);
+    window.dispatchEvent(new Event('driftware-queue-changed'));
+    return;
+  }
   loadSongToDeck(song, nextLoadDeck, [song], true);
 }
 
