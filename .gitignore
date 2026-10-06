@@ -1,2 +1,3 @@
 bpm_*.log
 __pycache__/
+queue/dead-videos-state.json

@@ -1,0 +1,62 @@
+name: Tote Videos pruefen
+
+# Prueft taeglich einen Teil der YouTube-IDs (tools/check_dead_videos.py, oEmbed)
+# und schreibt die toten/nicht einbettbaren IDs nach queue/dead-videos.json.
+# Es wird NICHTS automatisch entfernt -- die Liste dient der gezielten Neu-Suche.
+# Der Pruefstand liegt im Actions-Cache (nicht im Repo), damit das Repo nicht waechst.
+
+on:
+  schedule:
+    - cron: '15 3 * * *'
+  workflow_dispatch: {}
+
+concurrency:
+  group: check-dead-videos
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Pruefstand wiederherstellen
+        uses: actions/cache/restore@v4
+        with:
+          path: queue/dead-videos-state.json
+          key: dead-videos-state-${{ github.run_id }}
+          restore-keys: dead-videos-state-
+
+      - name: Pruefen (ca. 60 Minuten)
+        run: python3 tools/check_dead_videos.py 3600 12
+
+      - name: Pruefstand speichern
+        uses: actions/cache/save@v4
+        with:
+          path: queue/dead-videos-state.json
+          key: dead-videos-state-${{ github.run_id }}
+
+      - name: Ergebnis committen und pushen
+        run: |
+          git config user.name "driftware-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add queue/dead-videos.json
+          if git diff --cached --quiet; then
+            echo "Keine Aenderung."
+            exit 0
+          fi
+          git commit -m "Tote Videos aktualisiert"
+          for i in 1 2 3 4 5; do
+            if git push; then exit 0; fi
+            git fetch origin master
+            git rebase origin/master || { git rebase --abort; git reset --hard origin/master; exit 1; }
+          done
+          exit 1
