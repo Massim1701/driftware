@@ -3856,6 +3856,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     '  <span class="generator-count" id="gen-count"></span>' +
     '  <button id="gen-play-all" type="button">' + PLUS_SVG + ' Playlist auf Warteschlange laden</button>' +
     '  <button id="gen-surprise" type="button" title="Zufallsmix quer durch alle Dekaden und Stimmungen">\uD83C\uDFB2 \u00dcberrasch mich</button>' +
+    '  <button id="gen-onthisday" type="button" title="UK-Top-3-Hits rund um das heutige Datum aus fr\u00fcheren Jahren">\uD83D\uDCC5 Heute vor X Jahren</button>' +
     '  <button id="gen-favs" type="button" title="Meine Favoriten anzeigen">\u2665 Favoriten <span id="gen-favs-n"></span></button>' +
     '  <button id="gen-shuffle" type="button" title="Reihenfolge neu mischen">' + SHUFFLE_SVG + ' Playlist neu mischen</button>' +
     '  <button id="gen-copy" type="button">' + COPY_SVG + ' Liste kopieren</button>' +
@@ -3947,6 +3948,36 @@ function renderPlaylistGenerator(mountRoot, config) {
       document.getElementById('gen-count').textContent = mix.length + ' Songs \u2013 \u00dcberraschungsmix aus ' + pages.map(function (x) { return x.label; }).join(', ');
       renderSongGrid(document.getElementById('gen-grid'), mix);
       playAllCurrent(mix);
+    }).catch(function () { btn.disabled = false; });
+  });
+  section.querySelector('#gen-onthisday').addEventListener('click', function (e) {
+    var btn = e.currentTarget;
+    if (btn.disabled) return;
+    btn.disabled = true;
+    fetch('/shared/chartdays.json').then(function (r) { return r.json(); }).then(function (all) {
+      var now = new Date(), thisYear = now.getFullYear();
+      var todayDoy = Math.floor((Date.UTC(2001, now.getMonth(), now.getDate()) - Date.UTC(2001, 0, 1)) / 86400000);
+      var best = {};
+      all.forEach(function (x) {
+        var y = +x.d.slice(0, 4), mo = +x.d.slice(4, 6) - 1, da = +x.d.slice(6, 8);
+        if (y >= thisYear) return;
+        var doy = Math.floor((Date.UTC(2001, mo, da) - Date.UTC(2001, 0, 1)) / 86400000);
+        var diff = Math.abs(doy - todayDoy); diff = Math.min(diff, 365 - diff);
+        if (diff > 3) return;
+        var cur = best[x.yt];
+        if (!cur || x.p < cur.p) best[x.yt] = { p: x.p, y: y, a: x.a, t: x.t, yt: x.yt, rel: x.y, th: x.th };
+      });
+      var mix = Object.keys(best).map(function (k) {
+        var b = best[k];
+        return { a: b.a, t: b.t, y: b.rel || b.y, yt: b.yt, th: b.th || '', _decade: 'vor ' + (thisYear - b.y) + ' J.', _ago: thisYear - b.y };
+      }).sort(function (a, b) { return a._ago - b._ago; });
+      btn.disabled = false;
+      favMode = false; clearSearchUI();
+      document.getElementById('gen-actions').classList.add('visible');
+      document.getElementById('gen-count').textContent = mix.length
+        ? mix.length + ' Songs \u2013 UK-Top-3 rund um den ' + now.getDate() + '.' + (now.getMonth() + 1) + '. in fr\u00fcheren Jahren'
+        : 'Keine Treffer f\u00fcr dieses Datum.';
+      renderSongGrid(document.getElementById('gen-grid'), mix);
     }).catch(function () { btn.disabled = false; });
   });
   section.querySelector('#gen-favs').addEventListener('click', function () {
