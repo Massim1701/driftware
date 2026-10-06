@@ -206,7 +206,7 @@
     aspect-ratio: 4 / 3; min-height: 150px; padding: 18px 18px 16px;
     border-radius: 20px; overflow: hidden; isolation: isolate;
     text-decoration: none; color: #fff;
-    background: var(--mbg);
+    background: var(--mimg, none) center / cover no-repeat, var(--mbg);
     box-shadow: 0 1px 0 rgba(255,255,255,0.14) inset, 0 10px 28px rgba(0,0,0,0.38);
     transition: transform 0.22s ease, box-shadow 0.22s ease;
   }
@@ -214,8 +214,14 @@
     content: ''; position: absolute; inset: 0; z-index: -1;
     background:
       radial-gradient(120% 90% at 85% 0%, rgba(255,255,255,0.22), transparent 55%),
-      linear-gradient(180deg, rgba(8,9,13,0.05) 20%, rgba(8,9,13,0.72) 100%);
+      linear-gradient(180deg, rgba(8,9,13,0.0) 30%, rgba(8,9,13,0.82) 100%);
   }
+  .mood-card.has-photo::after {
+    content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+    background: linear-gradient(135deg, var(--dc, transparent), transparent 60%); opacity: 0.28; mix-blend-mode: soft-light;
+  }
+  .mood-card.has-photo { transition: transform 0.22s ease, box-shadow 0.22s ease, background-size 0.4s ease; }
+  .mood-card.has-photo .mood-art { display: none; }
   .mood-art {
     position: absolute; right: -14px; top: -10px; width: 118px; height: 118px;
     z-index: -1; opacity: 0.2; transform: rotate(-10deg);
@@ -524,6 +530,9 @@
         a.className = 'mood-card';
         a.href = '/' + d.href;
         a.style.setProperty('--mbg', d.bg);
+        var slug = d.href.replace(/-music\/?$/, '');
+        a.style.setProperty('--mimg', "url('img/mood/" + slug + ".jpg?v=1')");
+        a.classList.add('has-photo');
         if (d.accent) a.style.setProperty('--dc', d.accent);
         var art = document.createElement('div'); art.className = 'mood-art'; art.setAttribute('aria-hidden', 'true'); art.innerHTML = d.icon;
         var chip = document.createElement('div'); chip.className = 'mood-chip'; chip.setAttribute('aria-hidden', 'true'); chip.innerHTML = d.icon;
