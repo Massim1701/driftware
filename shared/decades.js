@@ -4110,3 +4110,67 @@ function renderPlaylistGenerator(mountRoot, config) {
     if (incomingQuery) { searchInput.value = incomingQuery; runSearch(incomingQuery); }
   } catch (e) {}
 }
+
+/* Diagnose-Protokoll fuer den Player (Ursachensuche "Warteschlange verschwindet /
+   naechster Song wird nicht vorgeladen"). Haelt die letzten 300 Ereignisse mit
+   dem Zustand beider Decks im Speicher (nichts wird gesendet oder gespeichert).
+   Tastenkombi Strg+Umschalt+D kopiert das Protokoll in die Zwischenablage. */
+(function () {
+  var LOG = [];
+  var T0 = Date.now();
+  function snap() {
+    return ['A', 'B'].map(function (k) {
+      var d = DECKS[k], ps = '?';
+      try { ps = d.player && d.player.getPlayerState ? d.player.getPlayerState() : '-'; } catch (e) {}
+      return k + ':' + (d.song ? String(d.song.t).slice(0, 14) : '-') + (d.isPlaying ? '>' : '|') +
+        ' q' + (d.queue ? d.queue.length : '?') + '/' + d.index + (d.preloadedFor ? ' pre' : '') + ' ps' + ps;
+    }).join(' || ');
+  }
+  function log(ev) {
+    LOG.push(((Date.now() - T0) / 1000).toFixed(1) + 's ' + ev + '  ' + snap());
+    if (LOG.length > 300) LOG.shift();
+  }
+  window.djLog = log;
+  window.djDump = function () {
+    return 'driftware Player-Diagnose ' + new Date().toISOString() + '\n' + navigator.userAgent + '\n' + location.href + '\n\n' + LOG.join('\n');
+  };
+  ['playDeckSong', 'advanceAlternating', 'tryGaplessHandoff', 'maybePreloadNext', 'startAutoCrossfade',
+   'finishAutoCrossfade', 'deckStep', 'loadSongToDeck', 'playAllCurrent', 'deckTogglePlay'].forEach(function (name) {
+    var orig = window[name];
+    if (typeof orig !== 'function') return;
+    window[name] = function () {
+      var a = arguments, label = name;
+      if (typeof a[0] === 'string') label += '(' + a[0] + (typeof a[1] === 'number' ? ',' + a[1] : '') + ')';
+      log('>' + label);
+      var r;
+      try { r = orig.apply(this, a); } catch (e) { log('!' + name + ' FEHLER ' + (e && e.message)); throw e; }
+      log('<' + name + (r === undefined ? '' : ' =' + r));
+      return r;
+    };
+  });
+  var origOSC = window.onDeckStateChange;
+  if (typeof origOSC === 'function') {
+    window.onDeckStateChange = function (key) {
+      var h = origOSC(key);
+      return function (e) { log('YT ' + key + ' state=' + (e && e.data)); return h(e); };
+    };
+  }
+  window.addEventListener('error', function (e) { log('JS-FEHLER ' + (e && e.message)); });
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
+      e.preventDefault();
+      var txt = window.djDump();
+      var done = function (msg) {
+        var t = document.createElement('div');
+        t.textContent = msg;
+        t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;background:#16171d;color:#f3f3f6;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 16px;font:600 14px Inter,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.5)';
+        document.body.appendChild(t);
+        setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 2600);
+      };
+      try {
+        navigator.clipboard.writeText(txt).then(function () { done('Diagnose kopiert – jetzt im Chat einfügen'); }, function () { done('Kopieren nicht möglich'); });
+      } catch (err) { done('Kopieren nicht möglich'); }
+    }
+  });
+  log('Start');
+})();
