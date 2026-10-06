@@ -124,6 +124,7 @@ var SITE_PAGES = [
   { slug: 'romantic', folder: 'romantic-music', label: 'Romantic', group: 'Stimmungen', color: '#e0446b' },
   { slug: 'summer', folder: 'summer-music', label: 'Summer & Beach', group: 'Stimmungen', color: '#ff9e2c' },
   { slug: 'workout', folder: 'workout-music', label: 'Workout & Running', group: 'Stimmungen', color: '#e2472d' }
+  { slug: 'yoga', folder: 'yoga-music', label: 'Yoga & Meditation', group: 'Stimmungen', color: '#7fc8a9' },
 ];
 
 function currentPageFolder() {

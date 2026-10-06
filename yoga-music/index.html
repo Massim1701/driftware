@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yoga & Meditation</title>
+<meta name="description" content="Yoga & Meditation: New Age, Ambient, Drone, Neo-Classical und Weltmusik aus allen Jahrzehnten — ruhige Klänge für Yoga, Meditation und Entspannung, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=107">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=95"></script>
+<script src="../shared/midi.js?v=4"></script>
+<script src="../shared/manualadd.js?v=12"></script>
+<script src="../shared/continuity.js?v=4"></script>
+<script src="../shared/nextup.js?v=22"></script>
+<script>
+renderDecadeIndex({
+  name: 'Yoga & Meditation',
+  years: 'Alle Jahrzehnte',
+  icon: '🧘',
+  iconBg: 'linear-gradient(135deg, #7fc8a9, #6f7bd9)',
+  tagline: 'New Age, Ambient, Drone, Neo-Classical und Weltmusik aus allen Jahrzehnten — ruhige Klänge für Yoga, Meditation und Entspannung.',
+  badgeText: '🧘 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#0e1716',
+    panel: '#17282a',
+    accent: '#7fc8a9',
+    accent2: '#8f9bf0',
+    text: '#eefaf5',
+    muted: '#8fb0a8'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (New Age, Ambient / Drone, Piano / Neo-Classical, Weltmusik / Spirituell) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🌿', title: 'New Age', desc: 'Sanfte Synthesizer, Weite, Ruhe.' },
+    { emoji: '🌌', title: 'Ambient / Drone', desc: 'Flächen und Klangräume.' },
+    { emoji: '🎹', title: 'Piano / Neo-Classical', desc: 'Klavier und Streicher, reduziert.' },
+    { emoji: '🕉️', title: 'Weltmusik / Spirituell', desc: 'Indische Klassik, Tribal, Chants.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'Yoga & Meditation',
+  themes: [
+    { key: 'NewAge', label: 'New Age' },
+    { key: 'AmbientDrone', label: 'Ambient / Drone' },
+    { key: 'ClassicalPiano', label: 'Piano / Neo-Classical' },
+    { key: 'WorldSpiritual', label: 'Weltmusik / Spirituell' }
+  ]
+});
+</script>
+</body>
+</html>
