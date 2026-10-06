@@ -1391,6 +1391,9 @@ function ensureDjPlayer() {
   if (bpmSyncBtn) bpmSyncBtn.addEventListener('click', syncIdleDeckToPlaying);
   updateBpmSync();
   setupPhoneMini(bar);
+  /* Tooltips: jeder Knopf/Regler im Player bekommt seinen Beschreibungstext
+     auch als title (erscheint nach kurzem Verweilen mit der Maus). */
+  bar.querySelectorAll('[aria-label]:not([title])').forEach(function (el) { el.title = el.getAttribute('aria-label'); });
 
   /* Schallplatten-Drag-Bild schon jetzt anlegen (nicht erst beim ersten
      dragstart) -- manche Browser (v.a. Safari) rendern ein Element, das
@@ -3399,6 +3402,10 @@ function renderSongGrid(container, songs) {
     check.setAttribute('aria-hidden', 'true');
     icons.appendChild(check);
 
+    heart.title = 'Zu Favoriten hinzufügen / entfernen';
+    info.title = 'Song-Details und Streaming-Links';
+    play.title = song.yt ? 'Zur Warteschlange hinzufügen' : (hasVkFallback ? 'Auf VK ansehen' : 'Kein Video gefunden');
+    ytPlay.title = song.yt ? 'Jetzt im Player abspielen' : 'Kein Video gefunden';
     tile.appendChild(icons);
 
     tile.addEventListener('click', function () {
