@@ -11,14 +11,14 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__))))
 import fetch_uk_chart_hits as uk
 
-DECADES = ["80er", "90er"]
+DECADES = ["70er", "80er", "90er", "2000er", "2010er", "2020er"]
 
 
 def main():
     workbook = uk.load_uk_chart_workbook()
     best_key, best_count = None, -1
     for decade_key in DECADES:
-        hits = uk.collect_decade_hits(workbook, decade_key, 50)
+        hits = uk.collect_decade_hits(workbook, decade_key, 40)
         catalog_index = uk.build_catalog_index(decade_key)
         queue_path = os.path.join(uk.ROOT, uk.DECADE_QUEUE[decade_key])
         queue_index = {}

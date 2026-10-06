@@ -10,8 +10,12 @@ on:
         default: 'auto'
         options:
           - auto
+          - 70er
           - 80er
           - 90er
+          - 2000er
+          - 2010er
+          - 2020er
   schedule:
     # Taeglich um 05:22 UTC -- zeitlich versetzt zu den anderen taeglichen
     # Workflows (03:47/04:17/04:37/04:57/05:52), siehe expand-decade-genres.yml
@@ -54,23 +58,23 @@ jobs:
           fi
 
       - name: UK-Chart-Kandidaten sammeln (Phase A)
-        # Eigenes, kleineres Zeitbudget als die YouTube-Aufloesung unten --
-        # das Discogs-Nachschlagen ist der langsamere Teil, soll aber nicht
-        # den ganzen 6h-Job fuer sich beanspruchen. Peak<=50 wie beim
+        # Nutzerwunsch 6.10.: alle Dekaden, Top 40. Phase A bekommt fast das
+        # ganze 6h-Fenster (4h50), weil die YouTube-Aufloesung auf GitHub-IPs
+        # ohnehin geblockt ist und lokal nachgeholt wird (Phase B hier nur kurz). Peak<=50 wie beim
         # Billboard-Import (Nutzerentscheidung 26.9., Top 50 statt Top 40).
         env:
-          UKCHARTS_TIME_BUDGET_SECONDS: '3600'
+          UKCHARTS_TIME_BUDGET_SECONDS: '17400'
           # Gleicher Token wie beim Billboard-Import (Repo-Secret, bereits
           # fuer process-missing-songs.yml eingerichtet).
           DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
-        run: python3 tools/fetch_uk_chart_hits.py "${{ steps.pick.outputs.decade }}" --min-peak 50
+        run: python3 tools/fetch_uk_chart_hits.py "${{ steps.pick.outputs.decade }}" --min-peak 40
 
       - name: YouTube-Links aufloesen (Phase B)
         # Dieselbe Warteliste/Verarbeitung wie beim Billboard-Import und der
         # Dekaden-Genre-Erweiterung (siehe process_decade_queue.py).
         env:
           DECADE_QUEUE_KEY: ${{ steps.pick.outputs.decade }}
-          DECADE_TIME_BUDGET_SECONDS: '15000'
+          DECADE_TIME_BUDGET_SECONDS: '300'
         run: python3 tools/process_decade_queue.py
 
       - name: Aenderungen committen und pushen
