@@ -195,6 +195,46 @@
     color: var(--text);
     margin: 56px 0 16px;
   }
+  .ambient-head { display: flex; align-items: baseline; gap: 12px; margin: 56px 0 18px; }
+  .ambient-head .ambient-heading { margin: 0; }
+  .ambient-sub { font-size: 13px; color: var(--muted); letter-spacing: 0.02em; }
+  .mood-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 720px) { .mood-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 460px) { .mood-grid { grid-template-columns: 1fr; } }
+  .mood-card {
+    position: relative; display: flex; flex-direction: column; justify-content: flex-end;
+    aspect-ratio: 4 / 3; min-height: 150px; padding: 18px 18px 16px;
+    border-radius: 20px; overflow: hidden; isolation: isolate;
+    text-decoration: none; color: #fff;
+    background: var(--mbg);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.14) inset, 0 10px 28px rgba(0,0,0,0.38);
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+  }
+  .mood-card::before {
+    content: ''; position: absolute; inset: 0; z-index: -1;
+    background:
+      radial-gradient(120% 90% at 85% 0%, rgba(255,255,255,0.22), transparent 55%),
+      linear-gradient(180deg, rgba(8,9,13,0.05) 20%, rgba(8,9,13,0.72) 100%);
+  }
+  .mood-art {
+    position: absolute; right: -14px; top: -10px; width: 118px; height: 118px;
+    z-index: -1; opacity: 0.2; transform: rotate(-10deg);
+    transition: transform 0.35s ease, opacity 0.35s ease;
+  }
+  .mood-art svg { width: 100%; height: 100%; stroke: #fff; fill: none; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
+  .mood-chip {
+    position: absolute; top: 14px; left: 14px; width: 36px; height: 36px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.28);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  }
+  .mood-chip svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .mood-name { font-family: 'Sora', -apple-system, sans-serif; font-weight: 700; font-size: 18px; line-height: 1.2; letter-spacing: -0.01em; text-shadow: 0 1px 8px rgba(0,0,0,0.35); }
+  .mood-desc { margin: 5px 0 0; font-size: 12.5px; line-height: 1.4; color: rgba(255,255,255,0.82); text-shadow: 0 1px 6px rgba(0,0,0,0.4); }
+  .mood-card:hover { transform: translateY(-4px); box-shadow: 0 1px 0 rgba(255,255,255,0.2) inset, 0 18px 40px rgba(0,0,0,0.5), 0 0 0 1px var(--dc, #fff) inset; }
+  .mood-card:hover .mood-art { transform: rotate(-4deg) scale(1.08); opacity: 0.3; }
+  .mood-card:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { .mood-card, .mood-art { transition: none; } }
   main {
     max-width: 900px;
     margin: 0 auto;
@@ -345,8 +385,8 @@
   </header>
   <main>
     <div class="decades-grid" id="decades-container"></div>
-    <h2 class="ambient-heading">Ambiente — nach Stimmung</h2>
-    <div class="decades-grid" id="ambients-container"></div>
+    <div class="ambient-head"><h2 class="ambient-heading">Ambiente — nach Stimmung</h2><span class="ambient-sub">Alle Jahrzehnte</span></div>
+    <div class="mood-grid" id="ambients-container"></div>
   </main>
   <footer>
     &copy; 2026 Massimo — Ultimate Music Master
@@ -477,8 +517,25 @@
       });
     }
 
+    function renderMoodCards(list, containerId) {
+      var container = document.getElementById(containerId);
+      list.forEach(function (d) {
+        var a = document.createElement('a');
+        a.className = 'mood-card';
+        a.href = '/' + d.href;
+        a.style.setProperty('--mbg', d.bg);
+        if (d.accent) a.style.setProperty('--dc', d.accent);
+        var art = document.createElement('div'); art.className = 'mood-art'; art.setAttribute('aria-hidden', 'true'); art.innerHTML = d.icon;
+        var chip = document.createElement('div'); chip.className = 'mood-chip'; chip.setAttribute('aria-hidden', 'true'); chip.innerHTML = d.icon;
+        var name = document.createElement('span'); name.className = 'mood-name'; name.textContent = d.name;
+        var desc = document.createElement('p'); desc.className = 'mood-desc'; desc.textContent = d.desc;
+        a.appendChild(art); a.appendChild(chip); a.appendChild(name); a.appendChild(desc);
+        container.appendChild(a);
+      });
+    }
+
     renderCards(DECADES, 'decades-container');
-    renderCards(AMBIENTS, 'ambients-container');
+    renderMoodCards(AMBIENTS, 'ambients-container');
 
     /* "Fetch"-Button: loest den taeglichen Verarbeitungs-Job fuer die
        Warteliste (queue/fehlende-lieder.json) sofort aus, statt bis
