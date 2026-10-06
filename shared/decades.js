@@ -115,6 +115,7 @@ var SITE_PAGES = [
   { slug: 'latenight', folder: 'latenight-music', label: 'Late Night', group: 'Stimmungen', color: '#6a5acd' },
   { slug: 'morning', folder: 'morning-music', label: 'Morning', group: 'Stimmungen', color: '#f2b705' },
   { slug: 'roadtrip', folder: 'roadtrip-music', label: 'Road Trip', group: 'Stimmungen', color: '#e8712f' },
+  { slug: 'summer', folder: 'summer-music', label: 'Summer & Beach', group: 'Stimmungen', color: '#ff9e2c' },
   { slug: 'workout', folder: 'workout-music', label: 'Workout & Running', group: 'Stimmungen', color: '#e2472d' }
 ];
 

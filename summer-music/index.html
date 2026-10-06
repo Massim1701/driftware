@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Summer & Beach</title>
+<meta name="description" content="Summer & Beach: Reggae, Dancehall, Latin, Tropical, Surf und Dance-Pop aus allen Jahrzehnten — Sommerhits für Strand, Urlaub und Open-Air, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=107">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=95"></script>
+<script src="../shared/midi.js?v=4"></script>
+<script src="../shared/manualadd.js?v=12"></script>
+<script src="../shared/continuity.js?v=4"></script>
+<script src="../shared/nextup.js?v=22"></script>
+<script>
+renderDecadeIndex({
+  name: 'Summer & Beach',
+  years: 'Alle Jahrzehnte',
+  icon: '🏖️',
+  iconBg: 'linear-gradient(135deg, #ff9e2c, #15b8c9)',
+  tagline: 'Reggae, Dancehall, Latin, Tropical, Surf und Dance-Pop aus allen Jahrzehnten — Sommerhits für Strand, Urlaub und Open-Air.',
+  badgeText: '🏖️ 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#0b1a22',
+    panel: '#13303b',
+    accent: '#ff9e2c',
+    accent2: '#15b8c9',
+    text: '#fff7ea',
+    muted: '#8fb4bf'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (Reggae / Dancehall, Latin / Tropical, Surf / Beach, Dance-Pop / Sommerhits) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🌴', title: 'Reggae / Dancehall', desc: 'Entspannte Offbeat-Sonne.' },
+    { emoji: '🍹', title: 'Latin / Tropical', desc: 'Reggaeton, Salsa, Samba und Co.' },
+    { emoji: '🏄', title: 'Surf / Beach', desc: 'Wellen, Gitarren, Strandfeeling.' },
+    { emoji: '☀️', title: 'Dance-Pop / Sommerhits', desc: 'Tanzbare Sommer-Charts.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'Summer & Beach',
+  themes: [
+    { key: 'ReggaeDancehall', label: 'Reggae / Dancehall' },
+    { key: 'LatinTropical', label: 'Latin / Tropical' },
+    { key: 'SurfBeach', label: 'Surf / Beach' },
+    { key: 'SummerDancePop', label: 'Dance-Pop / Sommerhits' }
+  ]
+});
+</script>
+</body>
+</html>
