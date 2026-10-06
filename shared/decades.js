@@ -3079,7 +3079,41 @@ function toggleFav(song) {
   return !!m[id];
 }
 
+/* "Passt nicht": meldet einen Song anonym als unpassend fuer diese Seite/Stimmung.
+   Es wird nur beim Klick gesendet: Song-Kennung, Seite, Genre, Titel, Interpret
+   -- keine IP-Speicherung, kein Nutzerbezug. Der Song verschwindet danach fuer
+   diesen Browser (localStorage). Entfernt wird nichts automatisch, die
+   Meldungen werden manuell geprueft. */
+var FLAG_KEY = 'dw_flagged_v1';
+var FLAG_URL = 'https://viyfqufxwmdpggirmbjd.supabase.co/rest/v1/rpc/flag_song';
+var FLAG_ANON = 'sb_publishable_GG54x-4VLnTtRHVc1alK8w__dUpqxUt';
+var flagCache = null;
+function flagLoad() {
+  if (flagCache) return flagCache;
+  flagCache = {};
+  try { var r = localStorage.getItem(FLAG_KEY); if (r) flagCache = JSON.parse(r) || {}; } catch (e) { flagCache = {}; }
+  return flagCache;
+}
+function flagPage() { return currentPageFolder() || 'unbekannt'; }
+function flagKey(song) { return (song.yt || songId(song)) + '|' + flagPage(); }
+function isFlagged(song) { return Object.prototype.hasOwnProperty.call(flagLoad(), flagKey(song)); }
+function flagSong(song) {
+  var m = flagLoad(), k = flagKey(song);
+  if (m[k]) return;
+  m[k] = 1;
+  try { localStorage.setItem(FLAG_KEY, JSON.stringify(m)); } catch (e) {}
+  try {
+    fetch(FLAG_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': FLAG_ANON, 'Authorization': 'Bearer ' + FLAG_ANON },
+      body: JSON.stringify({ p_key: String(song.yt || songId(song)).slice(0, 200), p_page: flagPage(), p_genre: String(song._bucket || song.g || ''), p_artist: String(song.a || ''), p_title: String(song.t || '') }),
+      keepalive: true
+    }).catch(function () {});
+  } catch (e) {}
+}
+
 function renderSongGrid(container, songs) {
+  songs = songs.filter(function (s) { return !isFlagged(s); });
   container.innerHTML = '';
   var showMostWanted = songs.length > POPULARITY_SPLIT;
   var visible = songs;
@@ -3179,6 +3213,23 @@ function renderSongGrid(container, songs) {
     heart.addEventListener('click', doFav);
     heart.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doFav(e); } });
     icons.appendChild(heart);
+
+    var nofit = document.createElement('span');
+    nofit.className = 'song-tile-nofit';
+    nofit.textContent = '\u2298';
+    nofit.title = 'Passt nicht in diese Stimmung';
+    nofit.setAttribute('role', 'button');
+    nofit.setAttribute('tabindex', '0');
+    nofit.setAttribute('aria-label', 'Passt nicht in diese Stimmung: ' + song.a + ' \u2013 ' + song.t);
+    function doFlag(e) {
+      e.stopPropagation();
+      flagSong(song);
+      tile.classList.add('flagged-out');
+      setTimeout(function () { if (tile.parentNode) tile.parentNode.removeChild(tile); }, 250);
+    }
+    nofit.addEventListener('click', doFlag);
+    nofit.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doFlag(e); } });
+    icons.appendChild(nofit);
 
     var info = document.createElement('span');
     info.className = 'song-tile-info';
