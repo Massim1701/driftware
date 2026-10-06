@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grill & Garten</title>
+<meta name="description" content="Grill & Garten: Rock’n’Roll, Country, Soul, Funk, Schlager und Pop-Klassiker aus allen Jahrzehnten — entspannte Hits für BBQ, Terrasse und Gartenparty, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=107">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=95"></script>
+<script src="../shared/midi.js?v=4"></script>
+<script src="../shared/manualadd.js?v=12"></script>
+<script src="../shared/continuity.js?v=4"></script>
+<script src="../shared/nextup.js?v=22"></script>
+<script>
+renderDecadeIndex({
+  name: 'Grill & Garten',
+  years: 'Alle Jahrzehnte',
+  icon: '🔥',
+  iconBg: 'linear-gradient(135deg, #ff6a2b, #7bbf3a)',
+  tagline: 'Rock’n’Roll, Country, Soul, Funk, Schlager und Pop-Klassiker aus allen Jahrzehnten — entspannte Hits für BBQ, Terrasse und Gartenparty.',
+  badgeText: '🔥 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#1a110c',
+    panel: '#2c1c13',
+    accent: '#ff6a2b',
+    accent2: '#8cc63f',
+    text: '#fff3e6',
+    muted: '#b99a85'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (Rock’n’Roll / Oldies, Country / Southern, Soul / Funk / R&B, Schlager / Pop) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🎸', title: 'Rock’n’Roll / Oldies', desc: 'Rock’n’Roll, Rockabilly und Doo Wop.' },
+    { emoji: '🤠', title: 'Country / Southern', desc: 'Country, Country Rock, Southern Rock.' },
+    { emoji: '🍖', title: 'Soul / Funk / R&B', desc: 'Groove für den Grillabend.' },
+    { emoji: '🌻', title: 'Schlager / Pop', desc: 'Mitsing-Hits, Schlager, Soft Rock.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'Grill & Garten',
+  themes: [
+    { key: 'RockRoll', label: 'Rock’n’Roll / Oldies' },
+    { key: 'CountrySouthern', label: 'Country / Southern' },
+    { key: 'SoulFunk', label: 'Soul / Funk / R&B' },
+    { key: 'SchlagerPop', label: 'Schlager / Pop' }
+  ]
+});
+</script>
+</body>
+</html>
