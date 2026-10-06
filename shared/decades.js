@@ -118,6 +118,7 @@ var SITE_PAGES = [
   { slug: 'karaoke', folder: 'karaoke-music', label: 'Karaoke', group: 'Stimmungen', color: '#ff3d81' },
   { slug: 'latenight', folder: 'latenight-music', label: 'Late Night', group: 'Stimmungen', color: '#6a5acd' },
   { slug: 'morning', folder: 'morning-music', label: 'Morning', group: 'Stimmungen', color: '#f2b705' },
+  { slug: 'nostalgie', folder: 'nostalgie-music', label: 'Nostalgie', group: 'Stimmungen', color: '#f2994a' },
   { slug: 'cozy', folder: 'cozy-music', label: 'Rainy Day & Cozy', group: 'Stimmungen', color: '#6fa3d8' },
   { slug: 'roadtrip', folder: 'roadtrip-music', label: 'Road Trip', group: 'Stimmungen', color: '#e8712f' },
   { slug: 'romantic', folder: 'romantic-music', label: 'Romantic', group: 'Stimmungen', color: '#e0446b' },

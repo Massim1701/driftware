@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nostalgie</title>
+<meta name="description" content="Nostalgie: Pop, Rock und Soul aus den 60ern, 70ern, 80ern und 90ern — Throwback-Hits für Erinnerungen, Jugend und Zeitreise, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=107">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=95"></script>
+<script src="../shared/midi.js?v=4"></script>
+<script src="../shared/manualadd.js?v=12"></script>
+<script src="../shared/continuity.js?v=4"></script>
+<script src="../shared/nextup.js?v=22"></script>
+<script>
+renderDecadeIndex({
+  name: 'Nostalgie',
+  years: 'Alle Jahrzehnte',
+  icon: '📼',
+  iconBg: 'linear-gradient(135deg, #f2994a, #9b51e0)',
+  tagline: 'Pop, Rock und Soul aus den 60ern, 70ern, 80ern und 90ern — Throwback-Hits für Erinnerungen, Jugend und Zeitreise.',
+  badgeText: '📼 4 Stimmungs-Genres — Playlist-Generator live',
+  colors: {
+    bg: '#17110f',
+    panel: '#2b1f1a',
+    accent: '#f2994a',
+    accent2: '#b27be8',
+    text: '#fff4e8',
+    muted: '#b39b8c'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs, dekaden-übergreifend nach Stimmung statt Jahrzehnt kuratiert (60er Throwback, 70er Throwback, 80er Throwback, 90er Throwback) — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '☮️', title: '60er Throwback', desc: 'Beat, Pop und Soul der 60er.' },
+    { emoji: '🕺', title: '70er Throwback', desc: 'Disco, Glam und Rock der 70er.' },
+    { emoji: '📼', title: '80er Throwback', desc: 'Synthesizer, Pop und New Wave der 80er.' },
+    { emoji: '💿', title: '90er Throwback', desc: 'Eurodance, Britpop und R&B der 90er.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'Nostalgie',
+  themes: [
+    { key: 'Sixties', label: '60er Throwback' },
+    { key: 'Seventies', label: '70er Throwback' },
+    { key: 'Eighties', label: '80er Throwback' },
+    { key: 'Nineties', label: '90er Throwback' }
+  ]
+});
+</script>
+</body>
+</html>
