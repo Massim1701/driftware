@@ -3899,34 +3899,7 @@ function renderPlaylistGenerator(mountRoot, config) {
       'Die Suche oben durchsucht aber schon alle anderen Dekaden — Treffer lassen sich direkt im Player abspielen.</p>';
   }
 
-  var section = document.createElement('section');
-  section.className = 'generator';
-  section.innerHTML = '' +
-    '<h2>🎛️ Playlist-Generator</h2>' +
-    '<p class="sub">Songs anklicken für einen grünen Haken, ⓘ zeigt alle Song-Infos. Auswahl direkt an deinen Streaming-Dienst senden.</p>' +
-    '<div class="generator-search">' +
-    '  <div class="search-box">' +
-    '    <span class="search-box-icon">' + SEARCH_SVG + '</span>' +
-    '    <input type="search" id="gen-search" class="search-input" placeholder="Song, Künstler oder Genre suchen — alle Dekaden …" autocomplete="off">' +
-    '  </div>' +
-    '  <p class="search-hint" id="gen-search-hint" hidden></p>' +
-    '</div>' +
-    decadeNavRowHTML() +
-    switchRowHTML() +
-    ((neighborDecades.prev || neighborDecades.next) ? (
-      '<div class="decade-link-row">' +
-      '  <span class="decade-link-label">' + LINK_SVG + ' Dekade verbinden:</span>' +
-      /* Chronologische Reihenfolge, eigene Dekade in der Mitte (siehe
-         Nutzeranforderung): [vorherige] [eigene] [naechste]. */
-      [neighborDecades.prev, { key: ownDecadeKey, label: ownDecadeLabel, own: true }, neighborDecades.next]
-        .filter(Boolean)
-        .map(function (n) {
-          var cls = 'decade-link-chip' + (n.own ? ' decade-own-chip' : '');
-          return '<button class="' + cls + '" type="button" data-key="' + n.key + '" aria-pressed="false">' + escapeHtml(n.label.replace(' Music', '')) + '</button>';
-        }).join('') +
-      '</div>'
-    ) : '') +
-    (config.themes && config.themes.length ? (
+  var genreRowHTML = (config.themes && config.themes.length ? (
       '<div class="gen-genre-row">' +
       ddHTML({
         ddId: 'gen-genre-dd',
@@ -3941,6 +3914,34 @@ function renderPlaylistGenerator(mountRoot, config) {
         ),
         selectedValue: null
       }) +
+      '</div>'
+    ) : '');
+
+  var section = document.createElement('section');
+  section.className = 'generator';
+  section.innerHTML = '' +
+    '<h2>🎛️ Playlist-Generator</h2>' +
+    '<p class="sub">Songs anklicken für einen grünen Haken, ⓘ zeigt alle Song-Infos. Auswahl direkt an deinen Streaming-Dienst senden.</p>' +
+    '<div class="generator-search">' +
+    '  <div class="search-box">' +
+    '    <span class="search-box-icon">' + SEARCH_SVG + '</span>' +
+    '    <input type="search" id="gen-search" class="search-input" placeholder="Song, Künstler oder Genre suchen — alle Dekaden …" autocomplete="off">' +
+    '  </div>' +
+    '  <p class="search-hint" id="gen-search-hint" hidden></p>' +
+    '</div>' +
+    decadeNavRowHTML() +
+    '<div class="gen-selectors">' + switchRowHTML() + genreRowHTML + '</div>' +
+    ((neighborDecades.prev || neighborDecades.next) ? (
+      '<div class="decade-link-row">' +
+      '  <span class="decade-link-label">' + LINK_SVG + ' Dekade verbinden:</span>' +
+      /* Chronologische Reihenfolge, eigene Dekade in der Mitte (siehe
+         Nutzeranforderung): [vorherige] [eigene] [naechste]. */
+      [neighborDecades.prev, { key: ownDecadeKey, label: ownDecadeLabel, own: true }, neighborDecades.next]
+        .filter(Boolean)
+        .map(function (n) {
+          var cls = 'decade-link-chip' + (n.own ? ' decade-own-chip' : '');
+          return '<button class="' + cls + '" type="button" data-key="' + n.key + '" aria-pressed="false">' + escapeHtml(n.label.replace(' Music', '')) + '</button>';
+        }).join('') +
       '</div>'
     ) : '') +
     '<div class="send-panel">' +
