@@ -2011,3 +2011,104 @@ html[data-device="phone"] body.has-dj-mini { padding-bottom: 72px; }
   .gen-selectors .gen-dd-trigger { min-height: 56px; }
   .gen-selectors .gen-dd-value { font-size: 15px; }
 }
+
+/* ---- LED-Look (Cool Blue): Stimmung + Genre als blaue LED-Displays -------
+   Display zeigt die Auswahl in leuchtender Schrift, Pfeile schalten durch,
+   die aufgeklappte Liste ist ein Feld aus LED-Tasten. */
+.gen-selectors .gen-dd-trigger {
+  position: relative;
+  padding: 12px 108px 12px 18px;
+  border: 1px solid #1d4a78;
+  border-left-width: 1px;
+  border-radius: 12px;
+  background-color: #040d1a;
+  background-image: repeating-linear-gradient(0deg, rgba(80,170,255,0.045) 0 1px, transparent 1px 3px);
+  background-position: 0 0;
+  background-size: auto;
+  box-shadow: inset 0 0 26px rgba(0,0,0,0.85), 0 0 0 1px rgba(40,140,255,0.08), 0 0 18px -6px rgba(40,150,255,0.55);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+.gen-selectors .gen-dd-trigger:hover,
+.gen-selectors .gen-dd.open .gen-dd-trigger { background-color: #061427; border-color: #2f7ad0; }
+.gen-selectors .gen-dd-label { color: #3f86c7; letter-spacing: 0.22em; font-size: 10px; }
+.gen-selectors .gen-dd-value {
+  color: #7fdcff;
+  font-size: 17px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px rgba(70,190,255,0.9), 0 0 18px rgba(30,140,255,0.6);
+}
+.gen-selectors .gen-dd-value.placeholder { color: #2f6694; text-shadow: none; font-weight: 600; }
+.gen-dd-step {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 9px;
+  border: 1px solid #1d4a78;
+  background: #07182c;
+  color: #6fd3ff;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  text-shadow: 0 0 8px rgba(70,190,255,0.9);
+  z-index: 2;
+}
+.gen-dd-step:hover { background: #0d2b4d; border-color: #3a8fe8; box-shadow: 0 0 12px -2px rgba(60,170,255,0.8); }
+.gen-dd-step:active { transform: translateY(-50%) scale(0.94); }
+.gen-dd-step:focus-visible { outline: 2px solid #6fd3ff; outline-offset: 2px; }
+.gen-dd-prev { right: 52px; }
+.gen-dd-next { right: 10px; }
+
+.gen-selectors .gen-dd-list {
+  background: #040d1a;
+  border: 1px solid #1d4a78;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.6), 0 0 22px -8px rgba(40,150,255,0.6);
+}
+.gen-selectors .gen-dd-list:not([hidden]) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px;
+}
+.gen-selectors .gen-dd-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border: 1px solid #12335a;
+  border-left: 1px solid #12335a;
+  border-radius: 9px;
+  background: #07142a;
+  color: #9fc4e6;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.gen-selectors .gen-dd-item::before {
+  content: "";
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #123a66;
+}
+.gen-selectors .gen-dd-item:hover { background: #0b2243; color: #d6efff; }
+.gen-selectors .gen-dd-item:hover::before { background: #2c78c4; }
+.gen-selectors .gen-dd-item.active {
+  border-color: #3a8fe8;
+  background: #0b2748;
+  color: #d6f3ff;
+  font-weight: 700;
+}
+.gen-selectors .gen-dd-item.active::before {
+  background: #5fd0ff;
+  box-shadow: 0 0 10px 1px rgba(80,200,255,0.95);
+}
+@media (max-width: 640px) {
+  .gen-selectors .gen-dd-trigger { padding: 10px 100px 10px 14px; }
+  .gen-selectors .gen-dd-value { font-size: 15px; }
+  .gen-selectors .gen-dd-list:not([hidden]) { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+}

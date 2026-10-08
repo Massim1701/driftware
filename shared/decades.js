@@ -169,6 +169,8 @@ function ddHTML(config) {
     '    <span class="gen-dd-label">' + escapeHtml(config.label) + '</span>' +
     '    <span class="gen-dd-value' + (selected ? '' : ' placeholder') + '">' + escapeHtml(valueText) + '</span>' +
     '  </button>' +
+    (config.stepper ? '  <button type="button" class="gen-dd-step gen-dd-prev" aria-label="Vorherige Auswahl" title="Vorherige">\u25C0</button>' +
+                      '  <button type="button" class="gen-dd-step gen-dd-next" aria-label="N\u00e4chste Auswahl" title="N\u00e4chste">\u25B6</button>' : '') +
     '  <ul class="gen-dd-list" role="listbox" aria-label="' + escapeHtml(config.label) + '" hidden>' + ddItemsHTML(config.items, config.selectedValue) + '</ul>' +
     '</div>';
 }
@@ -204,6 +206,20 @@ function wireDropdown(ddEl, onSelect) {
   });
   ddEl.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') { closeDD(); trigger.focus(); }
+  });
+  /* LED-Pfeile: schalten die Auswahl per Klick auf den Nachbar-Eintrag weiter
+     (laufen damit ueber dieselbe Logik wie ein normaler Klick in der Liste). */
+  ddEl.querySelectorAll('.gen-dd-step').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var items = Array.prototype.slice.call(list.querySelectorAll('.gen-dd-item'));
+      if (!items.length) return;
+      var cur = -1;
+      items.forEach(function (li, i) { if (li.classList.contains('active')) cur = i; });
+      var dir = btn.classList.contains('gen-dd-prev') ? -1 : 1;
+      var next = cur < 0 ? (dir > 0 ? 0 : items.length - 1) : (cur + dir + items.length) % items.length;
+      items[next].click();
+    });
   });
 }
 
@@ -278,7 +294,8 @@ function switchRowHTML() {
     ddHTML({
       ddId: 'gen-switch-dd-stimmungen',
       label: 'Ambient/Mood',
-      placeholder: 'wechseln',
+      placeholder: 'w\u00e4hlen',
+      stepper: true,
       items: items,
       selectedValue: activeItem ? activeItem.value : null
     }) +
@@ -3905,7 +3922,8 @@ function renderPlaylistGenerator(mountRoot, config) {
         ddId: 'gen-genre-dd',
         extraClass: 'gen-genre-dd',
         label: 'Genre',
-        placeholder: 'Genre',
+        placeholder: 'w\u00e4hlen',
+        stepper: true,
         items: [
           { value: ALL_KEY, text: 'Alle Songs', color: null, title: 'Wirklich alle Songs aus allen Genres, ungekuerzt' },
           { value: MIX_KEY, text: 'Mix – Best-of aller Genres', color: null, title: 'Die ' + MIX_PER_CATEGORY + ' beliebtesten Songs aus jedem Genre' }
