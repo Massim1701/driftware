@@ -226,7 +226,7 @@
     // gerade. data-idx traegt hier den ECHTEN Index in deck.queue (siehe
     // render(): bleibt beim visuellen Umdrehen der Liste an den Objekten
     // haengen), reordering() unten kann ihn also direkt verwenden.
-    var draggableAttr = kind === 'upcoming' ? ' draggable="true"' : '';
+    var draggableAttr = (kind === 'upcoming' || kind === 'played') ? ' draggable="true"' : '';
     return '<li class="' + cls + '" data-idx="' + idx + '"' + draggableAttr + '>' +
       '<span class="gen-queue-num">' + marker + '</span>' +
       '<span class="gen-queue-text"><strong>' + escapeHtml(s.t) + '</strong><span>' + escapeHtml(s.a) + '</span></span>' +
@@ -280,7 +280,7 @@
      Dragshield noetig (kein Video-Iframe liegt ueber dieser Box). */
   function wireDropzone(box) {
     box.addEventListener('dragover', function (e) {
-      if (draggingIdx !== null) return; // internes Umsortieren laeuft, siehe wireReorder()
+      if (draggingIdx !== null || draggingPlayed !== null) return; // internes Umsortieren laeuft, siehe wireReorder()
       e.preventDefault();
       box.classList.add('gen-queue-drag-over');
     });
@@ -288,7 +288,7 @@
       box.classList.remove('gen-queue-drag-over');
     });
     box.addEventListener('drop', function (e) {
-      if (draggingIdx !== null) return; // internes Umsortieren, siehe wireReorder()
+      if (draggingIdx !== null || draggingPlayed !== null) return; // internes Umsortieren, siehe wireReorder()
       e.preventDefault();
       box.classList.remove('gen-queue-drag-over');
       var raw = e.dataTransfer.getData('application/json');
@@ -315,49 +315,103 @@
     });
   }
 
-  /* Kommende Songs (Warteschlange) per Drag & Drop INNERHALB der Liste
-     umsortieren -- ziehen und auf eine andere "+"-Zeile fallen lassen,
-     tauscht die Position in deck.queue. Verlauf/aktueller Song sind nicht
-     betroffen (kein draggable-Attribut, siehe songLine()). Eigene,
-     dataTransfer-freie Verfolgung ueber draggingIdx statt
-     dataTransfer.getData(), weil dataTransfer beim dragover-Handler
-     in manchen Browsern nicht zuverlaessig lesbar ist. */
+  /* Einsortieren per Drag & Drop (Nutzerwunsch 9.10.: "nicht einfach nur
+     ablegen sondern auch in der Reihenfolge reinschieben, alle Songs
+     sollen verschiebbar sein"). Eine Einfuege-Linie zeigt, wo der Song
+     landet (obere/untere Haelfte der Zeile = davor/danach). Quellen:
+       - kommender Song (umsortieren, draggingIdx = Index in deck.queue)
+       - bereits gelaufener Song (Kopie wird eingefuegt, draggingPlayed)
+       - Song-Kachel aus der Liste (application/json, wie bei den Decks)
+     Nur der "On Air"-Song bleibt fest. Bei langen Listen scrollt die Box
+     am oberen/unteren Rand automatisch mit. */
+  var draggingPlayed = null;
+  function clearMarkers(list) {
+    var stale = list.querySelectorAll('.gen-queue-ins-before, .gen-queue-ins-after, .gen-queue-dragging, .gen-queue-ins-end');
+    for (var i = 0; i < stale.length; i++) stale[i].classList.remove('gen-queue-ins-before', 'gen-queue-ins-after', 'gen-queue-dragging', 'gen-queue-ins-end');
+  }
+  /* Zielposition in deck.queue aus der Mausposition bestimmen. */
+  function insertionFor(list, e) {
+    var deck = pickActiveDeck();
+    if (!deck || !deck.song || !deck.queue || deck.index < 0) return { deck: deck, at: null, li: null };
+    var li = e.target.closest ? e.target.closest('.gen-queue-upcoming, .gen-queue-current') : null;
+    if (li && li.classList.contains('gen-queue-current')) return { deck: deck, at: deck.index + 1, li: li, after: true };
+    if (li) {
+      var r = li.getBoundingClientRect();
+      var after = (e.clientY - r.top) > r.height / 2;
+      var idx = parseInt(li.getAttribute('data-idx'), 10);
+      return { deck: deck, at: after ? idx + 1 : idx, li: li, after: after };
+    }
+    var rows = list.querySelectorAll('.gen-queue-upcoming, .gen-queue-current');
+    var last = rows.length ? rows[rows.length - 1] : null;
+    return { deck: deck, at: deck.queue.length, li: last, after: true };
+  }
+  function autoScroll(list, e) {
+    var r = list.getBoundingClientRect();
+    if (e.clientY < r.top + 40) list.scrollTop -= 14;
+    else if (e.clientY > r.bottom - 40) list.scrollTop += 14;
+  }
   function wireReorder(list) {
     list.addEventListener('dragstart', function (e) {
-      var li = e.target.closest('.gen-queue-upcoming');
-      if (!li) { draggingIdx = null; return; }
-      draggingIdx = parseInt(li.getAttribute('data-idx'), 10);
-      try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', ''); } catch (err) {}
-      li.classList.add('gen-queue-dragging');
+      var up = e.target.closest('.gen-queue-upcoming');
+      var pl = e.target.closest('.gen-queue-played');
+      draggingIdx = null; draggingPlayed = null;
+      if (up) draggingIdx = parseInt(up.getAttribute('data-idx'), 10);
+      else if (pl) draggingPlayed = parseInt(pl.getAttribute('data-idx'), 10);
+      else return;
+      try { e.dataTransfer.effectAllowed = up ? 'move' : 'copy'; e.dataTransfer.setData('text/plain', ''); } catch (err) {}
+      (up || pl).classList.add('gen-queue-dragging');
     });
     list.addEventListener('dragend', function () {
-      draggingIdx = null;
-      var stale = list.querySelectorAll('.gen-queue-dragging, .gen-queue-drop-target');
-      for (var i = 0; i < stale.length; i++) stale[i].classList.remove('gen-queue-dragging', 'gen-queue-drop-target');
+      draggingIdx = null; draggingPlayed = null;
+      clearMarkers(list);
     });
     list.addEventListener('dragover', function (e) {
-      if (draggingIdx === null) return; // kein interner Reorder -- externer Song-Tile-Drop laeuft ueber wireDropzone
-      var li = e.target.closest('.gen-queue-upcoming');
-      if (!li) return;
+      var external = draggingIdx === null && draggingPlayed === null;
+      if (external && !document.body.classList.contains('dnd-dragging')) return;
       e.preventDefault();
       e.stopPropagation();
-      var prev = list.querySelector('.gen-queue-drop-target');
-      if (prev && prev !== li) prev.classList.remove('gen-queue-drop-target');
-      li.classList.add('gen-queue-drop-target');
+      autoScroll(list, e);
+      var ins = insertionFor(list, e);
+      clearMarkers(list);
+      if (draggingIdx !== null) { var src = list.querySelector('.gen-queue-upcoming[data-idx="' + draggingIdx + '"]'); if (src) src.classList.add('gen-queue-dragging'); }
+      if (ins.li) ins.li.classList.add(ins.after ? 'gen-queue-ins-after' : 'gen-queue-ins-before');
+      var box = list.closest('.gen-history');
+      if (box) box.classList.add('gen-queue-drag-over');
+    });
+    list.addEventListener('dragleave', function (e) {
+      if (e.relatedTarget && list.contains(e.relatedTarget)) return;
+      clearMarkers(list);
     });
     list.addEventListener('drop', function (e) {
-      if (draggingIdx === null) return;
-      var li = e.target.closest('.gen-queue-upcoming');
-      if (!li) return;
+      var external = draggingIdx === null && draggingPlayed === null;
+      var raw = '';
+      if (external) { try { raw = e.dataTransfer.getData('application/json'); } catch (err) {} if (!raw) return; }
       e.preventDefault();
       e.stopPropagation();
-      var toIdx = parseInt(li.getAttribute('data-idx'), 10);
-      var deck = pickActiveDeck();
-      if (deck && deck.queue && !isNaN(toIdx) && !isNaN(draggingIdx) && draggingIdx !== toIdx) {
-        var item = deck.queue.splice(draggingIdx, 1)[0];
-        deck.queue.splice(toIdx, 0, item);
+      var box = list.closest('.gen-history');
+      if (box) box.classList.remove('gen-queue-drag-over');
+      var ins = insertionFor(list, e);
+      var deck = ins.deck;
+      var song = null;
+      if (draggingPlayed !== null) song = played[draggingPlayed];
+      else if (external) { try { song = JSON.parse(raw); } catch (err) { song = null; } }
+
+      if (deck && deck.queue && ins.at != null) {
+        if (draggingIdx !== null) {
+          var from = draggingIdx, to = ins.at;
+          if (from !== to && from + 1 !== to) {
+            var item = deck.queue.splice(from, 1)[0];
+            if (from < to) to--;
+            deck.queue.splice(to, 0, item);
+          }
+        } else if (song) {
+          deck.queue.splice(ins.at, 0, song);
+        }
+      } else if (song && typeof window.loadSongToDeck === 'function') {
+        window.loadSongToDeck(song, 'A', [song], false);
       }
-      draggingIdx = null;
+      draggingIdx = null; draggingPlayed = null;
+      clearMarkers(list);
       lastSignature = null; // sofortiges Neuzeichnen erzwingen
       render();
     });
@@ -492,6 +546,11 @@
       '.gen-queue-upcoming{cursor:grab;}' +
       '.gen-queue-dragging{opacity:.35;}' +
       '.gen-queue-drop-target{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent);}' +
+      '.gen-queue-item{position:relative;}' +
+      '.gen-queue-ins-before::before,.gen-queue-ins-after::after{content:"";position:absolute;left:4px;right:4px;height:3px;border-radius:2px;background:var(--deck-b,var(--accent));box-shadow:0 0 10px var(--deck-b,var(--accent));pointer-events:none;z-index:2;}' +
+      '.gen-queue-ins-before::before{top:-3px;}' +
+      '.gen-queue-ins-after::after{bottom:-3px;}' +
+      '.gen-queue-played{cursor:grab;}' +
       '.gen-queue-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;}' +
       '.gen-queue-head h3{margin:0;}' +
       '.gen-queue-head-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}' +

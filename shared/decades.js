@@ -1632,6 +1632,13 @@ function ensureDjPlayer() {
   updateBpmSync();
   setupPhoneMini(bar);
   requestAnimationFrame(ccVisualLoop);
+  /* Hoehe der fest oben stehenden Konsole als CSS-Variable, damit Song-
+     Liste und Warteschlange darunter genau den freien Platz fuellen. */
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () {
+      document.documentElement.style.setProperty('--cc-console-h', bar.offsetHeight + 'px');
+    }).observe(bar);
+  }
   /* Tooltips: jeder Knopf/Regler im Player bekommt seinen Beschreibungstext
      auch als title (erscheint nach kurzem Verweilen mit der Maus). */
   bar.querySelectorAll('[aria-label]:not([title])').forEach(function (el) { el.title = el.getAttribute('aria-label'); });

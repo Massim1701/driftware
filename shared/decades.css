@@ -2442,7 +2442,7 @@ html:not([data-device="phone"]) #dj-player .dj-decks { padding-top: 16px; }
 .generator-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: stretch; }
 .generator-body .song-grid, .generator-body .gen-history {
   max-width: none; min-width: 0; margin: 0;
-  height: clamp(360px, calc(100vh - 470px), 820px); max-height: none;
+  height: max(380px, calc(100vh - var(--cc-console-h, 400px) - 28px)); max-height: none;
   border-radius: 14px; border: 1px solid var(--border);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.25);
 }
@@ -2470,3 +2470,6 @@ body.dnd-dragging .generator-body .gen-history::after {
 @media (max-width: 760px) {
   .generator-body { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Liste/Warteschlange rasten beim Scrollen direkt unter der Konsole ein */
+html:not([data-device="phone"]) .generator-body { scroll-margin-top: calc(var(--cc-console-h, 400px) + 14px); }
