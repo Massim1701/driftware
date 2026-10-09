@@ -2609,3 +2609,56 @@ html:not([data-device="phone"]) .generator-body { scroll-margin-top: calc(var(--
 .cc-time b.cc-ending { animation: cc-ending 0.6s steps(1, end) infinite; color: #ef4444; text-shadow: 0 0 14px rgba(239,68,68,0.8); }
 @keyframes cc-ending { 50% { opacity: 0.25; } }
 @media (prefers-reduced-motion: reduce) { .cc-time b.cc-ending { animation: none; } }
+
+/* --- Karaoke-Leiste: gleiche Spalten wie die Decks, Text steht unter
+   dem Deck, das gerade spielt; Knoepfe in der Mitte unter dem Mixer --- */
+#dj-player .cc-lyrics {
+  max-width: 1680px; margin: 0 auto; box-sizing: border-box; overflow: hidden;
+  display: grid; grid-template-columns: minmax(0, 1fr) 270px minmax(0, 1fr);
+  grid-template-areas: "a mid b"; align-items: center;
+  border-top: 1px solid rgba(0,0,0,0.6);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.05));
+  --dc: var(--deck-a);
+}
+#dj-player .cc-lyrics.cc-lyrics-on-b { --dc: var(--deck-b); }
+.cc-lyrics-stage { grid-area: a; text-align: center; min-width: 0; padding: 4px 16px 10px; animation: cc-lyrics-in 0.35s ease-out; }
+.cc-lyrics-on-b .cc-lyrics-stage { grid-area: b; animation-name: cc-lyrics-in-b; }
+@keyframes cc-lyrics-in { from { opacity: 0; transform: translateX(-24px); } }
+@keyframes cc-lyrics-in-b { from { opacity: 0; transform: translateX(24px); } }
+.cc-lyrics-ctrl {
+  grid-area: mid; align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  padding: 8px 10px; border-left: 1px solid rgba(0,0,0,0.6); border-right: 1px solid rgba(0,0,0,0.6);
+  box-shadow: inset 1px 0 0 rgba(255,255,255,0.05), inset -1px 0 0 rgba(255,255,255,0.05);
+}
+.cc-lyrics-prev, .cc-lyrics-next {
+  font: 500 13px 'Inter', sans-serif; color: var(--muted); opacity: 0.55; min-height: 18px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cc-lyrics-line { position: relative; display: inline-block; padding: 22px 4px 2px; max-width: 100%; }
+.cc-lyrics-words { font: 800 26px/1.2 var(--font-display, 'Sora', sans-serif); color: var(--text); white-space: nowrap; }
+.cc-lyrics-word { transition: color 0.15s, text-shadow 0.15s; color: color-mix(in srgb, var(--text) 50%, transparent); }
+.cc-lyrics-word.sung { color: var(--text); }
+.cc-lyrics-word.now { color: var(--dc); text-shadow: 0 0 calc(14px * var(--cc-glow, 0) + 2px) color-mix(in srgb, var(--dc) 70%, transparent); }
+.cc-lyrics-note { color: var(--dc); opacity: 0.8; }
+.cc-lyrics-ball {
+  position: absolute; left: 0; top: 10px; width: 9px; height: 9px; border-radius: 50%; opacity: 0;
+  background: radial-gradient(circle at 35% 30%, #fff, var(--dc) 60%, color-mix(in srgb, var(--dc) 60%, #000));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--dc) 80%, transparent);
+  transform-origin: 50% 100%; pointer-events: none; will-change: transform;
+}
+.cc-lyrics-tools { display: flex; align-items: center; gap: 6px; }
+.cc-lyrics-tools .cc-pad { width: 30px; height: 24px; padding: 0; font-size: 15px; }
+.cc-lyrics-tools .cc-pad.cc-lyrics-tap { width: auto; padding: 0 9px; margin-left: 4px; font: 700 9.5px 'Inter', sans-serif; letter-spacing: 0.1em; color: var(--dc); }
+.cc-lyrics-offset { font: 600 11px 'JetBrains Mono', monospace; color: var(--muted); min-width: 52px; text-align: center; }
+.cc-lyrics-ctrl .cc-lyrics-toggle { width: auto; height: 24px; padding: 0 12px; white-space: nowrap; font: 700 9.5px 'Inter', sans-serif; letter-spacing: 0.1em; color: var(--dc); }
+.cc-lyrics-ctrl .cc-lyrics-toggle { color: var(--muted); }
+#dj-player .cc-lyrics.cc-lyrics-has:not(.cc-lyrics-off) .cc-lyrics-ctrl .cc-pad.cc-lyrics-toggle {
+  color: #04140a; background: linear-gradient(180deg, #4ade80, #16a34a); border-color: #15803d;
+  box-shadow: 0 0 12px rgba(74,222,128,0.45), inset 0 1px 0 rgba(255,255,255,0.35);
+}
+#dj-player .cc-lyrics:not(.cc-lyrics-has) .cc-lyrics-stage,
+#dj-player .cc-lyrics:not(.cc-lyrics-has) .cc-lyrics-tools,
+.cc-lyrics-off .cc-lyrics-stage, .cc-lyrics-off .cc-lyrics-tools { display: none; }
+#dj-player .cc-lyrics:not(.cc-lyrics-has) .cc-lyrics-ctrl, .cc-lyrics-off .cc-lyrics-ctrl { padding: 4px 10px; }
+@media (prefers-reduced-motion: reduce) { .cc-lyrics-stage { animation: none; } }

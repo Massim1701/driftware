@@ -1701,7 +1701,8 @@ function ensureDjPlayer() {
     '  </div>' +
     '</div>' +
     deckHTML('B') +
-    '</div>';
+    '</div>' +
+    ccLyricsHTML();
   /* Konsolen-Layout (9.9.): Player ist keine fixe Sidebar mehr, sondern
      eine normale Kopfzeile im Seitenfluss -- die DOM-Position ist jetzt
      wichtig (frueher bei position:fixed egal). Muss VOR #decade-root
@@ -1733,6 +1734,7 @@ function ensureDjPlayer() {
   updateBpmSync();
   setupPhoneMini(bar);
   requestAnimationFrame(ccVisualLoop);
+  ccLyricsInit(bar);
   /* Hoehe der fest oben stehenden Konsole als CSS-Variable, damit Song-
      Liste und Warteschlange darunter genau den freien Platz fuellen. */
   if (window.ResizeObserver) {
@@ -4610,3 +4612,425 @@ function renderPlaylistGenerator(mountRoot, config) {
   });
   log('Start');
 })();
+
+/* =====================================================================
+   KARAOKE-LEISTE (Nutzerwunsch 9.10.): unter dem Deck, das gerade
+   hoerbar ist, laufen die Liedtexte mit, ein huepfender Ball zeigt das
+   aktuelle Wort. Texte werden NICHT im Repo gespeichert, sondern zur
+   Laufzeit von LRCLIB (lrclib.net, freie Datenbank mit Zeitstempeln pro
+   Zeile) geholt. Wort-Zeitpunkte gibt es dort nicht -- sie werden
+   innerhalb einer Zeile nach Wortlaenge verteilt.
+   Ball-Ablauf pro Zeile: neuer Ball faellt von links oben aufs erste
+   Wort, springt im Bogen von Wort zu Wort, huepft nach dem letzten Wort
+   aus dem Bild. Ohne Text (Intro, Instrumental-Teil, kein Text gefunden)
+   huepft er auf der Stelle ueber einem Notensymbol, im Songtakt.
+   Weil YouTube-Videos oft ein laengeres Intro haben als die Studio-
+   fassung, laesst sich der Text per -/+ verschieben (pro Song gemerkt).
+   ===================================================================== */
+var CC_LYRICS_CACHE = {};
+var CC_LYRICS_OFFSET_KEY = 'driftware-lyrics-offset-v1';
+var CC_LYRICS_ON_KEY = 'driftware-lyrics-on-v1';
+var CC_BALL = 9; /* Balldurchmesser in px, muss zu .cc-lyrics-ball passen */
+var ccLyrics = { songKey: null, lines: null, msg: '', view: null, wordEls: [], deckKey: null, clock: null };
+
+function ccLyricsHTML() {
+  return '<div class="cc-lyrics" id="cc-lyrics">' +
+    '<div class="cc-lyrics-stage" id="cc-lyrics-stage">' +
+    '  <div class="cc-lyrics-prev" id="cc-lyrics-prev"></div>' +
+    '  <div class="cc-lyrics-line" id="cc-lyrics-line"><span class="cc-lyrics-ball" id="cc-lyrics-ball"></span><span class="cc-lyrics-words" id="cc-lyrics-words"></span></div>' +
+    '  <div class="cc-lyrics-next" id="cc-lyrics-next"></div>' +
+    '</div>' +
+    '<div class="cc-lyrics-ctrl">' +
+    '  <button type="button" class="cc-pad cc-lyrics-toggle" id="cc-lyrics-toggle" aria-pressed="true" title="Karaoke-Leiste ein-/ausschalten">KARAOKE AN</button>' +
+    '  <div class="cc-lyrics-tools">' +
+    '    <button type="button" class="cc-pad cc-small" id="cc-lyrics-earlier" aria-label="Text früher (−0,5 s)">−</button>' +
+    '    <span class="cc-lyrics-offset" id="cc-lyrics-offset" title="Versatz des Textes zum Video">0,0 s</span>' +
+    '    <button type="button" class="cc-pad cc-small" id="cc-lyrics-later" aria-label="Text später (+0,5 s)">+</button>' +
+    '    <button type="button" class="cc-pad cc-lyrics-tap" id="cc-lyrics-tap" aria-label="Jetzt: nächste Zeile wird gerade gesungen">JETZT</button>' +
+    '  </div>' +
+    '</div>' +
+    '</div>';
+}
+
+function ccLyricsSongKey(song) { return song ? (song.a + '|' + song.t) : null; }
+
+function ccLyricsOffsets() {
+  try { return JSON.parse(localStorage.getItem(CC_LYRICS_OFFSET_KEY)) || {}; } catch (e) { return {}; }
+}
+function ccLyricsGetOffset(key) { return ccLyricsOffsets()[key] || 0; }
+function ccLyricsSetOffset(key, val) {
+  try {
+    var o = ccLyricsOffsets();
+    if (Math.abs(val) < 0.01) delete o[key]; else o[key] = Math.round(val * 10) / 10;
+    localStorage.setItem(CC_LYRICS_OFFSET_KEY, JSON.stringify(o));
+  } catch (e) {}
+}
+function ccLyricsFormatOffset(v) { return (v > 0 ? '+' : '') + v.toFixed(1).replace('.', ',') + ' s'; }
+
+function ccLyricsIsOn() {
+  try { return localStorage.getItem(CC_LYRICS_ON_KEY) !== '0'; } catch (e) { return true; }
+}
+
+/* Titel fuer die Suche saeubern: "(Remix)", "[Live]", "- 2011 Remaster",
+   "feat. ..." verhindern sonst jeden Treffer. */
+function ccLyricsClean(str) {
+  return String(str || '')
+    .replace(/\s*[\(\[][^\)\]]*[\)\]]/g, '')
+    .replace(/\s+-\s+.*$/, '')
+    .replace(/\s+(feat\.?|ft\.?|featuring)\s+.*$/i, '')
+    .trim();
+}
+
+/* LRC -> nur gesungene Zeilen. Leere LRC-Zeilen markieren nur das Ende
+   der vorigen Zeile. singEnd: bis wann der Ball ueber die Zeile springt
+   (bei langer Pause danach hoechstens ~0,45 s pro Wort). */
+function ccLyricsParse(lrc) {
+  var raw = [];
+  String(lrc || '').split(/\r?\n/).forEach(function (row) {
+    var m, re = /\[(\d+):(\d+(?:\.\d+)?)\]/g, times = [], last = 0;
+    while ((m = re.exec(row))) { times.push(parseInt(m[1], 10) * 60 + parseFloat(m[2])); last = re.lastIndex; }
+    var text = row.slice(last).trim();
+    times.forEach(function (t) { raw.push({ t: t, text: text }); });
+  });
+  raw.sort(function (a, b) { return a.t - b.t; });
+  var out = [];
+  for (var i = 0; i < raw.length; i++) {
+    if (!raw[i].text) continue;
+    var end = i + 1 < raw.length ? raw[i + 1].t : raw[i].t + 5;
+    var words = raw[i].text.split(/\s+/);
+    var weights = words.map(function (w) { return Math.max(2, w.replace(/[^\p{L}\p{N}]/gu, '').length) + 1; });
+    out.push({
+      t: raw[i].t, text: raw[i].text, words: words, weights: weights,
+      total: weights.reduce(function (s, w) { return s + w; }, 0),
+      singEnd: Math.max(raw[i].t + 0.3, Math.min(end - 0.1, raw[i].t + words.length * 0.45 + 0.6))
+    });
+  }
+  /* Aus-/Einflug: der Ball springt schon in der zweiten Haelfte des
+     letzten Wortes aus dem Bild (bei Zeilen ohne Pause dazwischen bliebe
+     sonst keine Zeit dafuer); Ausflug und Einflug des naechsten Balls
+     teilen sich das Fenster bis zur naechsten Zeile. */
+  for (var j = 0; j < out.length; j++) {
+    var L = out[j];
+    var lastW = L.weights[L.weights.length - 1];
+    L.lastStart = L.t + (L.total - lastW) / L.total * (L.singEnd - L.t);
+    L.exitStart = Math.max(L.lastStart + 0.15, L.lastStart + 0.5 * (L.singEnd - L.lastStart));
+    var nextT = j + 1 < out.length ? out[j + 1].t : Infinity;
+    var win = Math.max(0.2, nextT - L.exitStart);
+    L.exitEnd = L.exitStart + Math.min(0.6, win * 0.55);
+    if (j + 1 < out.length) out[j + 1].entryStart = nextT - Math.max(0.1, Math.min(0.5, nextT - L.exitEnd));
+  }
+  if (out.length) out[0].entryStart = out[0].t - 0.5;
+  return out;
+}
+
+function ccLyricsFetch(song, durationHint) {
+  var key = ccLyricsSongKey(song);
+  if (CC_LYRICS_CACHE[key]) return CC_LYRICS_CACHE[key];
+  var artist = ccLyricsClean(String(song.a || '').split(/,|&| x | und /i)[0]);
+  var title = ccLyricsClean(song.t);
+  var url = 'https://lrclib.net/api/search?track_name=' + encodeURIComponent(title) + '&artist_name=' + encodeURIComponent(artist);
+  CC_LYRICS_CACHE[key] = fetch(url).then(function (r) { return r.ok ? r.json() : []; }).then(function (list) {
+    var synced = (list || []).filter(function (x) { return x && x.syncedLyrics && !x.instrumental; });
+    if (!synced.length) return (list || []).some(function (x) { return x && x.instrumental; }) ? 'instrumental' : null;
+    if (durationHint) synced.sort(function (a, b) { return Math.abs(a.duration - durationHint) - Math.abs(b.duration - durationHint); });
+    var lines = ccLyricsParse(synced[0].syncedLyrics);
+    return lines.length ? lines : null;
+  }).catch(function () { delete CC_LYRICS_CACHE[key]; ccLyricsRetryAt[key] = performance.now() + 30000; return 'error'; });
+  return CC_LYRICS_CACHE[key];
+}
+
+/* Text schon suchen, sobald ein Deck seinen Song fertig geladen hat
+   (Videolaenge bekannt -> passendere Textversion), auch auf dem gerade
+   nicht hoerbaren Deck -- so ist er beim Wechsel sofort da und der
+   Karaoke-Knopf zeigt gleich, ob es Text gibt. Laedt ein Video nicht,
+   wird nach 4 s ohne Laengenangabe gesucht. */
+var ccLyricsSeenAt = {};
+var ccLyricsRetryAt = {}; /* nach Netzfehler erst 30 s spaeter neu suchen */
+function ccLyricsPrefetch() {
+  ['A', 'B'].forEach(function (k) {
+    var d = DECKS[k], key = ccLyricsSongKey(d.song);
+    if (!key || CC_LYRICS_CACHE[key]) return;
+    if (ccLyricsRetryAt[key] && performance.now() < ccLyricsRetryAt[key]) return;
+    var dur = 0;
+    try { dur = d.player && d.player.getDuration ? d.player.getDuration() || 0 : 0; } catch (e) {}
+    var now = performance.now();
+    if (!ccLyricsSeenAt[key]) ccLyricsSeenAt[key] = now;
+    if (dur > 0 || now - ccLyricsSeenAt[key] > 4000) ccLyricsFetch(d.song, dur);
+  });
+}
+
+/* Welches Deck ist "dran"? Das hoerbare -- bei zwei laufenden Decks
+   entscheidet der Crossfader (wie currentPlayingDecadeKey). */
+function ccLyricsActiveDeck() {
+  var a = DECKS.A, b = DECKS.B;
+  if (a.isPlaying && !b.isPlaying) return 'A';
+  if (b.isPlaying && !a.isPlaying) return 'B';
+  if (a.isPlaying && b.isPlaying) return crossfaderValue <= 50 ? 'A' : 'B';
+  if (ccLyrics.deckKey && DECKS[ccLyrics.deckKey].song) return ccLyrics.deckKey;
+  return a.song ? 'A' : (b.song ? 'B' : null);
+}
+
+/* Geglaettete Spielzeit: getCurrentTime() von YouTube springt in kleinen
+   Stufen -- dazwischen laeuft eine eigene Uhr weiter, die nur sanft
+   nachgezogen (bzw. bei Sprung/Seek sofort gesetzt) wird. */
+function ccLyricsClock(deckKey, deck, songKey) {
+  var now = performance.now(), actual = 0, rate = 1;
+  try { actual = deck.player.getCurrentTime() || 0; } catch (e) {}
+  try { rate = deck.player.getPlaybackRate ? deck.player.getPlaybackRate() || 1 : 1; } catch (e) {}
+  var c = ccLyrics.clock;
+  if (!c || c.deckKey !== deckKey || c.songKey !== songKey) {
+    c = ccLyrics.clock = { deckKey: deckKey, songKey: songKey, t: actual, at: now };
+    return actual;
+  }
+  var pred = c.t + (deck.isPlaying ? (now - c.at) / 1000 * rate : 0);
+  if (!deck.isPlaying || Math.abs(actual - pred) > 0.3) pred = deck.isPlaying ? actual : actual;
+  else pred += (actual - pred) * 0.06;
+  c.t = pred; c.at = now;
+  return pred;
+}
+
+function ccLyricsEl(id) { return document.getElementById(id); }
+
+/* Hauptzeile setzen (Woerter einzeln, Schrift ggf. verkleinern, damit
+   die Zeile in die Deck-Spalte passt). */
+function ccLyricsSetMain(words, isWords) {
+  var el = ccLyricsEl('cc-lyrics-words');
+  el.innerHTML = '';
+  el.style.fontSize = '';
+  ccLyrics.wordEls = [];
+  words.forEach(function (w, i) {
+    var span = document.createElement('span');
+    span.className = isWords ? 'cc-lyrics-word' : 'cc-lyrics-note';
+    span.textContent = w;
+    el.appendChild(span);
+    if (i < words.length - 1) el.appendChild(document.createTextNode(' '));
+    ccLyrics.wordEls.push(span);
+  });
+  var stage = ccLyricsEl('cc-lyrics-stage');
+  var size = 26;
+  while (el.scrollWidth > stage.clientWidth - 30 && size > 14) { size -= 2; el.style.fontSize = size + 'px'; }
+}
+
+function ccLyricsRender(view, lines, idx) {
+  if (ccLyrics.view === view) return;
+  ccLyrics.view = view;
+  var prev = ccLyricsEl('cc-lyrics-prev'), next = ccLyricsEl('cc-lyrics-next');
+  if (view === 'none') {
+    ccLyricsSetMain([], false);
+    prev.textContent = ''; next.textContent = ccLyrics.msg;
+    return;
+  }
+  if (view === 'msg') {
+    ccLyricsSetMain(['♪'], false);
+    prev.textContent = ''; next.textContent = ccLyrics.msg;
+    return;
+  }
+  var kind = view.split(':')[0];
+  if (kind === 'line') {
+    ccLyricsSetMain(lines[idx].words, true);
+    prev.textContent = idx > 0 ? lines[idx - 1].text : '';
+    next.textContent = idx + 1 < lines.length ? lines[idx + 1].text : '';
+  } else { /* 'idle': Pause vor Zeile idx+1 */
+    ccLyricsSetMain(['♪'], false);
+    prev.textContent = idx >= 0 ? lines[idx].text : '';
+    next.textContent = idx + 1 < lines.length ? lines[idx + 1].text : '';
+  }
+}
+
+function ccLyricsCenter(el) { return el.offsetLeft + el.offsetWidth / 2; }
+
+/* Ball setzen: x = Mitte, y = Hoehe ueber der Ruhelage (positiv = hoch),
+   sq = Stauchung beim Aufsetzen (0..1). */
+function ccLyricsBall(x, y, opacity, sq) {
+  var ball = ccLyricsEl('cc-lyrics-ball');
+  if (opacity <= 0) { ball.style.opacity = '0'; return; }
+  var s = sq || 0;
+  ball.style.opacity = String(opacity);
+  ball.style.transform = 'translate(' + (x - CC_BALL / 2).toFixed(1) + 'px,' + (-y).toFixed(1) + 'px) scale(' + (1 + 0.25 * s).toFixed(3) + ',' + (1 - 0.25 * s).toFixed(3) + ')';
+}
+
+function ccLyricsArc(u, h) { return 4 * h * u * (1 - u); }
+function ccLyricsSquash(u) { var d = Math.min(u, 1 - u); return d < 0.07 ? 1 - d / 0.07 : 0; }
+
+/* Auf der Stelle huepfen (im Takt, falls BPM bekannt) */
+function ccLyricsIdleHop(t, deckKey) {
+  var el = ccLyrics.wordEls[0];
+  if (!el) { ccLyricsBall(0, 0, 0); return; }
+  var bpm = effectiveBpm(deckKey);
+  var period = bpm ? 60 / bpm : 0.5;
+  while (period < 0.4) period *= 2;
+  var u = ((t / period) % 1 + 1) % 1;
+  ccLyricsBall(ccLyricsCenter(el), ccLyricsArc(u, 11), 1, ccLyricsSquash(u));
+}
+
+/* Knopf zeigt, ob es zum Song Karaoke gibt (Nutzerwunsch 9.10.):
+   gruen = Text da, grau = kein Text / Suche laeuft / selbst ausgeschaltet.
+   Ohne Text klappt die Leiste auf die schmale Zeile zusammen. */
+function ccLyricsSetAvail(state) {
+  if (ccLyrics.avail === state) return;
+  ccLyrics.avail = state;
+  var root = ccLyricsEl('cc-lyrics'), btn = ccLyricsEl('cc-lyrics-toggle');
+  root.classList.toggle('cc-lyrics-has', state === 'yes');
+  btn.textContent = state === 'off' ? 'KARAOKE AUS' : state === 'yes' ? 'KARAOKE AN' : state === 'search' ? 'KARAOKE …' : 'KEIN TEXT';
+  btn.title = state === 'off' ? 'Karaoke einschalten'
+    : state === 'yes' ? 'Liedtext gefunden – Karaoke ausschalten'
+    : state === 'search' ? 'Liedtext wird gesucht …'
+    : 'Für diesen Song gibt es keinen synchronen Liedtext – Karaoke ausschalten';
+}
+
+function ccLyricsTick() {
+  if (!ccLyricsIsOn()) { ccLyricsSetAvail('off'); return; }
+  var root = ccLyricsEl('cc-lyrics');
+  if (!root) return;
+  var deckKey = ccLyricsActiveDeck();
+  var deck = deckKey ? DECKS[deckKey] : null;
+  var song = deck && deck.song;
+  var key = ccLyricsSongKey(song);
+  if (deckKey !== ccLyrics.deckKey) {
+    ccLyrics.deckKey = deckKey;
+    root.classList.toggle('cc-lyrics-on-b', deckKey === 'B');
+    ccLyrics.view = null;
+  }
+  if (key !== ccLyrics.songKey) {
+    ccLyrics.songKey = key;
+    ccLyrics.lines = null;
+    ccLyrics.view = null;
+    ccLyricsEl('cc-lyrics-offset').textContent = ccLyricsFormatOffset(key ? ccLyricsGetOffset(key) : 0);
+    ccLyrics.attached = false;
+    ccLyrics.msg = song ? 'Liedtext wird gesucht …' : 'Song starten – hier läuft der Text zum Mitsingen';
+  }
+  ccLyricsPrefetch();
+  /* Suche fuer den aktuellen Song laeuft (oder ist fertig) -> Ergebnis
+     einmal abholen. Gesucht wird in ccLyricsPrefetch, sobald das Deck
+     fertig geladen hat. */
+  if (song && !ccLyrics.attached && CC_LYRICS_CACHE[key]) {
+    ccLyrics.attached = true;
+    CC_LYRICS_CACHE[key].then(function (res) {
+        if (ccLyrics.songKey !== key) return;
+        ccLyrics.view = null;
+        if (res === 'instrumental') ccLyrics.msg = 'Instrumental – einfach mitsummen';
+        else if (res === 'error') { ccLyrics.songKey = null; ccLyrics.msg = 'Liedtext-Dienst gerade nicht erreichbar'; }
+        else if (!res) ccLyrics.msg = 'Für diesen Song gibt es noch keinen synchronen Liedtext';
+        else { ccLyrics.lines = res; ccLyrics.msg = ''; }
+    });
+  }
+  ccLyricsSetAvail(ccLyrics.lines ? 'yes' : (song && ccLyrics.msg === 'Liedtext wird gesucht …') ? 'search' : 'no');
+  if (!song) { ccLyricsRender('none'); ccLyricsBall(0, 0, 0); return; }
+  if (!deck.player || !deck.player.getCurrentTime) return;
+  var t = ccLyricsClock(deckKey, deck, key) - ccLyricsGetOffset(key);
+  var lines = ccLyrics.lines;
+  if (!lines) { ccLyricsRender('msg'); ccLyricsIdleHop(t, deckKey); return; }
+
+  /* Aktuelle Zeile = letzte, deren Einflug schon begonnen hat */
+  var idx = -1;
+  for (var i = 0; i < lines.length; i++) { if (lines[i].entryStart <= t) idx = i; else break; }
+  if (idx < 0) { ccLyricsRender('idle:-1', lines, -1); ccLyricsIdleHop(t, deckKey); return; }
+  var L = lines[idx];
+  var nextEntry = idx + 1 < lines.length ? lines[idx + 1].entryStart : Infinity;
+  var exitEnd = L.exitEnd;
+
+  /* Lange Pause nach dem Ausflug: Notensymbol + Huepfen auf der Stelle */
+  if (t >= exitEnd && nextEntry - exitEnd > 1.2) {
+    ccLyricsRender('idle:' + idx, lines, idx);
+    ccLyricsIdleHop(t, deckKey);
+    return;
+  }
+  ccLyricsRender('line:' + idx, lines, idx);
+  var els = ccLyrics.wordEls;
+  if (!els.length) return;
+  var stageW = ccLyricsEl('cc-lyrics-line').offsetWidth;
+
+  if (t < L.t) {
+    /* Einflug: neuer Ball faellt von links oben aufs erste Wort */
+    var ue = 1 - (L.t - t) / (L.t - L.entryStart);
+    var x0 = ccLyricsCenter(els[0]);
+    var fx = x0 - 90 + 90 * ue;
+    var fy = 46 * (1 - ue * ue);
+    els.forEach(function (el) { el.classList.remove('sung', 'now'); });
+    ccLyricsBall(fx, fy, Math.min(1, ue * 3), 0);
+    return;
+  }
+  if (t >= exitEnd) { ccLyricsBall(0, 0, 0); return; }
+  if (t >= L.exitStart) {
+    /* Ausflug: vom letzten Wort im Bogen nach rechts aus dem Bild */
+    els.forEach(function (el, k) { el.classList.add('sung'); el.classList.toggle('now', k === els.length - 1 && t < L.singEnd); });
+    var ux = Math.min(1, (t - L.exitStart) / (exitEnd - L.exitStart));
+    var xl = ccLyricsCenter(els[els.length - 1]);
+    var ex = xl + (stageW - xl + 140) * ux;
+    var ey = 34 * ux - 110 * ux * ux;
+    ccLyricsBall(ex, ey, 1 - Math.max(0, ux - 0.7) / 0.3, 0);
+    return;
+  }
+  /* Gesang: ein Sprung pro Wort -- landet genau, wenn das Wort dran ist */
+  var p = (t - L.t) / (L.singEnd - L.t) * L.total;
+  var wi = 0, acc = 0;
+  while (wi < L.weights.length - 1 && acc + L.weights[wi] <= p) { acc += L.weights[wi]; wi++; }
+  var u = Math.min(1, Math.max(0, (p - acc) / L.weights[wi]));
+  els.forEach(function (el, k) {
+    el.classList.toggle('sung', k < wi);
+    el.classList.toggle('now', k === wi);
+  });
+  var xa = ccLyricsCenter(els[wi]);
+  if (wi + 1 < els.length) {
+    var xb = ccLyricsCenter(els[wi + 1]);
+    var h = Math.max(8, Math.min(18, (xb - xa) * 0.3));
+    ccLyricsBall(xa + (xb - xa) * u, ccLyricsArc(u, h), 1, ccLyricsSquash(u));
+  } else {
+    /* letztes Wort: gerade gelandet, kurz gestaucht, dann Absprung */
+    var ul = Math.min(1, (t - L.lastStart) / Math.max(0.05, L.exitStart - L.lastStart));
+    ccLyricsBall(xa, 0, 1, Math.max(0, 1 - ul * 3));
+  }
+}
+
+function ccLyricsApplyOn(on) {
+  var root = ccLyricsEl('cc-lyrics');
+  var btn = ccLyricsEl('cc-lyrics-toggle');
+  root.classList.toggle('cc-lyrics-off', !on);
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  ccLyrics.avail = null;
+  ccLyricsSetAvail(on ? 'search' : 'off');
+  /* Beim Wiedereinschalten Song neu auswerten (Text ggf. erst jetzt holen) */
+  ccLyrics.songKey = undefined;
+  ccLyrics.lines = null;
+  ccLyrics.view = null;
+}
+
+function ccLyricsInit(bar) {
+  if (!ccLyricsEl('cc-lyrics')) return;
+  function nudge(d) {
+    if (!ccLyrics.songKey) return;
+    ccLyricsSetOffset(ccLyrics.songKey, ccLyricsGetOffset(ccLyrics.songKey) + d);
+    ccLyricsEl('cc-lyrics-offset').textContent = ccLyricsFormatOffset(ccLyricsGetOffset(ccLyrics.songKey));
+  }
+  bar.querySelector('#cc-lyrics-earlier').addEventListener('click', function () { nudge(-0.5); });
+  bar.querySelector('#cc-lyrics-later').addEventListener('click', function () { nudge(0.5); });
+  bar.querySelector('#cc-lyrics-earlier').title = 'Text kommt zu spät? Früher schieben (−0,5 s)';
+  bar.querySelector('#cc-lyrics-later').title = 'Text kommt zu früh? Später schieben (+0,5 s)';
+  /* Tap-Sync: Die Zeitstempel bei LRCLIB passen oft zu einer anderen
+     Aufnahme als dem YouTube-Video (gleiche Stempel fuer alle Fassungen),
+     und das Video-Audio ist im fremden iframe nicht auswertbar. Darum:
+     Nutzer drueckt JETZT, wenn die unten angezeigte naechste Zeile
+     gesungen wird -> Versatz = Videozeit - Zeilenstart (minus ~0,15 s
+     Reaktionszeit), pro Song gespeichert. */
+  bar.querySelector('#cc-lyrics-tap').title = 'Drück genau dann, wenn die unten angezeigte nächste Zeile gesungen wird – der Text richtet sich danach aus';
+  bar.querySelector('#cc-lyrics-tap').addEventListener('click', function () {
+    var key = ccLyrics.songKey, lines = ccLyrics.lines, deck = ccLyrics.deckKey && DECKS[ccLyrics.deckKey];
+    if (!key || !lines || !deck || !deck.player || !deck.player.getCurrentTime) return;
+    var raw = 0;
+    try { raw = deck.player.getCurrentTime() || 0; } catch (e) { return; }
+    var shown = raw - ccLyricsGetOffset(key);
+    var target = null;
+    for (var i = 0; i < lines.length; i++) { if (lines[i].t > shown) { target = lines[i]; break; } }
+    if (!target) return;
+    ccLyricsSetOffset(key, raw - 0.15 - target.t);
+    ccLyricsEl('cc-lyrics-offset').textContent = ccLyricsFormatOffset(ccLyricsGetOffset(key));
+    ccLyrics.view = null;
+  });
+  bar.querySelector('#cc-lyrics-toggle').addEventListener('click', function () {
+    var on = !ccLyricsIsOn();
+    try { localStorage.setItem(CC_LYRICS_ON_KEY, on ? '1' : '0'); } catch (e) {}
+    ccLyricsApplyOn(on);
+  });
+  ccLyricsApplyOn(ccLyricsIsOn());
+  (function loop() { requestAnimationFrame(loop); try { ccLyricsTick(); } catch (e) {} })();
+}
