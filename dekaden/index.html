@@ -325,13 +325,14 @@
               <circle cx="184" cy="177" r="3.6" fill="url(#ttKnob)"/>
             </g>
             <!-- Bedienelemente vorne -->
-            <circle cx="24" cy="318" r="11" fill="#2a2c32" stroke="#3b3e46"/><circle cx="24" cy="318" r="7" fill="url(#ttKnob)"/>
-            <circle id="ttStrobeLamp" cx="26" cy="290" r="6" fill="#4a2a20"/>
-            <rect id="ttStartBtn" x="44" y="320" width="62" height="24" rx="3" fill="#25272d" stroke="#3b3e46"/>
-            <text x="75" y="335" text-anchor="middle" font-size="6.5" fill="#9aa0aa" letter-spacing="1">START·STOP</text>
-            <rect x="116" y="324" width="24" height="18" rx="2.5" fill="#25272d" stroke="#3b3e46"/><text x="128" y="336" text-anchor="middle" font-size="7" fill="#9aa0aa">33</text>
-            <rect x="146" y="324" width="24" height="18" rx="2.5" fill="#25272d" stroke="#3b3e46"/><text x="158" y="336" text-anchor="middle" font-size="7" fill="#9aa0aa">45</text>
-            <circle id="tt33Led" cx="128" cy="320" r="1.8" fill="#3a2220"/>
+            <!-- Vorne links: Strobe-Lampe, Netzschalter, grosse quadratische START/STOP-Taste
+                 (Abstand zum Teller > Tellerradius, ueberlappt nichts) -->
+            <circle id="ttStrobeLamp" cx="21" cy="292" r="6" fill="#4a2a20"/>
+            <circle cx="21" cy="326" r="11" fill="#2a2c32" stroke="#3b3e46"/><circle cx="21" cy="326" r="7" fill="url(#ttKnob)"/>
+            <rect x="40" y="308" width="39" height="39" rx="3.5" fill="#2a2c32" stroke="#4a4d54" stroke-width="1"/>
+            <rect x="42" y="310" width="35" height="35" rx="2.5" fill="#202227"/>
+            <text x="59.5" y="326.5" text-anchor="middle" font-size="6.2" fill="#b4b9c2" letter-spacing="0.8">START</text>
+            <text x="59.5" y="335" text-anchor="middle" font-size="6.2" fill="#b4b9c2" letter-spacing="0.8">STOP</text>
             <!-- Pitch-Fader -->
             <rect x="404" y="196" width="34" height="140" rx="4" fill="#17181c" stroke="#33363d"/>
             <rect x="418" y="206" width="6" height="120" rx="3" fill="#050506"/>
@@ -340,21 +341,46 @@
             <g id="ttPitchCap"><rect x="408" y="258" width="26" height="15" rx="2" fill="url(#ttMetal)"/><rect x="408" y="264.6" width="26" height="1.6" fill="#1b1c20"/></g>
             <!-- Nadelleuchte vorne rechts -->
             <circle cx="438" cy="344" r="6" fill="#2a2c32" stroke="#4a4d54"/><circle id="ttTargetLamp" cx="438" cy="344" r="3" fill="#55554a"/>
-            <ellipse class="tt-target-beam" id="ttBeamEl" cx="318" cy="262" rx="34" ry="26" fill="url(#ttBeam)"/>
-            <!-- Tonarm-Basis -->
-            <circle cx="372" cy="92" r="30" fill="#141518" stroke="#3b3e46" stroke-width="1.2"/>
-            <circle cx="372" cy="92" r="22" fill="url(#ttKnob)"/>
-            <circle cx="404" cy="62" r="9" fill="url(#ttKnob)"/><circle cx="404" cy="62" r="3" fill="#2a2c32"/>
-            <rect x="412" y="110" width="22" height="7" rx="3" fill="url(#ttMetal)" transform="rotate(-25 412 110)"/>
-            <circle cx="400" cy="244" r="6.5" fill="#2a2c32" stroke="#4a4d54"/>
-            <!-- Tonarm (dreht um den Lagerpunkt) -->
+            <ellipse class="tt-target-beam" id="ttBeamEl" cx="276" cy="300" rx="36" ry="26" fill="url(#ttBeam)"/>
+            <!-- Tonarm-Basis (MK2-Stil): Sockelplatte, Hoehenring mit Skala, Antiskating, Lifthebel -->
+            <circle cx="372" cy="92" r="36" fill="#121316" stroke="#3b3e46" stroke-width="1.2"/>
+            <circle cx="372" cy="92" r="27" fill="url(#ttKnob)"/>
+            <circle cx="372" cy="92" r="27" fill="none" stroke="#2a2c31" stroke-width="2.4" stroke-dasharray="0.6 2.2"/>
+            <circle cx="372" cy="92" r="19" fill="#1a1b1f"/>
+            <circle cx="343" cy="124" r="8.5" fill="url(#ttKnob)" stroke="#2a2c31"/><rect x="342.4" y="116.5" width="1.2" height="5" fill="#1a1b1f"/>
+            <circle cx="404" cy="124" r="5" fill="#2a2c32" stroke="#4a4d54"/>
+            <rect x="402" y="121" width="24" height="6" rx="3" fill="url(#ttMetal)" transform="rotate(18 404 124)"/>
+            <!-- Armstuetze mit Klammer -->
+            <circle cx="366" cy="252" r="6.5" fill="#1f2125" stroke="#4a4d54"/>
+            <path d="M359 249 Q366 241 373 249" fill="none" stroke="url(#ttMetal)" stroke-width="2.2" stroke-linecap="round"/>
+            <!-- Tonarm: lokal senkrecht gezeichnet, Achse 3 Grad nach innen; dreht um den Lagerpunkt -->
             <g id="ttArm">
-              <rect x="356" y="38" width="32" height="26" rx="5" fill="url(#ttMetal)" transform="rotate(-6.7 372 51)"/>
-              <rect x="362" y="38" width="20" height="26" rx="2" fill="rgba(0,0,0,0.25)" transform="rotate(-6.7 372 51)"/>
-              <path d="M372 64 L372 120 C372 160 394 168 392 205 C391 230 388 240 392 252" fill="none" stroke="url(#ttMetal)" stroke-width="5.2" stroke-linecap="round"/>
-              <path d="M372 64 L372 120 C372 160 394 168 392 205 C391 230 388 240 392 252" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" stroke-linecap="round"/>
-              <g transform="rotate(22 392 262)"><rect x="382" y="249" width="20" height="28" rx="2.5" fill="#1f2125" stroke="#5a5d64"/><rect x="386" y="259" width="12" height="14" rx="1.5" fill="#d6d9de"/><rect x="398" y="252" width="9" height="3" rx="1.5" fill="url(#ttMetal)"/></g>
-              <circle cx="372" cy="92" r="9" fill="url(#ttMetal)"/>
+              <g transform="rotate(3.04 372 92)">
+                <!-- Gegengewicht mit Auflagekraft-Skalenring -->
+                <defs><linearGradient id="ttCyl" x1="0" x2="1"><stop offset="0" stop-color="#5d626b"/><stop offset=".35" stop-color="#f3f4f7"/><stop offset=".6" stop-color="#b9bdc4"/><stop offset="1" stop-color="#555961"/></linearGradient></defs>
+                <rect x="362" y="22" width="20" height="9" rx="2" fill="url(#ttCyl)"/>
+                <rect x="356" y="29" width="32" height="32" rx="4" fill="url(#ttCyl)"/>
+                <rect x="355.5" y="58" width="33" height="7" rx="1.5" fill="#101114"/>
+                <g fill="#e8eaee"><rect x="359" y="59.5" width="0.8" height="4"/><rect x="363" y="59.5" width="0.8" height="2.5"/><rect x="367" y="59.5" width="0.8" height="4"/><rect x="371.6" y="59.5" width="0.8" height="2.5"/><rect x="376" y="59.5" width="0.8" height="4"/><rect x="380" y="59.5" width="0.8" height="2.5"/><rect x="384" y="59.5" width="0.8" height="4"/></g>
+                <rect x="369" y="65" width="6" height="22" fill="url(#ttCyl)"/>
+                <!-- kardanisches Lager -->
+                <rect x="355" y="83" width="5" height="18" rx="1.5" fill="#26282d"/><rect x="384" y="83" width="5" height="18" rx="1.5" fill="#26282d"/>
+                <circle cx="372" cy="92" r="12" fill="url(#ttCyl)"/>
+                <circle cx="372" cy="92" r="4" fill="#2a2c31"/>
+                <!-- S-Rohr -->
+                <path d="M372 102 L372 150 C372 192 387 200 385 236 C383 262 369 268 371 284" fill="none" stroke="url(#ttCyl)" stroke-width="5.6" stroke-linecap="round"/>
+                <path d="M371 102 L371 150 C371 192 386 200 384 236 C382 262 368 268 370 284" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1" stroke-linecap="round"/>
+                <!-- Verschlussring -->
+                <rect x="365" y="282" width="12" height="10" rx="2" fill="url(#ttCyl)"/><rect x="365" y="286" width="12" height="1.2" fill="#3a3d44"/>
+                <!-- Headshell mit 22 Grad Versatz, Fingerlift, Tonabnehmer -->
+                <g transform="rotate(22 371 292)">
+                  <path d="M365 292 L377 292 L380 322 L362 322 Z" fill="#17181b" stroke="#6a6e76" stroke-width="0.8"/>
+                  <path d="M377.5 302 L392 297" stroke="url(#ttCyl)" stroke-width="2.2" stroke-linecap="round"/>
+                  <rect x="364.5" y="306" width="13" height="14" rx="1.5" fill="#b4232b"/>
+                  <rect x="366" y="307.5" width="10" height="3" rx="1" fill="#e5484d"/>
+                  <rect x="370" y="320" width="2" height="3" fill="#d6d9de"/>
+                </g>
+              </g>
             </g>
           </svg>
           <div class="tt-sheen"></div>
@@ -775,16 +801,14 @@
       var REV = 360 / 1.8;
       gsap.set('#ttArm', { rotation: 0, svgOrigin: '372 92' });
       gsap.delayedCall(0.9, function () {
-        gsap.set('#ttStartBtn', { attr: { fill: '#3a3d45' } });
         gsap.set('#ttStrobeLamp', { attr: { fill: '#ff6a3d' } }); document.getElementById('ttStrobeLamp').classList.add('tt-led-on');
-        gsap.set('#tt33Led', { attr: { fill: '#ff4d3a' } }); document.getElementById('tt33Led').classList.add('tt-led-on');
         gsap.set('#ttQuartz', { attr: { fill: '#3dff6a' } }); document.getElementById('ttQuartz').setAttribute('filter', 'url(#ttGlow)');
         gsap.to(TT, { speed: 1, duration: 0.8, ease: 'power2.out' });
       });
       gsap.timeline({ delay: 1.6 })
         .set('#ttTargetLamp', { attr: { fill: '#fff6d8' } })
         .to('#ttBeamEl', { opacity: 1, duration: 0.4 }, 0)
-        .to('#ttArm', { rotation: 28.1, svgOrigin: '372 92', duration: 1.5, ease: 'power2.inOut' }, 0.1);
+        .to('#ttArm', { rotation: 24, svgOrigin: '372 92', duration: 1.6, ease: 'power2.inOut' }, 0.1);
       var dotsEls = ['#ttDots1', '#ttDots2', '#ttDots3', '#ttDots4'].map(function (q) { return document.querySelector(q); });
       var drift = [0.6, -0.35, 0, 0.9]; /* Reihe 3 = 33 1/3 bei 50 Hz: steht bei exakter Drehzahl */
       gsap.ticker.add(function (time, dt) {
