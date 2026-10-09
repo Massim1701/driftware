@@ -2415,3 +2415,22 @@ html:not([data-device="phone"]) .utility-block { z-index: 160; }
 @media (max-height: 900px) and (max-width: 1100px) {
   #dj-player .dj-vinyl { width: 150px; height: 150px; }
 }
+
+/* Navigations-Kacheln nur bei Maus in der Naehe (siehe ccWireUtilityReveal) */
+html:not([data-device="phone"]) .utility-block {
+  opacity: 0; transform: translate(-50%, -18px); pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  padding: 8px 12px 6px; border-radius: 16px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08);
+}
+html.cc-nav-open:not([data-device="phone"]) .utility-block { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.cc-nav-handle { display: none; }
+html:not([data-device="phone"]) .cc-nav-handle {
+  display: block; position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 159;
+  width: 64px; height: 16px; padding: 0; border: 0; background: transparent; cursor: pointer;
+}
+html:not([data-device="phone"]) .cc-nav-handle span { display: block; width: 40px; height: 4px; margin: 5px auto 0; border-radius: 2px; background: rgba(255,255,255,0.22); transition: opacity 0.2s; }
+html.cc-nav-open .cc-nav-handle span { opacity: 0; }
+html:not([data-device="phone"]) #dj-player .dj-decks { padding-top: 16px; }

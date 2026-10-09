@@ -385,6 +385,43 @@ function utilityBlockHTML(mailHref) {
 
 function insertUtilityBlock(mailHref) {
   document.body.insertAdjacentHTML('afterbegin', utilityBlockHTML(mailHref));
+  ccWireUtilityReveal();
+}
+
+/* Navigations-Kacheln (Home/Dekaden/Mail/Datenschutz) sind ausgeblendet
+   und erscheinen nur, wenn die Maus oben in die Naehe kommt (Nutzerwunsch
+   9.10.) -- so bleibt die Club-Console oben frei. Ohne Maus (Tablet) gibt
+   es einen kleinen Griff, der die Kacheln per Tipp fuer ein paar Sekunden
+   einblendet. Listener nur einmal anlegen (Block wird bei AJAX-
+   Navigation neu eingefuegt, die Klasse haengt deshalb am <html>). */
+var ccUtilityWired = false;
+function ccWireUtilityReveal() {
+  if (!document.getElementById('cc-nav-handle')) {
+    document.body.insertAdjacentHTML('afterbegin', '<button type="button" class="cc-nav-handle" id="cc-nav-handle" aria-label="Navigation einblenden"><span></span></button>');
+  }
+  if (ccUtilityWired) return;
+  ccUtilityWired = true;
+  var root = document.documentElement, hideTimer = null;
+  function show(ms) {
+    root.classList.add('cc-nav-open');
+    clearTimeout(hideTimer);
+    if (ms) hideTimer = setTimeout(hide, ms);
+  }
+  function hide() { root.classList.remove('cc-nav-open'); }
+  document.addEventListener('mousemove', function (e) {
+    var near = e.clientY < 96 && Math.abs(e.clientX - window.innerWidth / 2) < 260;
+    var overBlock = e.target.closest && e.target.closest('.utility-block');
+    if (near || overBlock) show(0);
+    else if (root.classList.contains('cc-nav-open') && !hideTimer) hideTimer = setTimeout(function () { hideTimer = null; hide(); }, 400);
+    if (near || overBlock) { clearTimeout(hideTimer); hideTimer = null; }
+  }, { passive: true });
+  document.addEventListener('mouseleave', function () { hide(); });
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('#cc-nav-handle')) show(4000);
+  });
+  document.addEventListener('focusin', function (e) {
+    if (e.target.closest && e.target.closest('.utility-block')) show(4000);
+  });
 }
 
 /* ---------- AJAX-Navigation zwischen Dekaden-/Ambient-Seiten ----------
