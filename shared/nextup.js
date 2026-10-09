@@ -43,6 +43,76 @@
      localStorage. */
   var PLAYLISTS_KEY = 'driftware-saved-playlists';
 
+  /* Nutzerwunsch (9.10.): "die Warteschlange soll gespeichert werden
+     koennen, auch das was bereits gelaufen ist ... diese Liste soll dann
+     exportiert oder nochmal abgespielt werden koennen". Bereits gelaufene
+     Songs werden deshalb hier mitgeschrieben -- als VOLLE Song-Objekte
+     (inkl. yt), damit sie spaeter wirklich wieder abspielbar sind (der
+     alte playHistory in decades.js kennt nur Interpret/Titel). Wechselt
+     der "On Air"-Song, wandert der vorige in diese Liste. Bleibt ueber
+     Reloads erhalten, bis "Verlauf leeren" gedrueckt wird. */
+  var PLAYED_KEY = 'driftware-session-played';
+  var PLAYED_MAX = 300;
+  var played = [];
+  try { played = JSON.parse(window.localStorage.getItem(PLAYED_KEY) || '[]') || []; } catch (err) { played = []; }
+  var lastCurrent = null;
+  var playedOpen = false;
+  function songKey(s) { return s ? (s.yt || s.u || (s.a + '|' + s.t)) : ''; }
+  function persistPlayed() {
+    try { window.localStorage.setItem(PLAYED_KEY, JSON.stringify(played)); } catch (err) {}
+  }
+  function trackCurrent(current) {
+    if (songKey(current) === songKey(lastCurrent)) return;
+    if (lastCurrent && (!played.length || songKey(played[played.length - 1]) !== songKey(lastCurrent))) {
+      played.push(lastCurrent);
+      if (played.length > PLAYED_MAX) played.splice(0, played.length - PLAYED_MAX);
+      persistPlayed();
+    }
+    lastCurrent = current;
+  }
+  function sessionSongs() {
+    var deck = pickActiveDeck();
+    var upcoming = (deck && deck.queue && deck.index > -1) ? deck.queue.slice(deck.index) : [];
+    if (!upcoming.length && deck && deck.song) upcoming = [deck.song];
+    return played.concat(upcoming);
+  }
+  function csvFor(songs) {
+    var esc = function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; };
+    var lines = ['Artist,Title,Year,Genre,Style,YouTube'];
+    songs.forEach(function (s) {
+      lines.push([esc(s.a), esc(s.t), s.y || '', esc(s.g), esc(s.s), esc(s.yt ? 'https://www.youtube.com/watch?v=' + s.yt : '')].join(','));
+    });
+    return lines.join('\n');
+  }
+  function downloadCsv(songs, name) {
+    if (!songs.length) return;
+    var blob = new Blob(['\ufeff' + csvFor(songs)], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = (name || 'playlist').replace(/[^\w\-äöüÄÖÜß ]+/g, '').trim().replace(/\s+/g, '-') + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+  function copySongs(songs, btn) {
+    if (!songs.length || !navigator.clipboard) return;
+    navigator.clipboard.writeText(songs.map(function (s) { return s.a + ' - ' + s.t; }).join('\n')).then(function () {
+      if (!btn) return;
+      var old = btn.innerHTML; btn.innerHTML = 'Kopiert ✓';
+      setTimeout(function () { btn.innerHTML = old; }, 1400);
+    });
+  }
+  function replayPlayed() {
+    if (!played.length) return;
+    var deck = pickActiveDeck();
+    if (deck && deck.song && deck.queue && deck.index > -1) {
+      deck.queue = deck.queue.slice(0, deck.index + 1).concat(played.slice(), deck.queue.slice(deck.index + 1));
+    } else if (typeof window.loadSongToDeck === 'function') {
+      window.loadSongToDeck(played[0], 'A', played.slice(), false);
+    }
+    lastSignature = null; render();
+  }
+
   function loadSavedPlaylists() {
     try {
       var raw = window.localStorage.getItem(PLAYLISTS_KEY);
@@ -139,12 +209,15 @@
     var cls = 'gen-queue-item';
     if (kind === 'current') cls += ' gen-queue-current';
     else if (kind === 'upcoming') cls += ' gen-queue-upcoming';
+    else if (kind === 'played') cls += ' gen-queue-played';
     // Der aktuell gespielte Song laesst sich hier nicht entfernen -- er
     // bekommt stattdessen den "On Air"-Hinweis an derselben Stelle (ganz
     // rechts). Kommende Zeilen (Warteschlange) bekommen ein "×".
     var trailing = '';
     if (kind === 'current') {
       trailing = '<span class="gen-queue-onair">' + ON_AIR_SVG + ' On Air</span>';
+    } else if (kind === 'played') {
+      trailing = '<button type="button" class="gen-queue-requeue" data-idx="' + idx + '" aria-label="Nochmal in die Warteschlange" title="Nochmal in die Warteschlange">↻</button>';
     } else {
       trailing = '<button type="button" class="gen-queue-remove" data-kind="' + kind + '" data-idx="' + idx + '" aria-label="Aus der Liste entfernen" title="Entfernen">&times;</button>';
     }
@@ -165,6 +238,7 @@
     if (!listEl) return;
     var deck = pickActiveDeck();
     var current = deck ? deck.song : null;
+    trackCurrent(current);
 
     var upcomingEntries = [];
     if (deck && deck.queue && deck.index > -1) {
@@ -176,16 +250,23 @@
     // weiter absteigend) -- kein Umdrehen mehr noetig.
 
     var signature = upcomingEntries.map(function (e) { return e.song.a + e.song.t; }).join(',') + '||' +
-      (current ? current.a + current.t : '');
+      (current ? current.a + current.t : '') + '||' + played.length + (playedOpen ? 'o' : 'c');
     if (signature === lastSignature) return; // nichts geaendert, kein unnoetiges Neuzeichnen
     lastSignature = signature;
 
+    var html = '';
+    if (played.length) {
+      html += '<li class="gen-queue-played-head"><button type="button" class="gen-queue-played-toggle" aria-expanded="' + playedOpen + '">' +
+        (playedOpen ? '▾' : '▸') + ' Bereits gelaufen <b>' + played.length + '</b></button>' +
+        '<button type="button" class="gen-queue-played-replay" title="Alle gelaufenen Songs nochmal in die Warteschlange">↻ Nochmal</button>' +
+        '<button type="button" class="gen-queue-played-clear" title="Verlauf leeren">Leeren</button></li>';
+      if (playedOpen) html += played.map(function (s, i) { return songLine(s, '✓', 'played', i); }).join('');
+    }
     if (!current && !upcomingEntries.length) {
-      listEl.innerHTML = '<li class="gen-queue-empty">Nichts geladen.</li>';
+      listEl.innerHTML = html + '<li class="gen-queue-empty">Songs aus der Liste hierher ziehen oder auf + klicken.</li>';
       return;
     }
 
-    var html = '';
     if (current) html += songLine(current, '▶', 'current', null);
     html += upcomingEntries.map(function (e) { return songLine(e.song, '+', 'upcoming', e.idx); }).join('');
     listEl.innerHTML = html;
@@ -283,6 +364,20 @@
   }
 
   function handleRemoveClick(e) {
+    var t = e.target && e.target.closest ? e.target.closest('button') : null;
+    if (t && t.classList.contains('gen-queue-played-toggle')) { playedOpen = !playedOpen; lastSignature = null; render(); return; }
+    if (t && t.classList.contains('gen-queue-played-replay')) { replayPlayed(); return; }
+    if (t && t.classList.contains('gen-queue-played-clear')) {
+      if (!window.confirm('Verlauf (' + played.length + ' Songs) wirklich leeren?')) return;
+      played = []; persistPlayed(); lastSignature = null; render(); return;
+    }
+    if (t && t.classList.contains('gen-queue-requeue')) {
+      var song = played[parseInt(t.getAttribute('data-idx'), 10)];
+      var dk = pickActiveDeck();
+      if (song && dk && dk.song && dk.queue && dk.index > -1) dk.queue.push(song);
+      else if (song && typeof window.loadSongToDeck === 'function') window.loadSongToDeck(song, 'A', [song], false);
+      lastSignature = null; render(); return;
+    }
     var target = e.target;
     if (!target || !target.classList || !target.classList.contains('gen-queue-remove')) return;
     var kind = target.getAttribute('data-kind');
@@ -304,7 +399,7 @@
     var playlists = loadSavedPlaylists();
     var names = Object.keys(playlists).sort(function (a, b) { return a.localeCompare(b, 'de'); });
     var prevValue = select.value;
-    select.innerHTML = '<option value="">Playlist laden…</option>' +
+    select.innerHTML = '<option value="">Playlist wählen…</option>' +
       names.map(function (name) {
         return '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + ' (' + playlists[name].length + ')</option>';
       }).join('');
@@ -312,13 +407,15 @@
   }
 
   function savePlaylist() {
-    var deck = pickActiveDeck();
-    var songs = (deck && deck.queue) ? (deck.index > -1 ? deck.queue.slice(deck.index) : deck.queue.slice()) : [];
+    /* Speichert die ganze Session: bereits gelaufen + On Air + kommend. */
+    var songs = sessionSongs();
     if (!songs.length) {
-      window.alert('Die Warteschlange ist leer -- nichts zu speichern.');
+      window.alert('Noch nichts gelaufen und die Warteschlange ist leer -- nichts zu speichern.');
       return;
     }
-    var name = window.prompt('Name für diese Playlist:');
+    var d = new Date();
+    var suggestion = 'Session ' + d.getDate() + '.' + (d.getMonth() + 1) + '. ' + d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2);
+    var name = window.prompt('Name für diese Playlist (' + songs.length + ' Songs, inkl. bereits gelaufener):', suggestion);
     if (!name) return;
     name = name.trim();
     if (!name) return;
@@ -408,7 +505,19 @@
       '.gen-queue-pl-btn:hover{color:var(--accent);border-color:var(--accent);background:rgba(34,197,94,.1);}' +
       '.gen-queue-pl-btn:focus-visible{outline:1px solid currentColor;}' +
       '.gen-queue-pl-select{flex:1 1 120px;min-width:100px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:14px;font-size:11px;padding:4px 9px;}' +
-      '.gen-queue-pl-delete:hover{color:#f87171;border-color:#f87171;background:rgba(248,113,113,.1);}';
+      '.gen-queue-pl-delete:hover{color:#f87171;border-color:#f87171;background:rgba(248,113,113,.1);}' +
+      '.gen-queue-row-label{flex:0 0 74px;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);opacity:.8;}' +
+      '.gen-queue-played-head{display:flex;align-items:center;gap:6px;padding:2px 0 4px;}' +
+      '.gen-queue-played-toggle{background:none;border:0;color:var(--muted);font-size:11.5px;font-weight:600;cursor:pointer;padding:4px 2px;margin-right:auto;}' +
+      '.gen-queue-played-toggle b{color:var(--text);}' +
+      '.gen-queue-played-replay,.gen-queue-played-clear{background:none;border:1px solid var(--border);color:var(--muted);font-size:10.5px;padding:3px 8px;border-radius:12px;cursor:pointer;}' +
+      '.gen-queue-played-replay:hover{color:var(--accent);border-color:var(--accent);}' +
+      '.gen-queue-played-clear:hover{color:#f87171;border-color:#f87171;}' +
+      '.gen-queue-played{opacity:.55;}' +
+      '.gen-queue-played:hover{opacity:.9;}' +
+      '.gen-queue-played .gen-queue-num{color:var(--muted);}' +
+      '.gen-queue-requeue{margin-left:auto;flex:0 0 auto;background:none;border:none;color:inherit;opacity:.5;font-size:15px;cursor:pointer;min-width:32px;min-height:28px;border-radius:5px;}' +
+      '.gen-queue-requeue:hover{opacity:1;background:rgba(255,255,255,.12);}';
     document.head.appendChild(style);
   }
 
@@ -438,16 +547,26 @@
     // tut nichts mehr (hat einen Null-Check), kein Konflikt.
     var clearIconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
     var saveIconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>';
+    var dlIconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>';
+    var copyIconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
+    var playIconSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
     nativeHistory.innerHTML =
       '<div class="gen-queue-head"><h3>' + nextIconSvg + ' Warteschlange</h3>' +
       '<div class="gen-queue-head-actions">' +
       '<button type="button" id="gen-queue-clear" class="gen-queue-clear-btn" title="Warteschlange leeren, damit eine neue geladen werden kann">' + clearIconSvg + ' Leeren</button>' +
       '<button type="button" id="gen-queue-clear-both" class="gen-queue-clear-btn" title="Player A und B komplett stoppen und leeren">' + clearIconSvg + ' Player leeren</button>' +
       '</div></div>' +
+      '<div class="gen-queue-playlist-row gen-queue-session-row">' +
+      '<span class="gen-queue-row-label">Session</span>' +
+      '<button type="button" id="gen-queue-save" class="gen-queue-pl-btn" title="Bereits gelaufene + aktuelle + kommende Songs als Playlist speichern">' + saveIconSvg + ' Speichern</button>' +
+      '<button type="button" id="gen-queue-export" class="gen-queue-pl-btn" title="Session als CSV herunterladen (für Spotify/Apple Music über Soundiiz oder TuneMyMusic)">' + dlIconSvg + ' CSV</button>' +
+      '<button type="button" id="gen-queue-copy" class="gen-queue-pl-btn" title="Session als Text kopieren (Interpret - Titel)">' + copyIconSvg + ' Kopieren</button>' +
+      '</div>' +
       '<div class="gen-queue-playlist-row">' +
-      '<button type="button" id="gen-queue-save" class="gen-queue-pl-btn" title="Aktuelle Warteschlange als Playlist speichern">' + saveIconSvg + ' Speichern</button>' +
-      '<select id="gen-queue-pl-select" class="gen-queue-pl-select"><option value="">Playlist laden…</option></select>' +
-      '<button type="button" id="gen-queue-load" class="gen-queue-pl-btn" title="Ausgewählte Playlist an die Warteschlange anhängen">Laden</button>' +
+      '<span class="gen-queue-row-label">Gespeichert</span>' +
+      '<select id="gen-queue-pl-select" class="gen-queue-pl-select"><option value="">Playlist wählen…</option></select>' +
+      '<button type="button" id="gen-queue-load" class="gen-queue-pl-btn" title="Ausgewählte Playlist abspielen (ersetzt die kommenden Songs)">' + playIconSvg + ' Abspielen</button>' +
+      '<button type="button" id="gen-queue-pl-export" class="gen-queue-pl-btn" title="Ausgewählte Playlist als CSV herunterladen">' + dlIconSvg + '</button>' +
       '<button type="button" id="gen-queue-delete" class="gen-queue-pl-btn gen-queue-pl-delete" title="Ausgewählte Playlist löschen">' + clearIconSvg + '</button>' +
       '</div>' +
       '<ul id="gen-queue-list"><li class="gen-queue-empty">Nichts geladen.</li></ul>';
@@ -464,6 +583,21 @@
     if (loadBtn) loadBtn.addEventListener('click', loadSelectedPlaylist);
     var deleteBtn = document.getElementById('gen-queue-delete');
     if (deleteBtn) deleteBtn.addEventListener('click', deleteSelectedPlaylist);
+    var exportBtn = document.getElementById('gen-queue-export');
+    if (exportBtn) exportBtn.addEventListener('click', function () {
+      var songs = sessionSongs();
+      if (!songs.length) { window.alert('Noch nichts in der Session.'); return; }
+      var d = new Date();
+      downloadCsv(songs, 'driftware-session-' + d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate());
+    });
+    var copyBtn = document.getElementById('gen-queue-copy');
+    if (copyBtn) copyBtn.addEventListener('click', function () { copySongs(sessionSongs(), copyBtn); });
+    var plExportBtn = document.getElementById('gen-queue-pl-export');
+    if (plExportBtn) plExportBtn.addEventListener('click', function () {
+      var select = document.getElementById('gen-queue-pl-select');
+      if (!select || !select.value) { window.alert('Bitte zuerst eine gespeicherte Playlist wählen.'); return; }
+      downloadCsv(loadSavedPlaylists()[select.value] || [], select.value);
+    });
     refreshPlaylistSelect();
     wireDropzone(nativeHistory);
     wireReorder(listEl);

@@ -2434,3 +2434,39 @@ html:not([data-device="phone"]) .cc-nav-handle {
 html:not([data-device="phone"]) .cc-nav-handle span { display: block; width: 40px; height: 4px; margin: 5px auto 0; border-radius: 2px; background: rgba(255,255,255,0.22); transition: opacity 0.2s; }
 html.cc-nav-open .cc-nav-handle span { opacity: 0; }
 html:not([data-device="phone"]) #dj-player .dj-decks { padding-top: 16px; }
+
+/* Bibliothek (9.10.): Song-Liste und Warteschlange gleich gross nebeneinander,
+   farblich nur in Nuancen getrennt (Liste leicht in Deck-A-Farbe, Warteschlange
+   leicht in Deck-B-Farbe getoent). Hoehe so, dass beide unter der fest oben
+   stehenden Konsole komplett sichtbar sind. */
+.generator-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+.generator-body .song-grid, .generator-body .gen-history {
+  max-width: none; min-width: 0; margin: 0;
+  height: clamp(360px, calc(100vh - 470px), 820px); max-height: none;
+  border-radius: 14px; border: 1px solid var(--border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.25);
+}
+.generator-body .song-grid {
+  padding: 8px; overflow-y: auto;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--deck-a) 7%, transparent), transparent 140px), color-mix(in srgb, var(--panel) 94%, var(--deck-a));
+  border-top: 2px solid color-mix(in srgb, var(--deck-a) 55%, transparent);
+}
+.generator-body .gen-history {
+  display: flex; flex-direction: column; padding: 14px 16px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--deck-b) 7%, transparent), transparent 140px), color-mix(in srgb, var(--panel) 94%, var(--deck-b));
+  border-top: 2px solid color-mix(in srgb, var(--deck-b) 55%, transparent);
+}
+.generator-body .gen-history ul { flex: 1; min-height: 0; max-height: none; overflow-y: auto; }
+.generator-body .gen-history .gen-queue-current { background: color-mix(in srgb, var(--deck-b) 16%, transparent); border-color: color-mix(in srgb, var(--deck-b) 45%, transparent); }
+/* Ablageflaeche sichtbar machen, sobald ein Song gezogen wird */
+body.dnd-dragging .generator-body .gen-history { outline: 2px dashed color-mix(in srgb, var(--deck-b) 80%, transparent); outline-offset: -6px; }
+body.dnd-dragging .generator-body .gen-history::after {
+  content: 'Hier ablegen → Warteschlange'; position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+  font: 700 11px 'Inter', sans-serif; letter-spacing: 0.08em; color: #050608; background: var(--deck-b);
+  padding: 6px 12px; border-radius: 999px; pointer-events: none; box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+.generator-body .gen-history { position: relative; }
+.generator-body .gen-history.gen-queue-drag-over { box-shadow: 0 0 0 3px var(--deck-b), 0 0 30px color-mix(in srgb, var(--deck-b) 40%, transparent); }
+@media (max-width: 760px) {
+  .generator-body { grid-template-columns: minmax(0, 1fr); }
+}
