@@ -155,7 +155,7 @@
   function buildPanel() {
     var panel = document.createElement('div');
     panel.innerHTML =
-      '<button type="button" class="dj-midi-toggle" id="dj-midi-toggle">🎛️ MIDI-Controller</button>' +
+      '<button type="button" class="dj-midi-toggle" id="dj-midi-toggle">MIDI-Controller</button>' +
       '<div class="dj-midi-body" id="dj-midi-body" hidden>' +
       '  <p class="dj-midi-hint">Verbinde einen DJ-Controller per USB, dann pro Regler auf "Lernen" klicken und den echten Regler einmal bewegen/drücken.</p>' +
       '  <div class="dj-midi-rows">' +
@@ -226,7 +226,7 @@
 
     if (!navigator.requestMIDIAccess) {
       panelEl.innerHTML =
-        '<button type="button" class="dj-midi-toggle" disabled>🎛️ MIDI-Controller (nicht unterstützt)</button>' +
+        '<button type="button" class="dj-midi-toggle" disabled>MIDI-Controller (nicht unterstützt)</button>' +
         '<div class="dj-midi-unsupported" hidden></div>';
       panelEl.title = 'Web MIDI wird nur von Chrome/Edge unterstützt, nicht von diesem Browser.';
       anchor.insertAdjacentElement('afterend', panelEl);
@@ -246,7 +246,7 @@
 
     // Bereits verbunden (z.B. vor einem Dekaden-Wechsel) -- Panel gleich im
     // richtigen Zustand aufbauen statt so zu tun, als sei nichts verbunden.
-    if (midiAccess) { toggleBtn.textContent = '🎛️ MIDI verbunden'; }
+    if (midiAccess) { toggleBtn.textContent = 'MIDI verbunden'; }
 
     toggleBtn.addEventListener('click', function () {
       if (!midiAccess) {
@@ -255,10 +255,10 @@
           midiAccess = access;
           connectAllInputs();
           midiAccess.onstatechange = connectAllInputs;
-          toggleBtn.textContent = '🎛️ MIDI verbunden';
+          toggleBtn.textContent = 'MIDI verbunden';
           body.hidden = false;
         }, function () {
-          toggleBtn.textContent = '🎛️ MIDI-Zugriff verweigert';
+          toggleBtn.textContent = 'MIDI-Zugriff verweigert';
         });
       } else {
         body.hidden = !body.hidden;
@@ -275,7 +275,7 @@
     var disconnectBtn = panelEl.querySelector('#dj-midi-disconnect');
     disconnectBtn.addEventListener('click', function () {
       disconnectAll();
-      toggleBtn.textContent = '🎛️ MIDI-Controller';
+      toggleBtn.textContent = 'MIDI-Controller';
       body.hidden = true;
     });
   }

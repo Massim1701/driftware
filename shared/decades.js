@@ -125,6 +125,15 @@ var PREV_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H
 var NEXT_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2z"/><path d="M4 5v14l11-7z"/></svg>';
 var SEARCH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-5-5"/></svg>';
 var REFRESH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5.3M4 20v-5h5"/></svg>';
+/* Einheitliche Linien-Icons fuer die Bibliotheks-Toolbar (9.10., statt Emojis). */
+function ccIcon(paths) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths + '</svg>'; }
+var CC_ICON = {
+  lib: ccIcon('<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'),
+  dice: ccIcon('<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1" fill="currentColor"/>'),
+  cal: ccIcon('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'),
+  heart: ccIcon('<path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/>'),
+  flame: ccIcon('<path d="M12 2c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/>')
+};
 var SPEAKER_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg>';
 var NOTE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="7" cy="18" r="3"/><path d="M10 18V4l9-2v13"/><circle cx="16" cy="17" r="3"/></svg>';
 var PLUS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
@@ -3646,7 +3655,7 @@ function renderSongGrid(container, songs) {
   if (showMostWanted) {
     var mwHeading = document.createElement('div');
     mwHeading.className = 'song-grid-section-heading song-grid-section-heading-mostwanted';
-    mwHeading.innerHTML = '🔥 <strong>Most Wanted</strong> — die ' + POPULARITY_SPLIT + ' meistgespielten Songs (nach YouTube-Aufrufen)';
+    mwHeading.innerHTML = CC_ICON.flame + ' <strong>Most Wanted</strong> — die ' + POPULARITY_SPLIT + ' meistgespielten Songs (nach YouTube-Aufrufen)';
     container.appendChild(mwHeading);
   }
   visible.forEach(function (song, songIdx) {
@@ -4271,7 +4280,7 @@ function renderPlaylistGenerator(mountRoot, config) {
   var section = document.createElement('section');
   section.className = 'generator';
   section.innerHTML = '' +
-    '<h2>🎛️ Playlist-Generator</h2>' +
+    '<h2>' + CC_ICON.lib + ' Playlist-Generator</h2>' +
     '<p class="sub">Songs anklicken für einen grünen Haken, ⓘ zeigt alle Song-Infos. Auswahl direkt an deinen Streaming-Dienst senden.</p>' +
     '<div class="generator-search">' +
     '  <div class="search-box">' +
@@ -4284,7 +4293,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     '<div class="gen-selectors">' + switchRowHTML() + genreRowHTML + '</div>' +
     ((neighborDecades.prev || neighborDecades.next) ? (
       '<div class="decade-link-row">' +
-      '  <span class="decade-link-label">' + LINK_SVG + ' Dekade verbinden:</span>' +
+      '  <span class="decade-link-label">' + LINK_SVG + ' Verbinden</span>' +
       /* Chronologische Reihenfolge, eigene Dekade in der Mitte (siehe
          Nutzeranforderung): [vorherige] [eigene] [naechste]. */
       [neighborDecades.prev, { key: ownDecadeKey, label: ownDecadeLabel, own: true }, neighborDecades.next]
@@ -4296,7 +4305,7 @@ function renderPlaylistGenerator(mountRoot, config) {
       '</div>'
     ) : '') +
     '<div class="send-panel">' +
-    '  <span class="send-panel-label">Dein Dienst:</span>' +
+    '  <span class="send-panel-label">Dienst</span>' +
     '  <div class="provider-picker" id="gen-provider-picker"></div>' +
     '  <button class="send-btn" id="gen-send" type="button" disabled>Auswahl senden</button>' +
     '  <button class="send-btn send-btn-queue" id="gen-send-queue" type="button" disabled>In Warteschlange senden</button>' +
@@ -4304,13 +4313,13 @@ function renderPlaylistGenerator(mountRoot, config) {
     '</div>' +
     '<div class="generator-actions" id="gen-actions">' +
     '  <span class="generator-count" id="gen-count"></span>' +
-    '  <button id="gen-play-all" type="button">' + PLUS_SVG + ' Playlist auf Warteschlange laden</button>' +
-    '  <button id="gen-surprise" type="button" title="Zufallsmix quer durch alle Dekaden und Stimmungen">\uD83C\uDFB2 \u00dcberrasch mich</button>' +
-    '  <button id="gen-onthisday" type="button" title="UK-Top-3-Hits rund um das heutige Datum aus fr\u00fcheren Jahren">\uD83D\uDCC5 Heute vor X Jahren</button>' +
-    '  <button id="gen-favs" type="button" title="Meine Favoriten anzeigen">\u2665 Favoriten <span id="gen-favs-n"></span></button>' +
-    '  <button id="gen-shuffle" type="button" title="Reihenfolge neu mischen">' + SHUFFLE_SVG + ' Playlist neu mischen</button>' +
-    '  <button id="gen-copy" type="button">' + COPY_SVG + ' Liste kopieren</button>' +
-    '  <a id="gen-download" download>' + DOWNLOAD_SVG + ' Als CSV exportieren</a>' +
+    '  <button id="gen-play-all" type="button" title="Die ganze aktuelle Playlist an die Warteschlange anhängen">' + PLUS_SVG + ' Alle in Warteschlange</button>' +
+    '  <button id="gen-surprise" type="button" title="Zufallsmix quer durch alle Dekaden und Stimmungen">' + CC_ICON.dice + ' \u00dcberrasch mich</button>' +
+    '  <button id="gen-onthisday" type="button" title="UK-Top-3-Hits rund um das heutige Datum aus fr\u00fcheren Jahren">' + CC_ICON.cal + ' Heute vor X Jahren</button>' +
+    '  <button id="gen-favs" type="button" title="Meine Favoriten anzeigen">' + CC_ICON.heart + ' Favoriten <span id="gen-favs-n"></span></button>' +
+    '  <button id="gen-shuffle" type="button" title="Reihenfolge der Playlist neu mischen">' + SHUFFLE_SVG + ' Mischen</button>' +
+    '  <button id="gen-copy" type="button" title="Liste als Text kopieren (Interpret - Titel)">' + COPY_SVG + ' Kopieren</button>' +
+    '  <a id="gen-download" download title="Liste als CSV herunterladen (für Soundiiz/TuneMyMusic)">' + DOWNLOAD_SVG + ' CSV</a>' +
     '</div>' +
     '<div class="generator-body">' +
     '  <div class="song-grid" id="gen-grid"></div>' +
@@ -4443,7 +4452,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     var btn = e.currentTarget;
     navigator.clipboard.writeText(asLines()).then(function () {
       btn.innerHTML = CHECK_SVG + ' Kopiert!';
-      setTimeout(function () { btn.innerHTML = COPY_SVG + ' Liste kopieren'; }, 1500);
+      setTimeout(function () { btn.innerHTML = COPY_SVG + ' Kopieren'; }, 1500);
     });
   });
   section.querySelector('#gen-download').addEventListener('click', function (e) {

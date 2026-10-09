@@ -338,7 +338,7 @@
   function buildPanel() {
     var panel = document.createElement('div');
     panel.className = 'manualadd-panel';
-    panel.innerHTML = '<button type="button" class="manualadd-toggle" id="manualadd-toggle">🔍 Song nicht gefunden?</button>';
+    panel.innerHTML = '<button type="button" class="manualadd-toggle" id="manualadd-toggle">Song nicht gefunden?</button>';
     return panel;
   }
 
