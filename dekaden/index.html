@@ -876,26 +876,48 @@
          Sekunden ein neuer), weich ein-/ausblenden, wandern langsam mit der
          Drehung -- wie Reflexe im Buehnennebel. */
       var beams = [], nextBeam = 1.5, clock = 0;
+      /* 90 verschiedene Strahlen (Nutzerwunsch: "nicht immer dieselben"):
+         Richtung von leicht nach oben-rechts bis knapp nach unten-links,
+         eigener Austrittspunkt, Laenge, Breite, Farbe, Helligkeit, Dauer und
+         Wander-Tempo/-Richtung. Gezogen wird aus einem gemischten Stapel --
+         alle 90 kommen dran, bevor sich einer wiederholt. */
+      var BEAM_COLORS = ['255,252,240', '255,244,220', '235,240,255', '205,180,255', '255,190,235', '170,255,240', '190,215,255'];
+      var BEAM_TYPES = [];
+      (function () {
+        var r2 = (function (a) { return function () { a = (a * 16807) % 2147483647; return a / 2147483647; }; })(4242);
+        for (var i = 0; i < 90; i++) {
+          BEAM_TYPES.push({
+            ang: -0.25 + (i / 89) * 1.95 + (r2() - 0.5) * 0.12,   /* gleichmaessig ueber den Faecher verteilt */
+            org: 0.25 + r2() * 1.1,
+            len: 380 + r2() * 900,
+            width: 0.018 + r2() * 0.075,
+            col: BEAM_COLORS[Math.floor(r2() * BEAM_COLORS.length)],
+            bright: 0.16 + r2() * 0.2,
+            dur: 2.8 + r2() * 4.5,
+            sweep: (r2() < 0.5 ? -1 : 1) * (0.02 + r2() * 0.09)
+          });
+        }
+      })();
+      var beamBag = [];
       function spawnBeam() {
-        var a = 0.12 + Math.random() * 1.25;            /* Richtung: nach rechts bis nach unten */
-        var o = 0.55 + Math.random() * 0.4;              /* Austrittspunkt auf der Kugel */
-        beams.push({ ang: a, org: o, len: 520 + Math.random() * 620, width: 0.035 + Math.random() * 0.05,
-          life: 0, dur: 3.5 + Math.random() * 3, tint: Math.random() });
+        if (!beamBag.length) { beamBag = BEAM_TYPES.map(function (_, i) { return i; }); for (var k = beamBag.length - 1; k > 0; k--) { var j = Math.floor(Math.random() * (k + 1)); var t = beamBag[k]; beamBag[k] = beamBag[j]; beamBag[j] = t; } }
+        var T = BEAM_TYPES[beamBag.pop()];
+        beams.push({ ang: T.ang, org: T.org, len: T.len, width: T.width, col: T.col, bright: T.bright, sweep: T.sweep, life: 0, dur: T.dur });
       }
       function drawBeams(dt) {
         clock += dt; nextBeam -= dt;
         if (nextBeam <= 0) { if (beams.length < 3) spawnBeam(); nextBeam = 2.5 + Math.random() * 4.5; }
         for (var i = beams.length - 1; i >= 0; i--) {
-          var B = beams[i]; B.life += dt; B.ang += dt * 0.05;
+          var B = beams[i]; B.life += dt; B.ang += dt * B.sweep;
           if (B.life > B.dur) { beams.splice(i, 1); continue; }
           var t = B.life / B.dur, fade = t < 0.3 ? t / 0.3 : t > 0.7 ? (1 - t) / 0.3 : 1;
           var ox = Math.cos(B.org) * R * 0.96, oy = Math.sin(B.org) * R * 0.96;
           var ex = ox + Math.cos(B.ang) * B.len, ey = oy + Math.sin(B.ang) * B.len;
           var px = -Math.sin(B.ang), py = Math.cos(B.ang), w = B.len * B.width;
-          var col = B.tint < 0.25 ? '205,180,255' : B.tint > 0.8 ? '170,255,240' : '255,252,240';
+          var col = B.col;
           var gr = sx.createLinearGradient(ox, oy, ex, ey);
-          gr.addColorStop(0, 'rgba(' + col + ',' + (0.28 * fade).toFixed(3) + ')');
-          gr.addColorStop(0.5, 'rgba(' + col + ',' + (0.10 * fade).toFixed(3) + ')');
+          gr.addColorStop(0, 'rgba(' + col + ',' + (B.bright * fade).toFixed(3) + ')');
+          gr.addColorStop(0.5, 'rgba(' + col + ',' + (B.bright * 0.36 * fade).toFixed(3) + ')');
           gr.addColorStop(1, 'rgba(' + col + ',0)');
           sx.fillStyle = gr;
           sx.beginPath(); sx.moveTo(ox - px * 2, oy - py * 2); sx.lineTo(ex - px * w, ey - py * w); sx.lineTo(ex + px * w, ey + py * w); sx.lineTo(ox + px * 2, oy + py * 2); sx.closePath(); sx.fill();
