@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Driftware EQ</title>
+<link rel="stylesheet" href="/fonts/fonts.css?v=1">
+<style>
+  /* Pro-EQ-Fenster (9.10.): nimmt den Ton des Driftware-Tabs auf (Chrome
+     "Tab teilen" mit suppressLocalAudioPlayback -- der Tab selbst wird
+     dabei stumm), schickt ihn durch einen Master-EQ und gibt ihn hier aus.
+     Laeuft bewusst in einem EIGENEN Fenster: wuerde der Driftware-Tab sich
+     selbst aufnehmen und wieder abspielen, waere auch die bearbeitete
+     Ausgabe stummgeschaltet und wuerde erneut aufgenommen (Rueckkopplung).
+     Steuerung kommt per BroadcastChannel 'dw-eq' aus dem Mixer
+     (decades.js), Pegel gehen auf demselben Weg zurueck. */
+  :root { --bg: #0b0c10; --panel: #14161c; --text: #f1f2f5; --muted: #8c90a0; --ok: #4ade80; --accent: #7c5cff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.45 'Inter', -apple-system, sans-serif; padding: 16px; }
+  h1 { margin: 0 0 4px; font: 800 15px 'Sora', sans-serif; letter-spacing: 0.04em; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
+  .on .dot { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  p { color: var(--muted); margin: 0 0 12px; }
+  ol { color: var(--muted); padding-left: 18px; margin: 0 0 14px; }
+  ol b { color: var(--text); }
+  button { font: 700 13px 'Inter', sans-serif; border: 0; border-radius: 9px; height: 40px; padding: 0 16px; cursor: pointer; color: #08090c; background: linear-gradient(180deg, #a5f3c4, #4ade80); width: 100%; }
+  button.stop { background: linear-gradient(180deg, #fca5a5, #ef4444); color: #fff; }
+  .meters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0 10px; }
+  .meter { height: 10px; border-radius: 5px; background: #05070a; overflow: hidden; box-shadow: inset 0 1px 3px #000; }
+  .meter i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #22c55e 0 60%, #facc15 60% 82%, #ef4444 82%); background-size: 100% 100%; transition: width 0.06s linear; }
+  .vals { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; font: 600 11px 'Courier New', monospace; }
+  .vals div { background: var(--panel); border-radius: 7px; padding: 6px 0; }
+  .vals small { display: block; font: 700 9px 'Inter', sans-serif; letter-spacing: 0.12em; color: var(--muted); }
+  .msg { margin-top: 10px; font-size: 12px; color: var(--muted); min-height: 18px; }
+  .msg.err { color: #f87171; }
+</style>
+</head>
+<body>
+  <h1 id="title"><span class="dot"></span> Driftware EQ</h1>
+  <p id="intro">Master-EQ für den Player. Dieses Fenster muss offen bleiben (minimieren geht).</p>
+  <ol id="steps">
+    <li>Auf <b>„Driftware-Tab auswählen“</b> klicken.</li>
+    <li>Im Chrome-Dialog den Tab <b>driftware.online</b> wählen.</li>
+    <li>Haken bei <b>„Tab-Audio teilen“</b> setzen und <b>Teilen</b> klicken.</li>
+  </ol>
+  <button type="button" id="start">Driftware-Tab auswählen</button>
+  <div class="meters"><div class="meter"><i id="mL"></i></div><div class="meter"><i id="mR"></i></div></div>
+  <div class="vals">
+    <div><small>HI</small><span id="vHi">0 dB</span></div>
+    <div><small>MID</small><span id="vMid">0 dB</span></div>
+    <div><small>LOW</small><span id="vLow">0 dB</span></div>
+    <div><small>FILTER</small><span id="vFlt">aus</span></div>
+  </div>
+  <div class="msg" id="msg"></div>
+
+<script>
+(function () {
+  var chan = ('BroadcastChannel' in window) ? new BroadcastChannel('dw-eq') : null;
+  var ctx = null, stream = null, src = null, nodes = null, anL = null, anR = null, raf = null;
+  var settings = { hi: 0, mid: 0, low: 0, filter: 0 };
+  var startBtn = document.getElementById('start');
+  var msg = document.getElementById('msg');
+
+  function say(t, err) { msg.textContent = t || ''; msg.className = 'msg' + (err ? ' err' : ''); }
+  function post(o) { if (chan) chan.postMessage(o); }
+
+  /* -26 dB am Linksanschlag (fast "Kill" wie am DJ-Mixer), +6 dB rechts. */
+  function apply() {
+    document.getElementById('vHi').textContent = fmtDb(settings.hi);
+    document.getElementById('vMid').textContent = fmtDb(settings.mid);
+    document.getElementById('vLow').textContent = fmtDb(settings.low);
+    var f = settings.filter;
+    document.getElementById('vFlt').textContent = Math.abs(f) < 0.03 ? 'aus' : (f < 0 ? 'LP' : 'HP') + ' ' + Math.round(Math.abs(f) * 100) + '%';
+    if (!nodes) return;
+    var t = ctx.currentTime;
+    nodes.hi.gain.setTargetAtTime(settings.hi, t, 0.02);
+    nodes.mid.gain.setTargetAtTime(settings.mid, t, 0.02);
+    nodes.low.gain.setTargetAtTime(settings.low, t, 0.02);
+    /* Ein Regler fuer beide Filter wie am DJM: links Tiefpass, rechts
+       Hochpass, Mitte = aus. Frequenz logarithmisch. */
+    if (f < -0.03) {
+      nodes.lp.frequency.setTargetAtTime(20000 * Math.pow(150 / 20000, -f), t, 0.03);
+      nodes.hp.frequency.setTargetAtTime(10, t, 0.03);
+    } else if (f > 0.03) {
+      nodes.hp.frequency.setTargetAtTime(20 * Math.pow(6000 / 20, f), t, 0.03);
+      nodes.lp.frequency.setTargetAtTime(22000, t, 0.03);
+    } else {
+      nodes.lp.frequency.setTargetAtTime(22000, t, 0.03);
+      nodes.hp.frequency.setTargetAtTime(10, t, 0.03);
+    }
+  }
+  function fmtDb(v) { return (v > 0 ? '+' : '') + Math.round(v) + ' dB'; }
+
+  function level(an) {
+    var buf = new Float32Array(an.fftSize);
+    an.getFloatTimeDomainData(buf);
+    var peak = 0;
+    for (var i = 0; i < buf.length; i++) { var a = Math.abs(buf[i]); if (a > peak) peak = a; }
+    return Math.min(1, peak);
+  }
+  function meterLoop() {
+    raf = requestAnimationFrame(meterLoop);
+    if (!anL) return;
+    var l = level(anL), r = level(anR);
+    document.getElementById('mL').style.width = (l * 100) + '%';
+    document.getElementById('mR').style.width = (r * 100) + '%';
+    post({ type: 'level', l: l, r: r });
+  }
+  /* Im Hintergrund drosselt der Browser requestAnimationFrame -- die Pegel
+     fuer den Mixer deshalb zusaetzlich per Intervall schicken. */
+  setInterval(function () { if (anL && document.hidden) post({ type: 'level', l: level(anL), r: level(anR) }); }, 60);
+
+  function stop() {
+    if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
+    if (ctx) ctx.close();
+    ctx = stream = src = nodes = anL = anR = null;
+    document.body.classList.remove('on');
+    startBtn.textContent = 'Driftware-Tab auswählen';
+    startBtn.classList.remove('stop');
+    post({ type: 'state', active: false });
+    say('EQ aus -- der Ton kommt wieder normal aus dem Driftware-Tab.');
+  }
+
+  startBtn.addEventListener('click', function () {
+    if (stream) { stop(); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+      say('Dieser Browser unterstützt das nicht. Bitte Chrome oder Edge verwenden.', true);
+      return;
+    }
+    say('Warte auf Auswahl …');
+    navigator.mediaDevices.getDisplayMedia({
+      video: { displaySurface: 'browser' },
+      audio: { suppressLocalAudioPlayback: true, echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+      selfBrowserSurface: 'exclude',
+      surfaceSwitching: 'include',
+      systemAudio: 'exclude'
+    }).then(function (s) {
+      var audio = s.getAudioTracks();
+      if (!audio.length) {
+        s.getTracks().forEach(function (t) { t.stop(); });
+        say('Kein Ton geteilt -- bitte erneut versuchen und den Haken bei „Tab-Audio teilen“ setzen.', true);
+        return;
+      }
+      /* Bild wird nicht gebraucht -- nur der Ton. */
+      s.getVideoTracks().forEach(function (t) { t.stop(); });
+      stream = s;
+      var settingsOk = audio[0].getSettings && audio[0].getSettings().suppressLocalAudioPlayback;
+      ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
+      src = ctx.createMediaStreamSource(new MediaStream(audio));
+      nodes = {
+        low: ctx.createBiquadFilter(), mid: ctx.createBiquadFilter(), hi: ctx.createBiquadFilter(),
+        hp: ctx.createBiquadFilter(), lp: ctx.createBiquadFilter()
+      };
+      nodes.low.type = 'lowshelf'; nodes.low.frequency.value = 220;
+      nodes.mid.type = 'peaking'; nodes.mid.frequency.value = 1000; nodes.mid.Q.value = 0.8;
+      nodes.hi.type = 'highshelf'; nodes.hi.frequency.value = 4500;
+      nodes.hp.type = 'highpass'; nodes.hp.frequency.value = 10; nodes.hp.Q.value = 0.9;
+      nodes.lp.type = 'lowpass'; nodes.lp.frequency.value = 22000; nodes.lp.Q.value = 0.9;
+      var split = ctx.createChannelSplitter(2);
+      anL = ctx.createAnalyser(); anR = ctx.createAnalyser(); anL.fftSize = anR.fftSize = 1024;
+      src.connect(nodes.low); nodes.low.connect(nodes.mid); nodes.mid.connect(nodes.hi);
+      nodes.hi.connect(nodes.hp); nodes.hp.connect(nodes.lp); nodes.lp.connect(ctx.destination);
+      nodes.lp.connect(split); split.connect(anL, 0); split.connect(anR, 1);
+      apply();
+      document.body.classList.add('on');
+      startBtn.textContent = 'EQ beenden';
+      startBtn.classList.add('stop');
+      post({ type: 'state', active: true });
+      say(settingsOk === false
+        ? 'Läuft -- aber dein Browser schaltet den Tab nicht stumm, du hörst den Ton evtl. doppelt.'
+        : 'Läuft. Die Regler im Mixer steuern jetzt den Ton.');
+      audio[0].addEventListener('ended', stop);
+      if (!raf) meterLoop();
+    }).catch(function (e) {
+      say(e && e.name === 'NotAllowedError' ? 'Abgebrochen.' : 'Fehler: ' + (e && e.message ? e.message : e), e && e.name !== 'NotAllowedError');
+    });
+  });
+
+  if (chan) chan.onmessage = function (e) {
+    var d = e.data || {};
+    if (d.type === 'eq') {
+      ['hi', 'mid', 'low', 'filter'].forEach(function (k) { if (typeof d[k] === 'number') settings[k] = d[k]; });
+      apply();
+    } else if (d.type === 'ping') {
+      post({ type: 'state', active: !!stream });
+    }
+  };
+  window.addEventListener('beforeunload', function () { post({ type: 'state', active: false }); });
+  post({ type: 'hello' });
+})();
+</script>
+</body>
+</html>

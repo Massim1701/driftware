@@ -1498,6 +1498,98 @@ function ccDropQueueSongOnDeck(song, key, info) {
   window.dispatchEvent(new Event('driftware-queue-changed'));
 }
 
+/* ---------- Pro-EQ (Master) ----------
+   Die YouTube-Iframes lassen keinen Zugriff auf ihren Ton zu. Der EQ laeuft
+   deshalb in einem eigenen Fenster (shared/eq.html), das den Ton dieses Tabs
+   per "Tab teilen" aufnimmt (Tab wird dabei stumm), durch HI/MID/LOW/FILTER
+   schickt und ausgibt. Die Regler hier steuern das Fenster per
+   BroadcastChannel; zurueck kommen echte Pegel fuer die Pegelanzeigen.
+   Nur Chrome/Edge (getDisplayMedia mit Tab-Audio). */
+var CC_EQ_KEYS = ['hi', 'mid', 'low', 'filter'];
+var ccEq = { pos: { hi: 0, mid: 0, low: 0, filter: 0 }, active: false, level: 0, levelTs: 0, win: null };
+try { var savedEq = JSON.parse(localStorage.getItem('driftware-eq') || 'null'); if (savedEq) CC_EQ_KEYS.forEach(function (k) { if (typeof savedEq[k] === 'number') ccEq.pos[k] = savedEq[k]; }); } catch (e) {}
+var ccEqChan = ('BroadcastChannel' in window) ? new BroadcastChannel('dw-eq') : null;
+function ccEqSupported() { return !!(ccEqChan && navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia); }
+function ccEqValues() {
+  /* Reglerstellung -1..1 -> dB: links bis -26 dB (fast "Kill"), rechts +6 dB. */
+  var v = {};
+  ['hi', 'mid', 'low'].forEach(function (k) { var p = ccEq.pos[k]; v[k] = p < 0 ? p * 26 : p * 6; });
+  v.filter = ccEq.pos.filter;
+  return v;
+}
+function ccEqSend() {
+  try { localStorage.setItem('driftware-eq', JSON.stringify(ccEq.pos)); } catch (e) {}
+  if (!ccEqChan) return;
+  var v = ccEqValues(); v.type = 'eq';
+  ccEqChan.postMessage(v);
+}
+function ccEqHTML() {
+  var labels = { hi: 'HI', mid: 'MID', low: 'LOW', filter: 'FILTER' };
+  var knobs = CC_EQ_KEYS.map(function (k) {
+    return '<div class="cc-eqk"><div class="cc-knob" data-eq="' + k + '" role="slider" tabindex="0" aria-label="Master-EQ ' + labels[k] + ' (ziehen, Doppelklick = Mitte)" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0"><span class="arc"></span><span class="cap"></span></div><span class="cc-label">' + labels[k] + '</span></div>';
+  }).join('');
+  return '<div class="cc-eq"><div class="cc-eq-grid">' + knobs + '</div>' +
+    '<button type="button" class="cc-pad cc-eq-btn" id="cc-eq-btn" aria-label="Pro-EQ starten: öffnet das EQ-Fenster (Chrome/Edge)">EQ</button></div>';
+}
+function ccEqRenderKnob(el) {
+  var k = el.dataset.eq, p = ccEq.pos[k], deg = p * 135;
+  var arc = el.querySelector('.arc'), cap = el.querySelector('.cap');
+  var c = k === 'filter' ? '#a78bfa' : 'var(--cc-eq-c, #22d3ee)';
+  arc.style.background = p >= 0
+    ? 'conic-gradient(from 0deg, ' + c + ' 0 ' + deg + 'deg, rgba(255,255,255,0.08) ' + deg + 'deg 135deg, transparent 135deg 225deg, rgba(255,255,255,0.08) 225deg)'
+    : 'conic-gradient(from 0deg, rgba(255,255,255,0.08) 0 135deg, transparent 135deg 225deg, rgba(255,255,255,0.08) 225deg ' + (360 + deg) + 'deg, ' + c + ' ' + (360 + deg) + 'deg)';
+  cap.style.transform = 'rotate(' + deg + 'deg)';
+  el.setAttribute('aria-valuenow', Math.round(p * 100));
+  el.classList.toggle('zero', Math.abs(p) < 0.02);
+}
+function ccWireEq(bar) {
+  bar.querySelectorAll('.cc-knob[data-eq]').forEach(function (el) {
+    var k = el.dataset.eq, startY = 0, startP = 0, dragging = false;
+    ccEqRenderKnob(el);
+    function set(p) {
+      p = Math.max(-1, Math.min(1, p));
+      if (Math.abs(p) < 0.04) p = 0; /* rastet in der Mitte ein */
+      ccEq.pos[k] = p; ccEqRenderKnob(el); ccEqSend();
+    }
+    el.addEventListener('pointerdown', function (e) { dragging = true; startY = e.clientY; startP = ccEq.pos[k]; el.setPointerCapture(e.pointerId); e.preventDefault(); });
+    el.addEventListener('pointermove', function (e) { if (dragging) set(startP + (startY - e.clientY) / 110); });
+    el.addEventListener('pointerup', function () { dragging = false; });
+    el.addEventListener('dblclick', function () { set(0); });
+    el.addEventListener('wheel', function (e) { e.preventDefault(); set(ccEq.pos[k] - Math.sign(e.deltaY) * 0.05); }, { passive: false });
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { set(ccEq.pos[k] + 0.05); e.preventDefault(); }
+      else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { set(ccEq.pos[k] - 0.05); e.preventDefault(); }
+      else if (e.key === '0' || e.key === 'Home') set(0);
+    });
+  });
+  var btn = bar.querySelector('#cc-eq-btn');
+  if (!btn) return;
+  if (!ccEqSupported()) {
+    btn.disabled = true;
+    btn.title = 'Der Pro-EQ funktioniert nur in Chrome oder Edge am Computer.';
+    return;
+  }
+  btn.title = 'Pro-EQ: öffnet ein kleines EQ-Fenster. Dort einmal den Driftware-Tab mit Ton teilen -- danach steuern diese Regler den Ton.';
+  btn.addEventListener('click', function () {
+    if (ccEq.win && !ccEq.win.closed) { ccEq.win.focus(); return; }
+    ccEq.win = window.open('/shared/eq.html', 'driftware-eq', 'popup,width=420,height=380');
+  });
+  ccEqChan.onmessage = function (e) {
+    var d = e.data || {};
+    if (d.type === 'hello') ccEqSend();
+    else if (d.type === 'state') {
+      ccEq.active = !!d.active;
+      document.documentElement.classList.toggle('cc-eq-on', ccEq.active);
+      btn.classList.toggle('lit', ccEq.active);
+      btn.textContent = ccEq.active ? 'EQ AN' : 'EQ';
+      if (ccEq.active) ccEqSend();
+    } else if (d.type === 'level') {
+      ccEq.level = Math.max(d.l || 0, d.r || 0); ccEq.levelTs = Date.now();
+    }
+  };
+  ccEqChan.postMessage({ type: 'ping' });
+}
+
 /* Kanal-Fader pro Deck (zusaetzlich zu Crossfader + Master), 0-100. */
 var deckGain = { A: 100, B: 100 };
 function ccChannelHTML(key) {
@@ -1544,7 +1636,11 @@ function ccVisualLoop(now) {
     if (deck.isPlaying && bpm && masterBpm == null) masterBpm = bpm;
     var vol = key === 'A' ? (100 - crossfaderValue) : crossfaderValue;
     var level = deck.isPlaying ? (vol / 100) * (masterVolume / 100) * (deckGain[key] / 100) : 0;
-    if (level > 0) {
+    if (ccEq.active && Date.now() - ccEq.levelTs < 400) {
+      /* Pro-EQ aktiv: echter Pegel des Gesamtmixes, nach Kanal-Anteil verteilt. */
+      var share = deck.isPlaying ? (vol / 100) * (deckGain[key] / 100) : 0;
+      level = Math.min(1, ccEq.level * 1.25 * (share > 0 ? Math.max(0.35, share) : 0));
+    } else if (level > 0) {
       var phase = bpm ? (cur * bpm / 60) % 1 : Math.random();
       level = Math.min(1, level * (0.62 + 0.38 * Math.exp(-phase * 5)) + Math.random() * 0.05);
     }
@@ -1641,7 +1737,7 @@ function ensureDjPlayer() {
     '<div class="dj-master">' +
     '  <i class="cc-screw" style="left:6px;top:6px"></i><i class="cc-screw" style="right:6px;top:6px"></i>' +
     '  <div class="cc-mixhead"><b>MIXER</b><span class="cc-master"><em>MASTER</em><b id="cc-master-bpm">—</b></span></div>' +
-    '  <div class="cc-channels">' + ccChannelHTML('A') + ccChannelHTML('B') + '</div>' +
+    '  <div class="cc-channels">' + ccChannelHTML('A') + ccEqHTML() + ccChannelHTML('B') + '</div>' +
     '  <div class="dj-crossfader">' +
     '    <span class="dj-crossfader-label">A</span>' +
     '    <div class="dj-slider-wrap">' +
@@ -1698,6 +1794,7 @@ function ensureDjPlayer() {
   updateBpmSync();
   setupPhoneMini(bar);
   requestAnimationFrame(ccVisualLoop);
+  ccWireEq(bar);
   /* Hoehe der fest oben stehenden Konsole als CSS-Variable, damit Song-
      Liste und Warteschlange darunter genau den freien Platz fuellen. */
   if (window.ResizeObserver) {
