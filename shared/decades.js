@@ -3,11 +3,62 @@
    eine der drei render*-Funktionen unten auf. So bleibt jede neue Dekade
    ein kleines Config-File statt kopiertem HTML/CSS/JS. */
 
+/* Club-Console-Themes (Nutzerwunsch 9.10.: "fuer jedes Jahrzehnt den Style
+   anpassen, auch fuer die verschiedenen Stimmungen"). Schluessel = Ordner-
+   name ohne "-music" (aus der URL, siehe pageThemeKey -- bei AJAX-Navigation
+   ist die URL bereits per pushState umgestellt, bevor dieser Code laeuft).
+   Ueberschreibt die Farben aus dem cfg.colors der jeweiligen Seite; a/b
+   sind die beiden Deck-Farben. Schrift + Hintergrund-Effekte je Theme
+   stehen in decades.css unter [data-theme="..."]. */
+var CC_THEMES = {
+  '70er':        ['#120c07', '#1d140c', '#e08a2c', '#f5b82e', '#fbefdc', '#b39b7d', '#f5b82e', '#e4572e'],
+  '80er':        ['#0b0618', '#160c2b', '#ff2e93', '#22d3ee', '#fdf2ff', '#a78bcb', '#22d3ee', '#ff2e93'],
+  '90er':        ['#0b0d08', '#151a0f', '#84cc16', '#c084fc', '#f1f5e8', '#9aa58a', '#a3e635', '#c084fc'],
+  '2000er':      ['#060a12', '#0f1828', '#38bdf8', '#d4d4d8', '#eef6ff', '#8ea3c0', '#38bdf8', '#e5e7eb'],
+  '2010er':      ['#0e0a0d', '#1a1319', '#fb7185', '#fbbf24', '#fff4f6', '#b3949b', '#fb7185', '#fbbf24'],
+  '2020er':      ['#050505', '#111111', '#bef264', '#f0abfc', '#fafafa', '#a1a1aa', '#bef264', '#f0abfc'],
+  'afterwork':   ['#100b06', '#1c140c', '#f59e0b', '#d97757', '#fdf3e3', '#b8a184', '#f59e0b', '#d97757'],
+  'chillhouse':  ['#071211', '#0f1f1e', '#14b8a6', '#f97316', '#ecfdfa', '#93b5b0', '#2dd4bf', '#fb923c'],
+  'christmas':   ['#06120c', '#0f2018', '#dc2626', '#facc15', '#fffaf0', '#a7b8a5', '#ef4444', '#facc15'],
+  'cozy':        ['#0b0f15', '#151c26', '#6fa3d8', '#c08a5a', '#eef3f8', '#9aa7b6', '#7fb2e5', '#d4a373'],
+  'dinnerparty': ['#10081a', '#1d0f2b', '#c026d3', '#f472b6', '#fbefff', '#b39ac4', '#e879f9', '#f472b6'],
+  'focuswork':   ['#060b18', '#0e1628', '#3b82f6', '#a78bfa', '#eef4ff', '#8fa2c4', '#60a5fa', '#a78bfa'],
+  'gaming':      ['#07051a', '#120d2b', '#8b5cf6', '#22d3ee', '#f1edff', '#a49cc8', '#22d3ee', '#a855f7'],
+  'grill':       ['#120b06', '#20140b', '#ff6a2b', '#7bbf3a', '#fff2e8', '#b9a08a', '#ff8a3d', '#8bd34a'],
+  'haushalt':    ['#061212', '#0e1f1f', '#1fb5a8', '#f5c542', '#ebfffd', '#93b8b4', '#2dd4bf', '#f5c542'],
+  'karaoke':     ['#13060d', '#22101a', '#ff3d81', '#ffd23f', '#fff0f6', '#c49aae', '#ff3d81', '#ffd23f'],
+  'latenight':   ['#05051a', '#0d0d2a', '#6366f1', '#c084fc', '#eef0ff', '#9496c7', '#818cf8', '#c084fc'],
+  'morning':     ['#110d06', '#1f180c', '#fbbf24', '#fb7185', '#fff8e8', '#bfae8c', '#fbbf24', '#fb7185'],
+  'nostalgie':   ['#120d07', '#20170e', '#f2994a', '#9b51e0', '#fdf1e6', '#b9a186', '#f2994a', '#b77cf0'],
+  'partyhits':   ['#0f0614', '#1c0d26', '#ff2ea6', '#ff8a00', '#fff7ed', '#c4a3c9', '#ff8a00', '#ff2ea6'],
+  'roadtrip':    ['#0b0d12', '#161a22', '#f97316', '#0ea5e9', '#f4f7fb', '#9aa4b4', '#f97316', '#38bdf8'],
+  'romantic':    ['#12060b', '#211019', '#e0446b', '#f9a8d4', '#fff0f4', '#c39aa8', '#fb7185', '#f9a8d4'],
+  'summer':      ['#061114', '#0e1f24', '#ff9e2c', '#15b8c9', '#effbfc', '#93b2b8', '#ffb547', '#22d3ee'],
+  'workout':     ['#120606', '#211010', '#ef4444', '#f97316', '#fff1f1', '#c19b9b', '#f87171', '#fb923c'],
+  'yoga':        ['#0b1312', '#13211f', '#7fc8a9', '#a5b4fc', '#effaf5', '#9db8ae', '#7fc8a9', '#a5b4fc']
+};
+function pageThemeKey() {
+  var m = /\/([^\/]+)-music\//.exec(location.pathname);
+  return m && CC_THEMES[m[1]] ? m[1] : null;
+}
 function applyPalette(colors) {
   var root = document.documentElement.style;
+  var key = pageThemeKey();
+  var t = key ? CC_THEMES[key] : null;
+  if (t) {
+    colors = { bg: t[0], panel: t[1], accent: t[2], accent2: t[3], text: t[4], muted: t[5] };
+    root.setProperty('--deck-a', t[6]);
+    root.setProperty('--deck-b', t[7]);
+    document.documentElement.setAttribute('data-theme', key);
+  } else {
+    root.setProperty('--deck-a', (colors && colors.accent) || '#7c5cff');
+    root.setProperty('--deck-b', (colors && colors.accent2) || '#2dd4bf');
+    document.documentElement.removeAttribute('data-theme');
+  }
   Object.keys(colors || {}).forEach(function (key) {
     root.setProperty('--' + key, colors[key]);
   });
+  if (typeof drawWaveform === 'function' && document.getElementById('dj-player')) { drawWaveform('A'); drawWaveform('B'); }
 }
 
 /* Geraete-Typ-Check: setzt data-device="phone|tablet|desktop" auf <html>,
@@ -1203,10 +1254,18 @@ function highlightResumedPlayer() {
 }
 
 function deckHTML(key) {
+  /* Club-Console-Layout (9.10.): LCD-Kopf, breite Wellenform, darunter
+     Plattenteller + Pads. Alle IDs, an denen die Logik haengt, sind
+     unveraendert (siehe Kommentar zu .dj-vinyl-video weiter unten). */
+  var cues = '';
+  for (var c = 0; c < 4; c++) {
+    cues += '<button type="button" class="cc-pad cc-cue" data-cue="' + c + '" aria-label="Deck ' + key + ': Hot-Cue ' + (c + 1) + ' (Klick setzt/springt, Rechtsklick löscht)"><small>' + (c + 1) + '</small><span>' + CC_CUE_NAMES[c] + '</span></button>';
+  }
   return '' +
     '<div class="dj-deck" id="deck-' + key + '">' +
+    '  <i class="cc-screw" style="left:6px;top:6px"></i><i class="cc-screw" style="right:6px;top:6px"></i>' +
     '  <div class="dj-deck-head">' +
-    '    <div class="dj-deck-label">Deck ' + key + '</div>' +
+    '    <div class="dj-deck-label">' + key + '</div>' +
     '    <div class="dj-deck-info" id="deck-' + key + '-info">' +
     '      <div class="dj-digital-swatches" id="deck-' + key + '-digital-swatches">' +
     '        <button type="button" class="dj-digital-swatch" data-color="green" aria-label="Display gruen"></button>' +
@@ -1221,9 +1280,19 @@ function deckHTML(key) {
     '        <span class="dj-deck-bpm" id="deck-' + key + '-bpm"></span>' +
     '      </div>' +
     '    </div>' +
+    '    <div class="cc-time"><b id="deck-' + key + '-elapsed">0:00</b><small id="deck-' + key + '-rem2">−0:00</small></div>' +
+    '    <div class="cc-bpm"><b id="deck-' + key + '-bpmbig">—</b><small><span class="cc-beat" id="deck-' + key + '-beat"><i></i><i></i><i></i><i></i></span>BPM</small></div>' +
+    '  </div>' +
+    '  <div class="dj-deck-mid">' +
+    '    <div class="dj-waveform" id="deck-' + key + '-waveform" role="slider" tabindex="0" ' +
+    '      aria-label="Deck ' + key + ': Songposition" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
+    '      <canvas id="deck-' + key + '-waveform-canvas"></canvas>' +
+    '    </div>' +
     '  </div>' +
     '  <div class="dj-deck-top">' +
     '    <div class="dj-vinyl" id="deck-' + key + '-drop">' +
+    '      <svg class="cc-ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="48"/><circle class="fg" id="deck-' + key + '-ring" cx="50" cy="50" r="48" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/></svg>' +
+    '      <div class="cc-platter" aria-hidden="true"><div class="cc-strobe"></div></div>' +
     '      <div class="dj-vinyl-disc" id="deck-' + key + '-disc">' +
     /* WICHTIG: ".dj-vinyl-video" sitzt auf einem STABILEN Aussen-Div, das
        Groesse/Rundung/Clipping via CSS traegt -- der eigentliche Mount-
@@ -1244,29 +1313,143 @@ function deckHTML(key) {
     '      <div class="dj-vinyl-hint">Song hierher ziehen</div>' +
     '      <div class="dj-vinyl-dragshield" id="deck-' + key + '-dragshield" aria-hidden="true"></div>' +
     '    </div>' +
-    '  </div>' +
-    '  <div class="dj-deck-mid">' +
-    '    <div class="dj-waveform" id="deck-' + key + '-waveform" role="slider" tabindex="0" ' +
-    '      aria-label="Deck ' + key + ': Songposition" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
-    '      <canvas id="deck-' + key + '-waveform-canvas"></canvas>' +
-    '    </div>' +
-    '    <div class="dj-pitch">' +
-    '      <div class="dj-knob-wrap">' +
-    '        <div class="dj-knob" id="deck-' + key + '-pitch-knob" role="slider" tabindex="0" ' +
-    '          aria-label="Deck ' + key + ': Pitch" aria-valuemin="-50" aria-valuemax="50" aria-valuenow="0" data-value="0">' +
-    '          <div class="dj-knob-ticks" aria-hidden="true"><span></span><span></span><span class="mid"></span><span></span><span></span></div>' +
-    '          <div class="dj-knob-dial" id="deck-' + key + '-pitch-dial"><div class="dj-knob-pointer"></div></div>' +
-    '        </div>' +
+    '    <div class="cc-pads">' +
+    '      <div class="dj-deck-controls">' +
+    '        <button type="button" class="cc-pad cc-cuebtn" id="deck-' + key + '-cue" aria-label="Deck ' + key + ': zum Songanfang">CUE</button>' +
+    '        <button type="button" class="cc-pad cc-play" id="deck-' + key + '-toggle" aria-label="Deck ' + key + ': abspielen/pause">' + PLAY_SVG + '</button>' +
+    '        <button type="button" class="cc-pad cc-small" id="deck-' + key + '-prev" aria-label="Deck ' + key + ': voriger Song">' + PREV_SVG + '</button>' +
+    '        <button type="button" class="cc-pad cc-small" id="deck-' + key + '-next" aria-label="Deck ' + key + ': nächster Song">' + NEXT_SVG + '</button>' +
     '      </div>' +
-    '      <div class="dj-pitch-display" id="deck-' + key + '-pitch-display">0,00</div>' +
+    '      <div class="cc-cues">' + cues + '</div>' +
+    '      <div class="dj-pitch">' +
+    '        <span class="cc-label">TEMPO</span>' +
+    '        <div class="dj-knob-wrap">' +
+    '          <div class="dj-knob" id="deck-' + key + '-pitch-knob" role="slider" tabindex="0" ' +
+    '            aria-label="Deck ' + key + ': Pitch" aria-valuemin="-50" aria-valuemax="50" aria-valuenow="0" data-value="0">' +
+    '            <div class="dj-knob-ticks" aria-hidden="true"><span></span><span></span><span class="mid"></span><span></span><span></span></div>' +
+    '            <div class="dj-knob-dial" id="deck-' + key + '-pitch-dial"><div class="dj-knob-pointer"></div></div>' +
+    '          </div>' +
+    '        </div>' +
+    '        <div class="dj-pitch-display" id="deck-' + key + '-pitch-display">0,00</div>' +
+    '      </div>' +
     '    </div>' +
-    '  </div>' +
-    '  <div class="dj-deck-controls">' +
-    '    <button type="button" id="deck-' + key + '-prev" aria-label="Deck ' + key + ': voriger Song">' + PREV_SVG + '</button>' +
-    '    <button type="button" id="deck-' + key + '-toggle" aria-label="Deck ' + key + ': abspielen/pause">' + PLAY_SVG + '</button>' +
-    '    <button type="button" id="deck-' + key + '-next" aria-label="Deck ' + key + ': nächster Song">' + NEXT_SVG + '</button>' +
     '  </div>' +
     '</div>';
+}
+
+/* Hot-Cues: 4 Sprungmarken pro Song, im Browser gespeichert (pro Song,
+   nicht pro Deck -- derselbe Song hat auf A und B dieselben Cues).
+   Klick auf leeres Pad = Marke an aktueller Position setzen, Klick auf
+   gesetztes Pad = dorthin springen, Rechtsklick (bzw. langes Druecken)
+   = Marke loeschen. Laeuft komplett ueber seekTo() der YouTube-API. */
+var CC_CUE_NAMES = ['INTRO', 'DROP', 'BREAK', 'OUTRO'];
+var CC_CUE_COLORS = ['#f43f5e', '#f59e0b', '#22d3ee', '#a3e635'];
+function ccCueStore(song) { return 'driftware-hotcues-' + songId(song); }
+function ccGetCues(song) {
+  if (!song) return [];
+  try { return JSON.parse(localStorage.getItem(ccCueStore(song)) || '[]') || []; } catch (e) { return []; }
+}
+function ccSetCues(song, cues) {
+  try { localStorage.setItem(ccCueStore(song), JSON.stringify(cues)); } catch (e) {}
+}
+function ccRefreshCues(key) {
+  var deck = DECKS[key];
+  var cues = ccGetCues(deck.song);
+  document.querySelectorAll('#deck-' + key + ' .cc-cue').forEach(function (btn) {
+    var i = +btn.dataset.cue;
+    var set = cues[i] != null;
+    btn.classList.toggle('lit', set);
+    btn.style.setProperty('--pc', CC_CUE_COLORS[i]);
+    btn.disabled = !deck.song;
+  });
+}
+function ccWireDeckPads(bar, key) {
+  var deck = DECKS[key];
+  bar.querySelectorAll('#deck-' + key + ' .cc-cue').forEach(function (btn) {
+    var i = +btn.dataset.cue, pressTimer = null, longPressed = false;
+    function clearCue() {
+      var cues = ccGetCues(deck.song); cues[i] = null; ccSetCues(deck.song, cues);
+      ccRefreshCues(key); drawWaveform(key);
+    }
+    btn.addEventListener('click', function () {
+      if (longPressed) { longPressed = false; return; }
+      if (!deck.song || !deck.player || !deck.player.getCurrentTime) return;
+      var cues = ccGetCues(deck.song);
+      try {
+        if (cues[i] == null) { cues[i] = deck.player.getCurrentTime(); ccSetCues(deck.song, cues); }
+        else { deck.player.seekTo(cues[i], true); }
+      } catch (e) {}
+      ccRefreshCues(key); drawWaveform(key);
+    });
+    btn.addEventListener('contextmenu', function (e) { e.preventDefault(); if (deck.song) clearCue(); });
+    btn.addEventListener('pointerdown', function (e) {
+      if (e.pointerType !== 'touch') return;
+      pressTimer = setTimeout(function () { longPressed = true; if (deck.song) clearCue(); }, 600);
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { btn.addEventListener(ev, function () { clearTimeout(pressTimer); }); });
+  });
+  var cueBtn = bar.querySelector('#deck-' + key + '-cue');
+  if (cueBtn) cueBtn.addEventListener('click', function () {
+    if (!deck.song || !deck.player || !deck.player.seekTo) return;
+    try { deck.player.seekTo(introSkipFor(deck.song), true); drawWaveform(key); } catch (e) {}
+  });
+}
+
+/* Kanal-Fader pro Deck (zusaetzlich zu Crossfader + Master), 0-100. */
+var deckGain = { A: 100, B: 100 };
+function ccChannelHTML(key) {
+  var seg = '';
+  for (var i = 0; i < 12; i++) seg += '<i class="' + (i >= 10 ? 'r' : i >= 7 ? 'y' : '') + '"></i>';
+  return '<div class="cc-ch cc-ch-' + key.toLowerCase() + '">' +
+    '<div class="cc-vu" id="cc-vu-' + key + '" aria-hidden="true">' + seg + '</div>' +
+    '<div class="cc-fader"><input type="range" id="dj-gain-' + key + '" min="0" max="100" value="100" aria-label="Deck ' + key + ': Kanal-Lautstärke"></div>' +
+    '<span class="cc-label">' + key + '</span></div>';
+}
+
+/* Anzeige-Schleife fuer alles, was fluessig laufen soll (Zeit, Ring,
+   Beat-LEDs, Pegel) -- ~20x pro Sekunde, nur solange der Tab sichtbar
+   ist (requestAnimationFrame pausiert im Hintergrund von selbst). Der
+   500ms-Takt von updateRemainingTime bleibt fuer Logik (Autofade). */
+function ccFormatTime(t) {
+  if (!isFinite(t) || t < 0) t = 0;
+  var m = Math.floor(t / 60), s = Math.floor(t % 60);
+  return m + ':' + (s < 10 ? '0' : '') + s;
+}
+var ccLastFrame = 0;
+function ccVisualLoop(now) {
+  requestAnimationFrame(ccVisualLoop);
+  if (now - ccLastFrame < 50) return;
+  ccLastFrame = now;
+  var masterBpm = null;
+  ['A', 'B'].forEach(function (key) {
+    var deck = DECKS[key];
+    var el = document.getElementById('deck-' + key + '-elapsed');
+    if (!el) return;
+    var dur = 0, cur = 0;
+    if (deck.song && deck.player && deck.player.getDuration) {
+      try { dur = deck.player.getDuration() || 0; cur = deck.player.getCurrentTime() || 0; } catch (e) {}
+    }
+    el.textContent = ccFormatTime(cur);
+    var rem = document.getElementById('deck-' + key + '-rem2');
+    if (rem) rem.textContent = '−' + ccFormatTime(dur - cur);
+    var ring = document.getElementById('deck-' + key + '-ring');
+    if (ring) ring.style.strokeDashoffset = dur > 0 ? (100 - cur / dur * 100) : 100;
+    var bpm = effectiveBpm(key);
+    var beat = document.getElementById('deck-' + key + '-beat');
+    var beatIdx = (bpm && deck.isPlaying) ? Math.floor(cur * bpm / 60) % 4 : -1;
+    if (beat) beat.querySelectorAll('i').forEach(function (b, i) { b.classList.toggle('on', i === beatIdx); });
+    if (deck.isPlaying && bpm && masterBpm == null) masterBpm = bpm;
+    var vol = key === 'A' ? (100 - crossfaderValue) : crossfaderValue;
+    var level = deck.isPlaying ? (vol / 100) * (masterVolume / 100) * (deckGain[key] / 100) : 0;
+    if (level > 0) {
+      var phase = bpm ? (cur * bpm / 60) % 1 : Math.random();
+      level = Math.min(1, level * (0.62 + 0.38 * Math.exp(-phase * 5)) + Math.random() * 0.05);
+    }
+    var vu = document.getElementById('cc-vu-' + key);
+    if (vu) { var n = Math.round(level * 12); vu.querySelectorAll('i').forEach(function (s, i) { s.classList.toggle('on', i < n); }); }
+  });
+  var mb = document.getElementById('cc-master-bpm');
+  if (mb) mb.textContent = masterBpm ? masterBpm.toFixed(1) : '—';
 }
 
 /* Suche + Player sind jetzt untrennbar: die Suche lebt oben in dieser
@@ -1353,6 +1536,9 @@ function ensureDjPlayer() {
     '<div class="dj-decks">' +
     deckHTML('A') +
     '<div class="dj-master">' +
+    '  <i class="cc-screw" style="left:6px;top:6px"></i><i class="cc-screw" style="right:6px;top:6px"></i>' +
+    '  <div class="cc-mixhead"><b>MIXER</b><span class="cc-master"><em>MASTER</em><b id="cc-master-bpm">—</b></span></div>' +
+    '  <div class="cc-channels">' + ccChannelHTML('A') + ccChannelHTML('B') + '</div>' +
     '  <div class="dj-crossfader">' +
     '    <span class="dj-crossfader-label">A</span>' +
     '    <div class="dj-slider-wrap">' +
@@ -1408,6 +1594,7 @@ function ensureDjPlayer() {
   if (bpmSyncBtn) bpmSyncBtn.addEventListener('click', syncIdleDeckToPlaying);
   updateBpmSync();
   setupPhoneMini(bar);
+  requestAnimationFrame(ccVisualLoop);
   /* Tooltips: jeder Knopf/Regler im Player bekommt seinen Beschreibungstext
      auch als title (erscheint nach kurzem Verweilen mit der Maus). */
   bar.querySelectorAll('[aria-label]:not([title])').forEach(function (el) { el.title = el.getAttribute('aria-label'); });
@@ -1426,6 +1613,10 @@ function ensureDjPlayer() {
     bar.querySelector('#deck-' + key + '-next').addEventListener('click', function () { deckStep(key, 1); });
     wireWaveformSeek(key);
     wireDigitalDisplay(key);
+    ccWireDeckPads(bar, key);
+    ccRefreshCues(key);
+    var gainEl = bar.querySelector('#dj-gain-' + key);
+    if (gainEl) gainEl.addEventListener('input', function () { deckGain[key] = +gainEl.value; applyCrossfaderVolumes(); });
     var dropzone = bar.querySelector('#deck-' + key + '-drop');
     dropzone.addEventListener('dragover', function (e) { e.preventDefault(); dropzone.classList.add('drag-over'); });
     dropzone.addEventListener('dragleave', function () { dropzone.classList.remove('drag-over'); });
@@ -1520,8 +1711,8 @@ function ensureDjPlayer() {
 
 function applyCrossfaderVolumes() {
   var scale = masterVolume / 100;
-  var volA = Math.round((100 - crossfaderValue) * scale);
-  var volB = Math.round(crossfaderValue * scale);
+  var volA = Math.round((100 - crossfaderValue) * scale * (deckGain.A / 100));
+  var volB = Math.round(crossfaderValue * scale * (deckGain.B / 100));
   if (DECKS.A.player && DECKS.A.player.setVolume) { try { DECKS.A.player.setVolume(volA); } catch (e) {} }
   if (DECKS.B.player && DECKS.B.player.setVolume) { try { DECKS.B.player.setVolume(volB); } catch (e) {} }
 }
@@ -1549,6 +1740,8 @@ function setDeckPitch(key, rate) {
   }
   var dial = document.getElementById('deck-' + key + '-pitch-dial');
   if (dial) { dial.style.transform = 'rotate(' + (pct / 50 * 135) + 'deg)'; }
+  var bpmBig = document.getElementById('deck-' + key + '-bpmbig');
+  if (bpmBig) { var eb = effectiveBpm(key); bpmBig.textContent = eb ? eb.toFixed(1) : '—'; }
   updateBpmSync();
 }
 
@@ -1569,6 +1762,9 @@ function updateDeckInfoUI(key) {
   if (toggleBtn) toggleBtn.innerHTML = deck.isPlaying ? PAUSE_SVG : PLAY_SVG;
   var bpmEl = document.getElementById('deck-' + key + '-bpm');
   if (bpmEl) bpmEl.innerHTML = (deck.song && deck.song.bpm) ? NOTE_SVG + ' ' + deck.song.bpm + ' BPM' : '';
+  var bpmBig = document.getElementById('deck-' + key + '-bpmbig');
+  if (bpmBig) { var eb = effectiveBpm(key); bpmBig.textContent = eb ? eb.toFixed(1) : '—'; }
+  ccRefreshCues(key);
   ensureWaveformBars(key);
   drawWaveform(key);
   queuePlayerSpacing();
@@ -2336,7 +2532,7 @@ function finishAutoCrossfade() {
    abgedunkelt -- so ist auch optisch sichtbar, welchen Teil des Videos
    der Player als "eigentlichen Song" behandelt. Klick/Zug ruft direkt
    player.seekTo() auf, siehe wireWaveformSeek(). */
-var WAVEFORM_BAR_COUNT = 48;
+var WAVEFORM_BAR_COUNT = 220;
 
 function hashStr(str) {
   var h = 0;
@@ -2410,24 +2606,57 @@ function drawWaveform(key) {
   var introFrac = dur > 0 ? introSkipFor(deck.song) / dur : 0;
   var outroFrac = dur > 0 ? 1 - (outroSkipFor(deck.song) / dur) : 1;
 
-  var gap = 2;
-  var barW = (cssW - gap * (bars.length - 1)) / bars.length;
+  /* Club-Console-Look: gespiegelte Wellenform in drei Lagen (Bass in
+     Deckfarbe, Mitten halbtransparent weiss, Hoehen weiss) wie bei
+     Rekordbox, Beat-Raster aus den BPM, Hot-Cue-Marker und leuchtender
+     Abspielkopf. Die Form selbst ist berechnet (YouTube liefert keine
+     Audiodaten), Fortschritt/Cues/Raster sind echt. */
+  var accent = getComputedStyle(document.documentElement).getPropertyValue('--deck-' + key.toLowerCase()).trim() || waveformAccentColor();
   var midY = cssH / 2;
-  var accent = waveformAccentColor();
-  var playedUntilIdx = progress * bars.length;
-
-  for (var i = 0; i < bars.length; i++) {
-    var barH = Math.max(2, bars[i] * cssH);
-    var x = i * (barW + gap);
-    var y = midY - barH / 2;
-    var barT = i / (bars.length - 1);
+  var n = bars.length;
+  var colW = cssW / n;
+  var playedX = progress * cssW;
+  var bpm = deck.song && deck.song.bpm;
+  if (bpm && dur > 0) {
+    var beatLen = 60 / bpm;
+    for (var bt = 0, k = 0; bt < dur; bt += beatLen, k++) {
+      var bx = Math.round(bt / dur * cssW);
+      ctx.fillStyle = k % 16 === 0 ? 'rgba(255,255,255,0.20)' : k % 4 === 0 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)';
+      ctx.fillRect(bx, 0, 1, cssH);
+    }
+  }
+  for (var i = 0; i < n; i++) {
+    var x = i * colW;
+    var barT = i / (n - 1);
     var inSkipZone = barT < introFrac || barT > outroFrac;
-    var played = i < playedUntilIdx;
-    var alpha = inSkipZone ? (played ? 0.45 : 0.22) : (played ? 1 : 0.4);
-    ctx.fillStyle = played
-      ? hexToRgba(accent, alpha)
-      : 'rgba(255,255,255,' + (alpha * 0.5) + ')';
-    ctx.fillRect(x, y, Math.max(1, barW), barH);
+    var played = x < playedX;
+    var amp = bars[i] * (cssH / 2 - 2);
+    var midAmp = amp * (0.55 + 0.25 * Math.abs(Math.sin(i * 1.7)));
+    var hiAmp = amp * (0.22 + 0.2 * Math.abs(Math.sin(i * 3.1 + 1)));
+    var dim = inSkipZone ? 0.45 : 1;
+    var w = Math.max(1, colW - 1);
+    ctx.fillStyle = hexToRgba(accent, (played ? 0.45 : 1) * dim);
+    ctx.fillRect(x, midY - amp, w, amp * 2);
+    ctx.fillStyle = 'rgba(255,255,255,' + ((played ? 0.25 : 0.5) * dim) + ')';
+    ctx.fillRect(x, midY - midAmp, w, midAmp * 2);
+    ctx.fillStyle = 'rgba(255,255,255,' + ((played ? 0.4 : 0.95) * dim) + ')';
+    ctx.fillRect(x, midY - hiAmp, w, hiAmp * 2);
+  }
+  if (dur > 0) {
+    ccGetCues(deck.song).forEach(function (t, ci) {
+      if (t == null) return;
+      var cx = t / dur * cssW;
+      ctx.fillStyle = CC_CUE_COLORS[ci];
+      ctx.fillRect(cx, 0, 2, cssH);
+      ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx + 11, 0); ctx.lineTo(cx + 11, 9); ctx.lineTo(cx, 12); ctx.fill();
+      ctx.fillStyle = '#000'; ctx.font = '700 8px sans-serif'; ctx.fillText(String(ci + 1), cx + 3, 8);
+    });
+  }
+  if (dur > 0) {
+    ctx.fillStyle = '#fff';
+    ctx.shadowColor = '#fff'; ctx.shadowBlur = 8;
+    ctx.fillRect(Math.round(playedX) - 1, 0, 2, cssH);
+    ctx.shadowBlur = 0;
   }
 }
 function hexToRgba(hex, alpha) {
