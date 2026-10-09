@@ -285,6 +285,18 @@ font-size: 14px;
 cursor: pointer;
 }
 .contact-honey { position: absolute; left: -9999px; }
+/* Animationen (GSAP + Lenis): nur aktiv, wenn das Script die Klasse .fx setzt */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.fx .app-card {
+transition: border-color 0.15s ease;
+background: radial-gradient(260px circle at var(--mx, -999px) var(--my, -999px), rgba(58,168,255,0.16), transparent 65%), var(--panel);
+transform-style: preserve-3d;
+will-change: transform;
+}
+.fx .app-card:hover { transform: none; }
+.fx .apps { perspective: 900px; }
+.split-char { display: inline-block; white-space: pre; }
 </style>
 </head>
 <body>
@@ -434,6 +446,78 @@ if (/[?&]contact=success/.test(window.location.search)) {
 document.getElementById('contact-success').style.display = 'block';
 open();
 }
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js"></script>
+<script>
+(function () {
+// Animationen: weiches Scrollen (Lenis), Intro, Karten-Einblendung,
+// Lichtkegel + Neigung beim Hover. Fehlt das CDN oder ist
+// "Bewegung reduzieren" aktiv, bleibt die Seite einfach statisch.
+if (!window.gsap || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+document.documentElement.classList.add('fx');
+gsap.registerPlugin(ScrollTrigger);
+
+if (window.Lenis) {
+var lenis = new Lenis({ lerp: 0.1 });
+lenis.on('scroll', ScrollTrigger.update);
+gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
+gsap.ticker.lagSmoothing(0);
+}
+
+// Tagline Buchstabe für Buchstabe (wie SplitText bei React Bits)
+var tagline = document.querySelector('.tagline');
+var text = tagline.textContent;
+tagline.setAttribute('aria-label', text);
+tagline.textContent = '';
+text.split('').forEach(function (c) {
+var span = document.createElement('span');
+span.className = 'split-char';
+span.setAttribute('aria-hidden', 'true');
+span.textContent = c;
+tagline.appendChild(span);
+});
+
+var cards = gsap.utils.toArray('.app-card');
+var tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+tl.from('.utility-tile', { y: -16, opacity: 0, duration: 0.5, stagger: 0.06 })
+.from('.brand-mark', { scale: 0, rotate: -90, duration: 0.8, ease: 'back.out(1.8)' }, 0.1)
+.from('.logo', { x: -24, opacity: 0, filter: 'blur(10px)', duration: 0.8 }, 0.25)
+.from('.tagline .split-char', { y: 14, opacity: 0, duration: 0.5, stagger: 0.018 }, 0.5);
+
+// Karten im Sichtbereich direkt nach dem Intro, weiter unten beim Scrollen
+gsap.set(cards, { y: 48, opacity: 0, rotateX: -12 });
+ScrollTrigger.batch(cards, {
+start: 'top 92%',
+once: true,
+onEnter: function (batch) {
+gsap.to(batch, { y: 0, opacity: 1, rotateX: 0, duration: 0.8, ease: 'power3.out', stagger: 0.1, delay: tl.progress() < 1 ? 0.6 : 0 });
+}
+});
+gsap.from('.apps-more', { opacity: 0, y: 12, duration: 0.6, scrollTrigger: { trigger: '.apps-more', start: 'top 95%' } });
+
+// Lichtkegel + Neigung (wie SpotlightCard / TiltedCard), nur mit Maus
+if (!matchMedia('(hover: hover)').matches) return;
+cards.forEach(function (card) {
+var rx = gsap.quickTo(card, 'rotateX', { duration: 0.4, ease: 'power2.out' });
+var ry = gsap.quickTo(card, 'rotateY', { duration: 0.4, ease: 'power2.out' });
+var lift = gsap.quickTo(card, 'y', { duration: 0.4, ease: 'power2.out' });
+card.addEventListener('pointermove', function (e) {
+var r = card.getBoundingClientRect();
+var x = e.clientX - r.left, y = e.clientY - r.top;
+card.style.setProperty('--mx', x + 'px');
+card.style.setProperty('--my', y + 'px');
+rx((0.5 - y / r.height) * 10);
+ry((x / r.width - 0.5) * 10);
+lift(-4);
+});
+card.addEventListener('pointerleave', function () {
+card.style.setProperty('--mx', '-999px');
+rx(0); ry(0); lift(0);
+});
+});
 })();
 </script>
 </body>
