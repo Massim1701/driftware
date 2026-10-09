@@ -370,6 +370,12 @@
         if (dragSong) {
           e.dataTransfer.setData('application/json', JSON.stringify(dragSong));
           e.dataTransfer.setData('application/x-dw-queue', JSON.stringify({ kind: up ? 'upcoming' : 'played', idx: up ? draggingIdx : draggingPlayed }));
+          /* Gleiche Schallplatte mit Cover am Mauszeiger wie beim Ziehen aus
+             der Song-Liste (ensureDragGhost in decades.js). */
+          if (typeof window.ensureDragGhost === 'function' && e.dataTransfer.setDragImage) {
+            var ghostSize = window.DRAG_GHOST_SIZE || 150;
+            e.dataTransfer.setDragImage(window.ensureDragGhost(dragSong), ghostSize / 2, ghostSize / 2);
+          }
         }
       } catch (err) {}
       // Shield ueber den Deck-Videos aktivieren (wie beim Ziehen aus der Liste)

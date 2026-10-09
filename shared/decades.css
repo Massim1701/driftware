@@ -2616,3 +2616,11 @@ html:not(.cc-eq-on) .cc-eq-grid { opacity: 0.55; }
   .cc-knob { transform: scale(0.92); }
 }
 #dj-player .cc-channels { margin-bottom: 6px; }
+
+/* Platte flippt beim Ablegen eines Songs (siehe ccFlipDeck) */
+#dj-player .dj-vinyl.cc-flip { animation: cc-flip 0.85s cubic-bezier(.3,.7,.25,1); }
+@keyframes cc-flip {
+  0% { transform: perspective(700px) rotateY(0deg) scale(1); }
+  45% { transform: perspective(700px) rotateY(200deg) scale(1.1); filter: drop-shadow(0 0 22px var(--dc)); }
+  100% { transform: perspective(700px) rotateY(360deg) scale(1); }
+}

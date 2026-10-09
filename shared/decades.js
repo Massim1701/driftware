@@ -1450,6 +1450,16 @@ function ccWireDeckPads(bar, key) {
      auf dem neuen Deck nahtlos weiter.
    Ein kommender Song verlaesst dabei die Warteschlange (kein Doppel), ein
    bereits gelaufener wird als Kopie verwendet. */
+/* Platte "flippt" einmal um die eigene Achse, wenn ein Song auf dem Deck
+   landet (Nutzerwunsch 9.10.). */
+function ccFlipDeck(key) {
+  var v = document.getElementById('deck-' + key + '-drop');
+  if (!v || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  v.classList.remove('cc-flip');
+  void v.offsetWidth;
+  v.classList.add('cc-flip');
+  setTimeout(function () { v.classList.remove('cc-flip'); }, 900);
+}
 function ccQueueOwnerKey() {
   if (DECKS.A.isPlaying) return 'A';
   if (DECKS.B.isPlaying) return 'B';
@@ -1838,6 +1848,7 @@ function ensureDjPlayer() {
         var song = JSON.parse(raw);
         if (qInfo) ccDropQueueSongOnDeck(song, key, qInfo);
         else loadSongToDeck(song, key, lastGridSongs, false);
+        ccFlipDeck(key);
       } catch (err) {}
     });
     var pitchKnob = bar.querySelector('#deck-' + key + '-pitch-knob');
