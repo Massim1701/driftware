@@ -2387,3 +2387,31 @@ html[data-theme] body { background: var(--cc-deco, none), var(--bg); background-
 @media (prefers-reduced-motion: reduce) {
   #deck-A:has(.dj-vinyl-disc.playing) .cc-play, #deck-B:has(.dj-vinyl-disc.playing) .cc-play { animation: none; }
 }
+
+/* Konsole bleibt beim Scrollen fest oben (Nutzerwunsch 9.10.: "die Decks
+   immer fest oben, sonst kann man aus der Liste keine Musik reinziehen").
+   z-index unter dem Song-Modal (200) und den Dropdowns (260), die
+   Navigations-Kacheln (.utility-block) liegen darueber. */
+html:not([data-device="phone"]) #dj-player { position: sticky; top: 0; z-index: 150; }
+html:not([data-device="phone"]) .utility-block { z-index: 160; }
+/* Weniger Bildschirmhoehe (Laptop, iPad quer): Konsole kompakter, damit
+   unter den Decks genug Liste zum Ziehen sichtbar bleibt. */
+@media (max-height: 900px) {
+  #dj-player .dj-decks { padding-top: 52px; }
+  #dj-player .dj-deck, #dj-player .dj-master { padding: 10px 14px 12px; }
+  #dj-player .dj-deck { gap: 8px; }
+  #dj-player .dj-deck-head { padding: 7px 10px; }
+  #dj-player .dj-waveform { height: 58px; }
+  #dj-player .dj-vinyl { width: 156px; height: 156px; }
+  #dj-player .cc-play, #dj-player .cc-cuebtn { width: 52px; height: 52px; }
+  #dj-player .cc-pad { height: 34px; }
+  #dj-player .cc-cue { height: 28px; }
+  #dj-player .cc-pads { gap: 8px; }
+  #dj-player .dj-master { gap: 8px; }
+  .cc-vu, .cc-fader { height: 92px; }
+  .cc-fader input[type=range] { width: 92px; }
+  #dj-player .dj-knob { transform: scale(0.85); }
+}
+@media (max-height: 900px) and (max-width: 1100px) {
+  #dj-player .dj-vinyl { width: 150px; height: 150px; }
+}
