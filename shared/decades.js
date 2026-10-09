@@ -1326,7 +1326,7 @@ function deckHTML(key) {
     '        <span class="dj-deck-bpm" id="deck-' + key + '-bpm"></span>' +
     '      </div>' +
     '    </div>' +
-    '    <div class="cc-time"><b id="deck-' + key + '-elapsed">0:00</b><small id="deck-' + key + '-rem2">−0:00</small></div>' +
+    '    <div class="cc-time" title="Restzeit / Gesamtlänge"><b id="deck-' + key + '-elapsed">−0:00</b><small id="deck-' + key + '-rem2">0:00</small></div>' +
     '    <div class="cc-bpm"><b id="deck-' + key + '-bpmbig">—</b><small><span class="cc-beat" id="deck-' + key + '-beat"><i></i><i></i><i></i><i></i></span>BPM</small></div>' +
     '  </div>' +
     '  <div class="dj-deck-mid">' +
@@ -1634,9 +1634,12 @@ function ccVisualLoop(now) {
     if (deck.song && deck.player && deck.player.getDuration) {
       try { dur = deck.player.getDuration() || 0; cur = deck.player.getCurrentTime() || 0; } catch (e) {}
     }
-    el.textContent = ccFormatTime(cur);
+    /* Wie am CDJ (Nutzerwunsch 9.10.): oben gross die Restzeit, darunter
+       klein die Gesamtlaenge. Letzte 30 s blinkt die Restzeit. */
+    el.textContent = '−' + ccFormatTime(dur - cur);
+    el.classList.toggle('cc-ending', !!(deck.isPlaying && dur > 0 && dur - cur <= 30));
     var rem = document.getElementById('deck-' + key + '-rem2');
-    if (rem) rem.textContent = '−' + ccFormatTime(dur - cur);
+    if (rem) rem.textContent = dur > 0 ? ccFormatTime(dur) : '0:00';
     var ring = document.getElementById('deck-' + key + '-ring');
     if (ring) ring.style.strokeDashoffset = dur > 0 ? (100 - cur / dur * 100) : 100;
     var bpm = effectiveBpm(key);

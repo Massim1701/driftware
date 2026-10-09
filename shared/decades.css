@@ -2624,3 +2624,8 @@ html:not(.cc-eq-on) .cc-eq-grid { opacity: 0.55; }
   45% { transform: perspective(700px) rotateY(200deg) scale(1.1); filter: drop-shadow(0 0 22px var(--dc)); }
   100% { transform: perspective(700px) rotateY(360deg) scale(1); }
 }
+
+/* Restzeit blinkt in den letzten 30 Sekunden (wie am CDJ) */
+.cc-time b.cc-ending { animation: cc-ending 0.6s steps(1, end) infinite; color: #ef4444; text-shadow: 0 0 14px rgba(239,68,68,0.8); }
+@keyframes cc-ending { 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .cc-time b.cc-ending { animation: none; } }
