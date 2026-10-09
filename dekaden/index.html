@@ -60,49 +60,42 @@
   .glow { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.55; }
   .glow-a { width: 620px; height: 620px; left: -160px; top: -120px; background: radial-gradient(circle, rgba(124,92,255,0.55), transparent 65%); }
   .glow-b { width: 560px; height: 560px; right: -140px; top: 120px; background: radial-gradient(circle, rgba(45,212,191,0.38), transparent 65%); }
-  /* Schallplatte (9.10. Upgrade): drehende Scheibe mit Rillen + Label
-     (wechselndes 80er-Cover, Text im Kreis), stehender Lichtreflex und
-     Tonarm darueber -- nur die Scheibe dreht sich, das wirkt echt. */
-  .deck-vinyl {
-    position: absolute; right: max(8px, calc((100vw - 1180px) / 2 - 230px)); top: 50%; width: min(48vw, 640px); aspect-ratio: 1; margin-top: calc(min(48vw, 640px) / -2 + 10px);
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%); mask-image: linear-gradient(90deg, transparent 0%, #000 30%);
+  /* Plattenspieler im Stil eines Technics-MK2-Direktantriebs (9.10.):
+     schraeg von vorne gesehen (CSS-3D-Kippung einer SVG-Draufsicht im
+     Massstab 1 Einheit = 1 mm, Gehaeuse 453 x 353). Teller + Platte drehen
+     mit 33 1/3 U/min, Strobe-Punkte "stehen" bei exakter Drehzahl,
+     Tonarm schwenkt beim Start von der Stuetze auf die Platte. */
+  .tt-scene {
+    position: absolute; right: max(10px, calc((100vw - 1180px) / 2 - 140px)); top: 50%;
+    width: min(40vw, 590px); aspect-ratio: 453 / 353; margin-top: calc(min(40vw, 590px) * -0.39 - 10px);
+    perspective: 1700px; perspective-origin: 40% -20%;
   }
-  .vinyl-disc {
-    position: absolute; inset: 0; border-radius: 50%;
-    background:
-      radial-gradient(circle, transparent 0 33.6%, rgba(0,0,0,0.9) 33.8% 35.2%, transparent 35.4%),
-      radial-gradient(circle, transparent 0 47.8%, rgba(0,0,0,0.75) 48% 48.6%, transparent 48.8% 59.8%, rgba(0,0,0,0.75) 60% 60.6%, transparent 60.8% 71.8%, rgba(0,0,0,0.75) 72% 72.6%, transparent 72.8%),
-      repeating-radial-gradient(circle, #101116 0 1.1px, #1a1b22 1.5px 2.1px, #121318 2.4px 3px),
-      #0f1015;
-    box-shadow: 0 0 0 2px #050507, 0 0 0 3px rgba(255,255,255,0.05), 0 40px 120px rgba(0,0,0,0.7);
+  .tt-deck { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateX(52deg) rotateZ(-17deg); transform-origin: 50% 60%; }
+  .tt-top { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 2px 0 rgba(255,255,255,0.06)); }
+  .tt-front, .tt-right {
+    position: absolute; background: linear-gradient(180deg, #2a2c32, #121317 70%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
   }
-  .vinyl-disc::after { content: ''; position: absolute; inset: 1.5%; border-radius: 50%; box-shadow: inset 0 0 0 3px rgba(255,255,255,0.04); }
-  .vinyl-label {
-    position: absolute; inset: 33%; border-radius: 50%; overflow: hidden;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    box-shadow: 0 0 0 2px rgba(0,0,0,0.7), 0 0 40px rgba(124,92,255,0.25);
-  }
-  .vinyl-label img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(1.05) contrast(1.05); }
-  .vinyl-label::before { content: ''; position: absolute; inset: 0; border-radius: 50%; z-index: 1;
-    background: radial-gradient(circle, transparent 0 58%, rgba(8,8,12,0.78) 60%, rgba(8,8,12,0.86) 100%); }
-  .label-text { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; overflow: visible; }
-  .label-text text { fill: #fff; font-family: 'Sora', sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
-  .spindle { position: absolute; left: 50%; top: 50%; width: 5.5%; height: 5.5%; margin: -2.75% 0 0 -2.75%; border-radius: 50%; z-index: 3;
-    background: radial-gradient(circle at 35% 35%, #f4f4f6, #8b8f98 60%, #44474e); box-shadow: 0 1px 3px rgba(0,0,0,0.8); }
-  .vinyl-sheen { position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
-    background:
-      conic-gradient(from 300deg, transparent 0 4%, rgba(255,255,255,0.13) 9%, transparent 15% 50%, rgba(255,255,255,0.09) 55%, transparent 61%),
-      radial-gradient(circle at 30% 25%, rgba(255,255,255,0.06), transparent 45%);
-    -webkit-mask: radial-gradient(circle, transparent 0 34%, #000 35.5%); mask: radial-gradient(circle, transparent 0 34%, #000 35.5%); }
-  .tonearm { position: absolute; right: 1%; top: -9%; width: 40%; height: 62%; overflow: visible; filter: drop-shadow(0 10px 14px rgba(0,0,0,0.6)); }
+  .tt-front { left: 0.6%; right: 0.6%; bottom: 0; height: 30px; transform-origin: 50% 100%; transform: rotateX(-90deg); border-radius: 0 0 6px 6px; }
+  .tt-right { top: 0.8%; bottom: 0.8%; right: 0; width: 30px; transform-origin: 100% 50%; transform: rotateY(90deg); background: linear-gradient(90deg, #24262b, #0f1013); }
+  .tt-shadow { position: absolute; inset: 4% 2% -6% 2%; border-radius: 30px; background: rgba(0,0,0,0.75); filter: blur(34px); transform: translateZ(-34px); }
+  .tt-sheen { position: absolute; left: 7.25%; top: 7.3%; width: 66.67%; height: 85.55%; border-radius: 50%; pointer-events: none;
+    background: conic-gradient(from 290deg, transparent 0 5%, rgba(255,255,255,0.16) 10%, transparent 17% 52%, rgba(255,255,255,0.1) 57%, transparent 64%);
+    -webkit-mask: radial-gradient(circle, transparent 0 34%, #000 36%, #000 99%, transparent 100%); mask: radial-gradient(circle, transparent 0 34%, #000 36%, #000 99%, transparent 100%); }
+  .tt-top text { font-family: 'Inter', sans-serif; }
+  .tt-label-text { font-family: 'Sora', sans-serif !important; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; fill: #fff; }
+  .tt-led-on { fill: #ff4d3a; filter: url(#ttGlow); }
+  .tt-target-beam { opacity: 0; }
+  @media (max-width: 1100px) { .tt-scene { right: -18vw; opacity: 0.6; } .now-spinning { display: none; } }
+  @media (max-width: 760px) { .tt-scene { right: -55vw; width: 120vw; opacity: 0.35; } }
   .now-spinning { position: absolute; right: 24px; bottom: 74px; z-index: 2; text-align: right; font-size: 12px; color: var(--muted); max-width: 320px; }
   .now-spinning small { display: block; font: 700 10px 'Inter', sans-serif; letter-spacing: 0.16em; color: var(--accent2); text-transform: uppercase; margin-bottom: 3px; }
   .now-spinning b { color: var(--text); font-weight: 600; }
-  @media (max-width: 1100px) { .deck-vinyl { right: -12vw; opacity: 0.55; } .now-spinning { display: none; } }
-  @media (max-width: 760px) { .deck-vinyl { right: -45vw; width: 110vw; margin-top: -55vw; opacity: 0.4; } .tonearm, .now-spinning { display: none; } }
   .grain { position: absolute; inset: 0; opacity: 0.06; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
   @media (max-width: 760px) { .vinyl { right: -45vw; width: 110vw; opacity: 0.32; } }
 
+  .hero > .wrap { width: 100%; }
+  .hero .wrap > * { position: relative; z-index: 1; }
   .eyebrow {
     display: inline-flex; align-items: center; gap: 8px;
     font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
@@ -112,7 +105,7 @@
   .eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 10px #4ade80; animation: live-pulse 2s infinite; }
   .logo {
     font-family: 'Sora', -apple-system, sans-serif; font-weight: 800;
-    font-size: clamp(46px, 9vw, 112px); line-height: 0.95; letter-spacing: -0.045em;
+    font-size: clamp(46px, 6.6vw, 96px); line-height: 0.95; letter-spacing: -0.045em;
     margin: 0 0 28px; max-width: 11ch;
   }
   .logo .line { display: block; overflow: hidden; padding-bottom: 0.06em; }
@@ -132,7 +125,9 @@
   .btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .btn:disabled { opacity: 0.5; cursor: default; transform: none; }
 
-  .stats { display: flex; flex-wrap: wrap; margin: 64px 0 0; border-top: 1px solid var(--border); padding-top: 28px; max-width: 760px; }
+  .stats { display: flex; flex-wrap: wrap; margin: 56px 0 0; border-top: 1px solid var(--border); padding-top: 26px; max-width: 640px; }
+  .stat strong { font-size: clamp(20px, 2.1vw, 26px) !important; }
+  .stat + .stat { padding-left: 18px !important; } .stat { padding-right: 18px !important; flex: 1 1 100px !important; }
   .stat { flex: 1 1 120px; padding: 0 24px 0 0; margin-bottom: 16px; }
   .stat + .stat { padding-left: 24px; border-left: 1px solid var(--border); }
   .stat strong { display: flex; align-items: center; gap: 8px; font-family: 'Sora', -apple-system, sans-serif; font-weight: 700; font-size: clamp(22px, 2.6vw, 30px); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
@@ -276,23 +271,84 @@
     <div class="hero-bg" aria-hidden="true">
       <div class="glow glow-a"></div>
       <div class="glow glow-b"></div>
-      <div class="deck-vinyl" id="vinyl">
-        <div class="vinyl-disc" id="vinylDisc">
-          <div class="vinyl-label" id="vinylLabel">
-            <img id="labelImg" alt="">
-            <svg class="label-text" viewBox="0 0 200 200"><defs><path id="lblCircle" d="M100,100 m-79,0 a79,79 0 1,1 158,0 a79,79 0 1,1 -158,0"/></defs><text id="lblTextEl" font-size="11"><textPath href="#lblCircle" id="lblText" textLength="490" lengthAdjust="spacing"></textPath></text></svg>
-            <span class="spindle"></span>
-          </div>
+      <div class="tt-scene" id="vinyl">
+        <div class="tt-deck" id="ttDeck">
+          <div class="tt-shadow"></div>
+          <svg class="tt-top" viewBox="0 0 453 353" aria-hidden="true">
+            <defs>
+              <linearGradient id="ttPlinth" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2c2e34"/><stop offset=".55" stop-color="#1b1c21"/><stop offset="1" stop-color="#141519"/></linearGradient>
+              <pattern id="ttBrush" width="453" height="2" patternUnits="userSpaceOnUse"><rect width="453" height="1" fill="rgba(255,255,255,0.018)"/></pattern>
+              <radialGradient id="ttPlatter" cx=".5" cy=".5" r=".5"><stop offset=".86" stop-color="#2a2c31"/><stop offset=".95" stop-color="#9da1a9"/><stop offset="1" stop-color="#4b4e55"/></radialGradient>
+              <linearGradient id="ttMetal" x1="0" x2="1"><stop offset="0" stop-color="#6b7079"/><stop offset=".5" stop-color="#eceef2"/><stop offset="1" stop-color="#7a7f88"/></linearGradient>
+              <radialGradient id="ttKnob" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#f2f3f5"/><stop offset=".6" stop-color="#9a9ea6"/><stop offset="1" stop-color="#4a4d54"/></radialGradient>
+              <clipPath id="ttLabelClip"><circle cx="184" cy="177" r="50"/></clipPath>
+              <path id="ttLblCircle" d="M184,177 m-44.5,0 a44.5,44.5 0 1,1 89,0 a44.5,44.5 0 1,1 -89,0"/>
+              <filter id="ttGlow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <radialGradient id="ttBeam" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="rgba(255,250,235,0.55)"/><stop offset="1" stop-color="rgba(255,250,235,0)"/></radialGradient>
+            </defs>
+            <!-- Gehaeuse -->
+            <rect x="0" y="0" width="453" height="353" rx="9" fill="url(#ttPlinth)"/>
+            <rect x="0" y="0" width="453" height="353" rx="9" fill="url(#ttBrush)"/>
+            <rect x="1" y="1" width="451" height="351" rx="8.5" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.2"/>
+            <!-- Teller mit Strobe-Punkten -->
+            <circle cx="184" cy="177" r="167" fill="#0b0c0f"/>
+            <circle cx="184" cy="177" r="166" fill="url(#ttPlatter)"/>
+            <g id="ttDots" fill="none" stroke="#d9dce2" stroke-linecap="round">
+              <g id="ttDots1"><circle cx="184" cy="177" r="164.2" stroke-width="1.6" stroke-dasharray="0.1 2.85"/></g>
+              <g id="ttDots2"><circle cx="184" cy="177" r="161.6" stroke-width="1.6" stroke-dasharray="0.1 2.80"/></g>
+              <g id="ttDots3"><circle cx="184" cy="177" r="159.0" stroke-width="1.6" stroke-dasharray="0.1 2.75"/></g>
+              <g id="ttDots4"><circle cx="184" cy="177" r="156.4" stroke-width="1.6" stroke-dasharray="0.1 2.70"/></g>
+            </g>
+            <!-- Platte (dreht sich) -->
+            <g id="ttDisc">
+              <circle cx="184" cy="177" r="151.5" fill="#0c0d10"/>
+              <g transform="translate(184 177)" fill="none"><circle r="56.0" stroke="#0d0e12" stroke-width="1.1"/><circle r="57.4" stroke="#1d1e25" stroke-width="1.1"/><circle r="58.8" stroke="#0d0e12" stroke-width="1.1"/><circle r="60.2" stroke="#1d1e25" stroke-width="1.1"/><circle r="61.6" stroke="#0d0e12" stroke-width="1.1"/><circle r="63.0" stroke="#1d1e25" stroke-width="1.1"/><circle r="64.4" stroke="#0d0e12" stroke-width="1.1"/><circle r="65.8" stroke="#1d1e25" stroke-width="1.1"/><circle r="67.2" stroke="#0d0e12" stroke-width="1.1"/><circle r="68.6" stroke="#1d1e25" stroke-width="1.1"/><circle r="70.0" stroke="#0d0e12" stroke-width="1.1"/><circle r="71.4" stroke="#1d1e25" stroke-width="1.1"/><circle r="72.8" stroke="#0d0e12" stroke-width="1.1"/><circle r="74.2" stroke="#1d1e25" stroke-width="1.1"/><circle r="75.6" stroke="#0d0e12" stroke-width="1.1"/><circle r="77.0" stroke="#1d1e25" stroke-width="1.1"/><circle r="78.4" stroke="#0d0e12" stroke-width="1.1"/><circle r="79.8" stroke="#1d1e25" stroke-width="1.1"/><circle r="81.2" stroke="#0d0e12" stroke-width="1.1"/><circle r="82.6" stroke="#1d1e25" stroke-width="1.1"/><circle r="84.0" stroke="#0d0e12" stroke-width="1.1"/><circle r="85.4" stroke="#1d1e25" stroke-width="1.1"/><circle r="86.8" stroke="#0d0e12" stroke-width="1.1"/><circle r="88.2" stroke="#1d1e25" stroke-width="1.1"/><circle r="89.6" stroke="#0d0e12" stroke-width="1.1"/><circle r="91.0" stroke="#1d1e25" stroke-width="1.1"/><circle r="92.4" stroke="#0d0e12" stroke-width="1.1"/><circle r="93.8" stroke="#1d1e25" stroke-width="1.1"/><circle r="95.2" stroke="#0d0e12" stroke-width="1.1"/><circle r="96.6" stroke="#1d1e25" stroke-width="1.1"/><circle r="98.0" stroke="#0d0e12" stroke-width="1.1"/><circle r="99.4" stroke="#1d1e25" stroke-width="1.1"/><circle r="100.8" stroke="#0d0e12" stroke-width="1.1"/><circle r="102.2" stroke="#1d1e25" stroke-width="1.1"/><circle r="103.6" stroke="#0d0e12" stroke-width="1.1"/><circle r="105.0" stroke="#1d1e25" stroke-width="1.1"/><circle r="106.4" stroke="#0d0e12" stroke-width="1.1"/><circle r="107.8" stroke="#1d1e25" stroke-width="1.1"/><circle r="109.2" stroke="#0d0e12" stroke-width="1.1"/><circle r="110.6" stroke="#1d1e25" stroke-width="1.1"/><circle r="112.0" stroke="#0d0e12" stroke-width="1.1"/><circle r="113.4" stroke="#1d1e25" stroke-width="1.1"/><circle r="114.8" stroke="#0d0e12" stroke-width="1.1"/><circle r="116.2" stroke="#1d1e25" stroke-width="1.1"/><circle r="117.6" stroke="#0d0e12" stroke-width="1.1"/><circle r="119.0" stroke="#1d1e25" stroke-width="1.1"/><circle r="120.4" stroke="#0d0e12" stroke-width="1.1"/><circle r="121.8" stroke="#1d1e25" stroke-width="1.1"/><circle r="123.2" stroke="#0d0e12" stroke-width="1.1"/><circle r="124.6" stroke="#1d1e25" stroke-width="1.1"/><circle r="126.0" stroke="#0d0e12" stroke-width="1.1"/><circle r="127.4" stroke="#1d1e25" stroke-width="1.1"/><circle r="128.8" stroke="#0d0e12" stroke-width="1.1"/><circle r="130.2" stroke="#1d1e25" stroke-width="1.1"/><circle r="131.6" stroke="#0d0e12" stroke-width="1.1"/><circle r="133.0" stroke="#1d1e25" stroke-width="1.1"/><circle r="134.4" stroke="#0d0e12" stroke-width="1.1"/><circle r="135.8" stroke="#1d1e25" stroke-width="1.1"/><circle r="137.2" stroke="#0d0e12" stroke-width="1.1"/><circle r="138.6" stroke="#1d1e25" stroke-width="1.1"/><circle r="140.0" stroke="#0d0e12" stroke-width="1.1"/><circle r="141.4" stroke="#1d1e25" stroke-width="1.1"/><circle r="142.8" stroke="#0d0e12" stroke-width="1.1"/><circle r="144.2" stroke="#1d1e25" stroke-width="1.1"/><circle r="145.6" stroke="#0d0e12" stroke-width="1.1"/><circle r="147.0" stroke="#1d1e25" stroke-width="1.1"/><circle r="78" stroke="#050506" stroke-width="2.2"/><circle r="101" stroke="#050506" stroke-width="2.2"/><circle r="124" stroke="#050506" stroke-width="2.2"/></g>
+              <circle cx="184" cy="177" r="150.5" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.2"/>
+              <g id="ttLabel">
+                <circle cx="184" cy="177" r="51" fill="#7c5cff"/>
+                <image id="labelImg" x="134" y="127" width="100" height="100" preserveAspectRatio="xMidYMid slice" clip-path="url(#ttLabelClip)"/>
+                <circle cx="184" cy="177" r="45" fill="none" stroke="rgba(8,8,12,0.82)" stroke-width="11"/>
+                <text class="tt-label-text" id="lblTextEl" font-size="6.2"><textPath href="#ttLblCircle" id="lblText" textLength="276" lengthAdjust="spacing"></textPath></text>
+              </g>
+              <circle cx="184" cy="177" r="3.6" fill="url(#ttKnob)"/>
+            </g>
+            <!-- Bedienelemente vorne -->
+            <circle cx="24" cy="318" r="11" fill="#2a2c32" stroke="#3b3e46"/><circle cx="24" cy="318" r="7" fill="url(#ttKnob)"/>
+            <circle id="ttStrobeLamp" cx="26" cy="290" r="6" fill="#4a2a20"/>
+            <rect id="ttStartBtn" x="44" y="320" width="62" height="24" rx="3" fill="#25272d" stroke="#3b3e46"/>
+            <text x="75" y="335" text-anchor="middle" font-size="6.5" fill="#9aa0aa" letter-spacing="1">START·STOP</text>
+            <rect x="116" y="324" width="24" height="18" rx="2.5" fill="#25272d" stroke="#3b3e46"/><text x="128" y="336" text-anchor="middle" font-size="7" fill="#9aa0aa">33</text>
+            <rect x="146" y="324" width="24" height="18" rx="2.5" fill="#25272d" stroke="#3b3e46"/><text x="158" y="336" text-anchor="middle" font-size="7" fill="#9aa0aa">45</text>
+            <circle id="tt33Led" cx="128" cy="320" r="1.8" fill="#3a2220"/>
+            <!-- Pitch-Fader -->
+            <rect x="404" y="196" width="34" height="140" rx="4" fill="#17181c" stroke="#33363d"/>
+            <rect x="418" y="206" width="6" height="120" rx="3" fill="#050506"/>
+            <g fill="#6b707a"><rect x="408" y="265" width="8" height="1.4"/><rect x="426" y="265" width="8" height="1.4"/><rect x="410" y="225" width="5" height="1"/><rect x="410" y="305" width="5" height="1"/></g>
+            <circle id="ttQuartz" cx="421" cy="190" r="2.6" fill="#1d3b22"/>
+            <g id="ttPitchCap"><rect x="408" y="258" width="26" height="15" rx="2" fill="url(#ttMetal)"/><rect x="408" y="264.6" width="26" height="1.6" fill="#1b1c20"/></g>
+            <!-- Nadelleuchte vorne rechts -->
+            <circle cx="438" cy="344" r="6" fill="#2a2c32" stroke="#4a4d54"/><circle id="ttTargetLamp" cx="438" cy="344" r="3" fill="#55554a"/>
+            <ellipse class="tt-target-beam" id="ttBeamEl" cx="318" cy="262" rx="34" ry="26" fill="url(#ttBeam)"/>
+            <!-- Tonarm-Basis -->
+            <circle cx="372" cy="92" r="30" fill="#141518" stroke="#3b3e46" stroke-width="1.2"/>
+            <circle cx="372" cy="92" r="22" fill="url(#ttKnob)"/>
+            <circle cx="404" cy="62" r="9" fill="url(#ttKnob)"/><circle cx="404" cy="62" r="3" fill="#2a2c32"/>
+            <rect x="412" y="110" width="22" height="7" rx="3" fill="url(#ttMetal)" transform="rotate(-25 412 110)"/>
+            <circle cx="400" cy="244" r="6.5" fill="#2a2c32" stroke="#4a4d54"/>
+            <!-- Tonarm (dreht um den Lagerpunkt) -->
+            <g id="ttArm">
+              <rect x="356" y="38" width="32" height="26" rx="5" fill="url(#ttMetal)" transform="rotate(-6.7 372 51)"/>
+              <rect x="362" y="38" width="20" height="26" rx="2" fill="rgba(0,0,0,0.25)" transform="rotate(-6.7 372 51)"/>
+              <path d="M372 64 L372 120 C372 160 394 168 392 205 C391 230 388 240 392 252" fill="none" stroke="url(#ttMetal)" stroke-width="5.2" stroke-linecap="round"/>
+              <path d="M372 64 L372 120 C372 160 394 168 392 205 C391 230 388 240 392 252" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" stroke-linecap="round"/>
+              <g transform="rotate(22 392 262)"><rect x="382" y="249" width="20" height="28" rx="2.5" fill="#1f2125" stroke="#5a5d64"/><rect x="386" y="259" width="12" height="14" rx="1.5" fill="#d6d9de"/><rect x="398" y="252" width="9" height="3" rx="1.5" fill="url(#ttMetal)"/></g>
+              <circle cx="372" cy="92" r="9" fill="url(#ttMetal)"/>
+            </g>
+          </svg>
+          <div class="tt-sheen"></div>
+          <div class="tt-front"></div>
+          <div class="tt-right"></div>
         </div>
-        <div class="vinyl-sheen"></div>
-        <svg class="tonearm" viewBox="0 0 200 300" aria-hidden="true">
-          <defs><linearGradient id="armMetal" x1="0" x2="1"><stop offset="0" stop-color="#6b7079"/><stop offset=".5" stop-color="#e7e9ee"/><stop offset="1" stop-color="#7a7f88"/></linearGradient></defs>
-          <circle cx="150" cy="40" r="30" fill="#1b1d22" stroke="#3a3d45" stroke-width="2"/>
-          <circle cx="150" cy="40" r="16" fill="url(#armMetal)"/>
-          <rect x="138" y="2" width="24" height="16" rx="4" fill="#2a2d34"/>
-          <path d="M150 40 L150 190 Q150 225 120 250" fill="none" stroke="url(#armMetal)" stroke-width="7" stroke-linecap="round"/>
-          <g transform="rotate(38 120 250)"><rect x="104" y="244" width="34" height="18" rx="3" fill="#24262c" stroke="#55585f"/><rect x="108" y="262" width="6" height="7" fill="#c9ccd2"/></g>
-        </svg>
       </div>
       <div class="grain"></div>
     </div>
@@ -609,7 +665,7 @@
     (function () {
       var HITS = [{"a":"Michael Jackson","t":"Billie Jean","y":1983,"cv":"https://i.discogs.com/L_6r1OTEqeVepLiAbCnac4GAe6Kw7q828T6n_z3KFZ0/rs:fit/g:sm/q:90/h:603/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMwOTY0/OS0xNjcwMzIzNjI0/LTgyODguanBlZw.jpeg"},{"a":"Madonna","t":"Like A Virgin","y":1984,"cv":"https://i.discogs.com/flUZMMqfRhjebx6UDTwjk1AytGP_ydG2tQI3N1JIpx8/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTEzODkx/OC0xNjY2MTY4MTcy/LTk2MDcuanBlZw.jpeg"},{"a":"Queen","t":"Another One Bites The Dust","y":1980,"cv":"https://i.discogs.com/3zFk-AAOWbAqk6yQGf-y7-fWe_Vm1rMQ9pB5OQGp4Vc/rs:fit/g:sm/q:90/h:550/w:550/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTU4ODI1/Mi0xMTQ1MjkyMzIx/LmpwZWc.jpeg"},{"a":"Prince","t":"When Doves Cry","y":1984,"cv":"https://i.discogs.com/SEuxOftVHJbe3T63gsgeXnR5d5jFvIyPkHC6nS0gKBY/rs:fit/g:sm/q:90/h:597/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTUwNjI3/Mi0xNjY3Njk5MDM5/LTU2NTcuanBlZw.jpeg"},{"a":"Whitney Houston","t":"I Wanna Dance With Somebody","y":1987,"cv":"https://i.discogs.com/i4Nhv32bjTptPBhVEwErSBIZsp0ZZIZclx4fLCze8bM/rs:fit/g:sm/q:90/h:550/w:550/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTIwNDY4/MC0xMTI4NjA4NTUw/LmpwZWc.jpeg"},{"a":"a-ha","t":"Take On Me","y":1985,"cv":"https://i.discogs.com/0PhuYPRktgABWr4CR1uF9j8RnIz-a6Jdc77snoQE4xM/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM5NjI0/Ny0xNTM1OTc2ODQ4/LTcxMTIuanBlZw.jpeg"},{"a":"Bon Jovi","t":"Livin' On A Prayer","y":1986,"cv":"https://i.discogs.com/4CdmLsMBWccC0YoZxXHFQ9-T3sjJGM3RPeg9Tmketlo/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTQyMzU4/NC0xNTQ4ODg1Nzcx/LTk0NTcuanBlZw.jpeg"},{"a":"Toto","t":"Africa","y":1982,"cv":"https://i.discogs.com/ImJmppdxjwg6x7fIq-au6B0ewRjrNi5A1HrR4auMYlo/rs:fit/g:sm/q:90/h:602/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTEyODU0/NjctMTU0MDczMzU5/NS0yNDEwLmpwZWc.jpeg"},{"a":"Survivor","t":"Eye Of The Tiger","y":1982,"cv":"https://i.discogs.com/KdEIPfqgptC6WXjZl9TWbaQ1LJ8E104MEz-BmQPysMI/rs:fit/g:sm/q:90/h:584/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTEzNDM4/NjYtMTI2NjU0MTgw/NS5qcGVn.jpeg"},{"a":"The Police","t":"Every Breath You Take","y":1983,"cv":"https://i.discogs.com/PC737P9qd_2k_csafNtZZD6FIvhYG4UtaZnE5Wc_RiQ/rs:fit/g:sm/q:90/h:602/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM4OTg2/MC0xNDI5NjE5MDcw/LTE4NTIuanBlZw.jpeg"},{"a":"Wham!","t":"Wake Me Up Before You Go-Go","y":1984,"cv":"https://i.discogs.com/BhIdnQcwgjl4RqqeT_PdUr9ikniiiznF5cRrldnYUTI/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTEwMzc1/MzktMTYyMTA0Mjk0/NS00OTk5LmpwZWc.jpeg"},{"a":"Europe","t":"The Final Countdown","y":1986,"cv":"https://i.discogs.com/NWOLPm6oG3mru-RXJoKLCNXMijPs7pOLNERcDrh03C0/rs:fit/g:sm/q:90/h:597/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM4NDEz/MS0xNjg2MDIxODQ5/LTIxNTAuanBlZw.jpeg"},{"a":"Eurythmics","t":"Sweet Dreams","y":1983,"cv":"https://i.discogs.com/uiIWzxGv3RRT_ZUJZpUZ9YdNaVHIYorbMxSggtewdY8/rs:fit/g:sm/q:90/h:598/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTU3NTg4/NS0xNTczODAxNDM3/LTMyMDkuanBlZw.jpeg"},{"a":"Cyndi Lauper","t":"Girls Just Want To Have Fun","y":1983,"cv":"https://i.discogs.com/EV0Il_fs14kEAvpnT-nmSCyHCCzIyUJTyh0kqHoSI8o/rs:fit/g:sm/q:90/h:600/w:593/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM0NzY3/MS0xMzE5NDM5NTQ5/LmpwZWc.jpeg"},{"a":"Duran Duran","t":"Hungry Like The Wolf","y":1982,"cv":"https://i.discogs.com/nIgVr-T103fPkeAP_9xDRIQa231oCW1a56dXd102hPs/rs:fit/g:sm/q:90/h:600/w:590/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTQ3ODg0/NS0xMzU4NjA2NDAx/LTYyNjguanBlZw.jpeg"},{"a":"Tears For Fears","t":"Everybody Wants To Rule The World","y":1985,"cv":"https://i.ytimg.com/vi_webp/aGCdLKXNF3w/maxresdefault.webp"},{"a":"Guns N' Roses","t":"Sweet Child O' Mine","y":1988,"cv":"https://i.discogs.com/c3S_pNoEH1cxUjnbG_h1HAa9vDsJBPnxdS9LBISbTEY/rs:fit/g:sm/q:90/h:613/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTEyNzU4/NzgtMTI4MzE5ODE3/Mi5qcGVn.jpeg"},{"a":"U2","t":"With Or Without You","y":1987,"cv":"https://i.discogs.com/W2GTEN7l-VUcLNXSyXd_s5s2x1eKHRbv4-xWqKhma4c/rs:fit/g:sm/q:90/h:601/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTQxMzcw/OS0xMTczNDYyODAw/LmpwZWc.jpeg"},{"a":"Lionel Richie","t":"All Night Long","y":1983,"cv":"https://i.discogs.com/QZLwVfyV33vR6cebfT0CCXbw0vsHSe_zzsswzqfx2rQ/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTU2ODA1/NC0xMTQzNDg1NTM1/LmpwZWc.jpeg"},{"a":"Phil Collins","t":"In The Air Tonight","y":1981,"cv":"https://i.discogs.com/lNR6fXVvV-PFqB3XujPJckEab3ZHCVLy1ai85H1Dd3Q/rs:fit/g:sm/q:90/h:582/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTIxMzQw/Ni0xNzI3NzExNjgx/LTE1OTYucG5n.jpeg"},{"a":"Dire Straits","t":"Money For Nothing","y":1985,"cv":"https://i.discogs.com/9ZXthK6YoRvPKoV3_S1BZ0QSy3u3sl0JMfK2V2ORxeA/rs:fit/g:sm/q:90/h:596/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTg2MDMy/My0xMTY2MzY2ODcy/LmpwZWc.jpeg"},{"a":"Kim Wilde","t":"Kids In America","y":1981,"cv":"https://i.discogs.com/A-g6ZHiseHKp5J9A5dKEdYLKlJHXORhe2j03nK4J4gA/rs:fit/g:sm/q:90/h:596/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTQ1MTM4/Mi0xMzI5NDE5MjIz/LmpwZWc.jpeg"},{"a":"Rick Astley","t":"Never Gonna Give You Up","y":1987,"cv":"https://i.discogs.com/pGyN2bGulAY3B4tIb_iL0zJHVmqo-YB4VY49Ri3AM5s/rs:fit/g:sm/q:90/h:590/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTk5NTg2/MC0xNzU2NTYyMjU5/LTY0MTAuanBlZw.jpeg"},{"a":"Culture Club","t":"Karma Chameleon","y":1983,"cv":"https://i.discogs.com/EBdwcV2k3d7-K7_AK8DRFAped8KP3HQPZ6w1a9hoT64/rs:fit/g:sm/q:90/h:600/w:598/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM0NzU3/Ni0xMjg0NDgwMDA2/LmpwZWc.jpeg"},{"a":"Bruce Springsteen","t":"Born In The U.S.A.","y":1984,"cv":"https://i.discogs.com/0tsEX-1aE0dk4sNzV9d6q2GnBH5G7iwPeDlhG3hvkdg/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM4Mjky/MS0xMjc0MzcyMzU1/LmpwZWc.jpeg"},{"a":"Depeche Mode","t":"Just Can't Get Enough","y":1981,"cv":"https://i.discogs.com/OJclR0WrSf2jyrVy4NLLhy_ZMVZWwoZdgohlE_IO3bQ/rs:fit/g:sm/q:90/h:600/w:596/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI0Mzkz/LTE0MTIzNzEzNzYt/ODAxOC5qcGVn.jpeg"},{"a":"Simple Minds","t":"Don't You (Forget About Me)","y":1985,"cv":"https://i.discogs.com/N6ZbdTGtpMzE-TDKLIR4Atcwa7j8p0GN8gukomnIIK4/rs:fit/g:sm/q:90/h:578/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTExNzA2/My0xNzM4NDEyOTYx/LTE3NTYuanBlZw.jpeg"},{"a":"Journey","t":"Don't Stop Believin'","y":1981,"cv":"https://i.discogs.com/usEMGa-gt-dFogH_v-iWiRoSbx_sDTIO1cC7Jhv-GvI/rs:fit/g:sm/q:90/h:594/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE1NDI4/NjctMTM3OTYyNTY4/OS03NDE5LmpwZWc.jpeg"},{"a":"Kenny Loggins","t":"Footloose","y":1984,"cv":"https://i.ytimg.com/vi/ltrMfT4Qz5Y/maxresdefault.jpg"},{"a":"Falco","t":"Rock Me Amadeus","y":1985,"cv":"https://i.discogs.com/KXlgiyRUNXUgHNpfsbyWPPoUihjROTsoUdrRRhGjDWs/rs:fit/g:sm/q:90/h:593/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTIwOTQ3/MjQtMTY1MDkwMDE4/Mi0xMjc0LmpwZWc.jpeg"}];
       var img = document.getElementById('labelImg'), txt = document.getElementById('lblText'), txtEl = document.getElementById('lblTextEl');
-      var label = document.getElementById('vinylLabel'), ns = document.getElementById('nsText');
+      var label = document.getElementById('ttLabel'), ns = document.getElementById('nsText');
       if (!img || !txt) return;
       var bag = [];
       function next() {
@@ -617,9 +673,9 @@
         return bag.pop();
       }
       function apply(h) {
-        img.src = h.cv;
+        img.setAttribute('href', h.cv);
         var line = h.a + '  —  ' + h.t + '  —  ' + h.y + '  ★  ';
-        txtEl.setAttribute('font-size', Math.max(7, Math.min(12, 490 / (line.length * 0.66))).toFixed(1));
+        txtEl.setAttribute('font-size', Math.max(3.6, Math.min(6.6, 276 / (line.length * 0.66))).toFixed(2));
         txt.textContent = line;
         ns.innerHTML = '';
         var b = document.createElement('b'); b.textContent = h.a + ' – ' + h.t;
@@ -631,9 +687,11 @@
         pre.onload = pre.onerror = function () {
           if (window.gsap && MOTION) {
             gsap.timeline()
-              .to([label, '#nowSpinning'], { opacity: 0, scale: 0.86, duration: 0.35, ease: 'power2.in' })
+              .to(label, { opacity: 0, duration: 0.3, ease: 'power2.in' })
+              .to('#nowSpinning', { opacity: 0, y: 6, duration: 0.3 }, 0)
               .add(function () { apply(h); })
-              .to([label, '#nowSpinning'], { opacity: 1, scale: 1, duration: 0.55, ease: 'back.out(1.6)' });
+              .to(label, { opacity: 1, duration: 0.5 })
+              .to('#nowSpinning', { opacity: 1, y: 0, duration: 0.5 }, '<');
           } else { apply(h); }
         };
         pre.src = h.cv;
@@ -692,14 +750,50 @@
         .from('.tagline', { y: 20, opacity: 0, duration: 0.8 }, 0.5)
         .from('.cta-row .btn', { y: 20, opacity: 0, duration: 0.7, stagger: 0.08 }, 0.6)
         .from('.stat', { y: 20, opacity: 0, duration: 0.7, stagger: 0.06 }, 0.7)
-        .from('#vinyl', { opacity: 0, scale: 0.85, duration: 1.8, ease: 'power3.out' }, 0)
-        .from('#vinylDisc', { rotate: -120, duration: 2.2, ease: 'power3.out' }, 0)
-        .from('.tonearm', { rotate: 22, transformOrigin: '75% 13%', duration: 1.6, ease: 'power3.inOut' }, 0.4)
+        .from('#vinyl', { opacity: 0, y: 60, duration: 1.4, ease: 'power3.out' }, 0)
+        .from('#ttDeck', { rotateX: 68, rotateZ: -8, duration: 1.8, ease: 'power3.out' }, 0)
         .from('.scroll-hint', { opacity: 0, duration: 0.6 }, 1.2);
 
       // Platte dreht sich langsam, beim Scrollen schneller
-      var spin = gsap.to('#vinylDisc', { rotate: '+=360', duration: 12, ease: 'none', repeat: -1 });
-      if (lenis) lenis.on('scroll', function (e) { spin.timeScale(1 + Math.min(Math.abs(e.velocity) * 0.6, 12)); });
+      /* Plattenspieler: Start -> Teller laeuft auf 33 1/3 U/min an (1,8 s
+         pro Umdrehung), Strobe-Punkte stehen bei exakter Drehzahl still,
+         Tonarm schwenkt auf die Platte. Beim Scrollen geht der Pitch-Fader
+         mit (max. +-8 % wie am Original). */
+      var TT = { speed: 0, pitch: 0, disc: 0, dots: [0, 0, 0, 0] };
+      var REV = 360 / 1.8;
+      gsap.set('#ttArm', { rotation: 0, svgOrigin: '372 92' });
+      gsap.delayedCall(0.9, function () {
+        gsap.set('#ttStartBtn', { attr: { fill: '#3a3d45' } });
+        gsap.set('#ttStrobeLamp', { attr: { fill: '#ff6a3d' } }); document.getElementById('ttStrobeLamp').classList.add('tt-led-on');
+        gsap.set('#tt33Led', { attr: { fill: '#ff4d3a' } }); document.getElementById('tt33Led').classList.add('tt-led-on');
+        gsap.set('#ttQuartz', { attr: { fill: '#3dff6a' } }); document.getElementById('ttQuartz').setAttribute('filter', 'url(#ttGlow)');
+        gsap.to(TT, { speed: 1, duration: 0.8, ease: 'power2.out' });
+      });
+      gsap.timeline({ delay: 1.6 })
+        .set('#ttTargetLamp', { attr: { fill: '#fff6d8' } })
+        .to('#ttBeamEl', { opacity: 1, duration: 0.4 }, 0)
+        .to('#ttArm', { rotation: 28.1, svgOrigin: '372 92', duration: 1.5, ease: 'power2.inOut' }, 0.1);
+      var dotsEls = ['#ttDots1', '#ttDots2', '#ttDots3', '#ttDots4'].map(function (q) { return document.querySelector(q); });
+      var drift = [0.6, -0.35, 0, 0.9]; /* Reihe 3 = 33 1/3 bei 50 Hz: steht bei exakter Drehzahl */
+      gsap.ticker.add(function (time, dt) {
+        var sec = dt / 1000, rate = TT.speed * (1 + TT.pitch);
+        TT.disc = (TT.disc + REV * rate * sec) % 360;
+        gsap.set('#ttDisc', { rotation: TT.disc, svgOrigin: '184 177' });
+        for (var i = 0; i < 4; i++) {
+          /* Waehrend des Anlaufens und bei verstelltem Pitch wandern die Punkte. */
+          var off = (1 - Math.min(1, TT.speed)) * REV * 0.9 + TT.pitch * REV * 3 + drift[i] * 8;
+          TT.dots[i] = (TT.dots[i] + off * sec) % 360;
+          dotsEls[i].setAttribute('transform', 'rotate(' + TT.dots[i].toFixed(2) + ' 184 177)');
+        }
+      });
+      if (lenis) lenis.on('scroll', function (e) {
+        var p = Math.max(-0.08, Math.min(0.08, (e.velocity || 0) * 0.004));
+        gsap.to(TT, { pitch: p, duration: 0.3, overwrite: true, onUpdate: function () {
+          document.getElementById('ttPitchCap').setAttribute('transform', 'translate(0 ' + (-TT.pitch / 0.08 * 52).toFixed(1) + ')');
+        }, onComplete: function () { gsap.to(TT, { pitch: 0, duration: 0.9, delay: 0.2, onUpdate: function () {
+          document.getElementById('ttPitchCap').setAttribute('transform', 'translate(0 ' + (-TT.pitch / 0.08 * 52).toFixed(1) + ')');
+        } }); } });
+      });
       gsap.to('.hero .wrap', { yPercent: -18, opacity: 0.2, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
 
       // Überschriften + Kacheln einblenden
