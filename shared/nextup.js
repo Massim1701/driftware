@@ -184,6 +184,12 @@
 
   function pickActiveDeck() {
     if (typeof window.DECKS === 'undefined') return null;
+    /* Gleiche Entscheidung wie die Decks selbst (decades.js) -- siehe
+       Bugfix "Warteliste verschwindet" dort. */
+    if (typeof window.ccQueueOwnerKey === 'function') {
+      var k = window.ccQueueOwnerKey();
+      return k ? window.DECKS[k] : null;
+    }
     if (window.DECKS.A && window.DECKS.A.isPlaying) return window.DECKS.A;
     if (window.DECKS.B && window.DECKS.B.isPlaying) return window.DECKS.B;
     // Nichts spielt gerade -- Deck mit geladenem Song bevorzugen (pausiert),

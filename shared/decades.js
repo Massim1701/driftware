@@ -1460,13 +1460,35 @@ function ccFlipDeck(key) {
   v.classList.add('cc-flip');
   setTimeout(function () { v.classList.remove('cc-flip'); }, 900);
 }
+/* Welches Deck "fuehrt" gerade die Warteschlange? (Bugfix 9.10., Nutzer:
+   "die Warteliste verschwindet staendig"). Frueher hiess es: spielendes
+   Deck, sonst einfach Deck A, sobald dort irgendein Song lag. Liegt auf A
+   aber nur der still VORGELADENE naechste Song (maybePreloadNext setzt
+   song, aber keine eigene Warteschlange) und B wird kurz pausiert, sprang
+   die Anzeige auf A -- "On Air" = vorgeladener Song, darunter nichts, die
+   Warteschlange schien weg. Jetzt zaehlt nur ein Deck mit ECHTER
+   Warteschlange (index > -1); bei Gleichstand bleibt es beim zuletzt
+   gewaehlten Deck, damit nichts hin- und herspringt. */
+var ccLastOwner = null;
 function ccQueueOwnerKey() {
-  if (DECKS.A.isPlaying) return 'A';
-  if (DECKS.B.isPlaying) return 'B';
-  if (DECKS.A.song) return 'A';
-  if (DECKS.B.song) return 'B';
-  return null;
+  function owns(k) { var d = DECKS[k]; return !!(d && d.song && d.queue && d.queue.length && d.index > -1 && d.index < d.queue.length); }
+  var a = owns('A'), b = owns('B'), pick = null;
+  if (a && b) {
+    if (DECKS.A.isPlaying !== DECKS.B.isPlaying) pick = DECKS.A.isPlaying ? 'A' : 'B';
+    else pick = ccLastOwner && owns(ccLastOwner) ? ccLastOwner
+      : ((DECKS.A.queue.length - DECKS.A.index) >= (DECKS.B.queue.length - DECKS.B.index) ? 'A' : 'B');
+  } else if (a || b) {
+    pick = a ? 'A' : 'B';
+  } else {
+    if (DECKS.A.isPlaying) pick = 'A';
+    else if (DECKS.B.isPlaying) pick = 'B';
+    else if (ccLastOwner && DECKS[ccLastOwner].song) pick = ccLastOwner;
+    else pick = DECKS.A.song ? 'A' : (DECKS.B.song ? 'B' : null);
+  }
+  ccLastOwner = pick;
+  return pick;
 }
+window.ccQueueOwnerKey = ccQueueOwnerKey;
 function ccDropQueueSongOnDeck(song, key, info) {
   var ownerKey = ccQueueOwnerKey();
   var owner = ownerKey ? DECKS[ownerKey] : null;
@@ -3672,7 +3694,7 @@ function renderSongGrid(container, songs) {
     mwHeading.innerHTML = CC_ICON.flame + ' <strong>Most Wanted</strong> — die ' + POPULARITY_SPLIT + ' meistgespielten Songs (nach YouTube-Aufrufen)';
     container.appendChild(mwHeading);
   }
-  visible.forEach(function (song, songIdx) {
+  function ccBuildTile(song, songIdx) {
     if (showMostWanted && songIdx === POPULARITY_SPLIT) {
       var restHeading = document.createElement('div');
       restHeading.className = 'song-grid-section-heading';
@@ -3869,8 +3891,26 @@ function renderSongGrid(container, songs) {
     });
 
     container.appendChild(tile);
-  });
-  refreshMixableHighlight();
+  }
+
+  /* Stueckweise aufbauen (Bugfix 9.10., Nutzer: "das Wechseln der Dekaden
+     erzeugt eine kleine Unterbrechung"): bis zu 7000 Zeilen mit je ~10
+     Elementen + Handlern am Stueck blockierten den Browser spuerbar --
+     Konsole/Wellenform froren ein, je nach Rechner stockte der Ton. Jetzt
+     kommen die ersten Zeilen sofort, der Rest in kleinen Paketen pro
+     Frame. Ein neuer Aufruf (anderes Genre, Suche, Dekade) bricht einen
+     noch laufenden Aufbau ab. */
+  var token = (container.__ccRenderToken || 0) + 1;
+  container.__ccRenderToken = token;
+  var pos = 0;
+  function renderChunk(n) {
+    if (container.__ccRenderToken !== token) return;
+    var end = Math.min(visible.length, pos + n);
+    for (; pos < end; pos++) ccBuildTile(visible[pos], pos);
+    refreshMixableHighlight();
+    if (pos < visible.length) requestAnimationFrame(function () { renderChunk(250); });
+  }
+  renderChunk(120);
 }
 
 /* Genre-Kacheln zeigen dezente Linien-Icons statt Emoji (Emoji wirken auf
