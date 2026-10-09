@@ -2328,6 +2328,11 @@ main.decade-main, header.decade-header { margin-left: auto !important; margin-ri
   #dj-player .cc-channels { grid-row: 2 / span 4; }
   #dj-player #deck-B { grid-column: 2; grid-row: 1; }
   #dj-player .cc-time { display: none; }
+  #dj-player .dj-deck-top, #deck-B .dj-deck-top { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  #deck-B .dj-vinyl { order: 0; }
+  #dj-player .cc-pads { width: 100%; }
+  #dj-player .dj-deck-controls, #dj-player .dj-pitch { justify-content: center; }
+  #dj-player .dj-vinyl { width: 190px; height: 190px; }
 }
 @media (max-width: 760px) {
   #dj-player .dj-decks { grid-template-columns: minmax(0, 1fr); }
