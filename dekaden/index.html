@@ -68,20 +68,33 @@
   .tt-scene {
     position: absolute; right: max(10px, calc((100vw - 1180px) / 2 - 140px)); top: 50%;
     width: min(40vw, 590px); aspect-ratio: 453 / 353; margin-top: calc(min(40vw, 590px) * -0.39 - 10px);
-    perspective: 1700px; perspective-origin: 40% -20%;
+    perspective: 1150px; perspective-origin: 45% -10%;
   }
   .tt-deck { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateX(52deg) rotateZ(-17deg); transform-origin: 50% 60%; }
-  .tt-top { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 2px 0 rgba(255,255,255,0.06)); }
   .tt-front, .tt-right {
     position: absolute; background: linear-gradient(180deg, #2a2c32, #121317 70%);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
   }
-  .tt-front { left: 0.6%; right: 0.6%; bottom: 0; height: 30px; transform-origin: 50% 100%; transform: rotateX(-90deg); border-radius: 0 0 6px 6px; }
-  .tt-right { top: 0.8%; bottom: 0.8%; right: 0; width: 30px; transform-origin: 100% 50%; transform: rotateY(90deg); background: linear-gradient(90deg, #24262b, #0f1013); }
+  .tt-front { left: 0.6%; right: 0.6%; bottom: 0; height: 38px; transform-origin: 50% 100%; transform: rotateX(-90deg); border-radius: 0 0 6px 6px; }
+  .tt-right { top: 0.8%; bottom: 0.8%; right: 0; width: 38px; transform-origin: 100% 50%; transform: rotateY(90deg); background: linear-gradient(90deg, #24262b, #0f1013); }
   .tt-shadow { position: absolute; inset: 4% 2% -6% 2%; border-radius: 30px; background: rgba(0,0,0,0.75); filter: blur(34px); transform: translateZ(-34px); }
   /* Hochglanz: stehende Reflexe ueber der drehenden Platte (scharfe
      Glanzstreifen, weicher Lichtfleck, Farbschimmer der Seitenlichter,
      glaenzende Kante). mix-blend-mode: screen = nur aufhellen. */
+  /* Ebenen fuer den 3D-Effekt: Gehaeuse (z 0) -> Tellerzylinder -> Teller/
+     Platte (z 18px) -> Armschatten -> Tonarm (z 44px) auf Lagersaeule. */
+  .tt-layer { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .tt-base { filter: drop-shadow(0 2px 0 rgba(255,255,255,0.06)); }
+  .tt-platter-top { transform: translateZ(26px); }
+  .tt-sheen { transform: translateZ(26.6px); }
+  .tt-arm-shadow { transform: translateZ(27px); }
+  .tt-arm { transform: translateZ(64px); }
+  .tt-platter-cyl, .tt-arm-col { position: absolute; transform-style: preserve-3d; }
+  .tt-platter-cyl { left: 3.97%; top: 3.12%; width: 73.3%; height: 94.05%; }
+  .tt-cyl { position: absolute; inset: 0; border-radius: 50%; background: #1c1d22; border: 1.6px solid #6e727b; }
+  .tt-cyl[style*="dotted"] { border-color: #e4e7ec; }
+  .tt-arm-col { left: calc(82.12% - 3.3%); top: calc(26.06% - 4.25%); width: 6.6%; height: 8.5%; }
+  .tt-col { position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(90deg, #4b4f57, #d9dce1 45%, #6a6e76); }
   .tt-sheen { position: absolute; left: 7.25%; top: 7.3%; width: 66.67%; height: 85.55%; border-radius: 50%; pointer-events: none; mix-blend-mode: screen;
     background:
       conic-gradient(from 300deg, transparent 0deg, transparent 14deg, rgba(255,255,255,0.10) 22deg, rgba(255,255,255,0.62) 28deg, rgba(255,255,255,0.10) 34deg, transparent 44deg, transparent 176deg, rgba(255,255,255,0.08) 196deg, rgba(255,255,255,0.45) 205deg, rgba(255,255,255,0.06) 214deg, transparent 226deg),
@@ -94,7 +107,7 @@
   .tt-sheen::after { content: ''; position: absolute; inset: 0; border-radius: 50%;
     background: repeating-radial-gradient(circle, rgba(255,255,255,0.035) 0 1px, transparent 1px 3px);
     -webkit-mask: conic-gradient(from 300deg, transparent 0 18deg, #000 28deg, transparent 40deg 190deg, #000 205deg, transparent 220deg); mask: conic-gradient(from 300deg, transparent 0 18deg, #000 28deg, transparent 40deg 190deg, #000 205deg, transparent 220deg); }
-  .tt-top text { font-family: 'Inter', sans-serif; }
+  .tt-layer text { font-family: 'Inter', sans-serif; }
   .tt-label-text { font-family: 'Sora', sans-serif !important; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; fill: #fff; }
   .tt-led-on { fill: #ff4d3a; filter: url(#ttGlow); }
   .tt-target-beam { opacity: 0; }
@@ -286,7 +299,7 @@
       <div class="tt-scene" id="vinyl">
         <div class="tt-deck" id="ttDeck">
           <div class="tt-shadow"></div>
-          <svg class="tt-top" viewBox="0 0 453 353" aria-hidden="true">
+          <svg class="tt-layer tt-base" viewBox="0 0 453 353" aria-hidden="true">
             <defs>
               <linearGradient id="ttPlinth" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2c2e34"/><stop offset=".55" stop-color="#1b1c21"/><stop offset="1" stop-color="#141519"/></linearGradient>
               <pattern id="ttBrush" width="453" height="2" patternUnits="userSpaceOnUse"><rect width="453" height="1" fill="rgba(255,255,255,0.018)"/></pattern>
@@ -297,13 +310,46 @@
               <path id="ttLblCircle" d="M184,177 m-44.5,0 a44.5,44.5 0 1,1 89,0 a44.5,44.5 0 1,1 -89,0"/>
               <filter id="ttGlow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
               <radialGradient id="ttBeam" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="rgba(255,250,235,0.55)"/><stop offset="1" stop-color="rgba(255,250,235,0)"/></radialGradient>
+              <filter id="ttArmShadowF" x="-20%" y="-20%" width="140%" height="140%"><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.75 0"/><feGaussianBlur stdDeviation="3.2"/></filter>
             </defs>
             <!-- Gehaeuse -->
             <rect x="0" y="0" width="453" height="353" rx="9" fill="url(#ttPlinth)"/>
             <rect x="0" y="0" width="453" height="353" rx="9" fill="url(#ttBrush)"/>
             <rect x="1" y="1" width="451" height="351" rx="8.5" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.2"/>
-            <!-- Teller mit Strobe-Punkten -->
             <circle cx="184" cy="177" r="167" fill="#0b0c0f"/>
+            <!-- Bedienelemente vorne -->
+            <!-- Vorne links: Strobe-Lampe, Netzschalter, grosse quadratische START/STOP-Taste
+                 (Abstand zum Teller > Tellerradius, ueberlappt nichts) -->
+            <circle id="ttStrobeLamp" cx="21" cy="292" r="6" fill="#4a2a20"/>
+            <circle cx="21" cy="326" r="11" fill="#2a2c32" stroke="#3b3e46"/><circle cx="21" cy="326" r="7" fill="url(#ttKnob)"/>
+            <rect x="40" y="308" width="39" height="39" rx="3.5" fill="#2a2c32" stroke="#4a4d54" stroke-width="1"/>
+            <rect x="42" y="310" width="35" height="35" rx="2.5" fill="#202227"/>
+            <text x="59.5" y="326.5" text-anchor="middle" font-size="6.2" fill="#b4b9c2" letter-spacing="0.8">START</text>
+            <text x="59.5" y="335" text-anchor="middle" font-size="6.2" fill="#b4b9c2" letter-spacing="0.8">STOP</text>
+            <!-- Pitch-Fader -->
+            <rect x="404" y="196" width="34" height="140" rx="4" fill="#17181c" stroke="#33363d"/>
+            <rect x="418" y="206" width="6" height="120" rx="3" fill="#050506"/>
+            <g fill="#6b707a"><rect x="408" y="265" width="8" height="1.4"/><rect x="426" y="265" width="8" height="1.4"/><rect x="410" y="225" width="5" height="1"/><rect x="410" y="305" width="5" height="1"/></g>
+            <circle id="ttQuartz" cx="421" cy="190" r="2.6" fill="#1d3b22"/>
+            <g id="ttPitchCap"><rect x="408" y="258" width="26" height="15" rx="2" fill="url(#ttMetal)"/><rect x="408" y="264.6" width="26" height="1.6" fill="#1b1c20"/></g>
+            <!-- Nadelleuchte vorne rechts -->
+            <circle cx="438" cy="344" r="6" fill="#2a2c32" stroke="#4a4d54"/><circle id="ttTargetLamp" cx="438" cy="344" r="3" fill="#55554a"/>
+            <!-- Tonarm-Basis (MK2-Stil): Sockelplatte, Hoehenring mit Skala, Antiskating, Lifthebel -->
+            <circle cx="372" cy="92" r="36" fill="#121316" stroke="#3b3e46" stroke-width="1.2"/>
+            <circle cx="372" cy="92" r="27" fill="url(#ttKnob)"/>
+            <circle cx="372" cy="92" r="27" fill="none" stroke="#2a2c31" stroke-width="2.4" stroke-dasharray="0.6 2.2"/>
+            <circle cx="372" cy="92" r="19" fill="#1a1b1f"/>
+            <circle cx="343" cy="124" r="8.5" fill="url(#ttKnob)" stroke="#2a2c31"/><rect x="342.4" y="116.5" width="1.2" height="5" fill="#1a1b1f"/>
+            <circle cx="404" cy="124" r="5" fill="#2a2c32" stroke="#4a4d54"/>
+            <rect x="402" y="121" width="24" height="6" rx="3" fill="url(#ttMetal)" transform="rotate(18 404 124)"/>
+            <!-- Armstuetze mit Klammer -->
+            <circle cx="366" cy="252" r="6.5" fill="#1f2125" stroke="#4a4d54"/>
+            <path d="M359 249 Q366 241 373 249" fill="none" stroke="url(#ttMetal)" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+          <div class="tt-platter-cyl"><i class="tt-cyl" style="transform:translateZ(0.0px)"></i><i class="tt-cyl" style="transform:translateZ(1.6px)"></i><i class="tt-cyl" style="transform:translateZ(3.2px)"></i><i class="tt-cyl" style="transform:translateZ(4.8px)"></i><i class="tt-cyl" style="transform:translateZ(6.4px)"></i><i class="tt-cyl" style="transform:translateZ(8.0px)"></i><i class="tt-cyl" style="transform:translateZ(9.6px);border-style:dotted"></i><i class="tt-cyl" style="transform:translateZ(11.2px)"></i><i class="tt-cyl" style="transform:translateZ(12.8px)"></i><i class="tt-cyl" style="transform:translateZ(14.4px);border-style:dotted"></i><i class="tt-cyl" style="transform:translateZ(16.0px)"></i><i class="tt-cyl" style="transform:translateZ(17.6px)"></i><i class="tt-cyl" style="transform:translateZ(19.2px);border-style:dotted"></i><i class="tt-cyl" style="transform:translateZ(20.8px)"></i><i class="tt-cyl" style="transform:translateZ(22.4px)"></i><i class="tt-cyl" style="transform:translateZ(24.0px)"></i><i class="tt-cyl" style="transform:translateZ(25.6px)"></i></div>
+          <div class="tt-arm-col"><i class="tt-col" style="transform:translateZ(0px)"></i><i class="tt-col" style="transform:translateZ(3px)"></i><i class="tt-col" style="transform:translateZ(6px)"></i><i class="tt-col" style="transform:translateZ(9px)"></i><i class="tt-col" style="transform:translateZ(12px)"></i><i class="tt-col" style="transform:translateZ(15px)"></i><i class="tt-col" style="transform:translateZ(18px)"></i><i class="tt-col" style="transform:translateZ(21px)"></i><i class="tt-col" style="transform:translateZ(24px)"></i><i class="tt-col" style="transform:translateZ(27px)"></i><i class="tt-col" style="transform:translateZ(30px)"></i><i class="tt-col" style="transform:translateZ(33px)"></i><i class="tt-col" style="transform:translateZ(36px)"></i><i class="tt-col" style="transform:translateZ(39px)"></i><i class="tt-col" style="transform:translateZ(42px)"></i><i class="tt-col" style="transform:translateZ(45px)"></i><i class="tt-col" style="transform:translateZ(48px)"></i><i class="tt-col" style="transform:translateZ(51px)"></i><i class="tt-col" style="transform:translateZ(54px)"></i><i class="tt-col" style="transform:translateZ(57px)"></i><i class="tt-col" style="transform:translateZ(60px)"></i><i class="tt-col" style="transform:translateZ(63px)"></i></div>
+          <svg class="tt-layer tt-platter-top" viewBox="0 0 453 353" aria-hidden="true">
+            <!-- Teller mit Strobe-Punkten -->
             <circle cx="184" cy="177" r="166" fill="url(#ttPlatter)"/>
             <g id="ttDots" fill="none" stroke="#d9dce2" stroke-linecap="round">
               <g id="ttDots1"><circle cx="184" cy="177" r="164.2" stroke-width="1.6" stroke-dasharray="0.1 2.85"/></g>
@@ -324,35 +370,12 @@
               </g>
               <circle cx="184" cy="177" r="3.6" fill="url(#ttKnob)"/>
             </g>
-            <!-- Bedienelemente vorne -->
-            <!-- Vorne links: Strobe-Lampe, Netzschalter, grosse quadratische START/STOP-Taste
-                 (Abstand zum Teller > Tellerradius, ueberlappt nichts) -->
-            <circle id="ttStrobeLamp" cx="21" cy="292" r="6" fill="#4a2a20"/>
-            <circle cx="21" cy="326" r="11" fill="#2a2c32" stroke="#3b3e46"/><circle cx="21" cy="326" r="7" fill="url(#ttKnob)"/>
-            <rect x="40" y="308" width="39" height="39" rx="3.5" fill="#2a2c32" stroke="#4a4d54" stroke-width="1"/>
-            <rect x="42" y="310" width="35" height="35" rx="2.5" fill="#202227"/>
-            <text x="59.5" y="326.5" text-anchor="middle" font-size="6.2" fill="#b4b9c2" letter-spacing="0.8">START</text>
-            <text x="59.5" y="335" text-anchor="middle" font-size="6.2" fill="#b4b9c2" letter-spacing="0.8">STOP</text>
-            <!-- Pitch-Fader -->
-            <rect x="404" y="196" width="34" height="140" rx="4" fill="#17181c" stroke="#33363d"/>
-            <rect x="418" y="206" width="6" height="120" rx="3" fill="#050506"/>
-            <g fill="#6b707a"><rect x="408" y="265" width="8" height="1.4"/><rect x="426" y="265" width="8" height="1.4"/><rect x="410" y="225" width="5" height="1"/><rect x="410" y="305" width="5" height="1"/></g>
-            <circle id="ttQuartz" cx="421" cy="190" r="2.6" fill="#1d3b22"/>
-            <g id="ttPitchCap"><rect x="408" y="258" width="26" height="15" rx="2" fill="url(#ttMetal)"/><rect x="408" y="264.6" width="26" height="1.6" fill="#1b1c20"/></g>
-            <!-- Nadelleuchte vorne rechts -->
-            <circle cx="438" cy="344" r="6" fill="#2a2c32" stroke="#4a4d54"/><circle id="ttTargetLamp" cx="438" cy="344" r="3" fill="#55554a"/>
+          </svg>
+          <div class="tt-sheen"></div>
+          <svg class="tt-layer tt-arm-shadow" viewBox="0 0 453 353" aria-hidden="true"><use href="#ttArm" transform="translate(16 22)" filter="url(#ttArmShadowF)"/>
             <ellipse class="tt-target-beam" id="ttBeamEl" cx="276" cy="300" rx="36" ry="26" fill="url(#ttBeam)"/>
-            <!-- Tonarm-Basis (MK2-Stil): Sockelplatte, Hoehenring mit Skala, Antiskating, Lifthebel -->
-            <circle cx="372" cy="92" r="36" fill="#121316" stroke="#3b3e46" stroke-width="1.2"/>
-            <circle cx="372" cy="92" r="27" fill="url(#ttKnob)"/>
-            <circle cx="372" cy="92" r="27" fill="none" stroke="#2a2c31" stroke-width="2.4" stroke-dasharray="0.6 2.2"/>
-            <circle cx="372" cy="92" r="19" fill="#1a1b1f"/>
-            <circle cx="343" cy="124" r="8.5" fill="url(#ttKnob)" stroke="#2a2c31"/><rect x="342.4" y="116.5" width="1.2" height="5" fill="#1a1b1f"/>
-            <circle cx="404" cy="124" r="5" fill="#2a2c32" stroke="#4a4d54"/>
-            <rect x="402" y="121" width="24" height="6" rx="3" fill="url(#ttMetal)" transform="rotate(18 404 124)"/>
-            <!-- Armstuetze mit Klammer -->
-            <circle cx="366" cy="252" r="6.5" fill="#1f2125" stroke="#4a4d54"/>
-            <path d="M359 249 Q366 241 373 249" fill="none" stroke="url(#ttMetal)" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+          <svg class="tt-layer tt-arm" viewBox="0 0 453 353" aria-hidden="true">
             <!-- Tonarm: lokal senkrecht gezeichnet, Achse 3 Grad nach innen; dreht um den Lagerpunkt -->
             <g id="ttArm">
               <g transform="rotate(3.04 372 92)">
@@ -383,7 +406,6 @@
               </g>
             </g>
           </svg>
-          <div class="tt-sheen"></div>
           <div class="tt-front"></div>
           <div class="tt-right"></div>
         </div>
@@ -789,7 +811,7 @@
         .from('.cta-row .btn', { y: 20, opacity: 0, duration: 0.7, stagger: 0.08 }, 0.6)
         .from('.stat', { y: 20, opacity: 0, duration: 0.7, stagger: 0.06 }, 0.7)
         .from('#vinyl', { opacity: 0, y: 60, duration: 1.4, ease: 'power3.out' }, 0)
-        .from('#ttDeck', { rotateX: 68, rotateZ: -8, duration: 1.8, ease: 'power3.out' }, 0)
+        .from('#ttDeck', { rotationX: 68, rotationZ: -8, duration: 1.8, ease: 'power3.out' }, 0)
         .from('.scroll-hint', { opacity: 0, duration: 0.6 }, 1.2);
 
       // Platte dreht sich langsam, beim Scrollen schneller
@@ -797,6 +819,17 @@
          pro Umdrehung), Strobe-Punkte stehen bei exakter Drehzahl still,
          Tonarm schwenkt auf die Platte. Beim Scrollen geht der Pitch-Fader
          mit (max. +-8 % wie am Original). */
+      /* 3D: Plattenspieler neigt sich leicht mit der Maus (nur mit Maus). */
+      gsap.set('#ttDeck', { rotationX: 52, rotationZ: -17, transformOrigin: '50% 60%' });
+      if (matchMedia('(hover: hover)').matches) {
+        var tiltX = gsap.quickTo('#ttDeck', 'rotationX', { duration: 1.1, ease: 'power3.out' });
+        var tiltZ = gsap.quickTo('#ttDeck', 'rotationZ', { duration: 1.1, ease: 'power3.out' });
+        window.addEventListener('pointermove', function (e) {
+          if (window.scrollY > window.innerHeight) return;
+          var dx = e.clientX / window.innerWidth - 0.5, dy = e.clientY / window.innerHeight - 0.5;
+          tiltX(52 - dy * 12); tiltZ(-17 + dx * 10);
+        }, { passive: true });
+      }
       var TT = { speed: 0, pitch: 0, disc: 0, dots: [0, 0, 0, 0] };
       var REV = 360 / 1.8;
       gsap.set('#ttArm', { rotation: 0, svgOrigin: '372 92' });
