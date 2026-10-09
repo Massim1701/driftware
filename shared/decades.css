@@ -2459,8 +2459,8 @@ html:not([data-device="phone"]) #dj-player .dj-decks { padding-top: 16px; }
 .generator-body .gen-history ul { flex: 1; min-height: 0; max-height: none; overflow-y: auto; }
 .generator-body .gen-history .gen-queue-current { background: color-mix(in srgb, var(--deck-b) 16%, transparent); border-color: color-mix(in srgb, var(--deck-b) 45%, transparent); }
 /* Ablageflaeche sichtbar machen, sobald ein Song gezogen wird */
-body.dnd-dragging .generator-body .gen-history { outline: 2px dashed color-mix(in srgb, var(--deck-b) 80%, transparent); outline-offset: -6px; }
-body.dnd-dragging .generator-body .gen-history::after {
+body.dnd-dragging:not(.dw-queue-drag) .generator-body .gen-history { outline: 2px dashed color-mix(in srgb, var(--deck-b) 80%, transparent); outline-offset: -6px; }
+body.dnd-dragging:not(.dw-queue-drag) .generator-body .gen-history::after {
   content: 'Hier ablegen → Warteschlange'; position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
   font: 700 11px 'Inter', sans-serif; letter-spacing: 0.08em; color: #050608; background: var(--deck-b);
   padding: 6px 12px; border-radius: 999px; pointer-events: none; box-shadow: 0 6px 18px rgba(0,0,0,0.4);

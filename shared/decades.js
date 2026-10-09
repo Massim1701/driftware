@@ -1432,6 +1432,63 @@ function ccWireDeckPads(bar, key) {
   });
 }
 
+/* Song aus der Warteschlange (nextup.js) direkt auf ein Deck ziehen
+   (Nutzerwunsch 9.10.). Wie im DJ-Alltag:
+   - auf das Deck, das die Warteschlange gerade spielt: Song kommt sofort
+     dran (wird direkt hinter den aktuellen Song gesetzt und angesprungen)
+   - auf das andere Deck: Song wird dort vorbereitet und der Rest der
+     Warteschlange wandert mit -- nach dem Ueberblenden laeuft die Liste
+     auf dem neuen Deck nahtlos weiter.
+   Ein kommender Song verlaesst dabei die Warteschlange (kein Doppel), ein
+   bereits gelaufener wird als Kopie verwendet. */
+function ccQueueOwnerKey() {
+  if (DECKS.A.isPlaying) return 'A';
+  if (DECKS.B.isPlaying) return 'B';
+  if (DECKS.A.song) return 'A';
+  if (DECKS.B.song) return 'B';
+  return null;
+}
+function ccDropQueueSongOnDeck(song, key, info) {
+  var ownerKey = ccQueueOwnerKey();
+  var owner = ownerKey ? DECKS[ownerKey] : null;
+  if (!owner || owner.index < 0 || !owner.queue) {
+    loadSongToDeck(song, key, [song], false);
+    window.dispatchEvent(new Event('driftware-queue-changed'));
+    return;
+  }
+  if (info && info.kind === 'upcoming') {
+    var i = info.idx;
+    if (!(owner.queue[i] && songId(owner.queue[i]) === songId(song))) {
+      i = -1;
+      for (var k = owner.index + 1; k < owner.queue.length; k++) { if (songId(owner.queue[k]) === songId(song)) { i = k; break; } }
+    }
+    if (i > owner.index) owner.queue.splice(i, 1);
+  }
+  /* Song wird in jedem Fall der naechste in der Warteschlange -- die
+     Anzeige bleibt dadurch stimmig ("On Air", direkt darunter der
+     gezogene Song, dann der Rest). */
+  owner.queue.splice(owner.index + 1, 0, song);
+  if (ownerKey === key) {
+    deckStep(key, 1, !!owner.isPlaying);
+  } else {
+    var target = DECKS[key];
+    if (target.isPlaying) {
+      /* Zieldeck spielt gerade selbst (z.B. mitten im Ueberblenden) --
+         dann einfach dort laden, ohne die Warteschlange umzubauen. */
+      owner.queue.splice(owner.index + 1, 1);
+      loadSongToDeck(song, key, [song], false);
+    } else {
+      /* Auf dem anderen Deck als "naechsten Song" vorladen -- derselbe Weg
+         wie das automatische Vorladen (maybePreloadNext), damit Autofade
+         und Uebergabe der Warteschlange unveraendert funktionieren. */
+      target.song = null;
+      target.preloadedFor = null;
+      maybePreloadNext(ownerKey);
+    }
+  }
+  window.dispatchEvent(new Event('driftware-queue-changed'));
+}
+
 /* Kanal-Fader pro Deck (zusaetzlich zu Crossfader + Master), 0-100. */
 var deckGain = { A: 100, B: 100 };
 function ccChannelHTML(key) {
@@ -1669,9 +1726,12 @@ function ensureDjPlayer() {
       dropzone.classList.remove('drag-over');
       var raw = e.dataTransfer.getData('application/json');
       if (!raw) return;
+      var qInfo = null;
+      try { qInfo = JSON.parse(e.dataTransfer.getData('application/x-dw-queue') || 'null'); } catch (err) {}
       try {
         var song = JSON.parse(raw);
-        loadSongToDeck(song, key, lastGridSongs, false);
+        if (qInfo) ccDropQueueSongOnDeck(song, key, qInfo);
+        else loadSongToDeck(song, key, lastGridSongs, false);
       } catch (err) {}
     });
     var pitchKnob = bar.querySelector('#deck-' + key + '-pitch-knob');

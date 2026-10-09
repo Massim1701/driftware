@@ -358,12 +358,29 @@
       if (up) draggingIdx = parseInt(up.getAttribute('data-idx'), 10);
       else if (pl) draggingPlayed = parseInt(pl.getAttribute('data-idx'), 10);
       else return;
-      try { e.dataTransfer.effectAllowed = up ? 'move' : 'copy'; e.dataTransfer.setData('text/plain', ''); } catch (err) {}
+      var dragSong = null;
+      if (up) { var dk = pickActiveDeck(); dragSong = dk && dk.queue ? dk.queue[draggingIdx] : null; }
+      else dragSong = played[draggingPlayed];
+      try {
+        e.dataTransfer.effectAllowed = 'copyMove';
+        e.dataTransfer.setData('text/plain', dragSong ? (dragSong.a + ' - ' + dragSong.t) : '');
+        /* Gleiche Payload wie die Song-Kacheln -- damit laesst sich der Song
+           auch direkt auf ein Deck ziehen (siehe ccDropQueueSongOnDeck in
+           decades.js); x-dw-queue sagt dem Deck, woher er kommt. */
+        if (dragSong) {
+          e.dataTransfer.setData('application/json', JSON.stringify(dragSong));
+          e.dataTransfer.setData('application/x-dw-queue', JSON.stringify({ kind: up ? 'upcoming' : 'played', idx: up ? draggingIdx : draggingPlayed }));
+        }
+      } catch (err) {}
+      // Shield ueber den Deck-Videos aktivieren (wie beim Ziehen aus der Liste)
+      document.body.classList.add('dnd-dragging', 'dw-queue-drag');
       (up || pl).classList.add('gen-queue-dragging');
     });
     list.addEventListener('dragend', function () {
       draggingIdx = null; draggingPlayed = null;
+      document.body.classList.remove('dnd-dragging', 'dw-queue-drag');
       clearMarkers(list);
+      lastSignature = null; render();
     });
     list.addEventListener('dragover', function (e) {
       var external = draggingIdx === null && draggingPlayed === null;
