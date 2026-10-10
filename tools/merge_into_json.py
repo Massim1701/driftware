@@ -17,7 +17,7 @@ Drei Schritte, jeweils eigener Aufruf:
                  Braucht DISCOGS_TOKEN (Env), sonst sehr langsam.
   --eintragen --min-have N
                  Angereicherte Songs mit hv >= N an die Warteliste anhaengen,
-                 alle anderen (zu selten oder bei Discogs nicht gefunden) an
+                 alle anderen (zu selten, bei Discogs nicht gefunden oder Remix/Version) an
                  queue/<dekade>-musicbrainz-selten.json. Vorher Backup nach
                  data/musicbrainz/backup/, danach JSON-Pruefung + Zaehlung.
 
@@ -150,14 +150,15 @@ class CatalogIndex:
         self.mbids = set()
         self.sizes = {}
 
-    def add(self, a, t, origin, mb=None):
+    def add(self, a, t, origin, mb=None, fassungen=True):
         ak = artist_key(a)
         tf = title_full_key(t)
         if not ak or not tf:
             return
         self.full.setdefault((ak, tf), origin)
-        self.base[(ak, title_base_key(t))].append((t, origin))
-        self.by_title[tf].add(ak)
+        if fassungen:  # Selten-Liste zaehlt nur exakt, nicht als "andere Fassung"
+            self.base[(ak, title_base_key(t))].append((t, origin))
+            self.by_title[tf].add(ak)
         if mb:
             self.mbids.add(mb)
 
@@ -179,7 +180,7 @@ class CatalogIndex:
                               (selten_path(dek), f"queue/{dek}-musicbrainz-selten")):
                 q = load_json(qp, []) or []
                 for c in q:
-                    idx.add(c.get("a"), c.get("t"), label, c.get("mb"))
+                    idx.add(c.get("a"), c.get("t"), label, c.get("mb"), fassungen=not label.endswith("-selten"))
                 if q:
                     idx.sizes[label] = len(q)
         return idx
@@ -201,40 +202,48 @@ def read_csvs(dek):
 # ---------------------------------------------------------------- Abgleich
 
 def classify(rows, idx):
-    """Liefert Liste von dicts mit status neu / vorhanden / unklar / dublette."""
+    """Liefert Liste von dicts mit status neu / version / vorhanden / unklar /
+    dublette. Bei Doppel-A-Titeln ("A / B") zaehlt nur die A-Seite (Feld
+    titel_neu) -- so wird sie bei Discogs/YouTube gesucht und eingetragen
+    (Entscheidung Massimo 10.10.)."""
     out = []
     seen = {}
     rows = sorted(rows, key=lambda r: (r.get("erstveroeffentlichung") or r["jahr"], r["mbid"]))
     for r in rows:
-        a, t, mb = r["interpret"], r["titel"], r["mbid"]
+        a, t_orig, mb = r["interpret"], r["titel"], r["mbid"]
+        t = sides(t_orig)[0] if sides(t_orig) else t_orig
         ak, tf, tb = artist_key(a), title_full_key(t), title_base_key(t)
-        res = dict(r, status="", grund="", treffer="", version="ja" if is_version(t) else "")
+        res = dict(r, titel_neu=t, status="", grund="", treffer="", version="ja" if is_version(t) else "")
         if not ak or not tf:
             res.update(status="unklar", grund="Interpret/Titel nach Normalisierung leer (nur Sonderzeichen)")
         elif mb in idx.mbids:
             res.update(status="vorhanden", grund="MBID schon im Katalog")
+        elif (ak, title_full_key(t_orig)) in idx.full:
+            res.update(status="vorhanden", grund="Interpret+Titel gleich", treffer=idx.full[(ak, title_full_key(t_orig))])
         elif (ak, tf) in idx.full:
-            res.update(status="vorhanden", grund="Interpret+Titel gleich", treffer=idx.full[(ak, tf)])
-        elif sides(t) and all((ak, title_full_key(x)) in idx.full for x in sides(t)):
-            res.update(status="vorhanden", grund="Doppel-A-Seite, beide Seiten im Katalog")
+            res.update(status="vorhanden", grund="Doppel-A-Seite, A-Seite im Katalog", treffer=idx.full[(ak, tf)])
         elif (ak, tf) in seen:
             res.update(status="dublette", grund="gleicher Song mehrfach in MusicBrainz (Neuauflage)", treffer=seen[(ak, tf)])
         else:
             base_hits = [h for h in idx.base.get((ak, tb), []) if title_full_key(h[0]) != tf]
-            side_hits = [s for s in sides(t) if (ak, title_full_key(s)) in idx.full]
+            side_hits = [x for x in sides(t_orig)[1:] if (ak, title_full_key(x)) in idx.full]
             similar = [x for x in idx.by_title.get(tf, ())
                        if x != ak and len(x) > 3 and len(ak) > 3 and (x in ak or ak in x)]
             if base_hits:
                 res.update(status="unklar", grund="andere Fassung im Katalog (Remix/Version?)",
                            treffer=" | ".join(f"{h[0]} [{h[1]}]" for h in base_hits[:3]))
             elif side_hits:
-                res.update(status="unklar", grund="Doppel-A-Seite, eine Seite schon im Katalog",
+                res.update(status="unklar", grund="Doppel-A-Seite, nur B-Seite im Katalog",
                            treffer=" | ".join(side_hits))
             elif similar:
                 res.update(status="unklar", grund="gleicher Titel, aehnlicher Interpret", treffer=" | ".join(sorted(similar)[:3]))
+            elif res["version"]:
+                # Remix/Live/Instrumental ohne Original im Katalog: nicht
+                # nachschlagen, direkt in die Selten-Liste (Entscheidung 10.10.)
+                res.update(status="version", grund="Remix/Version, kommt in die Selten-Liste")
             else:
-                res.update(status="neu", grund="Doppel-A-Seite" if sides(t) else "")
-        if res["status"] in ("neu", "unklar") and ak and tf:
+                res.update(status="neu", grund="Doppel-A-Seite (nur A-Seite)" if sides(t_orig) else "")
+        if res["status"] in ("neu", "version", "unklar") and ak and tf:
             seen.setdefault((ak, tf), mb)
         out.append(res)
     return out
@@ -247,11 +256,10 @@ def print_report(dek, results, missing_years, idx, bericht=None):
         print(f"WARNUNG: keine CSV fuer {missing_years}")
     print("Katalog/Wartelisten geladen:", ", ".join(f"{k}={v}" for k, v in idx.sizes.items()))
     print(f"MusicBrainz-Zeilen: {len(results)}")
-    for st in ("neu", "vorhanden", "unklar", "dublette"):
+    for st in ("neu", "version", "vorhanden", "unklar", "dublette"):
         print(f"  {st:<10} {c.get(st, 0)}")
     neu = [r for r in results if r["status"] == "neu"]
-    print(f"  davon neu und als Version/Remix markiert: {sum(1 for r in neu if r['version'])}")
-    print(f"  davon neu und Doppel-A-Seite: {sum(1 for r in neu if r['grund'] == 'Doppel-A-Seite')}")
+    print(f"  davon neu und Doppel-A-Seite: {sum(1 for r in neu if r['grund'].startswith('Doppel-A'))}")
     per_year = collections.Counter(r["jahr"] for r in neu)
     print("  neu je Jahr:", dict(sorted(per_year.items())))
     gc = collections.Counter(r["grund"] for r in results if r["status"] == "unklar")
@@ -261,11 +269,11 @@ def print_report(dek, results, missing_years, idx, bericht=None):
         print(f"\n  Beispiele {st}:")
         for r in sample:
             extra = f"  -> {r['treffer']}" if r["treffer"] else ""
-            print(f"    {r['jahr']} | {r['interpret']} - {r['titel']} ({r['grund'] or '-'}){extra}")
+            print(f"    {r['jahr']} | {r['interpret']} - {r['titel_neu']} ({r['grund'] or '-'}){extra}")
     if bericht:
         with open(bericht, "w", encoding="utf-8", newline="") as f:
             w = csv.DictWriter(f, fieldnames=["status", "grund", "version", "jahr", "erstveroeffentlichung",
-                                              "interpret", "titel", "mbid", "treffer"])
+                                              "interpret", "titel", "titel_neu", "mbid", "treffer"])
             w.writeheader()
             for r in results:
                 w.writerow({k: r.get(k, "") for k in w.fieldnames})
@@ -301,7 +309,7 @@ def build_candidate(r, release, bucket):
     return {
         "id": release.get("id"),
         "a": r["interpret"],
-        "t": r["titel"],
+        "t": r["titel_neu"],
         "y": year,
         "g": ", ".join(release.get("genre") or []),
         "s": ", ".join(release.get("style") or []),
@@ -314,6 +322,7 @@ def build_candidate(r, release, bucket):
         "genre_key": bucket,
         "src": "musicbrainz",
         "mb": r["mbid"],
+        **({"mb_titel": r["titel"]} if r["titel"] != r["titel_neu"] else {}),
     }
 
 
@@ -339,18 +348,16 @@ def anreichern(dek, results):
         if time.time() - START_TS > TIME_BUDGET_SECONDS:
             print("Zeitbudget erreicht, Rest folgt im naechsten Lauf.")
             break
-        release = fb.discogs_search_release(r["interpret"], r["titel"])
-        if not release and sides(r["titel"]):
-            release = fb.discogs_search_release(r["interpret"], sides(r["titel"])[0])
+        release = fb.discogs_search_release(r["interpret"], r["titel_neu"])
         if release:
             bucket = pm.pick_bucket(catalog, {"styles": release.get("style"), "genres": release.get("genre")})
             cand = build_candidate(r, release, bucket)
             staged[r["mbid"]] = {"status": "gefunden", "cand": cand}
-            print(f"  + {r['interpret']} - {r['titel']} -> {bucket}, hv {cand['hv']}")
+            print(f"  + {r['interpret']} - {r['titel_neu']} -> {bucket}, hv {cand['hv']}")
         else:
             staged[r["mbid"]] = {"status": "nicht_gefunden",
-                                 "row": {k: r[k] for k in ("jahr", "erstveroeffentlichung", "interpret", "titel", "mbid")}}
-            print(f"  - {r['interpret']} - {r['titel']}: bei Discogs nicht gefunden")
+                                 "row": {k: r[k] for k in ("jahr", "erstveroeffentlichung", "interpret", "titel", "titel_neu", "mbid")}}
+            print(f"  - {r['interpret']} - {r['titel_neu']}: bei Discogs nicht gefunden")
         done += 1
         if done % SAVE_EVERY == 0:
             save_json(sp, staged)
@@ -395,6 +402,7 @@ def eintragen(dek, results, min_have):
         raise SystemExit("Keine angereicherten Daten -- zuerst --anreichern laufen lassen.")
     still_new = {r["mbid"] for r in results if r["status"] == "neu"}
     to_queue, to_selten = [], []
+    n_staged_selten = 0
     for mb, v in staged.items():
         if mb not in still_new:
             continue  # inzwischen im Katalog/in einer Warteliste
@@ -402,12 +410,18 @@ def eintragen(dek, results, min_have):
             to_queue.append(v["cand"])
         elif v.get("status") == "gefunden":
             to_selten.append(v["cand"])
+            n_staged_selten += 1
         else:
+            n_staged_selten += 1
             row = v["row"]
-            to_selten.append({"a": row["interpret"], "t": row["titel"], "y": int(row["jahr"]),
+            to_selten.append({"a": row["interpret"], "t": row.get("titel_neu") or row["titel"], "y": int(row["jahr"]),
                               "mb": mb, "src": "musicbrainz", "discogs": "nicht gefunden"})
+    for r in results:
+        if r["status"] == "version":
+            to_selten.append({"a": r["interpret"], "t": r["titel_neu"], "y": int(r["jahr"]),
+                              "mb": r["mbid"], "src": "musicbrainz", "discogs": "nicht nachgeschlagen (Remix/Version)"})
     print(f"\nEintragen {dek} (min-have {min_have}): {len(to_queue)} in die Warteliste, "
-          f"{len(to_selten)} in die Selten-Liste, {len(still_new) - len(to_queue) - len(to_selten)} neu, aber noch nicht angereichert")
+          f"{len(to_selten)} in die Selten-Liste, {len(still_new) - len(to_queue) - n_staged_selten} neu, aber noch nicht angereichert")
     append_checked(queue_path(dek), to_queue)
     append_checked(selten_path(dek), to_selten)
 
