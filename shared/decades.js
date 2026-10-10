@@ -2290,12 +2290,12 @@ function maybePreloadNext(key) {
     if (other.preloadedFor !== wantedId) return; /* zwischenzeitlich ueberholt */
     if (other.player && other.player.cueVideoById) {
       try { other.player.setVolume(0); } catch (e) {}
-      try { other.player.cueVideoById(nextSong.yt, introSkipFor(nextSong)); } catch (e) {}
+      try { other.player.cueVideoById(videoIdFor(nextSong), introSkipFor(nextSong)); } catch (e) {}
     } else if (!other.player) {
       other.player = new YT.Player('deck-' + otherKey + '-mount', {
         width: '100%',
         height: '100%',
-        videoId: nextSong.yt,
+        videoId: videoIdFor(nextSong),
         host: 'https://www.youtube-nocookie.com',
       playerVars: { rel: 0, playsinline: 1, autoplay: 0, start: introSkipFor(nextSong) },
         events: {
@@ -3015,7 +3015,7 @@ function playDeckSong(key, song, autoplay) {
     deck.player = new YT.Player('deck-' + key + '-mount', {
       width: '100%',
       height: '100%',
-      videoId: song.yt,
+      videoId: videoIdFor(song),
       host: 'https://www.youtube-nocookie.com',
       playerVars: { rel: 0, playsinline: 1, autoplay: autoplay ? 1 : 0, start: introSkipFor(song) },
       events: {
@@ -3052,9 +3052,9 @@ function playDeckSong(key, song, autoplay) {
       reused = true;
       try {
         if (autoplay) {
-          deck.player.loadVideoById(song.yt, introSkipFor(song));
+          deck.player.loadVideoById(videoIdFor(song), introSkipFor(song));
         } else {
-          deck.player.cueVideoById(song.yt, introSkipFor(song));
+          deck.player.cueVideoById(videoIdFor(song), introSkipFor(song));
         }
         deck.player.setPlaybackRate(deck.rate || 1);
       } catch (e) {
@@ -3081,7 +3081,7 @@ function playDeckSong(key, song, autoplay) {
        ob es wirklich beim neuen Video angekommen ist -- wenn nicht, den
        alten Player verwerfen und frisch aufbauen statt das Deck tot
        stehen zu lassen. */
-    var expectedId = song.yt;
+    var expectedId = videoIdFor(song);
     setTimeout(function () {
       if (!deck.player || deck.song !== song) return; // zwischenzeitlich schon wieder was anderes geladen
       var actual = null;
@@ -4654,6 +4654,53 @@ function ccLyricsHTML() {
 
 function ccLyricsSongKey(song) { return song ? (song.a + '|' + song.t) : null; }
 
+/* Karaoke-Fassungen (Nutzerwunsch 10.10.): Musikvideos haben oft andere
+   Intros/Pausen als die Studioaufnahme, auf die LRCLIB stempelt -- der
+   Text lief deshalb selten synchron. tools/fetch_karaoke_videos.py sucht
+   pro Song das von YouTube erzeugte Studio-Audio ("Interpret - Topic")
+   und legt es in karaoke/videos.json ab ({"a|t": {yk, d}}). Ist Karaoke
+   an und gibt es eine solche Fassung, laden die Decks sie statt des
+   Musikvideos (videoIdFor); beim Umschalten wechselt das Deck an der
+   gleichen Stelle die Fassung (ccKaraokeSwitchDecks). */
+var CC_KARAOKE_VIDEOS = null;
+function ccKaraokeLoad() {
+  if (CC_KARAOKE_VIDEOS) return;
+  CC_KARAOKE_VIDEOS = {};
+  fetch('/karaoke/videos.json').then(function (r) { return r.ok ? r.json() : {}; }).then(function (m) {
+    CC_KARAOKE_VIDEOS = m || {};
+    ccKaraokeSwitchDecks();
+  }).catch(function () {});
+}
+function karaokeVideoFor(song) {
+  var hit = song && CC_KARAOKE_VIDEOS && CC_KARAOKE_VIDEOS[ccLyricsSongKey(song)];
+  return hit && hit.yk ? hit.yk : null;
+}
+function videoIdFor(song) {
+  if (!song) return null;
+  return (ccLyricsIsOn() && karaokeVideoFor(song)) || song.yt;
+}
+function ccKaraokeSwitchDecks() {
+  ['A', 'B'].forEach(function (k) {
+    var d = DECKS[k];
+    if (!d || !d.song || !d.player || !d.player.getVideoData) return;
+    var want = videoIdFor(d.song), cur = null, t = 0;
+    try { cur = d.player.getVideoData().video_id; } catch (e) {}
+    if (!cur || !want || cur === want) return;
+    try { t = d.player.getCurrentTime() || 0; } catch (e) {}
+    try {
+      if (d.isPlaying) d.player.loadVideoById(want, t);
+      else d.player.cueVideoById(want, Math.max(t, introSkipFor(d.song)));
+    } catch (e) {}
+    /* andere Fassung = andere Laenge -> Text neu passend auswaehlen */
+    var key = ccLyricsSongKey(d.song);
+    delete CC_LYRICS_CACHE[key];
+    delete ccLyricsSeenAt[key];
+    if (ccLyrics.songKey === key) ccLyrics.songKey = null;
+  });
+}
+/* frueh laden, damit schon der erste Song die Karaoke-Fassung bekommt */
+if (ccLyricsIsOn()) ccKaraokeLoad();
+
 function ccLyricsOffsets() {
   try { return JSON.parse(localStorage.getItem(CC_LYRICS_OFFSET_KEY)) || {}; } catch (e) { return {}; }
 }
@@ -4667,8 +4714,10 @@ function ccLyricsSetOffset(key, val) {
 }
 function ccLyricsFormatOffset(v) { return (v > 0 ? '+' : '') + v.toFixed(1).replace('.', ',') + ' s'; }
 
+/* Standard AUS (Nutzerwunsch 10.10.): mit Karaoke laeuft die Studiofassung
+   statt des Musikvideos -- das soll nur bekommen, wer Karaoke selbst einschaltet. */
 function ccLyricsIsOn() {
-  try { return localStorage.getItem(CC_LYRICS_ON_KEY) !== '0'; } catch (e) { return true; }
+  try { return localStorage.getItem(CC_LYRICS_ON_KEY) === '1'; } catch (e) { return false; }
 }
 
 /* Titel fuer die Suche saeubern: "(Remix)", "[Live]", "- 2011 Remaster",
@@ -4734,6 +4783,7 @@ function ccLyricsFetch(song, durationHint) {
     if (!synced.length) return (list || []).some(function (x) { return x && x.instrumental; }) ? 'instrumental' : null;
     if (durationHint) synced.sort(function (a, b) { return Math.abs(a.duration - durationHint) - Math.abs(b.duration - durationHint); });
     var lines = ccLyricsParse(synced[0].syncedLyrics);
+    lines.dur = synced[0].duration || 0; /* fuer den "nicht synchron"-Hinweis */
     return lines.length ? lines : null;
   }).catch(function () { delete CC_LYRICS_CACHE[key]; ccLyricsRetryAt[key] = performance.now() + 30000; return 'error'; });
   return CC_LYRICS_CACHE[key];
@@ -4753,6 +4803,10 @@ function ccLyricsPrefetch() {
     if (ccLyricsRetryAt[key] && performance.now() < ccLyricsRetryAt[key]) return;
     var dur = 0;
     try { dur = d.player && d.player.getDuration ? d.player.getDuration() || 0 : 0; } catch (e) {}
+    /* Karaoke-Fassung: Laenge steht schon in karaoke/videos.json -- nicht
+       erst aufs Video warten (sonst nach 4 s Suche ohne Laenge, falsche Fassung) */
+    var kv = CC_KARAOKE_VIDEOS && CC_KARAOKE_VIDEOS[key];
+    if (!dur && kv && kv.d && videoIdFor(d.song) === kv.yk) dur = kv.d;
     var now = performance.now();
     if (!ccLyricsSeenAt[key]) ccLyricsSeenAt[key] = now;
     if (dur > 0 || now - ccLyricsSeenAt[key] > 4000) ccLyricsFetch(d.song, dur);
@@ -4870,10 +4924,12 @@ function ccLyricsSetAvail(state) {
   if (ccLyrics.avail === state) return;
   ccLyrics.avail = state;
   var root = ccLyricsEl('cc-lyrics'), btn = ccLyricsEl('cc-lyrics-toggle');
-  root.classList.toggle('cc-lyrics-has', state === 'yes');
-  btn.textContent = state === 'off' ? 'KARAOKE AUS' : state === 'yes' ? 'KARAOKE AN' : state === 'search' ? 'KARAOKE …' : 'KEIN TEXT';
+  root.classList.toggle('cc-lyrics-has', state === 'yes' || state === 'unsure');
+  root.classList.toggle('cc-lyrics-unsure', state === 'unsure');
+  btn.textContent = state === 'off' ? 'KARAOKE AUS' : state === 'yes' ? 'KARAOKE AN' : state === 'unsure' ? 'KARAOKE ?' : state === 'search' ? 'KARAOKE …' : 'KEIN TEXT';
   btn.title = state === 'off' ? 'Karaoke einschalten'
     : state === 'yes' ? 'Liedtext gefunden – Karaoke ausschalten'
+    : state === 'unsure' ? 'Die gefundene Textfassung ist anders lang als dieses Video – der Text läuft evtl. nicht synchron. Mit JETZT oder −/+ angleichen. (Klick: Karaoke ausschalten)'
     : state === 'search' ? 'Liedtext wird gesucht …'
     : 'Für diesen Song gibt es keinen synchronen Liedtext – Karaoke ausschalten';
 }
@@ -4914,7 +4970,15 @@ function ccLyricsTick() {
         else { ccLyrics.lines = res; ccLyrics.msg = ''; }
     });
   }
-  ccLyricsSetAvail(ccLyrics.lines ? 'yes' : (song && ccLyrics.msg === 'Liedtext wird gesucht …') ? 'search' : 'no');
+  var avail = ccLyrics.lines ? 'yes' : (song && ccLyrics.msg === 'Liedtext wird gesucht …') ? 'search' : 'no';
+  if (avail === 'yes' && ccLyrics.lines.dur && deck && deck.player && deck.player.getDuration) {
+    /* Hinweis (Nutzerwunsch 10.10.): Textfassung > 3 s anders lang als das
+       Video -> Text kann nicht von selbst passen */
+    var vdur = 0;
+    try { vdur = deck.player.getDuration() || 0; } catch (e) {}
+    if (vdur > 0 && Math.abs(vdur - ccLyrics.lines.dur) > 3) avail = 'unsure';
+  }
+  ccLyricsSetAvail(avail);
   if (!song) { ccLyricsRender('none'); ccLyricsBall(0, 0, 0); return; }
   if (!deck.player || !deck.player.getCurrentTime) return;
   var t = ccLyricsClock(deckKey, deck, key) - ccLyricsGetOffset(key);
@@ -5030,6 +5094,8 @@ function ccLyricsInit(bar) {
     var on = !ccLyricsIsOn();
     try { localStorage.setItem(CC_LYRICS_ON_KEY, on ? '1' : '0'); } catch (e) {}
     ccLyricsApplyOn(on);
+    if (on) ccKaraokeLoad();
+    ccKaraokeSwitchDecks();
   });
   ccLyricsApplyOn(ccLyricsIsOn());
   (function loop() { requestAnimationFrame(loop); try { ccLyricsTick(); } catch (e) {} })();
