@@ -1,0 +1,154 @@
+name: MusicBrainz-Songs abgleichen
+
+# Ablauf (siehe tools/merge_into_json.py):
+#   apply=false            -> immer NUR Bericht (Dry-Run), egal welcher Schritt
+#   schritt=anreichern     -> neue Songs bei Discogs nachschlagen, Ergebnis nach
+#     + apply=true            data/musicbrainz/angereichert-<dekade>.json
+#   schritt=eintragen      -> an queue/<dekade>-erweiterung.json anhaengen (YouTube-
+#     + apply=true            Suche danach per expand-decade-genres.yml), Rest nach
+#     + min_have              queue/<dekade>-musicbrainz-selten.json
+# Bestehende Eintraege werden nie geaendert, nur angehaengt.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dekade:
+        description: 'Dekade'
+        required: true
+        type: choice
+        options:
+          - '80'
+          - '70'
+          - '90'
+      schritt:
+        description: 'Schritt (ohne apply=true laeuft nur der Bericht)'
+        required: true
+        type: choice
+        default: bericht
+        options:
+          - bericht
+          - anreichern
+          - eintragen
+      apply:
+        description: 'apply=true: Schritt wirklich ausfuehren und committen'
+        required: true
+        type: boolean
+        default: false
+      min_have:
+        description: 'Nur fuer eintragen: Mindest-Sammlerzahl (Discogs "have")'
+        required: false
+        type: string
+        default: ''
+
+# eintragen teilt sich die Gruppe mit expand-decade-genres.yml, damit nie
+# beide gleichzeitig queue/<dekade>-erweiterung.json schreiben.
+concurrency:
+  group: ${{ (inputs.apply && inputs.schritt == 'eintragen') && 'expand-decade-genres' || format('merge-songs-{0}', inputs.dekade) }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Startzeit merken
+        run: echo "JOB_START_TS=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Bericht (Dry-Run)
+        timeout-minutes: 15
+        run: python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" --dry-run --bericht "$RUNNER_TEMP/bericht-${{ inputs.dekade }}er.csv"
+
+      - name: Bericht als Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bericht-${{ inputs.dekade }}er
+          path: ${{ runner.temp }}/bericht-${{ inputs.dekade }}er.csv
+          retention-days: 30
+
+      - name: Bei Discogs anreichern
+        if: inputs.apply && inputs.schritt == 'anreichern'
+        timeout-minutes: 335
+        env:
+          DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
+          MERGE_TIME_BUDGET_SECONDS: '19200'
+        run: python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" --anreichern
+
+      - name: In die Warteliste eintragen
+        if: inputs.apply && inputs.schritt == 'eintragen'
+        timeout-minutes: 15
+        env:
+          MIN_HAVE: ${{ inputs.min_have }}
+        run: |
+          if ! [[ "$MIN_HAVE" =~ ^[0-9]+$ ]]; then
+            echo "::error::Fuer eintragen bitte min_have als Zahl angeben."
+            exit 1
+          fi
+          python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" --eintragen --min-have "$MIN_HAVE"
+
+      - name: Backup als Artifact
+        if: inputs.apply && inputs.schritt == 'eintragen'
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-${{ inputs.dekade }}er
+          path: data/musicbrainz/backup/
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Committen und pushen
+        if: inputs.apply && inputs.schritt != 'bericht'
+        env:
+          DEK: ${{ inputs.dekade }}er
+        run: |
+          git config user.name "driftware-bot"
+          git config user.email "actions@users.noreply.github.com"
+          if [ "${{ inputs.schritt }}" = "anreichern" ]; then
+            FILES="data/musicbrainz/angereichert-${DEK}.json"
+            MSG="MusicBrainz ${DEK}: Discogs-Anreicherung"
+          else
+            FILES="queue/${DEK}-erweiterung.json queue/${DEK}-musicbrainz-selten.json"
+            MSG="MusicBrainz ${DEK}: neue Songs in die Warteliste (min. ${{ inputs.min_have }} Sammler)"
+          fi
+          for f in $FILES; do [ -f "$f" ] && git add "$f"; done
+          if git diff --cached --quiet; then
+            echo "Keine Aenderungen."
+            exit 0
+          fi
+          git commit -m "$MSG"
+          for i in 1 2 3 4 5; do
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push erfolgreich (Versuch $i)."
+              exit 0
+            fi
+            echo "Push abgelehnt (Versuch $i), hole Remote-Stand..."
+            git fetch origin "$GITHUB_REF_NAME"
+            if git rebase "origin/$GITHUB_REF_NAME"; then
+              continue
+            fi
+            # Echter Konflikt: wie in expand-decade-genres.yml nicht von Hand
+            # zusammenfuehren, sondern auf frischem Stand neu ausfuehren --
+            # merge_into_json.py ist wiederholbar (bereits Eingetragenes zaehlt
+            # beim erneuten Abgleich als "vorhanden").
+            git rebase --abort
+            git reset --hard "origin/$GITHUB_REF_NAME"
+            ELAPSED=$(( $(date +%s) - JOB_START_TS ))
+            if [ "${{ inputs.schritt }}" = "anreichern" ]; then
+              echo "::warning::Konflikt bei der Anreicherung -- Lauf bitte erneut starten (Fortschritt dieses Laufs verworfen)."
+              exit 1
+            fi
+            [ "$ELAPSED" -gt 19800 ] && { echo "::error::Zeit knapp, bitte erneut starten."; exit 1; }
+            python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" --eintragen --min-have "${{ inputs.min_have }}"
+            for f in $FILES; do [ -f "$f" ] && git add "$f"; done
+            git diff --cached --quiet && { echo "Nichts mehr zu tun."; exit 0; }
+            git commit -m "$MSG"
+          done
+          echo "::error::Push nach mehreren Versuchen fehlgeschlagen."
+          exit 1
