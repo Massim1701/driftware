@@ -4714,8 +4714,10 @@ function ccLyricsSetOffset(key, val) {
 }
 function ccLyricsFormatOffset(v) { return (v > 0 ? '+' : '') + v.toFixed(1).replace('.', ',') + ' s'; }
 
+/* Standard AUS (Nutzerwunsch 10.10.): mit Karaoke laeuft die Studiofassung
+   statt des Musikvideos -- das soll nur bekommen, wer Karaoke selbst einschaltet. */
 function ccLyricsIsOn() {
-  try { return localStorage.getItem(CC_LYRICS_ON_KEY) !== '0'; } catch (e) { return true; }
+  try { return localStorage.getItem(CC_LYRICS_ON_KEY) === '1'; } catch (e) { return false; }
 }
 
 /* Titel fuer die Suche saeubern: "(Remix)", "[Live]", "- 2011 Remaster",
