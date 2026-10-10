@@ -508,7 +508,6 @@ jahr,erstveroeffentlichung,interpret,titel,mbid
 1980,1980,Cabaret Voltaire,Silent Command,8d73d478-967a-36b4-9ca0-733295b931fa
 1980,1980,Cai,Noche abierta,9b291602-fcc4-4dba-8974-d4e6f2b5436d
 1980,1980,Cai,Soñé contigo,c5f5b32c-84b3-4d65-850e-b19581e7268d
-1980,1980,Cairo,Movie Stars,9ecd2df7-2684-4793-ab43-43080601886f
 1980,1980,Cal Rock & Roll,"Party, Party",21147c29-bf5f-4363-81cb-1c683db74868
 1980,1980-07,Cameo,Shake Your Pants,6d2a7df2-be05-4c51-8538-822e244b5ce9
 1980,1980,Candido,Candi's Funk,72ce51cd-9718-488d-afb7-db030af2c4f2
@@ -714,6 +713,7 @@ jahr,erstveroeffentlichung,interpret,titel,mbid
 1980,1980,Data,Fallout,407dcbeb-4bf6-4cbf-84bd-4eb18d0d31b6
 1980,1980,Dave & The Customerz,Fighting Machine,c69c1be9-69cf-4c91-aea4-29393dd6e679
 1980,1980,Dave Daffodil,One More Samba / Buggy Boogie,87b82f7e-0825-491b-861d-de4fb4e429bd
+1980,1980,Dave Daffodil & His Honey Sax,Walkin' Alone / Ladylike,439af26a-1496-45f9-9ee3-c3a5b3fcc1d4
 1980,1980,Dave Edmunds,Singing the Blues,712e6ff7-bfbd-44bb-a7b2-0307670c0284
 1980,1980,Dave Stewart Guest Vocals Colin Blunstone,What Becomes Of The Broken Hearted,759d2b06-e580-4b9b-b6d8-9722f05c9fce
 1980,1980,David Allan Coe and Bill Anderson,Get a Little Dirt on Your Hands / What Can I Do,5ed8e808-9f94-4e11-80ed-bc8b0e2ce7f1
@@ -1508,7 +1508,7 @@ jahr,erstveroeffentlichung,interpret,titel,mbid
 1980,1980,Jerry & Mary,Onder ’n brug van Parijs / De woekeraar,99b0838e-4be8-4f9a-af75-378c18471d10
 1980,1980,Jerry Lee Lewis & Orion / Charlie Rich & Orion,Be Bop a Lula / Break Up,a0406723-5cd2-45f9-8ceb-666ef09d96d3
 1980,1980,Jesse Rae,Rusha / D.E.S.I.R.E.,ae9456ee-2fb4-4c5b-a3b4-4af9b98a810b
-1980,1980,Jigsaw,No Love Songs,6192c3b2-7459-49c9-9cc0-07cb2b1836e3
+1980,1980,Jigsaw,"""I""",bfb95741-6349-40f0-b93b-7b7c5382cb0e
 1980,1980,Jim Hurt,I Love Women / Someone to Put Out the Fire,eec9f5ec-8960-49e3-be7b-d7b1dfb4d2cc
 1980,1980,Jim Kirk and the TM Singers,Voice of Freedom / Star Spangled Banner,385ddb69-b1ef-4a81-90e7-310d2b0a0eda
 1980,1980,Jim Owen,Ten Anniversary Presents / Please Don't Go Home Till Morning,ee11f512-3115-433f-957b-a763857ec397
@@ -1949,7 +1949,7 @@ jahr,erstveroeffentlichung,interpret,titel,mbid
 1980,1980-02-25,MANNA,赤い靴の女の子／さよならのポラロイド,745c7454-ccd5-4ac2-a908-8625106d836e
 1980,1980,Manuela,Doch mein Herz bleibt immer in Athen / Komm häng' dich ein bei mir,a93369b4-b088-4fc5-bce3-690978ec454d
 1980,1980,Manuela,Guantanamera / Wenn es Nacht wird in Harlem,3703101a-acbc-4272-9096-e4e1f69f5ed5
-1980,1980,Manuela,Happy Hawaii / Gran-Canaria,e303f68d-9dee-47b6-8f7e-d9d5a26a189b
+1980,1980,Manuela,I Believe in the USA / A Brand New Day,4614226c-0bbb-49b2-bf89-8bd91f4c740c
 1980,1980-07,Manuela,Schuld war nur der Bossa Nova / Ich geh' noch zur Schule,d367839e-964b-4aa0-9437-e5057f750da8
 1980,1980,Manuela,You Are My Sunshine / All I Have to Do,ac26e7ce-1f68-4894-9e90-e88b1fe9aeb1
 1980,1980,Manufactured Romance,The Time of My Life,e267d11b-93cb-4e54-b5f6-68d60496ba04
@@ -3833,6 +3833,7 @@ jahr,erstveroeffentlichung,interpret,titel,mbid
 1980,1980-08-05,寺尾聰,SHADOW CITY,ef03f019-92f2-4693-b363-78d4e0f9d7fc
 1980,1980-10-21,寺尾聰,出航 SASURAI,478cdb6e-90c2-40f0-9392-0d6c229e30f5
 1980,1980-05-21,山口百恵,Rock’n’Roll Widow,3fa39b05-07c6-4f4d-b5f0-0b755de34b78
+1980,1980-08-21,山口百恵,さよならの向う側,67c37bfc-2864-3ed0-a68d-eaa2731b2a18
 1980,1980-11-19,山口百恵,一恵,2b3b63bb-f6d4-4671-89ff-f007a60120d1
 1980,1980-10-21,山口美央子,夢飛行／アラビアン・ラプソディー,5fbd7fa8-b860-41a2-8fa1-ceef43e3c340
 1980,1980-08-05,山本譲二,みちのくひとり旅,96c18276-b840-47b1-817b-427b56be4004
