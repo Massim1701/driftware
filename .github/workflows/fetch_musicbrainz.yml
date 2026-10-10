@@ -71,6 +71,7 @@ jobs:
       - name: Singles ${{ matrix.jahr }} holen
         env:
           MB_TIME_BUDGET_SECONDS: '6600'
+          PYTHONUNBUFFERED: '1'
         run: python3 tools/fetch_musicbrainz.py ${{ matrix.jahr }}
 
       - name: Ergebnis als Artifact sichern
