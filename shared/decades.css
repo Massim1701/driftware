@@ -2657,6 +2657,11 @@ html:not([data-device="phone"]) .generator-body { scroll-margin-top: calc(var(--
   color: #04140a; background: linear-gradient(180deg, #4ade80, #16a34a); border-color: #15803d;
   box-shadow: 0 0 12px rgba(74,222,128,0.45), inset 0 1px 0 rgba(255,255,255,0.35);
 }
+/* Textfassung passt laenger nicht zum Video (10.10.) -> gelb statt gruen */
+#dj-player .cc-lyrics.cc-lyrics-has.cc-lyrics-unsure:not(.cc-lyrics-off) .cc-lyrics-ctrl .cc-pad.cc-lyrics-toggle {
+  color: #1a1203; background: linear-gradient(180deg, #fbbf24, #d97706); border-color: #b45309;
+  box-shadow: 0 0 12px rgba(251,191,36,0.45), inset 0 1px 0 rgba(255,255,255,0.35);
+}
 #dj-player .cc-lyrics:not(.cc-lyrics-has) .cc-lyrics-stage,
 #dj-player .cc-lyrics:not(.cc-lyrics-has) .cc-lyrics-tools,
 .cc-lyrics-off .cc-lyrics-stage, .cc-lyrics-off .cc-lyrics-tools { display: none; }

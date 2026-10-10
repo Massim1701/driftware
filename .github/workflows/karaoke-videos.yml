@@ -1,0 +1,85 @@
+name: Karaoke-Fassungen suchen
+
+# Sucht pro Song das Studio-Audio ("Interpret - Topic"), auf das die
+# LRCLIB-Zeitstempel passen (siehe tools/fetch_karaoke_videos.py).
+# Schreibt nur karaoke/videos.json + karaoke/status.json, NIE songs.json --
+# kein Konflikt mit den anderen Workflows.
+#
+# Zeitplan: 2 Laeufe am Tag a hoechstens 5 h (07:23 und 19:23 UTC), bewusst
+# ausserhalb 03:00-06:30 UTC, wo die anderen yt-dlp-Workflows laufen. Ein
+# Lauf hoert nach 5 h sauber auf (6-h-Limit von GitHub wird nie erreicht),
+# der naechste macht dort weiter. Ist alles erledigt, endet ein Lauf nach
+# wenigen Sekunden. Bei einer YouTube-Sperre (viele Fehler in Folge) bricht
+# der Lauf von selbst ab.
+on:
+  schedule:
+    - cron: '23 7,19 * * *'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Optional: hoechstens so viele Songs (zum Testen), leer = bis Zeitbudget'
+        required: false
+        type: string
+        default: ''
+
+concurrency:
+  group: karaoke-videos
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  karaoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 320
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Abhaengigkeiten installieren
+        run: pip install --quiet yt-dlp
+
+      - name: Karaoke-Fassungen suchen
+        timeout-minutes: 305
+        env:
+          KARAOKE_TIME_BUDGET_SECONDS: '18000'
+          LIMIT: ${{ inputs.limit }}
+        run: |
+          if [ -n "$LIMIT" ]; then
+            python3 tools/fetch_karaoke_videos.py --limit "$LIMIT"
+          else
+            python3 tools/fetch_karaoke_videos.py
+          fi
+
+      - name: Committen und pushen
+        # auch nach Abbruch: Zwischenstand (alle 20 Songs gespeichert) sichern
+        if: always()
+        run: |
+          git config user.name "driftware-bot"
+          git config user.email "actions@users.noreply.github.com"
+          [ -d karaoke ] || { echo "Nichts zu sichern."; exit 0; }
+          git add karaoke/videos.json karaoke/status.json
+          if git diff --cached --quiet; then
+            echo "Keine Aenderungen."
+            exit 0
+          fi
+          git commit -m "Karaoke-Fassungen aktualisiert"
+          for i in 1 2 3 4 5; do
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push erfolgreich (Versuch $i)."
+              exit 0
+            fi
+            echo "Push abgelehnt (Versuch $i), hole Remote-Stand..."
+            git fetch origin "$GITHUB_REF_NAME"
+            # karaoke/ schreibt nur dieser Workflow -> Rebase ist konfliktfrei
+            git rebase "origin/$GITHUB_REF_NAME" || { git rebase --abort; echo "::error::Rebase-Konflikt in karaoke/"; exit 1; }
+          done
+          echo "::error::Push nach mehreren Versuchen fehlgeschlagen."
+          exit 1
