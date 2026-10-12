@@ -2667,3 +2667,13 @@ html:not([data-device="phone"]) .generator-body { scroll-margin-top: calc(var(--
 .cc-lyrics-off .cc-lyrics-stage, .cc-lyrics-off .cc-lyrics-tools { display: none; }
 #dj-player .cc-lyrics:not(.cc-lyrics-has) .cc-lyrics-ctrl, .cc-lyrics-off .cc-lyrics-ctrl { padding: 4px 10px; }
 @media (prefers-reduced-motion: reduce) { .cc-lyrics-stage { animation: none; } }
+
+/* Club Console: Lautstaerke-Regler schlanker (Griff war am Desktop 28x40) */
+@media (pointer: fine) {
+  #dj-player #dj-master-volume { height: 6px; }
+  #dj-player #dj-master-volume::-webkit-slider-thumb { width: 16px; height: 24px; border-radius: 4px; }
+  #dj-player #dj-master-volume::-moz-range-thumb { width: 16px; height: 24px; border-radius: 4px; }
+  #dj-player .dj-volume-label svg { width: 18px; height: 18px; }
+  #dj-player #dj-master-volume:focus { outline: none; }
+  #dj-player #dj-master-volume:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--deck-a), 0 1px 3px rgba(0,0,0,0.5); }
+}
