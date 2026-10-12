@@ -2680,8 +2680,8 @@ html:not([data-device="phone"]) .generator-body { scroll-margin-top: calc(var(--
 
 /* Mauszeiger-Licht (siehe cursorLight in decades.js) */
 #cc-cursor-light {
-  position: fixed; left: -130px; top: -130px; width: 260px; height: 260px;
+  position: fixed; left: -90px; top: -90px; width: 180px; height: 180px;
   border-radius: 50%; pointer-events: none; z-index: 2147483000; opacity: 0;
   transition: opacity 0.25s ease; will-change: transform; mix-blend-mode: screen;
-  background: radial-gradient(circle, rgba(255,255,255,0.22) 0%, color-mix(in srgb, var(--accent, #7c5cff) 34%, transparent) 28%, transparent 68%);
+  background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, color-mix(in srgb, var(--accent, #7c5cff) 16%, transparent) 30%, transparent 68%);
 }
