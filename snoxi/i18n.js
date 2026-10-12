@@ -25,7 +25,7 @@ common: {
           contact_success: "Danke für deine Nachricht! Wir melden uns so schnell wie möglich bei dir.",
           contact_alt_note: "Du kannst uns auch direkt über den E-Mail-Link oben erreichen.",
           contact_email_prefix: "E-Mail erstellen",
-          contact_address_note: "Massimo Manca, Nohlstr. 215, 46045 Oberhausen, Deutschland."
+          contact_address_note: "Nohlstr. 215, 46045 Oberhausen, Deutschland."
         },
     home: {
       title: "Snoxi — Foto- & Video-Editor",
@@ -106,7 +106,7 @@ common: {
       h1: "Datenschutzerklärung – Snoxi",
       stand: "Stand: August 2026",
       h2_1: "1. Verantwortlicher",
-      p1: "Massimo",
+      p1: "Massimo Manca",
       h2_2: "2. Worum es bei Snoxi geht",
       p2: "Snoxi ist eine App zur Bearbeitung von Fotos und Videos (Filter, Zuschneiden, Sticker, Wasserzeichen, Gesichter unkenntlich machen, Kamera-Aufnahme mit Live-Vorschau). Alle Bearbeitungen finden ausschließlich lokal auf deinem Gerät statt. Es werden keine Fotos, Videos oder sonstigen Inhalte an uns oder an Dritte übertragen.",
       h2_3: "3. Zugriffsberechtigungen und warum wir sie brauchen",
@@ -130,10 +130,10 @@ common: {
       back: "Zurück",
       h1: "Impressum",
       h2_1: "Angaben gemäß § 5 DDG",
-      p1: "Massimo",
+      p1: "Massimo Manca",
       h2_kontakt: "Kontakt",
       h2_verantwortlich: "Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV",
-      p_verantwortlich: "Massimo",
+      p_verantwortlich: "Massimo Manca",
       h2_hinweis: "Anfragen",
       p_hinweis: "Anfragen zum Impressum bitte über das Kontaktformular unten."
     }
@@ -150,7 +150,7 @@ common: {
           contact_success: "Thank you for your message! We’ll get back to you as soon as possible.",
           contact_alt_note: "You can also reach us directly via the email link above.",
           contact_email_prefix: "Create Email",
-          contact_address_note: "Massimo Manca, Nohlstr. 215, 46045 Oberhausen, Germany."
+          contact_address_note: "Nohlstr. 215, 46045 Oberhausen, Germany."
         },
     home: {
       title: "Snoxi — Photo & Video Editor",
@@ -231,7 +231,7 @@ common: {
       h1: "Privacy Policy – Snoxi",
       stand: "Last updated: August 2026",
       h2_1: "1. Data Controller",
-      p1: "Massimo",
+      p1: "Massimo Manca",
       h2_2: "2. What Snoxi is about",
       p2: "Snoxi is an app for editing photos and videos (filters, cropping, stickers, watermarks, face blurring, camera capture with live preview). All editing happens exclusively on your device. No photos, videos, or other content are ever transmitted to us or any third party.",
       h2_3: "3. Permissions and why we need them",
@@ -255,10 +255,10 @@ common: {
       back: "Back",
       h1: "Legal Notice",
       h2_1: "Provider information pursuant to § 5 DDG",
-      p1: "Massimo",
+      p1: "Massimo Manca",
       h2_kontakt: "Contact",
       h2_verantwortlich: "Responsible for content pursuant to § 18 (2) MStV",
-      p_verantwortlich: "Massimo",
+      p_verantwortlich: "Massimo Manca",
       h2_hinweis: "Enquiries",
       p_hinweis: "Please send enquiries about this legal notice via the contact form below."
     }
@@ -275,7 +275,7 @@ common: {
           contact_success: "¡Gracias por tu mensaje! Te responderemos lo antes posible.",
           contact_alt_note: "También puedes contactarnos directamente a través del enlace de correo electrónico indicado arriba.",
           contact_email_prefix: "Crear correo",
-          contact_address_note: "Massimo Manca, Nohlstr. 215, 46045 Oberhausen, Alemania."
+          contact_address_note: "Nohlstr. 215, 46045 Oberhausen, Alemania."
         },
     home: {
       title: "Snoxi — Editor de fotos y vídeos",
@@ -356,7 +356,7 @@ common: {
       h1: "Política de privacidad – Snoxi",
       stand: "Última actualización: agosto de 2026",
       h2_1: "1. Responsable",
-      p1: "Massimo",
+      p1: "Massimo Manca",
       h2_2: "2. De qué trata Snoxi",
       p2: "Snoxi es una app para editar fotos y vídeos (filtros, recorte, pegatinas, marcas de agua, difuminado de rostros, captura con cámara y vista previa en directo). Todas las ediciones se realizan exclusivamente en tu dispositivo. No se transmiten fotos, vídeos ni ningún otro contenido a nosotros ni a terceros.",
       h2_3: "3. Permisos de acceso y por qué los necesitamos",
@@ -380,10 +380,10 @@ common: {
       back: "Volver",
       h1: "Aviso legal",
       h2_1: "Información conforme al § 5 DDG",
-      p1: "Massimo",
+      p1: "Massimo Manca",
       h2_kontakt: "Contacto",
       h2_verantwortlich: "Responsable del contenido conforme al § 18 párr. 2 MStV",
-      p_verantwortlich: "Massimo",
+      p_verantwortlich: "Massimo Manca",
       h2_hinweis: "Consultas",
       p_hinweis: "Para consultas sobre este aviso legal, utiliza el formulario de contacto de abajo."
     }
@@ -400,7 +400,7 @@ common: {
           contact_success: "Merci pour votre message ! Nous vous répondrons dès que possible.",
           contact_alt_note: "Vous pouvez également nous contacter directement via le lien e-mail indiqué ci-dessus.",
           contact_email_prefix: "Créer un e-mail",
-          contact_address_note: "Massimo Manca, Nohlstr. 215, 46045 Oberhausen, Allemagne."
+          contact_address_note: "Nohlstr. 215, 46045 Oberhausen, Allemagne."
         },
     home: {
       title: "Snoxi — Éditeur photo et vidéo",
@@ -481,7 +481,7 @@ common: {
       h1: "Politique de confidentialité – Snoxi",
       stand: "Dernière mise à jour : août 2026",
       h2_1: "1. Responsable du traitement",
-      p1: "Massimo",
+      p1: "Massimo Manca",
       h2_2: "2. En quoi consiste Snoxi",
       p2: "Snoxi est une application d'édition de photos et de vidéos (filtres, recadrage, autocollants, filigranes, floutage de visages, capture avec appareil photo et aperçu en direct). Toutes les modifications s'effectuent exclusivement sur votre appareil. Aucune photo, vidéo ou autre contenu n'est jamais transmis à nous-mêmes ou à des tiers.",
       h2_3: "3. Autorisations d'accès et pourquoi nous en avons besoin",
@@ -505,10 +505,10 @@ common: {
       back: "Retour",
       h1: "Mentions légales",
       h2_1: "Informations conformément au § 5 DDG",
-      p1: "Massimo",
+      p1: "Massimo Manca",
       h2_kontakt: "Contact",
       h2_verantwortlich: "Responsable du contenu conformément au § 18 al. 2 MStV",
-      p_verantwortlich: "Massimo",
+      p_verantwortlich: "Massimo Manca",
       h2_hinweis: "Demandes",
       p_hinweis: "Pour toute question concernant ces mentions légales, merci d'utiliser le formulaire de contact ci-dessous."
     }
