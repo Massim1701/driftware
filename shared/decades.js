@@ -5100,3 +5100,23 @@ function ccLyricsInit(bar) {
   ccLyricsApplyOn(ccLyricsIsOn());
   (function loop() { requestAnimationFrame(loop); try { ccLyricsTick(); } catch (e) {} })();
 }
+
+/* Mauszeiger-Licht (wie auf der Startseite): weicher Lichthof folgt der
+   Maus, damit der Zeiger auf dunklem Grund besser zu sehen ist. Nur mit
+   Maus (Tablet/Touch: nichts). Farbe folgt dem Theme (--accent). */
+(function cursorLight() {
+  if (!window.matchMedia || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  var el = document.createElement('div');
+  el.id = 'cc-cursor-light';
+  el.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(el);
+  var x = -999, y = -999, raf = 0;
+  function paint() { raf = 0; el.style.transform = 'translate(' + x + 'px,' + y + 'px)'; }
+  window.addEventListener('pointermove', function (e) {
+    if (e.pointerType && e.pointerType !== 'mouse') return;
+    x = e.clientX; y = e.clientY;
+    el.style.opacity = '1';
+    if (!raf) raf = requestAnimationFrame(paint);
+  }, { passive: true });
+  document.documentElement.addEventListener('mouseleave', function () { el.style.opacity = '0'; });
+})();

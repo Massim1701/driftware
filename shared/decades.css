@@ -2677,3 +2677,11 @@ html:not([data-device="phone"]) .generator-body { scroll-margin-top: calc(var(--
   #dj-player #dj-master-volume:focus { outline: none; }
   #dj-player #dj-master-volume:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--deck-a), 0 1px 3px rgba(0,0,0,0.5); }
 }
+
+/* Mauszeiger-Licht (siehe cursorLight in decades.js) */
+#cc-cursor-light {
+  position: fixed; left: -130px; top: -130px; width: 260px; height: 260px;
+  border-radius: 50%; pointer-events: none; z-index: 2147483000; opacity: 0;
+  transition: opacity 0.25s ease; will-change: transform; mix-blend-mode: screen;
+  background: radial-gradient(circle, rgba(255,255,255,0.22) 0%, color-mix(in srgb, var(--accent, #7c5cff) 34%, transparent) 28%, transparent 68%);
+}
