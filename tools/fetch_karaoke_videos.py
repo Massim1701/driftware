@@ -172,7 +172,11 @@ def _pick(res, a_key, t_key, durations):
     cands = []
     for e in res.get("entries") or []:
         ch = norm(re.sub(r"\s*-\s*topic$", "", e.get("channel") or e.get("uploader") or "", flags=re.IGNORECASE))
-        et = norm(lyrics_clean(e.get("title")))
+        raw_title = e.get("title") or ""
+        head, sep, tail = raw_title.partition(" - ")
+        if sep and norm(head) == ch:
+            raw_title = tail  # manche Topic-Titel heissen "Interpret - Titel"
+        et = norm(lyrics_clean(raw_title))
         dur = e.get("duration")
         if not e.get("id") or not dur or not ch or not et:
             continue
