@@ -581,7 +581,7 @@ function renderDecadePrivacy(cfg) {
     '<main class="legal-main">' +
     '  <a class="back-link" href="index.html">&larr; Zurück</a>' +
     '  <h1>Datenschutzerklärung – ' + cfg.name + '</h1>' +
-    '  <p class="stand">Stand: September 2026</p>' +
+    '  <p class="stand">Stand: Oktober 2026</p>' +
     '  <h2>1. Verantwortlicher</h2>' +
     '  <p>Massimo Manca<br>Nohlstr. 215<br>46045 Oberhausen<br>Deutschland</p>' +
     '  <h2>2. Worum es hier geht</h2>' +
