@@ -581,19 +581,19 @@ function renderDecadePrivacy(cfg) {
     '<main class="legal-main">' +
     '  <a class="back-link" href="index.html">&larr; Zurück</a>' +
     '  <h1>Datenschutzerklärung – ' + cfg.name + '</h1>' +
-    '  <p class="stand">Stand: September 2026</p>' +
+    '  <p class="stand">Stand: Oktober 2026</p>' +
     '  <h2>1. Verantwortlicher</h2>' +
-    '  <p>Vollständiger Name und ladungsfähige Anschrift werden auf Anfrage über das Kontaktformular unten mitgeteilt.</p>' +
+    '  <p>Massimo Manca<br>Nohlstr. 215<br>46045 Oberhausen<br>Deutschland</p>' +
     '  <h2>2. Worum es hier geht</h2>' +
     '  <p>' + cfg.name + ' ist ein Projekt, das Songs aus ' + cfg.years + ' aus der offenen Musikdatenbank Discogs nach Stimmung/Genre sortiert und als Playlisten für Streaming-Dienste aufbereitet. ' + cfg.sourceNote + '</p>' +
-    '  <h2>3. Keine Erhebung personenbezogener Daten</h2>' +
-    '  <p>Diese Seite verwendet kein Nutzerkonto, kein Tracking und keine Analyse- oder Werbe-SDKs. Es werden keine Gerätekennungen, Standortdaten oder Nutzungsstatistiken erhoben, gespeichert oder übertragen.</p>' +
+    '  <h2>3. Datenverarbeitung</h2>' +
+    '  <p>Diese Seite verwendet nach der beschriebenen Konfiguration kein Nutzerkonto und kein seitenübergreifendes Tracking. Für Cover-Bilder werden Inhalte von Discogs und gegebenenfalls weiteren Streaming-/Videodiensten geladen. Dabei wird technisch bedingt deine IP-Adresse an den jeweiligen Anbieter übermittelt. Wir speichern diese IP-Adresse nicht selbst; auf die Verarbeitung durch den Drittanbieter haben wir keinen Einfluss. Es können außerdem technisch erforderliche Verbindungsdaten bei Hosting und Kontaktformular-Verarbeitung anfallen.</p>' +
     '  <h2>4. Kontaktformular</h2>' +
-    '  <p>Wenn du uns über das Kontaktformular schreibst, werden Name, E-Mail-Adresse und Nachricht über den Dienst formsubmit.co an uns weitergeleitet und ausschließlich zur Beantwortung deiner Anfrage genutzt.</p>' +
+    '  <p>Wenn du uns über das Kontaktformular schreibst, werden die von dir eingegebenen Angaben (Name, E-Mail-Adresse und Nachricht) über formsubmit.co an uns weitergeleitet und zur Beantwortung deiner Anfrage genutzt. Dabei verarbeitet der Dienstleister auch technisch erforderliche Verbindungsdaten. Bitte sende über das Formular keine besonders sensiblen Informationen.</p>' +
     '  <h2>5. Kinder</h2>' +
-    '  <p>Dieses Angebot richtet sich nicht gezielt an Kinder unter 16 Jahren. Da keine personenbezogenen Daten automatisiert erhoben werden, werden auch keine Daten von Kindern gesammelt.</p>' +
+    '  <p>Dieses Angebot richtet sich nicht gezielt an Kinder unter 16 Jahren. Beim Laden externer Inhalte und bei der Nutzung des Kontaktformulars können technische Daten wie IP-Adresse sowie die von dir freiwillig übermittelten Kontaktangaben verarbeitet werden.</p>' +
     '  <h2>6. Deine Rechte</h2>' +
-    '  <p>Da diese Seite keine personenbezogenen Daten automatisiert erhebt oder speichert, bestehen unsererseits keine Datenbestände, auf die sich Auskunfts-, Berichtigungs- oder Löschungsansprüche beziehen könnten. Bei Fragen erreichst du uns jederzeit über das Kontaktformular unten.</p>' +
+    '  <p>Wenn du Datenschutzrechte geltend machen möchtest, kontaktiere uns bitte über das Formular unten. Wir prüfen jede Anfrage im Einzelfall. Die Verarbeitung durch externe Anbieter richtet sich ergänzend nach deren Datenschutzhinweisen.</p>' +
     '  <h2>7. Änderungen dieser Erklärung</h2>' +
     '  <p>Wir behalten uns vor, diese Datenschutzerklärung bei Bedarf anzupassen, etwa wenn neue Funktionen hinzukommen. Die jeweils aktuelle Version ist unter dieser Seite abrufbar.</p>' +
     '  <div class="contact-panel" id="kontakt">' +
