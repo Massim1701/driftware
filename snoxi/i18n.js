@@ -25,7 +25,7 @@ common: {
           contact_success: "Danke für deine Nachricht! Wir melden uns so schnell wie möglich bei dir.",
           contact_alt_note: "Du kannst uns auch direkt über den E-Mail-Link oben erreichen.",
           contact_email_prefix: "E-Mail erstellen",
-          contact_address_note: "Vollständiger Name und ladungsfähige Anschrift werden auf Anfrage über das Kontaktformular unten mitgeteilt."
+          contact_address_note: "Massimo Manca, Nohlstr. 215, 46045 Oberhausen, Deutschland."
         },
     home: {
       title: "Snoxi — Foto- & Video-Editor",
@@ -119,9 +119,9 @@ common: {
       h2_5: "5. In-App-Käufe",
       p5: "Die Premium-Freischaltung („Snoxi Pro“) ist ein einmaliger In-App-Kauf. Der gesamte Zahlungsvorgang läuft über den App Store (Apple) bzw. Google Play ab, ohne zusätzlichen Drittanbieter-Dienst. Zahlungsdaten wie Kreditkarteninformationen erhalten wir zu keinem Zeitpunkt — diese verbleiben vollständig bei Apple bzw. Google.",
       h2_6: "6. Kinder",
-      p6: "Snoxi richtet sich nicht gezielt an Kinder unter 16 Jahren. Da die App ohnehin keine personenbezogenen Daten erhebt, werden auch keine Daten von Kindern gesammelt.",
+      p6: "Snoxi richtet sich nicht gezielt an Kinder unter 16 Jahren. Bei technischen Verbindungen über App-Store- oder Betriebssystemdienste kann eine Verarbeitung technischer Daten durch diese Anbieter nicht pauschal ausgeschlossen werden.",
       h2_7: "7. Deine Rechte",
-      p7_text: "Da Snoxi keine personenbezogenen Daten erhebt, speichert oder überträgt, bestehen unsererseits keine Datenbestände, auf die sich Auskunfts-, Berichtigungs- oder Löschungsansprüche beziehen könnten. Bei Fragen erreichst du uns jederzeit über die Kontaktmöglichkeit am Ende dieser Seite.",
+      p7_text: "Auch wenn Snoxi nach der beschriebenen Funktionsweise keine Inhalte wie Fotos oder Videos an uns überträgt, können Anbieter des Betriebssystems oder App Stores eigene technische Daten verarbeiten. Anfragen zu deinen Datenschutzrechten kannst du über die Kontaktmöglichkeit am Ende dieser Seite stellen.",
       h2_8: "8. Änderungen dieser Erklärung",
       p8: "Wir behalten uns vor, diese Datenschutzerklärung bei Bedarf anzupassen, etwa wenn neue Funktionen hinzukommen. Die jeweils aktuelle Version ist unter dieser Seite abrufbar."
     },
@@ -129,10 +129,10 @@ common: {
       title: "Impressum — Snoxi",
       back: "Zurück",
       h1: "Impressum",
-      h2_1: "Angaben gemäß § 5 TMG",
+      h2_1: "Angaben gemäß § 5 DDG",
       p1: "Massimo",
       h2_kontakt: "Kontakt",
-      h2_verantwortlich: "Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV",
+      h2_verantwortlich: "Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV",
       p_verantwortlich: "Massimo",
       h2_hinweis: "Anfragen",
       p_hinweis: "Anfragen zum Impressum bitte über das Kontaktformular unten."
@@ -150,7 +150,7 @@ common: {
           contact_success: "Thank you for your message! We’ll get back to you as soon as possible.",
           contact_alt_note: "You can also reach us directly via the email link above.",
           contact_email_prefix: "Create Email",
-          contact_address_note: "Full name and a postal address for service of process will be provided on request via the contact form below."
+          contact_address_note: "Massimo Manca, Nohlstr. 215, 46045 Oberhausen, Germany."
         },
     home: {
       title: "Snoxi — Photo & Video Editor",
@@ -244,9 +244,9 @@ common: {
       h2_5: "5. In-app purchases",
       p5: "The premium unlock (\"Snoxi Pro\") is a one-time in-app purchase. The entire payment process runs through the App Store (Apple) or Google Play, with no additional third-party service. We never receive payment data such as credit card information — it remains entirely with Apple or Google.",
       h2_6: "6. Children",
-      p6: "Snoxi is not specifically directed at children under 16. Since the app does not collect personal data in the first place, no data from children is collected either.",
+      p6: "Snoxi is not specifically directed at children under 16. Technical data processing by operating-system or app-store providers cannot be ruled out for all technical connections.",
       h2_7: "7. Your rights",
-      p7_text: "Since Snoxi does not collect, store, or transmit personal data, we hold no data on which access, correction, or deletion requests could be based. If you have questions, you can reach us anytime via the contact option at the end of this page.",
+      p7_text: "Although Snoxi is described as not sending photo or video content to us, operating-system or app-store providers may process technical data of their own. You can submit requests about your privacy rights using the contact option at the end of this page.",
       h2_8: "8. Changes to this policy",
       p8: "We reserve the right to update this privacy policy as needed, for example when new features are added. The current version is always available on this page."
     },
@@ -254,10 +254,10 @@ common: {
       title: "Legal Notice — Snoxi",
       back: "Back",
       h1: "Legal Notice",
-      h2_1: "Information pursuant to § 5 TMG",
+      h2_1: "Provider information pursuant to § 5 DDG",
       p1: "Massimo",
       h2_kontakt: "Contact",
-      h2_verantwortlich: "Responsible for content pursuant to § 55 (2) RStV",
+      h2_verantwortlich: "Responsible for content pursuant to § 18 (2) MStV",
       p_verantwortlich: "Massimo",
       h2_hinweis: "Enquiries",
       p_hinweis: "Please send enquiries about this legal notice via the contact form below."
@@ -275,7 +275,7 @@ common: {
           contact_success: "¡Gracias por tu mensaje! Te responderemos lo antes posible.",
           contact_alt_note: "También puedes contactarnos directamente a través del enlace de correo electrónico indicado arriba.",
           contact_email_prefix: "Crear correo",
-          contact_address_note: "El nombre completo y una dirección postal válida se facilitarán previa solicitud a través del formulario de contacto que aparece más abajo."
+          contact_address_note: "Massimo Manca, Nohlstr. 215, 46045 Oberhausen, Alemania."
         },
     home: {
       title: "Snoxi — Editor de fotos y vídeos",
@@ -369,9 +369,9 @@ common: {
       h2_5: "5. Compras dentro de la app",
       p5: "El desbloqueo premium (\"Snoxi Pro\") es una compra única dentro de la app. Todo el proceso de pago se realiza a través de la App Store (Apple) o Google Play, sin ningún servicio adicional de terceros. Nunca recibimos datos de pago como información de tarjetas de crédito — estos permanecen íntegramente en manos de Apple o Google.",
       h2_6: "6. Menores",
-      p6: "Snoxi no está dirigida específicamente a menores de 16 años. Dado que la app no recopila datos personales en ningún caso, tampoco se recopilan datos de menores.",
+      p6: "Snoxi no está dirigida específicamente a menores de 16 años. No puede descartarse de forma general el tratamiento de datos técnicos por parte de proveedores del sistema operativo o de la tienda de aplicaciones.",
       h2_7: "7. Tus derechos",
-      p7_text: "Dado que Snoxi no recopila, almacena ni transmite datos personales, no disponemos de ningún registro de datos sobre el que puedan basarse solicitudes de acceso, rectificación o supresión. Si tienes alguna pregunta, puedes contactarnos en cualquier momento a través de la opción de contacto al final de esta página.",
+      p7_text: "Aunque se describe que Snoxi no nos envía contenido de fotos o vídeos, los proveedores del sistema operativo o de la tienda de aplicaciones pueden tratar sus propios datos técnicos. Puedes enviar solicitudes sobre tus derechos de privacidad mediante la opción de contacto al final de esta página.",
       h2_8: "8. Cambios en esta política",
       p8: "Nos reservamos el derecho de adaptar esta política de privacidad cuando sea necesario, por ejemplo al añadir nuevas funciones. La versión vigente en cada momento está disponible en esta página."
     },
@@ -379,10 +379,10 @@ common: {
       title: "Aviso legal — Snoxi",
       back: "Volver",
       h1: "Aviso legal",
-      h2_1: "Información conforme al § 5 TMG",
+      h2_1: "Información conforme al § 5 DDG",
       p1: "Massimo",
       h2_kontakt: "Contacto",
-      h2_verantwortlich: "Responsable del contenido conforme al § 55 párr. 2 RStV",
+      h2_verantwortlich: "Responsable del contenido conforme al § 18 párr. 2 MStV",
       p_verantwortlich: "Massimo",
       h2_hinweis: "Consultas",
       p_hinweis: "Para consultas sobre este aviso legal, utiliza el formulario de contacto de abajo."
@@ -400,7 +400,7 @@ common: {
           contact_success: "Merci pour votre message ! Nous vous répondrons dès que possible.",
           contact_alt_note: "Vous pouvez également nous contacter directement via le lien e-mail indiqué ci-dessus.",
           contact_email_prefix: "Créer un e-mail",
-          contact_address_note: "Le nom complet et une adresse postale valable pour la signification seront communiqués sur demande via le formulaire de contact ci-dessous."
+          contact_address_note: "Massimo Manca, Nohlstr. 215, 46045 Oberhausen, Allemagne."
         },
     home: {
       title: "Snoxi — Éditeur photo et vidéo",
@@ -494,9 +494,9 @@ common: {
       h2_5: "5. Achats intégrés",
       p5: "Le déblocage premium (« Snoxi Pro ») est un achat intégré unique. L'ensemble du processus de paiement passe par l'App Store (Apple) ou Google Play, sans service tiers supplémentaire. Nous ne recevons jamais de données de paiement telles que les informations de carte bancaire — elles restent entièrement entre les mains d'Apple ou de Google.",
       h2_6: "6. Enfants",
-      p6: "Snoxi ne s'adresse pas spécifiquement aux enfants de moins de 16 ans. Comme l'app ne collecte de toute façon aucune donnée personnelle, aucune donnée d'enfant n'est collectée non plus.",
+      p6: "Snoxi ne s'adresse pas spécifiquement aux enfants de moins de 16 ans. Le traitement de données techniques par les fournisseurs du système d'exploitation ou de la boutique d'applications ne peut pas être exclu de manière générale.",
       h2_7: "7. Vos droits",
-      p7_text: "Comme Snoxi ne collecte, ne stocke ni ne transmet de données personnelles, nous ne disposons d'aucun fichier de données pouvant faire l'objet de demandes d'accès, de rectification ou de suppression. Pour toute question, vous pouvez nous contacter à tout moment via l'option de contact à la fin de cette page.",
+      p7_text: "Même si Snoxi est décrite comme ne nous envoyant pas de contenu photo ou vidéo, les fournisseurs du système d'exploitation ou de la boutique d'applications peuvent traiter leurs propres données techniques. Vous pouvez adresser vos demandes relatives à vos droits via l'option de contact en bas de page.",
       h2_8: "8. Modifications de cette politique",
       p8: "Nous nous réservons le droit d'adapter cette politique de confidentialité si nécessaire, par exemple lors de l'ajout de nouvelles fonctions. La version actuelle est toujours disponible sur cette page."
     },
@@ -504,10 +504,10 @@ common: {
       title: "Mentions légales — Snoxi",
       back: "Retour",
       h1: "Mentions légales",
-      h2_1: "Informations conformément au § 5 TMG",
+      h2_1: "Informations conformément au § 5 DDG",
       p1: "Massimo",
       h2_kontakt: "Contact",
-      h2_verantwortlich: "Responsable du contenu conformément au § 55 al. 2 RStV",
+      h2_verantwortlich: "Responsable du contenu conformément au § 18 al. 2 MStV",
       p_verantwortlich: "Massimo",
       h2_hinweis: "Demandes",
       p_hinweis: "Pour toute question concernant ces mentions légales, merci d'utiliser le formulaire de contact ci-dessous."
