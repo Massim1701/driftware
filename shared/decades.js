@@ -4744,6 +4744,7 @@ function ccLyricsHTML() {
     '  <div class="cc-lyrics-next" id="cc-lyrics-next"></div>' +
     '</div>' +
     '<div class="cc-lyrics-ctrl">' +
+    '  <button type="button" class="cc-pad cc-small cc-lyrics-pop" id="cc-lyrics-tab" title="Karaoke gross in eigenem Tab (als Fenster abziehbar, z. B. auf einen zweiten Monitor)" aria-label="Karaoke-Tab öffnen">TAB</button>' +
     '  <button type="button" class="cc-pad cc-small cc-lyrics-pop" id="cc-lyrics-pop" title="Karaoke in eigenem kleinen Fenster (immer im Vordergrund)" aria-label="Karaoke in eigenem Fenster">&#10697;</button>' +
     '  <button type="button" class="cc-pad cc-lyrics-toggle" id="cc-lyrics-toggle" aria-pressed="true" title="Karaoke-Leiste ein-/ausschalten">KARAOKE AN</button>' +
     '  <div class="cc-lyrics-tools">' +
@@ -5140,6 +5141,32 @@ function ccLyricsApplyOn(on) {
    Start eines Karaoke-Songs, solange der Klick darauf noch frisch ist.
    Die Leiste wird samt Ball-Animation in das Fenster verschoben und beim
    Schliessen zurueckgeholt. */
+/* Karaoke-Tab (Nutzerwunsch 13.10.): /karaoke-fenster/ zeigt den Text gross in einem
+   eigenen Tab, den man als Fenster abziehen und auf einen anderen Monitor legen kann.
+   Verbindung per BroadcastChannel; gesendet wird nur, solange der Tab sich meldet. */
+var ccKarChan = null, ccKarTabSeen = 0, ccKarPostAt = 0;
+try {
+  ccKarChan = new BroadcastChannel('driftware-karaoke');
+  ccKarChan.onmessage = function (ev) {
+    var m = ev.data || {};
+    if (m.type === 'hello') ccKarTabSeen = performance.now();
+    else if (m.type === 'bye') ccKarTabSeen = 0;
+  };
+} catch (e) { ccKarChan = null; }
+/* Timer statt requestAnimationFrame: laeuft auch, wenn der Player-Tab verdeckt ist
+   (spielt er Ton, drosselt Chrome ihn nicht). */
+function ccKarBroadcast() {
+  if (!ccKarChan || !ccKarTabSeen || performance.now() - ccKarTabSeen > 4000) return;
+  try {
+    var k = ccLyricsActiveDeck(), deck = k ? DECKS[k] : null, song = deck && deck.song;
+    if (!song || !song.kar || !deck.player || !deck.player.getCurrentTime) { ccKarChan.postMessage({ type: 'idle' }); return; }
+    ccKarChan.postMessage({ type: 'state', key: ccLyricsSongKey(song), a: song.a, t: song.t, kd: song.kd || 0,
+      time: deck.player.getCurrentTime() || 0, playing: !!deck.isPlaying, rate: deck.rate || 1, ts: Date.now() });
+  } catch (e) {}
+}
+setInterval(ccKarBroadcast, 150);
+function ccKarOpenTab() { window.open('/karaoke-fenster/', 'driftware-karaoke'); }
+
 var ccPip = null;
 function ccLyricsPipSupported() { return !!(window.documentPictureInPicture && documentPictureInPicture.requestWindow); }
 function ccLyricsPipOpen() {
@@ -5215,6 +5242,7 @@ function ccLyricsInit(bar) {
     ccLyricsEl('cc-lyrics-offset').textContent = ccLyricsFormatOffset(ccLyricsGetOffset(key));
     ccLyrics.view = null;
   });
+  bar.querySelector('#cc-lyrics-tab').addEventListener('click', ccKarOpenTab);
   var popBtn = bar.querySelector('#cc-lyrics-pop');
   if (!ccLyricsPipSupported()) popBtn.hidden = true;
   popBtn.addEventListener('click', function () { if (ccPip) ccLyricsPipClose(); else ccLyricsPipOpen(); });

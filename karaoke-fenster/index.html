@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>♪ KARAOKE</title>
+<style>
+  :root { --bg: #13060d; --pink: #ff3d81; --gold: #ffd23f; --text: #fff0f6; --muted: #c49aae; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: radial-gradient(120% 90% at 50% 0%, #2a0f1d 0%, var(--bg) 60%);
+    color: var(--text); font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 16px 20px; text-align: center; overflow: hidden;
+  }
+  h1 {
+    margin: 0; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; line-height: 0.95;
+    font-size: clamp(44px, 13vw, 190px);
+    background: linear-gradient(90deg, var(--pink), var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 28px rgba(255, 61, 129, 0.35));
+  }
+  body.live h1 { font-size: clamp(30px, 6vw, 88px); }
+  .song { margin-top: 10px; color: var(--muted); font-size: clamp(14px, 2.2vw, 26px); min-height: 1.4em; }
+  .stage { width: 100%; max-width: 1400px; margin-top: 18px; display: none; }
+  body.live .stage { display: block; }
+  .prev, .next { color: var(--muted); opacity: 0.55; font-weight: 600; font-size: clamp(14px, 2.4vw, 30px); min-height: 1.3em; }
+  .line { font-weight: 900; font-size: clamp(26px, 5.6vw, 84px); line-height: 1.15; margin: 8px 0; }
+  .w { color: color-mix(in srgb, var(--text) 45%, transparent); transition: color .12s, text-shadow .12s; }
+  .w.sung { color: var(--text); }
+  .w.now { color: var(--gold); text-shadow: 0 0 22px rgba(255, 210, 63, 0.7); }
+  .hint { margin-top: 22px; color: var(--muted); font-size: clamp(14px, 1.8vw, 22px); max-width: 38em; line-height: 1.5; }
+  body.live .hint { display: none; }
+  .ctrl { position: fixed; bottom: 12px; right: 14px; display: none; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; }
+  body.live .ctrl { display: flex; }
+  .ctrl button { background: #24101a; color: var(--text); border: 1px solid #4a2236; border-radius: 8px; width: 40px; height: 32px; font-size: 18px; cursor: pointer; }
+  .ctrl button:hover { border-color: var(--pink); }
+  .state { position: fixed; top: 10px; left: 14px; font-size: 13px; color: var(--muted); }
+  .state i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #5a3a4a; margin-right: 6px; }
+  .state.on i { background: #3ddc84; box-shadow: 0 0 8px #3ddc84; }
+</style>
+</head>
+<body>
+<div class="state" id="state"><i></i><span id="state-t">wartet auf den Player …</span></div>
+<h1>Karaoke</h1>
+<div class="song" id="song"></div>
+<div class="stage" id="stage">
+  <div class="prev" id="prev"></div>
+  <div class="line" id="line"></div>
+  <div class="next" id="next"></div>
+</div>
+<div class="hint" id="hint">Dieser Tab zeigt den Text zum Mitsingen. Lass ihn offen, zieh ihn bei Bedarf als eigenes Fenster heraus (auch auf einen zweiten Monitor) und starte im Player ein Lied aus der Genre-Kachel „Karaoke".</div>
+<div class="ctrl" id="ctrl">Text-Versatz
+  <button type="button" id="earlier" title="Text früher (−0,5 s)">−</button><span id="off">0,0 s</span><button type="button" id="later" title="Text später (+0,5 s)">+</button>
+</div>
+<script>
+(function () {
+  var OFFSET_KEY = 'driftware-lyrics-offset-v1';
+  var chan = null;
+  try { chan = new BroadcastChannel('driftware-karaoke'); } catch (e) {}
+  var cur = { key: null, lines: null, msg: null, kd: 0 };
+  var last = null, lastRecv = 0, view = null;
+  var el = function (id) { return document.getElementById(id); };
+
+  function clean(str) {
+    return String(str || '').replace(/\s*[\(\[][^\)\]]*[\)\]]/g, '').replace(/\s+-\s+.*$/, '').replace(/\s+(feat\.?|ft\.?|featuring)\s+.*$/i, '').trim();
+  }
+  function parse(lrc) {
+    var raw = [];
+    String(lrc || '').split(/\r?\n/).forEach(function (row) {
+      var m, re = /\[(\d+):(\d+(?:\.\d+)?)\]/g, times = [], lastIdx = 0;
+      while ((m = re.exec(row))) { times.push(parseInt(m[1], 10) * 60 + parseFloat(m[2])); lastIdx = re.lastIndex; }
+      var text = row.slice(lastIdx).trim();
+      times.forEach(function (t) { raw.push({ t: t, text: text }); });
+    });
+    raw.sort(function (a, b) { return a.t - b.t; });
+    var out = [];
+    for (var i = 0; i < raw.length; i++) {
+      if (!raw[i].text) continue;
+      var end = i + 1 < raw.length ? raw[i + 1].t : raw[i].t + 5;
+      var words = raw[i].text.split(/\s+/);
+      var weights = words.map(function (w) { return Math.max(2, w.replace(/[^\p{L}\p{N}]/gu, '').length) + 1; });
+      out.push({ t: raw[i].t, text: raw[i].text, words: words, weights: weights,
+        total: weights.reduce(function (s, w) { return s + w; }, 0),
+        singEnd: Math.max(raw[i].t + 0.3, Math.min(end - 0.1, raw[i].t + words.length * 0.45 + 0.6)) });
+    }
+    return out;
+  }
+  function offsets() { try { return JSON.parse(localStorage.getItem(OFFSET_KEY)) || {}; } catch (e) { return {}; } }
+  function getOff(k) { return offsets()[k] || 0; }
+  function setOff(k, v) {
+    try { var o = offsets(); if (Math.abs(v) < 0.01) delete o[k]; else o[k] = Math.round(v * 10) / 10; localStorage.setItem(OFFSET_KEY, JSON.stringify(o)); } catch (e) {}
+  }
+  function fmt(v) { return (v > 0 ? '+' : '') + v.toFixed(1).replace('.', ',') + ' s'; }
+
+  function loadLyrics(s) {
+    cur = { key: s.key, lines: null, msg: 'Liedtext wird gesucht …', kd: s.kd };
+    view = null;
+    var artist = clean(String(s.a || '').split(/,|&| x | und /i)[0]), title = clean(s.t);
+    var url = 'https://lrclib.net/api/search?track_name=' + encodeURIComponent(title) + '&artist_name=' + encodeURIComponent(artist);
+    fetch(url).then(function (r) { return r.ok ? r.json() : []; }).then(function (list) {
+      if (cur.key !== s.key) return;
+      var synced = (list || []).filter(function (x) { return x && x.syncedLyrics && !x.instrumental; });
+      if (!synced.length) { cur.msg = 'Für diesen Song gibt es keinen synchronen Text'; return; }
+      if (s.kd) synced.sort(function (a, b) { return Math.abs(a.duration - s.kd) - Math.abs(b.duration - s.kd); });
+      var lines = parse(synced[0].syncedLyrics);
+      if (lines.length) { cur.lines = lines; cur.msg = ''; } else cur.msg = 'Für diesen Song gibt es keinen synchronen Text';
+    }).catch(function () { if (cur.key === s.key) { cur.msg = 'Liedtext-Dienst gerade nicht erreichbar'; cur.key = null; } });
+  }
+
+  if (chan) {
+    chan.onmessage = function (ev) {
+      var m = ev.data || {};
+      lastRecv = performance.now();
+      if (m.type === 'idle') { last = null; return; }
+      if (m.type === 'state') {
+        last = m;
+        if (m.key !== cur.key) loadLyrics(m);
+      }
+    };
+    var hello = function () { try { chan.postMessage({ type: 'hello' }); } catch (e) {} };
+    hello(); setInterval(hello, 1000);
+    window.addEventListener('pagehide', function () { try { chan.postMessage({ type: 'bye' }); } catch (e) {} });
+  }
+
+  function words(L, upto, nowIdx) {
+    return L.words.map(function (w, i) { return '<span class="w' + (i < nowIdx ? ' sung' : i === nowIdx ? ' now' : '') + '">' + w.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>'; }).join(' ');
+  }
+  function tick() {
+    requestAnimationFrame(tick);
+    var live = !!last && performance.now() - lastRecv < 3000;
+    document.body.classList.toggle('live', live);
+    el('state').classList.toggle('on', !!last);
+    el('state-t').textContent = !chan ? 'Browser unterstützt keine Verbindung zum Player' : last ? 'verbunden – Player läuft' : (performance.now() - lastRecv < 3000 && lastRecv ? 'verbunden – kein Karaoke-Song' : 'wartet auf den Player …');
+    if (!live) { view = null; return; }
+    el('song').textContent = last.a + ' – ' + last.t;
+    var t = last.time + (last.playing ? (Date.now() - last.ts) / 1000 * (last.rate || 1) : 0) - getOff(last.key);
+    el('off').textContent = fmt(getOff(last.key));
+    var lines = cur.lines;
+    if (!lines) { if (view !== 'msg') { el('prev').textContent = ''; el('next').textContent = ''; view = 'msg'; } el('line').textContent = cur.msg || ''; return; }
+    var idx = -1;
+    for (var i = 0; i < lines.length; i++) { if (lines[i].t - 0.5 <= t) idx = i; else break; }
+    if (idx < 0) { el('prev').textContent = ''; el('line').textContent = '♪ ♪ ♪'; el('next').textContent = lines[0].text; view = 'intro'; return; }
+    var L = lines[idx];
+    var pr = (t - L.t) / (L.singEnd - L.t) * L.total, wi = 0, acc = 0;
+    if (t < L.t) wi = -1; else while (wi < L.weights.length - 1 && acc + L.weights[wi] <= pr) { acc += L.weights[wi]; wi++; }
+    if (t > L.singEnd + 0.2) wi = L.words.length; /* Zeile fertig gesungen */
+    var sig = idx + ':' + wi;
+    if (view !== sig) {
+      el('prev').textContent = idx > 0 ? lines[idx - 1].text : '';
+      el('line').innerHTML = words(L, 0, wi);
+      el('next').textContent = idx + 1 < lines.length ? lines[idx + 1].text : '';
+      view = sig;
+    }
+  }
+  el('earlier').addEventListener('click', function () { if (last) setOff(last.key, getOff(last.key) - 0.5); });
+  el('later').addEventListener('click', function () { if (last) setOff(last.key, getOff(last.key) + 0.5); });
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
