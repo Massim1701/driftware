@@ -45,9 +45,9 @@
   @keyframes bounce { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-.09em) rotate(-3deg); } }
   body.live h1 { font-size: clamp(30px, 6vw, 84px); }
 
-  .stage { width: 100%; max-width: 1500px; margin-top: 10px; display: none; --rh: clamp(54px, 11.5vh, 130px); }
+  .stage { width: 100%; max-width: 1500px; margin-top: 10px; display: none; --rh: clamp(46px, 9.6vh, 112px); --rows: 7; }
   body.live .stage { display: block; }
-  .view { height: calc(var(--rh) * 5); overflow: hidden; position: relative; perspective: 520px; perspective-origin: 50% 50%; }
+  .view { height: calc(var(--rh) * var(--rows, 7)); overflow: hidden; position: relative; perspective: 900px; perspective-origin: 50% 50%; }
   .rows { position: absolute; left: 0; right: 0; top: 50%; transform-style: preserve-3d; will-change: transform; }
   .row { position: relative; backface-visibility: hidden; will-change: transform, opacity; height: var(--rh); display: flex; align-items: center; justify-content: center; padding: 0 12px; white-space: nowrap; font-weight: 800; color: var(--muted); }
   .row.c { font-weight: 900; color: var(--text); }
@@ -75,7 +75,7 @@
   /* Dock-Modus: Seite steckt als festes Feld im Player (iframe) */
   body.dock { padding: 8px 12px 6px; justify-content: flex-start; }
   body.dock h1 { font-size: clamp(22px, 5vh, 54px); }
-  body.dock .stage { margin-top: 2px; --rh: clamp(30px, 6.2vh, 64px); }
+  body.dock .stage { margin-top: 2px; --rh: clamp(30px, 6.2vh, 64px); --rows: 5; }
   body.dock .state, body.dock .eq { display: none !important; }
   body.dock .top { padding: 6px 12px; }
   body.dock .by { font-size: clamp(12px, 1.6vw, 18px); }
@@ -178,7 +178,7 @@
      aktuelle Zeile bleibt in der Mitte. Zeilen davor/danach kippen weg und werden blasser. */
   var shown = { lines: null, active: null, wi: null }, rowsEl = el('rows'), centerEl = null, rowEls = [], rhPx = 60, visFrom = 0, visTo = -1;
   function fit(row, text, base) {
-    var w = rowsEl.clientWidth * 0.94, px = Math.min(base, w / Math.max(6, text.length * 0.56));
+    var w = rowsEl.clientWidth * 0.80, px = Math.min(base, w / Math.max(6, text.length * 0.56));
     row.style.fontSize = px + 'px';
   }
   function build(lines) {
@@ -187,7 +187,7 @@
     rowsEl.innerHTML = html;
     rowEls = Array.prototype.slice.call(rowsEl.children);
     rhPx = rowEls.length ? rowEls[0].offsetHeight : 60;
-    var big = Math.min(vw * 0.075, window.innerHeight * 0.14, rhPx * 0.9);
+    var big = Math.min(vw * 0.075, window.innerHeight * 0.14, rhPx * 1.0);
     rowEls.forEach(function (row, i) { row.textContent = lines[i].text; fit(row, lines[i].text, big); row.style.visibility = 'hidden'; });
     centerEl = null; visFrom = 0; visTo = -1;
   }
@@ -200,20 +200,29 @@
     return (i - 1) + ease((t - (lines[i].t - 0.7)) / 0.6);
   }
   function paint(lines, p, active) {
-    var from = Math.max(0, Math.floor(p) - 4), to = Math.min(lines.length - 1, Math.ceil(p) + 4);
+    /* echte Walze: Zeilen sitzen auf einem Zylinder mit Radius R; je weiter von der Mitte, desto staerker
+       gekippt, nach hinten versetzt und ausgeblendet */
+    var R = rhPx * 3.4, span = 5;
+    var from = Math.max(0, Math.floor(p) - span), to = Math.min(lines.length - 1, Math.ceil(p) + span);
     for (var i = visFrom; i <= visTo; i++) { if ((i < from || i > to) && rowEls[i]) rowEls[i].style.visibility = 'hidden'; }
     visFrom = from; visTo = to;
     rowsEl.style.transform = 'translateY(' + (-(p + 0.5) * rhPx) + 'px)';
     for (var j = from; j <= to; j++) {
       var row = rowEls[j]; if (!row) continue;
-      var d = j - p, ad = Math.abs(d);
+      var d = j - p, th = Math.max(-1.45, Math.min(1.45, d * rhPx / R));
+      var y = R * Math.sin(th) - d * rhPx, z = -R * (1 - Math.cos(th));
+      var mitte = Math.max(0, 1 - Math.abs(d));
+      var sc = 1 + mitte * 0.14;
       row.style.visibility = 'visible';
-      row.style.opacity = Math.max(0, 1 - ad * 0.34).toFixed(3);
-      var rx = Math.max(-72, Math.min(72, d * -27));
-      row.style.transform = 'translateZ(' + (-Math.min(ad, 3) * 120).toFixed(1) + 'px) rotateX(' + rx.toFixed(1) + 'deg) scale(' + (1 - Math.min(ad, 3) * 0.09).toFixed(3) + ')';
-      row.style.filter = ad > 0.6 ? 'blur(' + Math.min(2.2, (ad - 0.6) * 0.9).toFixed(2) + 'px)' : 'none';
+      row.style.opacity = Math.max(0, Math.pow(Math.cos(th), 1.6)).toFixed(3);
+      row.style.transform = 'translateY(' + y.toFixed(1) + 'px) translateZ(' + z.toFixed(1) + 'px) rotateX(' + (-th * 180 / Math.PI).toFixed(1) + 'deg) scale(' + sc.toFixed(3) + ')';
+      var ad = Math.abs(d);
+      row.style.filter = ad > 0.8 ? 'blur(' + Math.min(2.4, (ad - 0.8) * 0.8).toFixed(2) + 'px)' : 'none';
       var isAct = j === active;
-      if (isAct !== row.classList.contains('c')) row.classList.toggle('c', isAct);
+      if (isAct !== row.classList.contains('c')) {
+        row.classList.toggle('c', isAct);
+        if (!isAct && lines[j]) row.innerHTML = wordsHtml(lines[j], lines[j].words.length); /* fertig gesungen: alles hell, kein 'jetzt'-Wort mehr */
+      }
     }
   }
   /* Huepfender Ball: springt im Bogen von Wort zu Wort der aktuellen Zeile */
