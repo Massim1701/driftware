@@ -73,10 +73,20 @@
   .state { position: fixed; bottom: 54px; left: 14px; max-width: 70vw; font-size: 14px; line-height: 1.35; color: var(--muted); opacity: .8; }
   .state i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #5a3a4a; margin-right: 6px; }
   .state.on i { background: #3ddc84; box-shadow: 0 0 8px #3ddc84; }
+  /* Dock-Modus: Seite steckt als festes Feld im Player (iframe) */
+  body.dock { padding: 8px 12px 6px; justify-content: flex-start; }
+  body.dock h1 { font-size: clamp(22px, 5vh, 54px); }
+  body.dock .stage { margin-top: 2px; --rh: clamp(30px, 6.2vh, 64px); }
+  body.dock .state, body.dock .eq { display: none !important; }
+  body.dock .top { padding: 6px 12px; }
+  body.dock .by { font-size: clamp(12px, 1.6vw, 18px); }
+  body.dock .ctrl { bottom: 6px; }
+  body.dock .hint { margin-top: 8px; font-size: clamp(12px, 1.5vw, 17px); }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
 </style>
 </head>
 <body>
+<script>if (location.search.indexOf('dock=1') > -1) document.body.classList.add('dock');</script>
 <div class="blobs"><i></i><i></i><i></i></div>
 <div class="notes" id="notes"></div>
 <div class="top">
@@ -177,13 +187,14 @@
     row.style.fontSize = px + 'px';
   }
   function build(lines, c, L, wi, animate) {
-    var vw = Math.min(window.innerWidth, 1500), big = Math.min(vw * 0.075, window.innerHeight * 0.14);
+    var vw = Math.min(window.innerWidth, 1500), big;
     var html = '';
     for (var k = -3; k <= 3; k++) {
       var i = c + k, cls = k === 0 ? 'c' : Math.abs(k) === 1 ? 'd1' : 'd2';
       html += '<div class="row ' + cls + '" data-k="' + k + '"></div>';
     }
     rowsEl.innerHTML = html;
+    big = Math.min(vw * 0.075, window.innerHeight * 0.14, rowsEl.children[0].offsetHeight * 0.9);
     Array.prototype.forEach.call(rowsEl.children, function (row, n) {
       var k = n - 3, i = c + k, txt = rowText(lines, i, c);
       if (k === 0 && L) { row.innerHTML = wordsHtml(L, wi); centerEl = row; fit(row, txt, big); }
