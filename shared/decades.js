@@ -4298,7 +4298,9 @@ function renderPlaylistGenerator(mountRoot, config) {
       renderSongGrid(document.getElementById('gen-grid'), fl);
       return;
     }
-    window.ccKaraokeTileOn = (currentTheme === 'Karaoke'); /* Karaoke-Pop-up schon bei gewaehlter Kachel zeigen */
+    var karOn = (currentTheme === 'Karaoke' || currentTheme === 'TextLaeuftMit');
+    if (karOn && !window.ccKaraokeTileOn) ccKarEnsureTab(); /* Klick auf die Kachel = Tab geht sofort auf */
+    window.ccKaraokeTileOn = karOn;
     var songs = currentSongs();
     if (currentTheme && currentTheme !== MIX_KEY && currentTheme !== ALL_KEY) {
       songs.forEach(function (s) { s._bucket = currentTheme; });
@@ -5005,13 +5007,14 @@ function ccLyricsTick() {
   var song = deck && deck.song;
   var isKar = !!(song && song.kar);
   var key0 = song ? ccLyricsSongKey(song) : null;
-  if (isKar && key0 !== ccLyrics.autoKey) { ccLyrics.autoKey = key0; if (!ccPip && ccLyricsPipSupported() && navigator.userActivation && navigator.userActivation.isActive) ccLyricsPipOpen(); }
+  if (isKar && key0 !== ccLyrics.autoKey) { ccLyrics.autoKey = key0; if (!ccPip && navigator.userActivation && navigator.userActivation.isActive) ccKarEnsureTab(); }
   var tileOn = !!window.ccKaraokeTileOn;
-  root.classList.toggle('cc-lyrics-hidden', !isKar && !ccPip && !tileOn);
+  var tabOn = ccKarTabConnected();
+  root.classList.toggle('cc-lyrics-hidden', tabOn && !ccPip || (!isKar && !ccPip && !tileOn));
   if (!isKar) {
     ccLyrics.songKey = undefined; ccLyrics.lines = null;
     if (ccPip || tileOn) {
-      var w = ccLyricsEl('cc-lyrics-words'), msg = 'Song aus der Karaoke-Liste starten – hier läuft der Text mit';
+      var w = ccLyricsEl('cc-lyrics-words'), msg = ccKarBlocked ? 'Der Karaoke-Tab wurde vom Browser blockiert – klick auf TAB (oder Pop-ups für diese Seite erlauben)' : 'Song aus der Karaoke-Liste starten – hier läuft der Text mit';
       if (w.textContent !== msg) { w.textContent = msg; ccLyricsEl('cc-lyrics-prev').textContent = ''; ccLyricsEl('cc-lyrics-next').textContent = ''; ccLyrics.view = null; }
       ccLyricsSetAvail('yes');
     }
@@ -5170,7 +5173,16 @@ function ccKarBroadcast() {
   } catch (e) {}
 }
 setInterval(ccKarBroadcast, 150);
-function ccKarOpenTab() { window.open('/karaoke-fenster/', 'driftware-karaoke'); }
+function ccKarTabConnected() { return !!ccKarTabSeen && performance.now() - ccKarTabSeen < 4000; }
+var ccKarBlocked = false;
+/* Karaoke-Tab oeffnen, falls noch keiner verbunden ist. Muss direkt aus einem Klick kommen. */
+function ccKarEnsureTab() {
+  if (ccKarTabConnected()) return;
+  var w = null;
+  try { w = window.open('/karaoke-fenster/', 'driftware-karaoke'); } catch (e) {}
+  ccKarBlocked = !w;
+}
+function ccKarOpenTab() { ccKarEnsureTab(); }
 
 var ccPip = null;
 function ccLyricsPipSupported() { return !!(window.documentPictureInPicture && documentPictureInPicture.requestWindow); }
