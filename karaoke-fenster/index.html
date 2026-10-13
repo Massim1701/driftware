@@ -6,51 +6,87 @@
 <meta name="robots" content="noindex">
 <title>♪ KARAOKE</title>
 <style>
-  :root { --bg: #13060d; --pink: #ff3d81; --gold: #ffd23f; --text: #fff0f6; --muted: #c49aae; }
+  :root { --bg: #12041a; --pink: #ff3d81; --gold: #ffd23f; --cyan: #2de2e6; --violet: #9b5cff; --text: #fff6fb; --muted: #d3a9c6; }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
   body {
-    background: radial-gradient(120% 90% at 50% 0%, #2a0f1d 0%, var(--bg) 60%);
-    color: var(--text); font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 16px 20px; text-align: center; overflow: hidden;
+    background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; overflow: hidden;
+    padding: 70px 20px 20px; position: relative;
   }
-  h1 {
-    margin: 0; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; line-height: 0.95;
-    font-size: clamp(44px, 13vw, 190px);
-    background: linear-gradient(90deg, var(--pink), var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent;
-    filter: drop-shadow(0 0 28px rgba(255, 61, 129, 0.35));
-  }
-  body.live h1 { font-size: clamp(30px, 6vw, 88px); }
-  .song { margin-top: 10px; color: var(--muted); font-size: clamp(14px, 2.2vw, 26px); min-height: 1.4em; }
-  .stage { width: 100%; max-width: 1400px; margin-top: 18px; display: none; }
+  /* wandernde Farbflecken wie Disco-Licht */
+  .blobs { position: fixed; inset: 0; z-index: -2; overflow: hidden; }
+  .blobs i { position: absolute; width: 55vmax; height: 55vmax; border-radius: 50%; filter: blur(90px); opacity: .35; animation: drift 18s ease-in-out infinite alternate; }
+  .blobs i:nth-child(1) { background: var(--pink); left: -15vmax; top: -20vmax; }
+  .blobs i:nth-child(2) { background: var(--violet); right: -20vmax; top: 10vmax; animation-duration: 23s; }
+  .blobs i:nth-child(3) { background: var(--cyan); left: 20vmax; bottom: -35vmax; opacity: .22; animation-duration: 27s; }
+  @keyframes drift { to { transform: translate(8vmax, 6vmax) scale(1.15); } }
+  /* aufsteigende Noten */
+  .notes { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+  .notes span { position: absolute; bottom: -60px; font-size: 34px; opacity: 0; animation: rise 11s linear infinite; }
+  @keyframes rise { 0% { transform: translateY(0) rotate(-12deg); opacity: 0; } 10% { opacity: .5; } 100% { transform: translateY(-115vh) rotate(18deg); opacity: 0; } }
+
+  /* oben links: Absender, oben rechts: Song */
+  .top { position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 14px 20px; }
+  .by { font-weight: 900; font-size: clamp(16px, 2.2vw, 28px); letter-spacing: .02em; transform: rotate(-3deg); }
+  .by small { font-weight: 700; color: var(--muted); font-size: .62em; margin-right: .35em; text-transform: lowercase; }
+  .by b { background: linear-gradient(90deg, var(--cyan), var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .badge { display: none; max-width: 62vw; text-align: right; transform: rotate(2deg); }
+  body.live .badge { display: block; animation: wobble 4s ease-in-out infinite; }
+  .badge .art { display: inline-block; background: var(--gold); color: #2a0a18; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; font-size: clamp(11px, 1.5vw, 18px); padding: 3px 10px; border-radius: 6px; box-shadow: 3px 3px 0 var(--pink); }
+  .badge .ttl { display: block; margin-top: 6px; font-weight: 900; font-size: clamp(18px, 3vw, 40px); line-height: 1.05; background: linear-gradient(90deg, var(--pink), var(--gold), var(--cyan)); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 5s linear infinite; }
+  @keyframes shine { to { background-position: 200% 0; } }
+  @keyframes wobble { 0%,100% { transform: rotate(2deg) translateY(0); } 50% { transform: rotate(-1deg) translateY(3px); } }
+
+  h1 { margin: 0; font-weight: 900; text-transform: uppercase; letter-spacing: .03em; line-height: .95; font-size: clamp(44px, 13vw, 190px); display: flex; justify-content: center; }
+  h1 span { display: inline-block; background: linear-gradient(180deg, var(--gold), var(--pink)); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 6px 0 rgba(155, 92, 255, .55)) drop-shadow(0 0 26px rgba(255, 61, 129, .4)); animation: bounce 1.6s ease-in-out infinite; }
+  h1 span:nth-child(2n) { background-image: linear-gradient(180deg, var(--cyan), var(--violet)); }
+  @keyframes bounce { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-.09em) rotate(-3deg); } }
+  body.live h1 { font-size: clamp(30px, 6vw, 84px); }
+
+  .stage { width: 100%; max-width: 1500px; margin-top: 10px; display: none; --rh: clamp(54px, 11.5vh, 130px); }
   body.live .stage { display: block; }
-  .prev, .next { color: var(--muted); opacity: 0.55; font-weight: 600; font-size: clamp(14px, 2.4vw, 30px); min-height: 1.3em; }
-  .line { font-weight: 900; font-size: clamp(26px, 5.6vw, 84px); line-height: 1.15; margin: 8px 0; }
-  .w { color: color-mix(in srgb, var(--text) 45%, transparent); transition: color .12s, text-shadow .12s; }
+  .view { height: calc(var(--rh) * 5); overflow: hidden; position: relative; }
+  .rows { position: absolute; left: 0; right: 0; top: calc(var(--rh) * -1); will-change: transform; }
+  .row { height: var(--rh); display: flex; align-items: center; justify-content: center; padding: 0 12px; white-space: nowrap; font-weight: 800; color: var(--muted); }
+  .row.d1 { opacity: .62; } .row.d2 { opacity: .3; }
+  .row.c { font-weight: 900; opacity: 1; }
+  .w { display: inline-block; margin: 0 .07em; color: color-mix(in srgb, var(--text) 42%, transparent); transition: color .12s; }
   .w.sung { color: var(--text); }
-  .w.now { color: var(--gold); text-shadow: 0 0 22px rgba(255, 210, 63, 0.7); }
+  .w.sung:nth-child(3n) { color: var(--cyan); } .w.sung:nth-child(3n+1) { color: var(--text); } .w.sung:nth-child(3n+2) { color: #ffd1e6; }
+  .w.now { color: var(--gold); text-shadow: 0 0 24px rgba(255, 210, 63, .85), 0 4px 0 var(--pink); animation: pop .28s cubic-bezier(.3,1.8,.5,1); transform: scale(1.05); }
+  @keyframes pop { from { transform: scale(.8) rotate(-4deg); } to { transform: scale(1.05); } }
+
+  .ball { position: absolute; left: 0; top: 0; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; z-index: 3; pointer-events: none; opacity: 0;
+    background: radial-gradient(circle at 35% 30%, #fff, var(--gold) 45%, var(--pink)); box-shadow: 0 0 14px rgba(255, 210, 63, .9), 0 6px 0 rgba(155, 92, 255, .6); }
   .hint { margin-top: 22px; color: var(--muted); font-size: clamp(14px, 1.8vw, 22px); max-width: 38em; line-height: 1.5; }
   body.live .hint { display: none; }
-  .ctrl { position: fixed; bottom: 12px; right: 14px; display: none; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; }
+  .eq { position: fixed; left: 0; right: 0; bottom: 0; height: 46px; display: none; align-items: flex-end; justify-content: center; gap: 5px; opacity: .8; pointer-events: none; }
+  body.live .eq { display: flex; }
+  .eq i { width: 10px; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, var(--gold), var(--pink)); animation: eq 0.9s ease-in-out infinite alternate; }
+  @keyframes eq { from { height: 6px; } to { height: 42px; } }
+  .ctrl { position: fixed; bottom: 52px; right: 14px; display: none; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; }
   body.live .ctrl { display: flex; }
-  .ctrl button { background: #24101a; color: var(--text); border: 1px solid #4a2236; border-radius: 8px; width: 40px; height: 32px; font-size: 18px; cursor: pointer; }
-  .ctrl button:hover { border-color: var(--pink); }
-  .state { position: fixed; top: 10px; left: 14px; font-size: 13px; color: var(--muted); }
+  .ctrl button { background: #2a1030; color: var(--text); border: 1px solid #5a2a58; border-radius: 8px; width: 40px; height: 32px; font-size: 18px; cursor: pointer; }
+  .ctrl button:hover { border-color: var(--gold); }
+  .state { position: fixed; bottom: 54px; left: 14px; font-size: 12px; color: var(--muted); opacity: .8; }
   .state i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #5a3a4a; margin-right: 6px; }
   .state.on i { background: #3ddc84; box-shadow: 0 0 8px #3ddc84; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
 </style>
 </head>
 <body>
-<div class="state" id="state"><i></i><span id="state-t">wartet auf den Player …</span></div>
-<h1>Karaoke</h1>
-<div class="song" id="song"></div>
-<div class="stage" id="stage">
-  <div class="prev" id="prev"></div>
-  <div class="line" id="line"></div>
-  <div class="next" id="next"></div>
+<div class="blobs"><i></i><i></i><i></i></div>
+<div class="notes" id="notes"></div>
+<div class="top">
+  <div class="by"><small>by</small><b>driftware</b></div>
+  <div class="badge" id="badge"><span class="art" id="art"></span><span class="ttl" id="ttl"></span></div>
 </div>
+<h1 id="h1">Karaoke</h1>
+<div class="stage" id="stage"><div class="view" id="view"><div class="rows" id="rows"></div><i class="ball" id="ball"></i></div></div>
+<div class="state" id="state"><i></i><span id="state-t">wartet auf den Player …</span></div>
 <div class="hint" id="hint">Dieser Tab zeigt den Text zum Mitsingen. Lass ihn offen, zieh ihn bei Bedarf als eigenes Fenster heraus (auch auf einen zweiten Monitor) und starte im Player ein Lied aus der Genre-Kachel „Karaoke".</div>
+<div class="eq" id="eq"></div>
 <div class="ctrl" id="ctrl">Text-Versatz
   <button type="button" id="earlier" title="Text früher (−0,5 s)">−</button><span id="off">0,0 s</span><button type="button" id="later" title="Text später (+0,5 s)">+</button>
 </div>
@@ -60,7 +96,7 @@
   var chan = null;
   try { chan = new BroadcastChannel('driftware-karaoke'); } catch (e) {}
   var cur = { key: null, lines: null, msg: null, kd: 0 };
-  var last = null, lastRecv = 0, view = null;
+  var last = null, lastRecv = 0;
   var el = function (id) { return document.getElementById(id); };
 
   function clean(str) {
@@ -96,7 +132,6 @@
 
   function loadLyrics(s) {
     cur = { key: s.key, lines: null, msg: 'Liedtext wird gesucht …', kd: s.kd };
-    view = null;
     var artist = clean(String(s.a || '').split(/,|&| x | und /i)[0]), title = clean(s.t);
     var url = 'https://lrclib.net/api/search?track_name=' + encodeURIComponent(title) + '&artist_name=' + encodeURIComponent(artist);
     fetch(url).then(function (r) { return r.ok ? r.json() : []; }).then(function (list) {
@@ -124,8 +159,55 @@
     window.addEventListener('pagehide', function () { try { chan.postMessage({ type: 'bye' }); } catch (e) {} });
   }
 
-  function words(L, upto, nowIdx) {
-    return L.words.map(function (w, i) { return '<span class="w' + (i < nowIdx ? ' sung' : i === nowIdx ? ' now' : '') + '">' + w.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>'; }).join(' ');
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  function wordsHtml(L, nowIdx) {
+    return '<span>' + L.words.map(function (w, i) { return '<span class="w' + (i < nowIdx ? ' sung' : i === nowIdx ? ' now' : '') + '">' + esc(w) + '</span>'; }).join(' ') + '</span>';
+  }
+  /* 5 Zeilen: 2 davor, die aktuelle (gross, farbig), 2 danach. Ist eine Zeile durch,
+     rollt alles eine Zeile nach oben. */
+  var shown = { idx: null, wi: null }, rowsEl = el('rows'), centerEl = null;
+  function rowText(lines, i, c) {
+    if (i === c && c === -1) return '♪ ♪ ♪';
+    return i >= 0 && i < lines.length ? lines[i].text : '';
+  }
+  function fit(row, text, base) {
+    var w = rowsEl.clientWidth * 0.94, px = Math.min(base, w / Math.max(6, text.length * 0.56));
+    row.style.fontSize = px + 'px';
+  }
+  function build(lines, c, L, wi, animate) {
+    var vw = Math.min(window.innerWidth, 1500), big = Math.min(vw * 0.075, window.innerHeight * 0.14);
+    var html = '';
+    for (var k = -3; k <= 3; k++) {
+      var i = c + k, cls = k === 0 ? 'c' : Math.abs(k) === 1 ? 'd1' : 'd2';
+      html += '<div class="row ' + cls + '" data-k="' + k + '"></div>';
+    }
+    rowsEl.innerHTML = html;
+    Array.prototype.forEach.call(rowsEl.children, function (row, n) {
+      var k = n - 3, i = c + k, txt = rowText(lines, i, c);
+      if (k === 0 && L) { row.innerHTML = wordsHtml(L, wi); centerEl = row; fit(row, txt, big); }
+      else { row.textContent = txt; if (k === 0) centerEl = row; fit(row, txt, k === 0 ? big : big * (Math.abs(k) === 1 ? 0.62 : 0.5)); }
+    });
+    if (animate) {
+      var rh = rowsEl.children[0].offsetHeight;
+      rowsEl.style.transition = 'none'; rowsEl.style.transform = 'translateY(' + rh + 'px)';
+      void rowsEl.offsetHeight;
+      rowsEl.style.transition = 'transform .38s cubic-bezier(.3,.7,.2,1)'; rowsEl.style.transform = 'translateY(0)';
+    } else { rowsEl.style.transition = 'none'; rowsEl.style.transform = 'translateY(0)'; }
+  }
+  /* Huepfender Ball: springt im Bogen von Wort zu Wort der aktuellen Zeile */
+  var ballEl = el('ball'), viewEl = el('view');
+  function moveBall(L, wi, u) {
+    if (!L || !centerEl) { ballEl.style.opacity = 0; return; }
+    var spans = centerEl.querySelectorAll('.w'); if (!spans.length) { ballEl.style.opacity = 0; return; }
+    var vr = viewEl.getBoundingClientRect(), n = spans.length;
+    var i0 = Math.max(0, Math.min(n - 1, wi)), a = spans[i0].getBoundingClientRect();
+    var ax = a.left + a.width / 2 - vr.left, ay = a.top - vr.top - 6, x = ax, y = ay;
+    if (wi >= 0 && wi < n - 1) {
+      var b = spans[wi + 1].getBoundingClientRect(), bx = b.left + b.width / 2 - vr.left;
+      var uu = Math.max(0, Math.min(1, u)); x = ax + (bx - ax) * uu; y = ay - 4 * Math.min(26, Math.abs(bx - ax) * 0.3 + 8) * uu * (1 - uu);
+    } else if (wi < 0) { y = ay - 6 - 8 * Math.abs(Math.sin(performance.now() / 180)); }
+    else if (wi >= n) { ballEl.style.opacity = 0; return; }
+    ballEl.style.opacity = 1; ballEl.style.transform = 'translate(' + x + 'px,' + y + 'px)';
   }
   function tick() {
     requestAnimationFrame(tick);
@@ -133,27 +215,42 @@
     document.body.classList.toggle('live', live);
     el('state').classList.toggle('on', !!last);
     el('state-t').textContent = !chan ? 'Browser unterstützt keine Verbindung zum Player' : last ? 'verbunden – Player läuft' : (performance.now() - lastRecv < 3000 && lastRecv ? 'verbunden – kein Karaoke-Song' : 'wartet auf den Player …');
-    if (!live) { view = null; return; }
-    el('song').textContent = last.a + ' – ' + last.t;
+    if (!live) { shown = { idx: null, wi: null }; return; }
+    if (el('art').textContent !== last.a) el('art').textContent = last.a;
+    if (el('ttl').textContent !== last.t) el('ttl').textContent = last.t;
     var t = last.time + (last.playing ? (Date.now() - last.ts) / 1000 * (last.rate || 1) : 0) - getOff(last.key);
     el('off').textContent = fmt(getOff(last.key));
     var lines = cur.lines;
-    if (!lines) { if (view !== 'msg') { el('prev').textContent = ''; el('next').textContent = ''; view = 'msg'; } el('line').textContent = cur.msg || ''; return; }
+    if (!lines) {
+      var sig0 = 'msg:' + cur.msg;
+      if (shown.idx !== sig0) { rowsEl.innerHTML = '<div class="row c" style="position:relative;top:calc(var(--rh) * 2);font-size:' + Math.min(window.innerWidth * 0.035, 40) + 'px">' + esc(cur.msg || '') + '</div>'; rowsEl.style.transform = 'none'; shown = { idx: sig0, wi: null }; }
+      ballEl.style.opacity = 0;
+      return;
+    }
     var idx = -1;
     for (var i = 0; i < lines.length; i++) { if (lines[i].t - 0.5 <= t) idx = i; else break; }
-    if (idx < 0) { el('prev').textContent = ''; el('line').textContent = '♪ ♪ ♪'; el('next').textContent = lines[0].text; view = 'intro'; return; }
-    var L = lines[idx];
-    var pr = (t - L.t) / (L.singEnd - L.t) * L.total, wi = 0, acc = 0;
-    if (t < L.t) wi = -1; else while (wi < L.weights.length - 1 && acc + L.weights[wi] <= pr) { acc += L.weights[wi]; wi++; }
-    if (t > L.singEnd + 0.2) wi = L.words.length; /* Zeile fertig gesungen */
-    var sig = idx + ':' + wi;
-    if (view !== sig) {
-      el('prev').textContent = idx > 0 ? lines[idx - 1].text : '';
-      el('line').innerHTML = words(L, 0, wi);
-      el('next').textContent = idx + 1 < lines.length ? lines[idx + 1].text : '';
-      view = sig;
+    var L = idx >= 0 ? lines[idx] : null, wi = -1;
+    if (L) {
+      var pr = (t - L.t) / (L.singEnd - L.t) * L.total, acc = 0;
+      if (t >= L.t) { wi = 0; while (wi < L.weights.length - 1 && acc + L.weights[wi] <= pr) { acc += L.weights[wi]; wi++; } }
+      if (t > L.singEnd + 0.2) wi = L.words.length;
+      var uw = (wi >= 0 && wi < L.weights.length) ? (pr - acc) / L.weights[wi] : 0;
     }
+    if (shown.idx !== idx) {
+      build(lines, idx, L, wi, typeof shown.idx === 'number' && idx === shown.idx + 1);
+      shown = { idx: idx, wi: wi };
+    } else if (shown.wi !== wi && L && centerEl) {
+      centerEl.innerHTML = wordsHtml(L, wi); shown.wi = wi;
+    }
+    moveBall(L, wi, typeof uw === 'number' ? uw : 0);
   }
+  /* Spass: Buchstaben einzeln huepfen lassen, Noten aufsteigen, Equalizer */
+  (function fun() {
+    var h1 = el('h1'); h1.innerHTML = 'KARAOKE'.split('').map(function (c, i) { return '<span style="animation-delay:' + (i * 0.12) + 's">' + c + '</span>'; }).join('');
+    var n = el('notes'), sym = ['♪', '♫', '♬', '♩'], cols = ['#ff3d81', '#ffd23f', '#2de2e6', '#9b5cff'];
+    for (var i = 0; i < 14; i++) { var s = document.createElement('span'); s.textContent = sym[i % 4]; s.style.cssText = 'left:' + (4 + i * 7) + '%;color:' + cols[i % 4] + ';animation-delay:' + (-i * 0.9) + 's;animation-duration:' + (9 + (i % 5) * 2) + 's;font-size:' + (24 + (i % 4) * 8) + 'px'; n.appendChild(s); }
+    var eq = el('eq'); for (var k = 0; k < 40; k++) { var b = document.createElement('i'); b.style.animationDelay = (-(k * 0.17) % 0.9) + 's'; b.style.animationDuration = (0.6 + (k % 7) * 0.12) + 's'; eq.appendChild(b); }
+  })();
   el('earlier').addEventListener('click', function () { if (last) setOff(last.key, getOff(last.key) - 0.5); });
   el('later').addEventListener('click', function () { if (last) setOff(last.key, getOff(last.key) + 0.5); });
   requestAnimationFrame(tick);
