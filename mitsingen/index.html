@@ -96,7 +96,7 @@
   var chan = null;
   try { chan = new BroadcastChannel('driftware-karaoke'); } catch (e) {}
   var cur = { key: null, lines: null, msg: null, kd: 0 };
-  var last = null, lastRecv = 0;
+  var last = null, lastRecv = 0, idleInfo = null;
   var el = function (id) { return document.getElementById(id); };
 
   function clean(str) {
@@ -148,7 +148,7 @@
     chan.onmessage = function (ev) {
       var m = ev.data || {};
       lastRecv = performance.now();
-      if (m.type === 'idle') { last = null; return; }
+      if (m.type === 'idle') { last = null; idleInfo = m.info || null; return; }
       if (m.type === 'state') {
         last = m;
         if (m.key !== cur.key) loadLyrics(m);
@@ -217,7 +217,7 @@
     var ago = lastRecv ? Math.round((performance.now() - lastRecv) / 100) / 10 : null;
     el('state-t').textContent = !chan ? 'Browser unterstützt keine Verbindung zum Player'
       : last ? 'verbunden – Player läuft'
-      : (lastRecv && ago < 3) ? 'verbunden – aber das laufende Deck spielt keinen Song aus der Genre-Kachel „Karaoke“'
+      : (lastRecv && ago < 3) ? 'verbunden – aber kein Deck spielt einen Song aus der Genre-Kachel „Karaoke“. Der Player sieht: ' + (idleInfo ? idleInfo.map(function (d) { return 'Deck ' + d.k + (d.aktiv ? ' (aktiv)' : '') + ': ' + d.s + (d.playing ? ' ▶' : ' ■') + (d.kar ? ' [Karaoke]' : ' [kein Karaoke-Song]'); }).join(' | ') : '–')
       : 'KEIN SIGNAL vom Player (dieser Tab: ' + location.host + (ago !== null ? ', letztes Signal vor ' + ago + ' s' : ', noch nie ein Signal') + '). Player-Seite offen? Dann dort Cmd+Shift+R drücken – gleiche Adresse, gleiches Chrome-Profil, nicht Inkognito.';
     if (!live) { shown = { idx: null, wi: null }; return; }
     if (el('art').textContent !== last.a) el('art').textContent = last.a;

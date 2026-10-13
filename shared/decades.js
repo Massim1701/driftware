@@ -4877,7 +4877,12 @@ function ccLyricsActiveDeck() {
   var a = DECKS.A, b = DECKS.B;
   if (a.isPlaying && !b.isPlaying) return 'A';
   if (b.isPlaying && !a.isPlaying) return 'B';
-  if (a.isPlaying && b.isPlaying) return crossfaderValue <= 50 ? 'A' : 'B';
+  if (a.isPlaying && b.isPlaying) {
+    /* laeuft nur auf einem Deck ein Karaoke-Song, gilt dieses (Nutzerwunsch: Lied im Player = Text im Tab) */
+    var ak = !!(a.song && a.song.kar), bk = !!(b.song && b.song.kar);
+    if (ak !== bk) return ak ? 'A' : 'B';
+    return crossfaderValue <= 50 ? 'A' : 'B';
+  }
   if (ccLyrics.deckKey && DECKS[ccLyrics.deckKey].song) return ccLyrics.deckKey;
   return a.song ? 'A' : (b.song ? 'B' : null);
 }
@@ -5156,7 +5161,10 @@ function ccKarBroadcast() {
   if (!ccKarChan || !ccKarTabSeen || performance.now() - ccKarTabSeen > 4000) return;
   try {
     var k = ccLyricsActiveDeck(), deck = k ? DECKS[k] : null, song = deck && deck.song;
-    if (!song || !song.kar || !deck.player || !deck.player.getCurrentTime) { ccKarChan.postMessage({ type: 'idle' }); return; }
+    if (!song || !song.kar || !deck.player || !deck.player.getCurrentTime) {
+      var info = ['A', 'B'].map(function (x) { var s = DECKS[x].song; return { k: x, s: s ? s.a + ' – ' + s.t : '(leer)', kar: !!(s && s.kar), playing: !!DECKS[x].isPlaying, aktiv: x === k }; });
+      ccKarChan.postMessage({ type: 'idle', info: info }); return;
+    }
     ccKarChan.postMessage({ type: 'state', key: ccLyricsSongKey(song), a: song.a, t: song.t, kd: song.kd || 0,
       time: deck.player.getCurrentTime() || 0, playing: !!deck.isPlaying, rate: deck.rate || 1, ts: Date.now() });
   } catch (e) {}
