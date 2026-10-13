@@ -6,16 +6,18 @@
 <title data-i18n="home.title">Snoxi — Foto- & Video-Editor</title>
 <meta name="description" data-i18n-content="home.description" content="Snoxi: schneller, unkomplizierter Foto- und Video-Editor. Filter, Sticker, Wasserzeichen, Gesichter unkenntlich machen und eine Kamera mit Live-Vorschau — alles lokal auf deinem Gerät.">
 <link rel="canonical" href="https://driftware.online/snoxi/">
+<meta name="theme-color" content="#09090d">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Snoxi">
 <meta property="og:url" content="https://driftware.online/snoxi/">
 <meta property="og:title" data-i18n-content="home.title" content="Snoxi — Foto- & Video-Editor">
 <meta property="og:description" data-i18n-content="home.description" content="Snoxi: schneller, unkomplizierter Foto- und Video-Editor. Filter, Sticker, Wasserzeichen, Gesichter unkenntlich machen und eine Kamera mit Live-Vorschau — alles lokal auf deinem Gerät.">
-<meta property="og:image" content="https://driftware.online/snoxi/icon.png">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://driftware.online/snoxi/img/og-de.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" data-i18n-content="home.title" content="Snoxi — Foto- & Video-Editor">
 <meta name="twitter:description" data-i18n-content="home.description" content="Snoxi: schneller, unkomplizierter Foto- und Video-Editor. Filter, Sticker, Wasserzeichen, Gesichter unkenntlich machen und eine Kamera mit Live-Vorschau — alles lokal auf deinem Gerät.">
-<meta name="twitter:image" content="https://driftware.online/snoxi/icon.png">
+<meta name="twitter:image" content="https://driftware.online/snoxi/img/og-de.jpg">
+<link rel="icon" href="icon.png">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -32,328 +34,166 @@
 }
 </script>
 <link rel="stylesheet" href="/fonts/fonts.css?v=1">
-<style>
-  :root {
-    --bg: #0c1224;
-    --panel: #141c33;
-    --accent: #3aa8ff;
-    --text: #f5f7fa;
-    --muted: #9aa3c0;
-    --border: rgba(255,255,255,0.08);
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.5;
-  }
-  header {
-    position: relative;
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 72px 24px 32px;
-    text-align: center;
-  }
-  .app-icon {
-    width: 96px;
-    height: 96px;
-    border-radius: 22px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--border);
-    margin: 0 0 16px;
-  }
-  .utility-block {
-    position: fixed;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 50;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-  }
-  .utility-tile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    text-decoration: none;
-    color: var(--text);
-    width: 40px;
-  }
-  .utility-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  }
-  .utility-icon svg { width: 18px; height: 18px; }
-  .utility-label { font-size: 9px; color: var(--muted); }
-  .logo {
-    font-family: 'Space Grotesk', -apple-system, sans-serif;
-    font-size: 42px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--text);
-    margin: 0 0 12px;
-  }
-  .tagline {
-    color: var(--muted);
-    font-size: 18px;
-    margin: 0 0 32px;
-  }
-  .badges {
-    display: flex;
-    gap: 14px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 8px;
-  }
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 22px;
-    border-radius: 14px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 14px;
-  }
-  .badge.soon { opacity: 0.6; }
-  .badge-nosub {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-radius: 14px;
-    background: rgba(58,168,255,0.1);
-    border: 1px solid rgba(58,168,255,0.35);
-    color: var(--accent);
-    font-weight: 700;
-    font-size: 14px;
-    margin-top: 16px;
-  }
-  main {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 0 24px 64px;
-  }
-  .showcase {
-    max-width: 720px;
-    margin: 56px auto 8px;
-    padding: 0 24px;
-    display: flex;
-    justify-content: center;
-  }
-  .showcase-phones {
-    display: flex;
-    align-items: flex-end;
-  }
-  .phone-frame {
-    width: 150px;
-    padding: 7px;
-    border-radius: 26px;
-    background: #1a2440;
-    border: 1px solid var(--border);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.45);
-  }
-  .phone-frame.center {
-    width: 168px;
-    z-index: 2;
-    box-shadow: 0 24px 48px rgba(0,0,0,0.5);
-  }
-  .phone-frame.left { transform: rotate(-6deg) translateY(16px); margin-right: -26px; z-index: 1; }
-  .phone-frame.right { transform: rotate(6deg) translateY(16px); margin-left: -26px; z-index: 1; }
-  .phone-screen {
-    width: 100%;
-    aspect-ratio: 9 / 19.5;
-    border-radius: 19px;
-    overflow: hidden;
-    background: #000;
-    position: relative;
-  }
-  .phone-screen img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
-  .phone-notch {
-    position: absolute;
-    top: 7px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 38px;
-    height: 12px;
-    border-radius: 7px;
-    background: var(--bg);
-  }
-  @media (max-width: 480px) {
-    .phone-frame { width: 108px; border-radius: 20px; }
-    .phone-frame.center { width: 122px; }
-    .phone-frame.left { margin-right: -20px; }
-    .phone-frame.right { margin-left: -20px; }
-    .phone-screen { border-radius: 15px; }
-  }
-  .features {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin: 40px 0;
-  }
-  .feature {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px;
-  }
-  .feature h3 {
-    margin: 0 0 8px;
-    font-size: 16px;
-    color: var(--text);
-  }
-  .feature p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 14px;
-  }
-  .privacy-note {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px 24px;
-    color: var(--muted);
-    font-size: 14px;
-    margin-top: 40px;
-  }
-  .privacy-note strong { color: var(--text); }
-  footer {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 24px;
-    text-align: center;
-    color: var(--muted);
-    font-size: 13px;
-    border-top: 1px solid var(--border);
-  }
-  footer a { color: var(--accent); text-decoration: none; }
-  footer .links { margin-top: 8px; }
-  footer .links a { margin: 0 8px; }
-</style>
+<link rel="stylesheet" href="snoxi.css?v=1">
 <script data-goatcounter="https://welove80sde.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
-  <div class="utility-block">
-    <a class="utility-tile" href="/" aria-label="Zurück zur Driftware Startseite">
-      <div class="utility-icon" style="background:#d98c1f">
-        <svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
-      </div>
-      <span class="utility-label">Home</span>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="home-link" href="/" aria-label="Driftware Startseite">
+      <span class="home-icon"><svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg></span>
+      <span>Driftware</span>
     </a>
-    <a class="utility-tile" href="privacy.html#kontakt">
-      <div class="utility-icon" style="background:#4a90d9">
-        <svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
-      </div>
-      <span class="utility-label">Mail</span>
-    </a>
-    <a class="utility-tile" href="anleitung.html">
-      <div class="utility-icon" style="background:#3d9970">
-        <svg viewBox="0 0 24 24" fill="#a8e6c1" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v2H4V4zm0 5h16v2H4V9zm0 5h10v2H4v-2zm0 5h10v2H4v-2z"/></svg>
-      </div>
-      <span class="utility-label">Anleitung</span>
-    </a>
-    <a class="utility-tile" href="privacy.html">
-      <div class="utility-icon" style="background:#6a5acd">
-        <svg viewBox="0 0 24 24" fill="#d6cbfa" xmlns="http://www.w3.org/2000/svg"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg>
-      </div>
-      <span class="utility-label">Datenschutz</span>
-    </a>
+    <nav class="topnav">
+      <a class="opt" href="#funktionen" data-i18n="lp.nav_features">Funktionen</a>
+      <a class="opt" href="#preis" data-i18n="lp.nav_price">Preis</a>
+      <a href="anleitung.html" data-i18n="lp.nav_guide">Anleitung</a>
+      <a href="privacy.html" data-i18n="lp.nav_privacy">Datenschutz</a>
+    </nav>
   </div>
-  <header>
-    <img class="app-icon" src="icon.png" alt="Snoxi App-Icon" width="96" height="96">
-    <h1 class="logo">Snoxi</h1>
-    <p class="tagline" data-i18n="home.tagline">Filter, Sticker, Wasserzeichen & Gesichter unkenntlich machen — ganz einfach, komplett auf deinem Gerät.</p>
-    <div class="badges">
-      <a class="badge" href="https://apps.apple.com/de/app/snoxi/id6799855918" target="_blank" rel="noopener" data-i18n="home.badge_appstore">🍎 Jetzt im App Store</a>
-      <a class="badge" href="https://play.google.com/apps/testing/com.massimomanca.snoxi" target="_blank" rel="noopener" data-i18n="home.badge_googleplay">▶ Google Play — Beta-Tester werden</a>
-<a class="badge" href="https://github.com/Massim1701/driftware/releases/download/snoxi-android-2.3.2/app-release.apk" data-i18n="home.badge_apk">⬇️ Test-APK herunterladen (Android)</a>
-      <a class="badge" href="https://apps.apple.com/de/app/snoxi/id6799855918" target="_blank" rel="noopener" data-i18n="home.badge_mac">💻 Auch für Mac</a>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="hero-glow" aria-hidden="true"><i class="g1"></i><i class="g2"></i></div>
+    <div class="wrap hero-grid">
+      <div class="hero-text">
+        <span class="pill" data-i18n="lp.pill">Foto- &amp; Video-Editor</span>
+        <h1><span data-i18n="lp.h1a">Dein Foto.</span> <span class="l2" data-i18n="lp.h1b">Dein Style.</span></h1>
+        <p class="lead" data-i18n="lp.lead">Filter, Sticker, Wasserzeichen und Weichzeichner. Alles läuft auf deinem Gerät, nichts wird hochgeladen.</p>
+        <div class="cta-row">
+          <a class="btn btn-main" href="https://apps.apple.com/de/app/snoxi/id6799855918" target="_blank" rel="noopener" data-i18n="lp.cta_store">Im App Store laden</a>
+          <a class="btn btn-ghost" href="https://apps.apple.com/de/app/snoxi/id6799855918" target="_blank" rel="noopener" data-i18n="lp.cta_mac">Auch für Mac</a>
+        </div>
+        <ul class="facts">
+          <li data-i18n="lp.fact1">Einmal kaufen, kein Abo</li>
+          <li data-i18n="lp.fact2">Kein Konto</li>
+          <li data-i18n="lp.fact3">Keine Cloud</li>
+        </ul>
+      </div>
+      <div class="hero-art">
+        <figure class="p1"><img data-poster="01" src="img/de-01.jpg" alt="" width="1000" height="2167"><figcaption class="sr" data-i18n="lp.alt01">Snoxi auf dem iPhone: Foto mit Sticker, Text und Weichzeichner</figcaption></figure>
+        <figure class="p2"><img data-poster="02" src="img/de-02.jpg" alt="" width="1000" height="2167" loading="lazy"><figcaption class="sr" data-i18n="lp.alt02">Snoxi mit Logo als Milchglas-Wasserzeichen</figcaption></figure>
+      </div>
     </div>
-    <div class="badge-nosub" data-i18n="home.badge_nosub">♾️ Kein Abo — einmal kaufen, für immer nutzen.</div>
-  </header>
-  <div class="showcase">
-    <div class="showcase-phones">
-      <div class="phone-frame left">
-        <div class="phone-screen">
-          <img src="screens/shot1.jpg" alt="Snoxi Sticker-Editor" loading="lazy">
-          <div class="phone-notch"></div>
+  </section>
+
+  <section class="inside" id="funktionen">
+    <div class="wrap">
+      <div class="inside-grid">
+        <article class="reveal">
+          <p class="label" data-i18n="lp.s1_label">Bearbeiten</p>
+          <h3 data-i18n="lp.s1_title">Alles liegt am Rand.</h3>
+          <p class="body-text" data-i18n="lp.s1_text">Filter, Zuschnitt, Text, Sticker, Weichzeichner und Logo sitzen in einer Leiste neben dem Foto. Was du änderst, siehst du sofort auf dem Bild.</p>
+        </article>
+        <article class="reveal" style="--d:.08s">
+          <p class="label" data-i18n="lp.s2_label">Eigenes Zeichen</p>
+          <h3 data-i18n="lp.s2_title">Das Logo als Milchglas.</h3>
+          <p class="body-text" data-i18n="lp.s2_text">Halbtransparent, rund oder eckig, frei platzierbar. Dazu ein Text als Wasserzeichen, mit fünf Schriften und fünf Farben. So bleibt dein Name am Bild, auch wenn es weitergeschickt wird.</p>
+        </article>
+        <article class="reveal">
+          <p class="label" data-i18n="lp.face_label">Datenschutz im Bild</p>
+          <h3 data-i18n="lp.face_title">Gesichter wirklich unkenntlich.</h3>
+          <p class="body-text" data-i18n="lp.face_text">Eine echte Weichzeichnung statt eines schwarzen Balkens. Du setzt den Fleck, wohin du willst, und stellst die Größe ein.</p>
+        </article>
+        <article class="reveal" style="--d:.08s">
+          <p class="label" data-i18n="lp.cam_label">Kamera</p>
+          <h3 data-i18n="lp.cam_title">Aufnehmen mit Vorschau.</h3>
+          <p class="body-text" data-i18n="lp.cam_text">Fotos und Videos direkt in der App aufnehmen. Emojis und Wasserzeichen siehst du schon live im Sucher.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="show">
+    <div class="wrap show-grid">
+      <div class="show-poster" style="--glow:#1fb5a0">
+        <figure><img data-poster="03" src="img/de-03.jpg" alt="" width="1000" height="2167" loading="lazy"><figcaption class="sr" data-i18n="lp.alt03">Snoxi mit Noir-Filter</figcaption></figure>
+      </div>
+      <div class="show-text reveal">
+        <p class="label" data-i18n="lp.s3_label">Filter</p>
+        <h2 class="h2" data-i18n="lp.s3_title">Ein Filter für jede Stimmung.</h2>
+        <p class="body-text" data-i18n="lp.s3_text">Warm, Noir, Schwarz-Weiß und mehr. Ein Tipp reicht, bei Fotos genauso wie bei Videos.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="show rev">
+    <div class="wrap show-grid">
+      <div class="show-poster" style="--glow:#ff8a2a">
+        <figure><img data-poster="04" src="img/de-04.jpg" alt="" width="1000" height="2167" loading="lazy"><figcaption class="sr" data-i18n="lp.alt04">Snoxi mit Zuschnitt 4:5</figcaption></figure>
+      </div>
+      <div class="show-text reveal">
+        <p class="label" data-i18n="lp.s4_label">Zuschnitt</p>
+        <h2 class="h2" data-i18n="lp.s4_title">Gleich im richtigen Format.</h2>
+        <p class="body-text" data-i18n="lp.s4_text">Original, 1:1, 4:5 oder 16:9. Sticker und Wasserzeichen bleiben dabei im sichtbaren Bild.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="show" id="preis">
+    <div class="wrap show-grid">
+      <div class="show-poster" style="--glow:#5a4bff">
+        <figure><img data-poster="05" src="img/de-05.jpg" alt="" width="1000" height="2167" loading="lazy"><figcaption class="sr" data-i18n="lp.alt05">Snoxi: einmal kaufen, kein Abo, kein Konto, 100 % lokal, 12 Sprachen</figcaption></figure>
+      </div>
+      <div class="show-text reveal">
+        <p class="label" data-i18n="lp.s5_label">Preis</p>
+        <h2 class="h2" data-i18n="lp.s5_title">Einmal kaufen. Für immer nutzen.</h2>
+        <p class="body-text" data-i18n="lp.s5_text">Kein Abo, kein Konto, keine Anmeldung. Deine Fotos verlassen dein Gerät nie. Snoxi gibt es in 12 Sprachen und richtet sich nach deinem Gerät.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="why">
+    <div class="wrap">
+      <div class="why-box reveal">
+        <p class="label" data-i18n="lp.why_label">Warum es Snoxi gibt</p>
+        <p data-i18n="lp.why_text">KI-Tools sind großartig, aber deine Fotos landen dafür oft auf einem fremden Server. Wer sichergehen will, dass nichts hochgeladen wird, ist mit Snoxi einfacher und günstiger unterwegs.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="get" id="holen">
+    <div class="wrap">
+      <div class="get-grid">
+        <div class="reveal">
+          <h2 class="h2" data-i18n="lp.get_title">Snoxi holen</h2>
+          <p class="get-sub" data-i18n="lp.get_sub">Für iPhone und Mac im App Store. Für Android läuft gerade ein Beta-Test.</p>
+        </div>
+        <div class="get-actions reveal" style="--d:.1s">
+          <a class="btn btn-main" href="https://apps.apple.com/de/app/snoxi/id6799855918" target="_blank" rel="noopener" data-i18n="lp.cta_store">Im App Store laden</a>
+          <div class="alt">
+            <a href="https://play.google.com/apps/testing/com.massimomanca.snoxi" target="_blank" rel="noopener" data-i18n="lp.play">Google Play: Beta-Tester werden</a>
+            <a href="https://github.com/Massim1701/driftware/releases/download/snoxi-android-2.3.2/app-release.apk" data-i18n="lp.apk">Test-APK laden (Android)</a>
+          </div>
         </div>
       </div>
-      <div class="phone-frame center">
-        <div class="phone-screen">
-          <img src="screens/shot2.jpg" alt="Snoxi Gesicht unkenntlich machen" loading="lazy">
-          <div class="phone-notch"></div>
-        </div>
-      </div>
-      <div class="phone-frame right">
-        <div class="phone-screen">
-          <img src="screens/shot5.jpg" alt="Snoxi Filter" loading="lazy">
-          <div class="phone-notch"></div>
-        </div>
-      </div>
+      <p class="note" data-i18n="lp.req_html" data-i18n-html><strong>Systemvoraussetzungen:</strong> iOS 16.4 oder neuer, Android 8.0 oder neuer. Die ganze Bedienung steht in der <a href="anleitung.html">Anleitung</a>.</p>
+      <p class="note" style="margin-top:12px" data-i18n="lp.privacy_html" data-i18n-html>Snoxi verarbeitet alles lokal auf deinem Gerät, ohne Konto und ohne Tracking. Mehr dazu in der <a href="privacy.html">Datenschutzerklärung</a>.</p>
     </div>
-  </div>
-  <main>
-    <div class="features">
-      <div class="feature">
-        <h3 data-i18n="home.feature_camera_title">📷 Kamera</h3>
-        <p data-i18n="home.feature_camera_desc">Fotos und Videos direkt in der App aufnehmen — Emojis und Wasserzeichen schon live in der Vorschau.</p>
-      </div>
-      <div class="feature">
-        <h3 data-i18n="home.feature_filter_title">🎨 Filter</h3>
-        <p data-i18n="home.feature_filter_desc">Mehrere Stimmungs-Presets für Fotos und Videos.</p>
-      </div>
-      <div class="feature">
-        <h3 data-i18n="home.feature_crop_title">✂️ Zuschneiden</h3>
-        <p data-i18n="home.feature_crop_desc">Original, 1:1, 4:5, 16:9.</p>
-      </div>
-      <div class="feature">
-        <h3 data-i18n="home.feature_sticker_title">😀 Sticker</h3>
-        <p data-i18n="home.feature_sticker_desc">Eigene Emojis frei platzieren und in der Größe anpassen.</p>
-      </div>
-      <div class="feature">
-        <h3 data-i18n="home.feature_watermark_title">💧 Wasserzeichen</h3>
-        <p data-i18n="home.feature_watermark_desc">Eigener Text, 5 Schriftarten, 5 Farben, Größe & Transparenz frei einstellbar.</p>
-      </div>
-      <div class="feature">
-        <h3 data-i18n="home.feature_face_title">🙈 Gesicht unkenntlich</h3>
-        <p data-i18n="home.feature_face_desc">Echte Weichzeichnung statt Störbalken, frei platzier- und skalierbar.</p>
-      </div>
-      <div class="feature">
-        <h3 data-i18n="home.feature_privacy_title">🔒 100 % privat</h3>
-        <p data-i18n="home.feature_privacy_desc">Keine Cloud, kein Konto, kein Tracking — deine Fotos und Videos verlassen nie dein Gerät.</p>
-      </div>
-      <div class="feature">
-        <h3 data-i18n="home.feature_whysnoxi_title">🛡️ Warum Snoxi?</h3>
-        <p data-i18n="home.feature_whysnoxi_desc">KI-Tools sind großartig — aber deine Fotos landen dafür oft auf einem fremden Server. Wer sichergehen will, dass nichts hochgeladen wird, ist mit Snoxi einfacher und günstiger unterwegs.</p>
-      </div>
-    </div>
-    <div class="privacy-note" data-i18n="home.privacy_note_html" data-i18n-html>
-      <strong>Alles bleibt bei dir.</strong> Snoxi verarbeitet Fotos und Videos komplett lokal auf deinem Gerät — kein Konto, kein Hochladen, kein Tracking. Mehr dazu in der <a href="privacy.html" style="color:var(--accent)">Datenschutzerklärung</a>.
-    </div>
-    <div class="privacy-note" data-i18n="home.sysreq_note_html" data-i18n-html>
-      <strong>Systemvoraussetzungen:</strong> iOS 15.1+ oder Android 8.0+. Alle Details und die Schritt-für-Schritt-Anleitung findest du in der <a href="anleitung.html" style="color:var(--accent)">Bedienungsanleitung</a>.
-    </div>
-  </main>
-  <footer>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
     <span data-i18n="home.footer_copyright">© 2026 Massimo — Snoxi</span>
-    <div class="links">
+    <div class="foot-links">
+      <a href="anleitung.html" data-i18n="home.footer_link_guide">Anleitung</a>
+      <a href="privacy.html" data-i18n="home.footer_link_privacy">Datenschutzerklärung</a>
+      <a href="privacy.html#kontakt" data-i18n="home.footer_link_contact">Support</a>
       <!-- Impressum-Link bewusst im Footer belassen, nicht entfernt: §5 TMG verlangt eine leicht auffindbare Anbieterkennzeichnung. -->
       <a href="impressum.html" data-i18n="home.footer_link_impressum">Impressum</a>
     </div>
-  </footer>
-  <script src="i18n.js"></script>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js"></script>
+<script src="i18n.js"></script>
+<script src="site.js?v=1"></script>
 </body>
 </html>
