@@ -2682,6 +2682,8 @@ html:not([data-device="phone"]) .generator-body { scroll-margin-top: calc(var(--
 #dj-player .cc-lyrics .cc-lyrics-stage { order: 1; grid-area: auto; }
 #dj-player .cc-lyrics .cc-lyrics-ctrl { order: 2; flex-direction: row; justify-content: space-between; border: 0; box-shadow: none; padding: 6px 12px 10px; }
 #dj-player .cc-lyrics .cc-lyrics-words { font-size: 20px; }
+/* im eigenen Fenster: Flaeche fuellen statt unten rechts schweben */
+#dj-player .cc-lyrics.cc-lyrics-pip { position: static; width: 100%; height: 100%; max-width: none; border: 0; border-radius: 0; box-shadow: none; justify-content: center; }
 
 /* Club Console: Lautstaerke-Regler schlanker (Griff war am Desktop 28x40) */
 @media (pointer: fine) {

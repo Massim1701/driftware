@@ -4743,6 +4743,7 @@ function ccLyricsHTML() {
     '  <div class="cc-lyrics-next" id="cc-lyrics-next"></div>' +
     '</div>' +
     '<div class="cc-lyrics-ctrl">' +
+    '  <button type="button" class="cc-pad cc-small cc-lyrics-pop" id="cc-lyrics-pop" title="Karaoke in eigenem kleinen Fenster (immer im Vordergrund)" aria-label="Karaoke in eigenem Fenster">&#10697;</button>' +
     '  <button type="button" class="cc-pad cc-lyrics-toggle" id="cc-lyrics-toggle" aria-pressed="true" title="Karaoke-Leiste ein-/ausschalten">KARAOKE AN</button>' +
     '  <div class="cc-lyrics-tools">' +
     '    <button type="button" class="cc-pad cc-small" id="cc-lyrics-earlier" aria-label="Text früher (−0,5 s)">−</button>' +
@@ -4901,7 +4902,7 @@ function ccLyricsClock(deckKey, deck, songKey) {
   return pred;
 }
 
-function ccLyricsEl(id) { return document.getElementById(id); }
+function ccLyricsEl(id) { return document.getElementById(id) || (ccPip && ccPip.document.getElementById(id)); }
 
 /* Hauptzeile setzen (Woerter einzeln, Schrift ggf. verkleinern, damit
    die Zeile in die Deck-Spalte passt). */
@@ -4999,8 +5000,14 @@ function ccLyricsTick() {
   var deck = deckKey ? DECKS[deckKey] : null;
   var song = deck && deck.song;
   var isKar = !!(song && song.kar);
-  root.classList.toggle('cc-lyrics-hidden', !isKar);
-  if (!isKar) { ccLyrics.songKey = undefined; ccLyrics.lines = null; return; }
+  var key0 = song ? ccLyricsSongKey(song) : null;
+  if (isKar && key0 !== ccLyrics.autoKey) { ccLyrics.autoKey = key0; if (!ccPip && ccLyricsPipSupported() && navigator.userActivation && navigator.userActivation.isActive) ccLyricsPipOpen(); }
+  root.classList.toggle('cc-lyrics-hidden', !isKar && !ccPip);
+  if (!isKar) {
+    ccLyrics.songKey = undefined; ccLyrics.lines = null;
+    if (ccPip) { ccLyricsEl('cc-lyrics-words').textContent = 'Kachel „Karaoke" wählen und einen Song starten'; ccLyricsEl('cc-lyrics-prev').textContent = ''; ccLyricsEl('cc-lyrics-next').textContent = ''; ccLyrics.view = null; }
+    return;
+  }
   if (!ccLyricsIsOn()) { ccLyricsSetAvail('off'); return; }
   var key = ccLyricsSongKey(song);
   if (deckKey !== ccLyrics.deckKey) {
@@ -5120,6 +5127,57 @@ function ccLyricsApplyOn(on) {
   ccLyrics.view = null;
 }
 
+/* Karaoke im eigenen Fenster (Nutzerwunsch 13.10.): "Document Picture-in-Picture"
+   (Chrome/Edge) -- ein kleines Fenster, das immer im Vordergrund bleibt und von
+   Pop-up-Blockern nicht beruehrt wird, weil es ein Browser-Feature ist (kein
+   window.open). Es braucht einen Klick: Knopf im Karaoke-Pop-up, oder beim
+   Start eines Karaoke-Songs, solange der Klick darauf noch frisch ist.
+   Die Leiste wird samt Ball-Animation in das Fenster verschoben und beim
+   Schliessen zurueckgeholt. */
+var ccPip = null;
+function ccLyricsPipSupported() { return !!(window.documentPictureInPicture && documentPictureInPicture.requestWindow); }
+function ccLyricsPipOpen() {
+  if (ccPip || !ccLyricsPipSupported()) return;
+  var root = document.getElementById('cc-lyrics');
+  if (!root) return;
+  documentPictureInPicture.requestWindow({ width: 600, height: 230 }).then(function (win) {
+    ccPip = win;
+    ccLyrics.home = root.parentNode;
+    /* Styles uebernehmen */
+    Array.prototype.forEach.call(document.styleSheets, function (sheet) {
+      try {
+        var st = win.document.createElement('style');
+        st.textContent = Array.prototype.map.call(sheet.cssRules, function (r) { return r.cssText; }).join('\n');
+        win.document.head.appendChild(st);
+      } catch (e) {
+        if (sheet.href) { var l = win.document.createElement('link'); l.rel = 'stylesheet'; l.href = sheet.href; win.document.head.appendChild(l); }
+      }
+    });
+    ['data-theme', 'class', 'style'].forEach(function (at) {
+      var v = document.documentElement.getAttribute(at);
+      if (v != null) win.document.documentElement.setAttribute(at, v);
+    });
+    win.document.body.className = document.body.className;
+    win.document.body.style.cssText = 'margin:0;background:#0e0e14;overflow:hidden;';
+    var wrap = win.document.createElement('div');
+    wrap.id = 'dj-player';
+    wrap.className = document.getElementById('dj-player') ? document.getElementById('dj-player').className : '';
+    wrap.style.cssText = 'height:100%;';
+    win.document.body.appendChild(wrap);
+    root.classList.add('cc-lyrics-pip');
+    root.classList.remove('cc-lyrics-hidden');
+    wrap.appendChild(root);
+    ccLyrics.view = null;
+    win.addEventListener('pagehide', function () {
+      ccPip = null;
+      root.classList.remove('cc-lyrics-pip');
+      if (ccLyrics.home) ccLyrics.home.appendChild(root);
+      ccLyrics.view = null;
+    });
+  }).catch(function () {});
+}
+function ccLyricsPipClose() { if (ccPip) { try { ccPip.close(); } catch (e) {} } }
+
 function ccLyricsInit(bar) {
   if (!ccLyricsEl('cc-lyrics')) return;
   function nudge(d) {
@@ -5151,6 +5209,9 @@ function ccLyricsInit(bar) {
     ccLyricsEl('cc-lyrics-offset').textContent = ccLyricsFormatOffset(ccLyricsGetOffset(key));
     ccLyrics.view = null;
   });
+  var popBtn = bar.querySelector('#cc-lyrics-pop');
+  if (!ccLyricsPipSupported()) popBtn.hidden = true;
+  popBtn.addEventListener('click', function () { if (ccPip) ccLyricsPipClose(); else ccLyricsPipOpen(); });
   bar.querySelector('#cc-lyrics-toggle').addEventListener('click', function () {
     var on = !ccLyricsIsOn();
     try { localStorage.setItem(CC_LYRICS_ON_KEY, on ? '1' : '0'); } catch (e) {}
