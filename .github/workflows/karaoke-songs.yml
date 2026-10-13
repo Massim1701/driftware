@@ -45,7 +45,7 @@ jobs:
           python-version: '3.12'
 
       - name: Abhaengigkeiten installieren
-        run: pip install --quiet yt-dlp
+        run: pip install --quiet yt-dlp ytmusicapi
 
       - name: Studiofassungen suchen
         timeout-minutes: 305

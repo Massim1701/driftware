@@ -169,6 +169,88 @@ def yt_json(args, timeout=60):
     return json.loads(p.stdout)
 
 
+_YTM = None
+
+
+def ytmusic():
+    """YouTube Music (ytmusicapi, ohne Anmeldung): fuehrt reine Studio-Titel getrennt als 'Songs'."""
+    global _YTM
+    if _YTM is None:
+        from ytmusicapi import YTMusic
+        _YTM = YTMusic()
+    return _YTM
+
+
+def find_ytmusic_song(artist, title, durations):
+    """Reiner Studio-Titel ("Song" bei YouTube Music) mit passender Laenge, sonst None."""
+    a_key = norm(lyrics_artist(artist))
+    t_key = norm(lyrics_clean(title))
+    try:
+        res = ytmusic().search(f"{lyrics_artist(artist)} {lyrics_clean(title)}", filter="songs", limit=6)
+    except ImportError:
+        return None
+    except Exception as e:
+        raise YouTubeFehler(f"YT-Music: {type(e).__name__}: {str(e)[:120]}")
+    cands = []
+    for r in res or []:
+        vid, dur, ttl = r.get("videoId"), r.get("duration_seconds"), r.get("title") or ""
+        if not vid or not dur or not ist_studio_titel(ttl):
+            continue
+        if norm(lyrics_clean(ttl)) != t_key:
+            continue
+        names = [norm(x.get("name", "")) for x in (r.get("artists") or [])]
+        artist_ok = any(n and (n == a_key or (len(n) > 3 and len(a_key) > 3 and (n in a_key or a_key in n))) for n in names)
+        if not artist_ok:
+            continue
+        diff = min(abs(dur - d) for d in durations)
+        if diff <= DURATION_TOLERANCE:
+            cands.append((diff, vid, dur))
+    for diff, vid, dur in sorted(cands)[:2]:
+        if embeddable(vid):
+            return {"yk": vid, "d": int(dur)}
+        time.sleep(random.uniform(0.3, 0.6))
+    return None
+
+
+def find_audio_upload(artist, title, durations):
+    """Direkt bei YouTube: reiner Audio-Upload ("Official Audio", "Topic"), kein Musikvideo, kein Mix/Live."""
+    a_key = norm(lyrics_artist(artist))
+    t_key = norm(lyrics_clean(title))
+    res = yt_json([f"ytsearch10:{lyrics_artist(artist)} {lyrics_clean(title)} official audio", "--flat-playlist"])
+    cands = []
+    for e in res.get("entries") or []:
+        raw = e.get("title") or ""
+        low = raw.lower()
+        ch_raw = e.get("channel") or e.get("uploader") or ""
+        is_topic = bool(re.search(r"-\s*topic$", ch_raw, flags=re.IGNORECASE))
+        if not is_topic and not re.search(r"\b(official audio|audio only|\(audio\)|\[audio\])", low):
+            continue
+        if re.search(r"official video|music video|\blyrics?\b|visuali[sz]er|\blive\b|remix|\bmix\b|cover|reaction|karaoke|instrumental|\d+d audio|slowed|sped|nightcore", low):
+            continue
+        rest = re.sub(r"[\(\[]\s*(official\s+)?(audio|hd|hq|4k|explicit|clean)[^\)\]]*[\)\]]", " ", raw, flags=re.IGNORECASE)
+        rest = re.sub(r"\bofficial\s+audio\b", " ", rest, flags=re.IGNORECASE)
+        head, sep, tail = rest.partition(" - ")
+        if sep and a_key and (a_key in norm(head) or norm(head) in a_key):
+            rest = tail
+        if not ist_studio_titel(rest) or norm(lyrics_clean(rest)) != t_key:
+            continue
+        ch = norm(re.sub(r"\s*-\s*topic$", "", ch_raw, flags=re.IGNORECASE))
+        artist_ok = bool(ch) and (ch == a_key or (len(ch) > 3 and len(a_key) > 3 and (ch in a_key or a_key in ch)) or "vevo" in ch)
+        if not artist_ok and not (sep and a_key in norm(head)):
+            continue
+        dur = e.get("duration")
+        if not e.get("id") or not dur:
+            continue
+        diff = min(abs(dur - d) for d in durations)
+        if diff <= DURATION_TOLERANCE:
+            cands.append((0 if is_topic else 1, diff, -(e.get("view_count") or 0), e["id"], dur))
+    for _, diff, _, vid, dur in sorted(cands)[:2]:
+        if embeddable(vid):
+            return {"yk": vid, "d": int(dur)}
+        time.sleep(random.uniform(0.3, 0.6))
+    return None
+
+
 def find_topic_video(artist, title, durations):
     a_key = norm(lyrics_artist(artist))
     t_key = norm(lyrics_clean(title))
@@ -295,7 +377,8 @@ def main():
             result = "kein_text"
         else:
             try:
-                hit = find_topic_video(s["a"], s["t"], durations)
+                hit = (find_ytmusic_song(s["a"], s["t"], durations) or find_topic_video(s["a"], s["t"], durations)
+                       or find_audio_upload(s["a"], s["t"], durations))
                 fehler_in_folge = 0
                 if hit:
                     videos[k] = hit
