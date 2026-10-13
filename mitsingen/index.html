@@ -47,11 +47,10 @@
 
   .stage { width: 100%; max-width: 1500px; margin-top: 10px; display: none; --rh: clamp(54px, 11.5vh, 130px); }
   body.live .stage { display: block; }
-  .view { height: calc(var(--rh) * 5); overflow: hidden; position: relative; }
-  .rows { position: absolute; left: 0; right: 0; top: calc(var(--rh) * -1); will-change: transform; }
-  .row { height: var(--rh); display: flex; align-items: center; justify-content: center; padding: 0 12px; white-space: nowrap; font-weight: 800; color: var(--muted); }
-  .row.d1 { opacity: .62; } .row.d2 { opacity: .3; }
-  .row.c { font-weight: 900; opacity: 1; }
+  .view { height: calc(var(--rh) * 5); overflow: hidden; position: relative; perspective: 520px; perspective-origin: 50% 50%; }
+  .rows { position: absolute; left: 0; right: 0; top: 50%; transform-style: preserve-3d; will-change: transform; }
+  .row { position: relative; backface-visibility: hidden; will-change: transform, opacity; height: var(--rh); display: flex; align-items: center; justify-content: center; padding: 0 12px; white-space: nowrap; font-weight: 800; color: var(--muted); }
+  .row.c { font-weight: 900; color: var(--text); }
   .w { display: inline-block; margin: 0 .07em; color: color-mix(in srgb, var(--text) 42%, transparent); transition: color .12s; }
   .w.sung { color: var(--text); }
   .w.sung:nth-child(3n) { color: var(--cyan); } .w.sung:nth-child(3n+1) { color: var(--text); } .w.sung:nth-child(3n+2) { color: #ffd1e6; }
@@ -175,37 +174,47 @@
   function wordsHtml(L, nowIdx) {
     return '<span>' + L.words.map(function (w, i) { return '<span class="w' + (i < nowIdx ? ' sung' : i === nowIdx ? ' now' : '') + '">' + esc(w) + '</span>'; }).join(' ') + '</span>';
   }
-  /* 5 Zeilen: 2 davor, die aktuelle (gross, farbig), 2 danach. Ist eine Zeile durch,
-     rollt alles eine Zeile nach oben. */
-  var shown = { idx: null, wi: null }, rowsEl = el('rows'), centerEl = null;
-  function rowText(lines, i, c) {
-    if (i === c && c === -1) return '♪ ♪ ♪';
-    return i >= 0 && i < lines.length ? lines[i].text : '';
-  }
+  /* Walze: ALLE Zeilen liegen auf einer durchgehenden Bahn; sie gleitet fliessend nach oben, die
+     aktuelle Zeile bleibt in der Mitte. Zeilen davor/danach kippen weg und werden blasser. */
+  var shown = { lines: null, active: null, wi: null }, rowsEl = el('rows'), centerEl = null, rowEls = [], rhPx = 60, visFrom = 0, visTo = -1;
   function fit(row, text, base) {
     var w = rowsEl.clientWidth * 0.94, px = Math.min(base, w / Math.max(6, text.length * 0.56));
     row.style.fontSize = px + 'px';
   }
-  function build(lines, c, L, wi, animate) {
-    var vw = Math.min(window.innerWidth, 1500), big;
-    var html = '';
-    for (var k = -3; k <= 3; k++) {
-      var i = c + k, cls = k === 0 ? 'c' : Math.abs(k) === 1 ? 'd1' : 'd2';
-      html += '<div class="row ' + cls + '" data-k="' + k + '"></div>';
-    }
+  function build(lines) {
+    var vw = Math.min(window.innerWidth, 1500), html = '';
+    for (var i = 0; i < lines.length; i++) html += '<div class="row" data-i="' + i + '"></div>';
     rowsEl.innerHTML = html;
-    big = Math.min(vw * 0.075, window.innerHeight * 0.14, rowsEl.children[0].offsetHeight * 0.9);
-    Array.prototype.forEach.call(rowsEl.children, function (row, n) {
-      var k = n - 3, i = c + k, txt = rowText(lines, i, c);
-      if (k === 0 && L) { row.innerHTML = wordsHtml(L, wi); centerEl = row; fit(row, txt, big); }
-      else { row.textContent = txt; if (k === 0) centerEl = row; fit(row, txt, k === 0 ? big : big * (Math.abs(k) === 1 ? 0.62 : 0.5)); }
-    });
-    if (animate) {
-      var rh = rowsEl.children[0].offsetHeight;
-      rowsEl.style.transition = 'none'; rowsEl.style.transform = 'translateY(' + rh + 'px)';
-      void rowsEl.offsetHeight;
-      rowsEl.style.transition = 'transform .38s cubic-bezier(.3,.7,.2,1)'; rowsEl.style.transform = 'translateY(0)';
-    } else { rowsEl.style.transition = 'none'; rowsEl.style.transform = 'translateY(0)'; }
+    rowEls = Array.prototype.slice.call(rowsEl.children);
+    rhPx = rowEls.length ? rowEls[0].offsetHeight : 60;
+    var big = Math.min(vw * 0.075, window.innerHeight * 0.14, rhPx * 0.9);
+    rowEls.forEach(function (row, i) { row.textContent = lines[i].text; fit(row, lines[i].text, big); row.style.visibility = 'hidden'; });
+    centerEl = null; visFrom = 0; visTo = -1;
+  }
+  function ease(x) { return x < 0 ? 0 : x > 1 ? 1 : x * x * (3 - 2 * x); }
+  /* Position p der Walze: Zeile i rollt ab (Start - 0,7 s) in 0,55 s in die Mitte */
+  function rollPos(lines, t) {
+    var i = -1;
+    for (var k = 0; k < lines.length; k++) { if (lines[k].t - 0.7 <= t) i = k; else break; }
+    if (i < 0) return -1;
+    return (i - 1) + ease((t - (lines[i].t - 0.7)) / 0.6);
+  }
+  function paint(lines, p, active) {
+    var from = Math.max(0, Math.floor(p) - 4), to = Math.min(lines.length - 1, Math.ceil(p) + 4);
+    for (var i = visFrom; i <= visTo; i++) { if ((i < from || i > to) && rowEls[i]) rowEls[i].style.visibility = 'hidden'; }
+    visFrom = from; visTo = to;
+    rowsEl.style.transform = 'translateY(' + (-(p + 0.5) * rhPx) + 'px)';
+    for (var j = from; j <= to; j++) {
+      var row = rowEls[j]; if (!row) continue;
+      var d = j - p, ad = Math.abs(d);
+      row.style.visibility = 'visible';
+      row.style.opacity = Math.max(0, 1 - ad * 0.34).toFixed(3);
+      var rx = Math.max(-72, Math.min(72, d * -27));
+      row.style.transform = 'translateZ(' + (-Math.min(ad, 3) * 120).toFixed(1) + 'px) rotateX(' + rx.toFixed(1) + 'deg) scale(' + (1 - Math.min(ad, 3) * 0.09).toFixed(3) + ')';
+      row.style.filter = ad > 0.6 ? 'blur(' + Math.min(2.2, (ad - 0.6) * 0.9).toFixed(2) + 'px)' : 'none';
+      var isAct = j === active;
+      if (isAct !== row.classList.contains('c')) row.classList.toggle('c', isAct);
+    }
   }
   /* Huepfender Ball: springt im Bogen von Wort zu Wort der aktuellen Zeile */
   var ballEl = el('ball'), viewEl = el('view');
@@ -232,7 +241,7 @@
       : last ? 'verbunden – Player läuft'
       : (lastRecv && ago < 3) ? 'verbunden – aber kein Deck spielt einen Song aus der Genre-Kachel „Karaoke“. Der Player sieht: ' + (idleInfo ? idleInfo.map(function (d) { return 'Deck ' + d.k + (d.aktiv ? ' (aktiv)' : '') + ': ' + d.s + (d.playing ? ' ▶' : ' ■') + (d.kar ? ' [Karaoke]' : ' [kein Karaoke-Song]'); }).join(' | ') : '–')
       : 'KEIN SIGNAL vom Player (dieser Tab: ' + location.host + (ago !== null ? ', letztes Signal vor ' + ago + ' s' : ', noch nie ein Signal') + '). Player-Seite offen? Dann dort Cmd+Shift+R drücken – gleiche Adresse, gleiches Chrome-Profil, nicht Inkognito.';
-    if (!live) { shown = { idx: null, wi: null }; return; }
+    if (!live) { shown = { lines: null, active: null, wi: null }; return; }
     if (el('art').textContent !== last.a) el('art').textContent = last.a;
     if (el('ttl').textContent !== last.t) el('ttl').textContent = last.t;
     el('note').textContent = last.kar ? 'Studiofassung – Text läuft synchron' : 'Musikvideo – Text kann abweichen (−/+ unten rechts)';
@@ -241,26 +250,25 @@
     var lines = cur.lines;
     if (!lines) {
       var sig0 = 'msg:' + cur.msg;
-      if (shown.idx !== sig0) { rowsEl.innerHTML = '<div class="row c" style="position:relative;top:calc(var(--rh) * 2);font-size:' + Math.min(window.innerWidth * 0.035, 40) + 'px">' + esc(cur.msg || '') + '</div>'; rowsEl.style.transform = 'none'; shown = { idx: sig0, wi: null }; }
+      if (shown.lines !== sig0) { rowsEl.innerHTML = '<div class="row c" style="position:relative;top:calc(var(--rh) * 2);font-size:' + Math.min(window.innerWidth * 0.035, 40) + 'px">' + esc(cur.msg || '') + '</div>'; rowsEl.style.transform = 'none'; rowEls = []; shown = { lines: sig0, active: null, wi: null }; }
       ballEl.style.opacity = 0;
       return;
     }
-    var idx = -1;
-    for (var i = 0; i < lines.length; i++) { if (lines[i].t - 0.5 <= t) idx = i; else break; }
-    var L = idx >= 0 ? lines[idx] : null, wi = -1;
+    if (shown.lines !== lines) { build(lines); shown = { lines: lines, active: null, wi: null }; }
+    var p = rollPos(lines, t);
+    var active = -1;
+    for (var i = 0; i < lines.length; i++) { if (lines[i].t - 0.3 <= t) active = i; else break; }
+    paint(lines, p, active);
+    var L = active >= 0 ? lines[active] : null, wi = -1, uw = 0;
     if (L) {
       var pr = (t - L.t) / (L.singEnd - L.t) * L.total, acc = 0;
-      if (t >= L.t) { wi = 0; while (wi < L.weights.length - 1 && acc + L.weights[wi] <= pr) { acc += L.weights[wi]; wi++; } }
+      if (t >= L.t) { wi = 0; while (wi < L.weights.length - 1 && acc + L.weights[wi] <= pr) { acc += L.weights[wi]; wi++; } uw = (pr - acc) / L.weights[wi]; }
       if (t > L.singEnd + 0.2) wi = L.words.length;
-      var uw = (wi >= 0 && wi < L.weights.length) ? (pr - acc) / L.weights[wi] : 0;
     }
-    if (shown.idx !== idx) {
-      build(lines, idx, L, wi, typeof shown.idx === 'number' && idx === shown.idx + 1);
-      shown = { idx: idx, wi: wi };
-    } else if (shown.wi !== wi && L && centerEl) {
-      centerEl.innerHTML = wordsHtml(L, wi); shown.wi = wi;
-    }
-    moveBall(L, wi, typeof uw === 'number' ? uw : 0);
+    centerEl = L ? rowEls[active] : null;
+    if (centerEl && (shown.active !== active || shown.wi !== wi)) { centerEl.innerHTML = wordsHtml(L, wi); shown.active = active; shown.wi = wi; }
+    else if (!centerEl && shown.active !== active) { shown.active = active; }
+    moveBall(L, wi, uw);
   }
   /* Spass: Buchstaben einzeln huepfen lassen, Noten aufsteigen, Equalizer */
   (function fun() {
