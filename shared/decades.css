@@ -1352,6 +1352,10 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   z-index: 5;
 }
 body.dnd-dragging .dj-vinyl-dragshield { pointer-events: auto; }
+/* Jog-Flaeche ueber dem Plattenteller (siehe ccWireJog) */
+.cc-jog { position: absolute; inset: 8px; border-radius: 50%; z-index: 4; cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; }
+.cc-jog.cc-jog-on { cursor: grabbing; box-shadow: 0 0 0 2px var(--dc), 0 0 22px color-mix(in srgb, var(--dc) 70%, transparent); }
+body.dnd-dragging .cc-jog { pointer-events: none; }
 
 /* Digitales Display (wie eine alte Autoradio-/Weckerklok-LCD-Anzeige) fuer
    Titel/Interpret/Restzeit/BPM -- per Klick durchschaltbar zwischen vier

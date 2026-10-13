@@ -1359,6 +1359,7 @@ function deckHTML(key) {
     '        <div class="dj-vinyl-ring" aria-hidden="true"><span class="dj-vinyl-dot"></span></div>' +
     '      </div>' +
     '      <div class="dj-vinyl-hint">Song hierher ziehen</div>' +
+    '      <div class="cc-jog" id="deck-' + key + '-jog" title="Plattenteller drehen: Song stehend = Position suchen, laufend = Tempo kurz anschieben/bremsen" aria-label="Deck ' + key + ': Plattenteller drehen"></div>' +
     '      <div class="dj-vinyl-dragshield" id="deck-' + key + '-dragshield" aria-hidden="true"></div>' +
     '    </div>' +
     '    <div class="cc-pads">' +
@@ -1411,6 +1412,104 @@ function ccRefreshCues(key) {
     btn.disabled = !deck.song;
   });
 }
+/* Plattenteller zum Drehen (Nutzerwunsch 13.10.): Der Teller ist ein Jog-Rad.
+   - Deck steht: Drehen sucht die Position (1 Umdrehung = 1,8 s wie bei
+     33 1/3 U/min, rechtsherum vor), die Wellenform laeuft mit. So bringt man
+     das Deck auf die Mixstelle, ohne die Wellenform anzuklicken.
+   - Deck laeuft: Drehen schiebt das Tempo kurz an (rechtsherum) oder bremst
+     (linksherum), wie Pitch-Bend; beim Loslassen zurueck zum eingestellten
+     Tempo. YouTube kennt nur feste Tempostufen, deshalb eine Stufe hoch/runter.
+   Hoeren kann man die Suche nur, wenn das Deck laeuft -- ein Vorhoeren auf
+   einem zweiten Ausgang ist mit YouTube-Playern nicht moeglich. */
+var CC_JOG_SEC_PER_REV = 1.8;
+var CC_JOG_RATES = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+function ccWireJog(bar, key) {
+  var el = bar.querySelector('#deck-' + key + '-jog');
+  var deck = DECKS[key];
+  if (!el) return;
+  var strobe = bar.querySelector('#deck-' + key + ' .cc-strobe');
+  var ring = bar.querySelector('#deck-' + key + ' .dj-vinyl-ring');
+  var st = null, idleTimer = null;
+  function angle(e) {
+    var r = el.getBoundingClientRect();
+    return Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2));
+  }
+  function stepRate(base, dir) {
+    var i = CC_JOG_RATES.indexOf(base);
+    if (i < 0) { i = 0; CC_JOG_RATES.forEach(function (r, k) { if (Math.abs(r - base) < Math.abs(CC_JOG_RATES[i] - base)) i = k; }); }
+    return CC_JOG_RATES[Math.max(0, Math.min(CC_JOG_RATES.length - 1, i + dir))];
+  }
+  function setRate(r) {
+    if (st.rate === r) return;
+    st.rate = r;
+    try { deck.player.setPlaybackRate(r); } catch (e) {}
+  }
+  function paint(rot) {
+    var tr = 'rotate(' + rot + 'rad)';
+    if (strobe) strobe.style.transform = tr;
+    if (ring && !st.playing) ring.style.transform = tr;
+  }
+  function finish() {
+    if (!st) return;
+    var s = st; st = null;
+    clearInterval(idleTimer);
+    el.classList.remove('cc-jog-on');
+    if (strobe) strobe.style.transform = '';
+    if (ring) ring.style.transform = '';
+    if (s.playing) {
+      try { deck.player.setPlaybackRate(deck.rate || 1); } catch (e) {}
+    } else {
+      try { deck.player.seekTo(s.t, true); } catch (e) {}
+      drawWaveform(key);
+      /* seekTo auf einem noch nicht gestarteten Video startet es manchmal */
+      setTimeout(function () {
+        try { if (!deck.isPlaying && deck.player.getPlayerState && deck.player.getPlayerState() === 1) deck.player.pauseVideo(); } catch (e) {}
+      }, 250);
+    }
+  }
+  el.addEventListener('pointerdown', function (e) {
+    if (!deck.song || !deck.player || !deck.player.getCurrentTime) return;
+    e.preventDefault();
+    try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    var t = 0, dur = 0;
+    try { t = deck.player.getCurrentTime() || 0; dur = deck.player.getDuration() || 0; } catch (err) {}
+    st = { id: e.pointerId, a: angle(e), rot: 0, t: t, dur: dur, playing: !!deck.isPlaying,
+           seekAt: 0, moveAt: performance.now(), vel: 0, rate: deck.rate || 1, base: deck.rate || 1 };
+    el.classList.add('cc-jog-on');
+    if (st.playing) {
+      idleTimer = setInterval(function () {
+        if (st && performance.now() - st.moveAt > 160) { st.vel = 0; setRate(st.base); }
+      }, 80);
+    }
+  });
+  el.addEventListener('pointermove', function (e) {
+    if (!st || e.pointerId !== st.id) return;
+    var a = angle(e), d = a - st.a;
+    if (d > Math.PI) d -= 2 * Math.PI;
+    if (d < -Math.PI) d += 2 * Math.PI;
+    st.a = a; st.rot += d;
+    paint(st.rot);
+    var now = performance.now();
+    if (!st.playing) {
+      st.t = Math.max(0, Math.min(st.dur || 1e9, st.t + d / (2 * Math.PI) * CC_JOG_SEC_PER_REV));
+      if (now - st.seekAt > 70) {
+        st.seekAt = now;
+        try { deck.player.seekTo(st.t, false); } catch (err) {}
+        drawWaveform(key);
+      }
+    } else {
+      var dt = Math.max(0.008, (now - st.moveAt) / 1000);
+      st.vel = st.vel * 0.6 + (d / dt) * 0.4; /* rad/s, geglaettet */
+      st.moveAt = now;
+      if (st.vel > 1.5) setRate(stepRate(st.base, 1));
+      else if (st.vel < -1.5) setRate(stepRate(st.base, -1));
+      else if (Math.abs(st.vel) < 0.5) setRate(st.base);
+    }
+  });
+  el.addEventListener('pointerup', finish);
+  el.addEventListener('pointercancel', finish);
+}
+
 function ccWireDeckPads(bar, key) {
   var deck = DECKS[key];
   bar.querySelectorAll('#deck-' + key + ' .cc-cue').forEach(function (btn) {
@@ -1763,6 +1862,7 @@ function ensureDjPlayer() {
     wireWaveformSeek(key);
     wireDigitalDisplay(key);
     ccWireDeckPads(bar, key);
+    ccWireJog(bar, key);
     ccRefreshCues(key);
     var gainEl = bar.querySelector('#dj-gain-' + key);
     if (gainEl) gainEl.addEventListener('input', function () { deckGain[key] = +gainEl.value; applyCrossfaderVolumes(); });
