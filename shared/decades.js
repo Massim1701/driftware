@@ -4732,7 +4732,7 @@ function renderPlaylistGenerator(mountRoot, config) {
    ===================================================================== */
 var CC_LYRICS_CACHE = {};
 var CC_LYRICS_OFFSET_KEY = 'driftware-lyrics-offset-v1';
-var CC_LYRICS_ON_KEY = 'driftware-lyrics-on-v1';
+var CC_LYRICS_ON_KEY = 'driftware-lyrics-on-v2';
 var CC_BALL = 9; /* Balldurchmesser in px, muss zu .cc-lyrics-ball passen */
 var ccLyrics = { songKey: null, lines: null, msg: '', view: null, wordEls: [], deckKey: null, clock: null };
 
@@ -4744,7 +4744,7 @@ function ccLyricsHTML() {
     '  <div class="cc-lyrics-next" id="cc-lyrics-next"></div>' +
     '</div>' +
     '<div class="cc-lyrics-ctrl">' +
-    '  <button type="button" class="cc-pad cc-small cc-lyrics-pop" id="cc-lyrics-tab" title="Karaoke gross in eigenem Tab (als Fenster abziehbar, z. B. auf einen zweiten Monitor)" aria-label="Karaoke-Tab öffnen">TAB</button>' +
+    '  <a class="cc-pad cc-small cc-lyrics-pop" id="cc-lyrics-tab" href="/karaoke-fenster/" target="driftware-karaoke" title="Karaoke gross in eigenem Tab (als Fenster abziehbar, z. B. auf einen zweiten Monitor)" aria-label="Karaoke-Tab öffnen" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">TAB</a>' +
     '  <button type="button" class="cc-pad cc-small cc-lyrics-pop" id="cc-lyrics-pop" title="Karaoke in eigenem kleinen Fenster (immer im Vordergrund)" aria-label="Karaoke in eigenem Fenster">&#10697;</button>' +
     '  <button type="button" class="cc-pad cc-lyrics-toggle" id="cc-lyrics-toggle" aria-pressed="true" title="Karaoke-Leiste ein-/ausschalten">KARAOKE AN</button>' +
     '  <div class="cc-lyrics-tools">' +
@@ -5242,7 +5242,6 @@ function ccLyricsInit(bar) {
     ccLyricsEl('cc-lyrics-offset').textContent = ccLyricsFormatOffset(ccLyricsGetOffset(key));
     ccLyrics.view = null;
   });
-  bar.querySelector('#cc-lyrics-tab').addEventListener('click', ccKarOpenTab);
   var popBtn = bar.querySelector('#cc-lyrics-pop');
   if (!ccLyricsPipSupported()) popBtn.hidden = true;
   popBtn.addEventListener('click', function () { if (ccPip) ccLyricsPipClose(); else ccLyricsPipOpen(); });
