@@ -4880,12 +4880,7 @@ function ccLyricsActiveDeck() {
   var a = DECKS.A, b = DECKS.B;
   if (a.isPlaying && !b.isPlaying) return 'A';
   if (b.isPlaying && !a.isPlaying) return 'B';
-  if (a.isPlaying && b.isPlaying) {
-    /* laeuft nur eines der beiden Decks mit Karaoke-Song, gilt dieses */
-    var ak = !!(a.song && a.song.kar), bk = !!(b.song && b.song.kar);
-    if (ak !== bk) return ak ? 'A' : 'B';
-    return crossfaderValue <= 50 ? 'A' : 'B';
-  }
+  if (a.isPlaying && b.isPlaying) return crossfaderValue <= 50 ? 'A' : 'B';
   if (ccLyrics.deckKey && DECKS[ccLyrics.deckKey].song) return ccLyrics.deckKey;
   return a.song ? 'A' : (b.song ? 'B' : null);
 }
