@@ -5164,12 +5164,12 @@ function ccKarBroadcast() {
   if (!ccKarChan || !ccKarTabSeen || performance.now() - ccKarTabSeen > 4000) return;
   try {
     var k = ccLyricsActiveDeck(), deck = k ? DECKS[k] : null, song = deck && deck.song;
-    if (!song || !song.kar || !deck.player || !deck.player.getCurrentTime) {
-      var info = ['A', 'B'].map(function (x) { var s = DECKS[x].song; return { k: x, s: s ? s.a + ' – ' + s.t : '(leer)', kar: !!(s && s.kar), playing: !!DECKS[x].isPlaying, aktiv: x === k }; });
-      ccKarChan.postMessage({ type: 'idle', info: info }); return;
-    }
-    ccKarChan.postMessage({ type: 'state', key: ccLyricsSongKey(song), a: song.a, t: song.t, kd: song.kd || 0,
-      time: deck.player.getCurrentTime() || 0, playing: !!deck.isPlaying, rate: deck.rate || 1, ts: Date.now() });
+    var info = ['A', 'B'].map(function (x) { var s = DECKS[x].song; return { k: x, s: s ? s.a + ' – ' + s.t : '(leer)', kar: !!(s && s.kar), playing: !!DECKS[x].isPlaying, aktiv: x === k }; });
+    if (!song || !deck.player || !deck.player.getCurrentTime) { ccKarChan.postMessage({ type: 'idle', info: info }); return; }
+    var dur = 0; try { dur = deck.player.getDuration() || 0; } catch (e) {}
+    /* JEDER Song im aktiven Deck: Studiofassungen (kar) laufen synchron, bei Musikvideos kann der Text abweichen (-/+ im Tab) */
+    ccKarChan.postMessage({ type: 'state', key: ccLyricsSongKey(song), a: song.a, t: song.t, kar: !!song.kar, kd: song.kd || 0, dur: dur,
+      time: deck.player.getCurrentTime() || 0, playing: !!deck.isPlaying, rate: deck.rate || 1, ts: Date.now(), info: info });
   } catch (e) {}
 }
 setInterval(ccKarBroadcast, 150);

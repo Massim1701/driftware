@@ -35,6 +35,7 @@
   body.live .badge { display: block; animation: wobble 4s ease-in-out infinite; }
   .badge .art { display: inline-block; background: var(--gold); color: #2a0a18; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; font-size: clamp(11px, 1.5vw, 18px); padding: 3px 10px; border-radius: 6px; box-shadow: 3px 3px 0 var(--pink); }
   .badge .ttl { display: block; margin-top: 6px; font-weight: 900; font-size: clamp(18px, 3vw, 40px); line-height: 1.05; background: linear-gradient(90deg, var(--pink), var(--gold), var(--cyan)); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 5s linear infinite; }
+  .badge .note { display: block; margin-top: 4px; font-size: clamp(11px, 1.3vw, 15px); color: var(--muted); font-weight: 700; }
   @keyframes shine { to { background-position: 200% 0; } }
   @keyframes wobble { 0%,100% { transform: rotate(2deg) translateY(0); } 50% { transform: rotate(-1deg) translateY(3px); } }
 
@@ -80,7 +81,7 @@
 <div class="notes" id="notes"></div>
 <div class="top">
   <div class="by"><small>by</small><b>driftware</b></div>
-  <div class="badge" id="badge"><span class="art" id="art"></span><span class="ttl" id="ttl"></span></div>
+  <div class="badge" id="badge"><span class="art" id="art"></span><span class="ttl" id="ttl"></span><span class="note" id="note"></span></div>
 </div>
 <h1 id="h1">Karaoke</h1>
 <div class="stage" id="stage"><div class="view" id="view"><div class="rows" id="rows"></div><i class="ball" id="ball"></i></div></div>
@@ -95,7 +96,7 @@
   var OFFSET_KEY = 'driftware-lyrics-offset-v1';
   var chan = null;
   try { chan = new BroadcastChannel('driftware-karaoke'); } catch (e) {}
-  var cur = { key: null, lines: null, msg: null, kd: 0 };
+  var cur = { key: null, lines: null, msg: null, kd: 0 }, pend = {};
   var last = null, lastRecv = 0, idleInfo = null;
   var el = function (id) { return document.getElementById(id); };
 
@@ -151,7 +152,8 @@
       if (m.type === 'idle') { last = null; idleInfo = m.info || null; return; }
       if (m.type === 'state') {
         last = m;
-        if (m.key !== cur.key) loadLyrics(m);
+        if (m.key !== cur.key && m.key !== pend.key) { pend = { key: m.key, since: performance.now() }; }
+        if (pend.key === m.key && m.key !== cur.key && (m.kar || m.dur > 0 || performance.now() - pend.since > 3000)) { m.kd = m.kd || Math.round(m.dur); loadLyrics(m); pend = {}; }
       }
     };
     var hello = function () { try { chan.postMessage({ type: 'hello' }); } catch (e) {} };
@@ -222,6 +224,7 @@
     if (!live) { shown = { idx: null, wi: null }; return; }
     if (el('art').textContent !== last.a) el('art').textContent = last.a;
     if (el('ttl').textContent !== last.t) el('ttl').textContent = last.t;
+    el('note').textContent = last.kar ? 'Studiofassung – Text läuft synchron' : 'Musikvideo – Text kann abweichen (−/+ unten rechts)';
     var t = last.time + (last.playing ? (Date.now() - last.ts) / 1000 * (last.rate || 1) : 0) - getOff(last.key);
     el('off').textContent = fmt(getOff(last.key));
     var lines = cur.lines;
