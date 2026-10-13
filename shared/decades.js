@@ -4298,6 +4298,7 @@ function renderPlaylistGenerator(mountRoot, config) {
       renderSongGrid(document.getElementById('gen-grid'), fl);
       return;
     }
+    window.ccKaraokeTileOn = (currentTheme === 'Karaoke'); /* Karaoke-Pop-up schon bei gewaehlter Kachel zeigen */
     var songs = currentSongs();
     if (currentTheme && currentTheme !== MIX_KEY && currentTheme !== ALL_KEY) {
       songs.forEach(function (s) { s._bucket = currentTheme; });
@@ -5002,10 +5003,15 @@ function ccLyricsTick() {
   var isKar = !!(song && song.kar);
   var key0 = song ? ccLyricsSongKey(song) : null;
   if (isKar && key0 !== ccLyrics.autoKey) { ccLyrics.autoKey = key0; if (!ccPip && ccLyricsPipSupported() && navigator.userActivation && navigator.userActivation.isActive) ccLyricsPipOpen(); }
-  root.classList.toggle('cc-lyrics-hidden', !isKar && !ccPip);
+  var tileOn = !!window.ccKaraokeTileOn;
+  root.classList.toggle('cc-lyrics-hidden', !isKar && !ccPip && !tileOn);
   if (!isKar) {
     ccLyrics.songKey = undefined; ccLyrics.lines = null;
-    if (ccPip) { ccLyricsEl('cc-lyrics-words').textContent = 'Kachel „Karaoke" wählen und einen Song starten'; ccLyricsEl('cc-lyrics-prev').textContent = ''; ccLyricsEl('cc-lyrics-next').textContent = ''; ccLyrics.view = null; }
+    if (ccPip || tileOn) {
+      var w = ccLyricsEl('cc-lyrics-words'), msg = 'Song aus der Karaoke-Liste starten – hier läuft der Text mit';
+      if (w.textContent !== msg) { w.textContent = msg; ccLyricsEl('cc-lyrics-prev').textContent = ''; ccLyricsEl('cc-lyrics-next').textContent = ''; ccLyrics.view = null; }
+      ccLyricsSetAvail('yes');
+    }
     return;
   }
   if (!ccLyricsIsOn()) { ccLyricsSetAvail('off'); return; }
