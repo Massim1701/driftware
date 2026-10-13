@@ -4746,7 +4746,7 @@ function ccLyricsHTML() {
     '<div class="cc-lyrics-ctrl">' +
     '  <a class="cc-pad cc-small cc-lyrics-pop" id="cc-lyrics-tab" href="/karaoke-fenster/" target="driftware-karaoke" title="Karaoke gross in eigenem Tab (als Fenster abziehbar, z. B. auf einen zweiten Monitor)" aria-label="Karaoke-Tab öffnen" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">TAB</a>' +
     '  <button type="button" class="cc-pad cc-small cc-lyrics-pop" id="cc-lyrics-pop" title="Karaoke in eigenem kleinen Fenster (immer im Vordergrund)" aria-label="Karaoke in eigenem Fenster">&#10697;</button>' +
-    '  <button type="button" class="cc-pad cc-lyrics-toggle" id="cc-lyrics-toggle" aria-pressed="true" title="Karaoke-Leiste ein-/ausschalten">KARAOKE AN</button>' +
+    '  <button type="button" class="cc-pad cc-lyrics-toggle" id="cc-lyrics-toggle" aria-pressed="true" hidden style="display:none" title="">KARAOKE AN</button>' +
     '  <div class="cc-lyrics-tools">' +
     '    <button type="button" class="cc-pad cc-small" id="cc-lyrics-earlier" aria-label="Text früher (−0,5 s)">−</button>' +
     '    <span class="cc-lyrics-offset" id="cc-lyrics-offset" title="Versatz des Textes zum Video">0,0 s</span>' +
@@ -4778,11 +4778,8 @@ function ccLyricsSetOffset(key, val) {
 }
 function ccLyricsFormatOffset(v) { return (v > 0 ? '+' : '') + v.toFixed(1).replace('.', ',') + ' s'; }
 
-/* Standard AUS (Nutzerwunsch 10.10.): mit Karaoke laeuft die Studiofassung
-   statt des Musikvideos -- das soll nur bekommen, wer Karaoke selbst einschaltet. */
-function ccLyricsIsOn() {
-  try { return localStorage.getItem(CC_LYRICS_ON_KEY) !== '0'; } catch (e) { return true; }
-}
+/* Karaoke ist immer an (13.10.2026) -- kein Ein-/Ausschalten mehr: Song aus der Kachel Karaoke = Text im Player und im Tab. */
+function ccLyricsIsOn() { return true; }
 
 /* Titel fuer die Suche saeubern: "(Remix)", "[Live]", "- 2011 Remaster",
    "feat. ..." verhindern sonst jeden Treffer. */
