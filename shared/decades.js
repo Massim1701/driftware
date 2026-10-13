@@ -5010,7 +5010,7 @@ function ccLyricsTick() {
   if (isKar && key0 !== ccLyrics.autoKey) { ccLyrics.autoKey = key0; if (!ccPip && navigator.userActivation && navigator.userActivation.isActive) ccKarEnsureTab(); }
   var tileOn = !!window.ccKaraokeTileOn;
   var tabOn = ccKarTabConnected();
-  root.classList.toggle('cc-lyrics-hidden', tabOn && !ccPip || (!isKar && !ccPip && !tileOn));
+  root.classList.toggle('cc-lyrics-hidden', true); /* Karaoke laeuft nur noch im eigenen Fenster / Tab */
   if (!isKar) {
     ccLyrics.songKey = undefined; ccLyrics.lines = null;
     if (ccPip || tileOn) {
@@ -5184,31 +5184,62 @@ function ccKarEnsureTab() {
   ccKarBlocked = !w;
 }
 function ccKarOpenTab() { /* Tab-Oeffnen entfaellt: Karaoke steckt als Dock im Player */ }
-/* Karaoke-Dock (13.10.2026): die Karaoke-Seite steckt als festes Feld unten im Player (iframe,
-   gleiche Adresse /mitsingen/ wie der eigene Tab). Kein Pop-up, kein zweiter Tab, kein Blocker:
-   Song im Player -> Text im Dock. Der Knopf "KARAOKE" klappt es auf/zu. */
+/* Karaoke-Fenster (13.10.2026): ein EIGENES Fenster, das man verschieben und vergroessern kann
+   (auch auf einen zweiten Monitor). Zuerst "Document Picture-in-Picture" (Chrome/Edge: ein
+   Browser-Fenster, kein Pop-up, vom Blocker nicht betroffen), sonst ein normales Fenster mit
+   fester Groesse, und als allerletzte Rettung das Dock im Player. Inhalt ist die Karaoke-Seite
+   /mitsingen/ (gleiche Seite wie der Tab); sie haengt per BroadcastChannel am Player. */
 var CC_DOCK_KEY = 'driftware-karaoke-dock-v1';
-var CC_DOCK_VERSION = 2;
-(function ccKarDock() {
-  function open() { try { return localStorage.getItem(CC_DOCK_KEY) !== '0'; } catch (e) { return true; } }
+var CC_DOCK_VERSION = 3;
+var ccKarWin = null;
+(function ccKarFenster() {
   function init() {
-    if (document.getElementById('cc-kdock')) return;
+    if (document.getElementById('cc-kbtn')) return;
     var st = document.createElement('style');
-    st.textContent = '#cc-kdock{position:fixed;left:0;right:0;bottom:0;height:clamp(250px,38vh,400px);z-index:50;background:#13060d;border-top:2px solid #ff3d81;box-shadow:0 -8px 30px rgba(0,0,0,.55)}' +
-      '#cc-kdock iframe{width:100%;height:100%;border:0;display:block}' +
-      '#cc-kdock-btn{position:fixed;right:12px;bottom:12px;z-index:51;font:800 13px/1 Inter,system-ui,sans-serif;letter-spacing:.06em;color:#2a0a18;background:linear-gradient(90deg,#ffd23f,#ff3d81);border:0;border-radius:999px;padding:9px 16px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.5)}' +
-      'body.cc-kdock-open #cc-kdock-btn{bottom:calc(clamp(250px,38vh,400px) + 10px)}' +
-      'body.cc-kdock-open{padding-bottom:clamp(250px,38vh,400px)}' +
-      '.cc-kdock-hide{display:none!important}';
+    st.textContent = '#cc-kbtn{position:fixed;right:12px;bottom:12px;z-index:51;font:800 13px/1 Inter,system-ui,sans-serif;letter-spacing:.06em;color:#2a0a18;background:linear-gradient(90deg,#ffd23f,#ff3d81);border:0;border-radius:999px;padding:9px 16px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.5)}' +
+      '#cc-kbtn small{display:block;font:600 10px/1.2 Inter,system-ui,sans-serif;letter-spacing:0;margin-top:3px;max-width:230px;white-space:normal}' +
+      '#cc-kdock{position:fixed;left:0;right:0;bottom:0;height:clamp(250px,38vh,400px);z-index:50;background:#13060d;border-top:2px solid #ff3d81}' +
+      '#cc-kdock iframe{width:100%;height:100%;border:0;display:block}';
     document.head.appendChild(st);
-    var dock = document.createElement('div'); dock.id = 'cc-kdock';
-    var fr = document.createElement('iframe'); fr.title = 'Karaoke'; fr.src = '/mitsingen/?dock=1&v=' + CC_DOCK_VERSION;
-    dock.appendChild(fr);
-    var btn = document.createElement('button'); btn.type = 'button'; btn.id = 'cc-kdock-btn';
-    function apply(on) { dock.classList.toggle('cc-kdock-hide', !on); document.body.classList.toggle('cc-kdock-open', on); btn.textContent = on ? '× KARAOKE' : '♪ KARAOKE'; }
-    btn.addEventListener('click', function () { var on = !open(); try { localStorage.setItem(CC_DOCK_KEY, on ? '1' : '0'); } catch (e) {} apply(on); });
-    document.body.appendChild(dock); document.body.appendChild(btn);
-    apply(open());
+    var btn = document.createElement('button'); btn.type = 'button'; btn.id = 'cc-kbtn'; btn.textContent = '♪ KARAOKE-FENSTER';
+    btn.title = 'Öffnet ein eigenes Karaoke-Fenster – verschiebbar und vergrößerbar, z. B. auf den zweiten Monitor';
+    var hint = document.createElement('small'); btn.appendChild(hint);
+    function note(msg) { hint.textContent = msg || ''; }
+    function showDock() {
+      if (document.getElementById('cc-kdock')) return;
+      var d = document.createElement('div'); d.id = 'cc-kdock';
+      var f = document.createElement('iframe'); f.src = '/mitsingen/?dock=1&v=' + CC_DOCK_VERSION; d.appendChild(f);
+      document.body.appendChild(d); btn.style.bottom = 'calc(clamp(250px,38vh,400px) + 10px)';
+    }
+    function url() { return '/mitsingen/?v=' + CC_DOCK_VERSION; }
+    btn.addEventListener('click', function () {
+      note('');
+      if (ccKarWin && !ccKarWin.closed) { try { ccKarWin.focus(); } catch (e) {} return; }
+      /* 1. Document Picture-in-Picture */
+      if (window.documentPictureInPicture && documentPictureInPicture.requestWindow) {
+        documentPictureInPicture.requestWindow({ width: 820, height: 460 }).then(function (w) {
+          ccKarWin = w;
+          w.document.title = '♪ KARAOKE';
+          w.document.body.style.cssText = 'margin:0;background:#13060d;overflow:hidden';
+          var f = w.document.createElement('iframe'); f.src = url();
+          f.style.cssText = 'border:0;width:100vw;height:100vh;display:block';
+          w.document.body.appendChild(f);
+          btn.style.display = 'none';
+          w.addEventListener('pagehide', function () { ccKarWin = null; btn.style.display = ''; });
+        }).catch(function () { normal(); });
+        return;
+      }
+      normal();
+    });
+    /* 2. normales Fenster mit fester Groesse (als Link-Klick-Ersatz), 3. Dock */
+    function normal() {
+      var w = null;
+      try { w = window.open(url(), 'driftware-karaoke', 'popup=yes,width=900,height=520'); } catch (e) {}
+      if (w) { ccKarWin = w; return; }
+      note('Fenster vom Browser blockiert – Karaoke läuft jetzt unten im Player.');
+      showDock();
+    }
+    document.body.appendChild(btn);
   }
   if (document.body) init(); else document.addEventListener('DOMContentLoaded', init);
 })();
