@@ -1,0 +1,9 @@
+{
+ "hinweis": "Songs, die NICHT in die Karaoke-Kachel duerfen (falsches Video o. ae.). Schluessel wie in videos.json: 'Interpret|Titel'.",
+ "songs": [
+  "Dire Straits|Your Latest Trick",
+  "BLUE|GUILTY",
+  "Daya|Sit Still, Look Pretty",
+  "Baby K (2)|Da Zero A Cento"
+ ]
+}

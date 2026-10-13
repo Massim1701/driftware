@@ -1,0 +1,106 @@
+name: Karaoke-Songs nachziehen
+
+# Sucht pro Song die STUDIOFASSUNG ("Interpret - Topic"-Audio von YouTube), auf die die
+# LRCLIB-Zeitstempel passen, und zieht die Songs in die Karaoke-Kachel nach
+# (tools/fetch_karaoke_videos.py + tools/sync_karaoke_tile.py).
+# Keine Mixe, Remixe, Live-, Extended- oder Edit-Versionen -- weder beim Song noch beim Video.
+#
+# Daten: karaoke/videos.json + karaoke/status.json (schreibt nur dieser Workflow).
+# Die Kachel (Kategorie "Karaoke" in den Dekaden, "TextLaeuftMit" bei der Stimmung Karaoke)
+# wird daraus deterministisch neu gebaut und mit committet.
+#
+# Zeitplan: 2 Laeufe am Tag a hoechstens 5 h (07:23 und 19:23 UTC), ausserhalb 03:00-06:30 UTC,
+# wo die anderen yt-dlp-Workflows laufen. Ist alles erledigt, endet ein Lauf nach Sekunden.
+# Bei einer YouTube-Sperre (viele Fehler in Folge) bricht der Lauf von selbst ab.
+on:
+  schedule:
+    - cron: '23 7,19 * * *'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Optional: hoechstens so viele Songs (zum Testen), leer = bis Zeitbudget'
+        required: false
+        type: string
+        default: ''
+
+concurrency:
+  group: karaoke-songs
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  karaoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 320
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Abhaengigkeiten installieren
+        run: pip install --quiet yt-dlp
+
+      - name: Studiofassungen suchen
+        timeout-minutes: 305
+        env:
+          KARAOKE_TIME_BUDGET_SECONDS: '18000'
+          LIMIT: ${{ inputs.limit }}
+        run: |
+          if [ -n "$LIMIT" ]; then
+            python3 tools/fetch_karaoke_videos.py --limit "$LIMIT"
+          else
+            python3 tools/fetch_karaoke_videos.py
+          fi
+
+      - name: Karaoke-Kachel neu bauen
+        if: always()
+        run: python3 tools/sync_karaoke_tile.py
+
+      - name: Committen und pushen
+        # auch nach Abbruch: Zwischenstand sichern
+        if: always()
+        run: |
+          git config user.name "driftware-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add karaoke/videos.json karaoke/status.json karaoke/ausschluss.json \
+            70er-music/songs.json 80er-music/songs.json 90er-music/songs.json \
+            2000er-music/songs.json 2010er-music/songs.json 2020er-music/songs.json karaoke-music/songs.json
+          if git diff --cached --quiet; then
+            echo "Keine Aenderungen."
+            exit 0
+          fi
+          git commit -m "Karaoke-Songs nachgezogen (Studiofassungen)"
+
+          # Andere Workflows aendern dieselben songs.json. Bei einem Rebase-Konflikt wird nicht von Hand
+          # zusammengefuehrt, sondern auf den frischen Remote-Stand zurueckgesetzt: die Karaoke-Daten
+          # (karaoke/*.json) bleiben erhalten, die Kachel wird daraus neu gebaut (deterministisch).
+          for i in 1 2 3 4 5; do
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push erfolgreich (Versuch $i)."
+              exit 0
+            fi
+            echo "Push abgelehnt (Versuch $i), hole Remote-Stand..."
+            git fetch origin "$GITHUB_REF_NAME"
+            if git rebase "origin/$GITHUB_REF_NAME"; then
+              continue
+            fi
+            git rebase --abort || true
+            rm -rf /tmp/karaoke-keep && mkdir -p /tmp/karaoke-keep
+            cp karaoke/videos.json karaoke/status.json /tmp/karaoke-keep/
+            git reset --hard "origin/$GITHUB_REF_NAME"
+            cp /tmp/karaoke-keep/videos.json /tmp/karaoke-keep/status.json karaoke/
+            python3 tools/sync_karaoke_tile.py
+            git add karaoke/videos.json karaoke/status.json \
+              70er-music/songs.json 80er-music/songs.json 90er-music/songs.json \
+              2000er-music/songs.json 2010er-music/songs.json 2020er-music/songs.json karaoke-music/songs.json
+            git commit -m "Karaoke-Songs nachgezogen (Studiofassungen)" || exit 0
+          done
+          echo "::error::Push nach mehreren Versuchen fehlgeschlagen."
+          exit 1
