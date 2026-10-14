@@ -1,3 +1,10 @@
+/* Safari-Leicht-Modus (Nutzerbericht 14.10.: "Safari ruckelt"): Klasse "lite" auf <html>; ?lite=0 schaltet ihn ab,
+   ?lite=1 erzwingt ihn. Die zugehoerigen CSS-Regeln stehen am Ende von decades.css. */
+(function () {
+  var q = location.search, safari = /^((?!chrome|chromium|crios|fxios|android).)*safari/i.test(navigator.userAgent);
+  if ((safari && !/[?&]lite=0/.test(q)) || /[?&]lite=1/.test(q)) document.documentElement.classList.add('lite');
+})();
+
 /* Gemeinsame Render-Logik fuer alle Dekaden-Seiten (80er, 90er, 2000er, ...).
    Jede Dekaden-Seite definiert nur ein DECADE-Konfigurationsobjekt und ruft
    eine der drei render*-Funktionen unten auf. So bleibt jede neue Dekade
@@ -1654,7 +1661,7 @@ function ccFormatTime(t) {
 var ccLastFrame = 0;
 function ccVisualLoop(now) {
   requestAnimationFrame(ccVisualLoop);
-  if (now - ccLastFrame < 50) return;
+  if (now - ccLastFrame < (document.documentElement.classList.contains('lite') ? 100 : 50)) return;
   ccLastFrame = now;
   var masterBpm = null;
   ['A', 'B'].forEach(function (key) {
