@@ -94,20 +94,25 @@
     var variants = [{ name: 'Ausgangslage (so wie die Seite ist)', set: {} }, { name: 'Leicht-Modus AUS (Zustand vor meinen Aenderungen)', set: { lite: false } }].concat(EFFECTS.filter(function (e) { return e.key !== 'lite'; }).map(function (e) { var s = {}; s[e.key] = true; return { name: e.label, set: s }; }));
     var allOff = {}; EFFECTS.forEach(function (e) { if (e.key !== 'lite') allOff[e.key] = true; });
     variants.push({ name: 'ALLES aus', set: allOff });
-    log('--- Test laeuft (~' + Math.round(variants.length * 3) + ' s), bitte nichts bewegen ---');
+    var btn = box.querySelector('#ccp-all'), btnText = btn.innerHTML;
+    log('--- START: ' + variants.length + ' Varianten, ca. ' + Math.round(variants.length * 5) + ' s. Bitte NICHT kopieren, bevor "FERTIG" erscheint ---');
     var i = 0;
     function next() {
       if (i >= variants.length) {
-        state = {}; apply(); syncChecks();
-        results.sort(function (a, b) { return a.r.median - b.r.median; });
-        log('--- Ergebnis (Median je Bild, kleiner = besser) ---');
-        results.forEach(function (x) { log(x.r.median.toFixed(1) + ' ms  p95 ' + x.r.p95.toFixed(0) + '  ' + x.name); });
+        state = {}; apply(); syncChecks(); btn.innerHTML = btnText;
+        results.sort(function (a, b) { return (a.l.median + a.p.median) - (b.l.median + b.p.median); });
+        log('=== FERTIG - Median je Bild in ms (Liste / Seite), kleiner = besser ===');
+        results.forEach(function (x) { log(x.l.median.toFixed(1) + ' / ' + x.p.median.toFixed(1) + '  (p95 ' + x.l.p95.toFixed(0) + ' / ' + x.p.p95.toFixed(0) + ')  ' + x.name); });
         return;
       }
-      var v = variants[i++]; state = Object.assign({}, v.set); apply(); syncChecks();
-      return new Promise(function (r) { setTimeout(r, 900); }).then(function () { return runScroll('list', 150); }).then(function (r) { results.push({ name: v.name, r: r }); return next(); });
+      var v = variants[i++]; btn.textContent = 'laeuft ' + i + '/' + variants.length + ' ...';
+      state = Object.assign({}, v.set); apply(); syncChecks();
+      var res = {};
+      return new Promise(function (r) { setTimeout(r, 900); })
+        .then(function () { return runScroll('list', 120); }).then(function (r) { res.l = r; return new Promise(function (r2) { setTimeout(r2, 300); }); })
+        .then(function () { return runScroll('page', 120); }).then(function (r) { res.p = r; results.push({ name: v.name, l: res.l, p: res.p }); return next(); });
     }
     return next();
   });
-  log('Bereit. "Alle Varianten testen" druecken, 30 s warten, dann "Ergebnis kopieren".');
+  log('Bereit. "Alle Varianten testen" druecken, ca. 1 Minute warten bis "FERTIG" erscheint, dann "Ergebnis kopieren".');
 })();
