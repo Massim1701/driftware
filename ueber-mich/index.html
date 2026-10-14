@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Über mich — Driftware</title>
+<meta name="description" content="Massimo entwickelt unter dem Namen Driftware Apps und Webseiten, von der Gestaltung bis zum Server.">
+<link rel="preload" href="/fonts/BricolageGrotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:300 800;font-display:swap;src:url(/fonts/BricolageGrotesque-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:300 800;font-display:swap;src:url(/fonts/BricolageGrotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+:root{--bg:#F3F3F0;--ink:#0E0E10;--mut:#66666c;--blue:#2236FF;--blue-deep:#1626c4;--rule:#d7d7d2}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:400 18px/1.55 'Bricolage Grotesque',system-ui,-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;accent-color:var(--blue);caret-color:var(--blue)}
+::selection{background:var(--blue);color:#fff}
+a{color:inherit}
+:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 56px}
+nav{display:flex;justify-content:space-between;align-items:center}
+nav b{font-weight:700;font-size:20px;letter-spacing:-.03em}
+nav div{display:flex;gap:6px}
+nav a{display:inline-flex;align-items:center;min-height:72px;padding:0 14px;font-size:15px;text-decoration:none;color:var(--mut)}
+nav b{display:inline-flex;align-items:center;min-height:72px}
+.hero{padding:9vh 0 11vh}
+h1{font-weight:300;font-size:clamp(50px,10vw,164px);line-height:.92;letter-spacing:-.06em;text-wrap:balance}
+h1 em{font-style:normal;font-weight:700;color:var(--blue)}
+.sub{margin-top:56px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end}
+.sub p{font-size:24px;line-height:1.45;max-width:26ch;color:var(--mut)}
+.sub a{justify-self:end;display:inline-flex;gap:14px;align-items:center;min-height:44px;font-weight:600;font-size:20px;text-decoration:none;border-bottom:2px solid var(--blue)}
+.lead{padding:56px 0 30px;font-size:15px;color:var(--mut);letter-spacing:.02em}
+.list{border-top:1px solid var(--ink)}
+.item{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;padding:42px 0;border-bottom:1px solid var(--rule);align-items:center;text-decoration:none;color:inherit}
+.item h2,.item h3{font-weight:300;font-size:clamp(40px,6.2vw,104px);letter-spacing:-.055em;line-height:.95;transition:color .3s,letter-spacing .4s}
+.item p{line-height:1.5;font-size:19px;color:var(--mut);max-width:38ch;justify-self:end}
+a.item{grid-template-columns:1.8fr 1fr}
+.item .go{justify-self:end;display:flex;gap:18px;align-items:center;font-size:19px;color:var(--mut)}
+.item .go i{font-style:normal;font-size:34px;color:var(--ink);transition:transform .35s,color .3s}
+.sec{padding-top:140px}
+.end{margin-top:150px;background:var(--blue);color:#fff;padding:8px 0}
+.end .wrap{padding-top:130px;padding-bottom:30px}
+.end h2{font-weight:300;font-size:clamp(54px,12vw,200px);line-height:.88;letter-spacing:-.065em}
+.end h2 b{font-weight:700}
+.end p{margin-top:36px;font-size:22px;max-width:34ch;opacity:.92}
+.btn{display:inline-flex;align-items:center;min-height:56px;margin-top:44px;background:#fff;color:var(--blue);border:0;padding:0 34px;font:600 18px/1.4 'Bricolage Grotesque',system-ui,sans-serif;border-radius:999px;cursor:pointer;transition:background .25s,color .25s}
+footer{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;padding:110px 0 24px;font-size:14px;color:rgba(255,255,255,.8)}
+footer a{color:rgba(255,255,255,.8);text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0 10px}
+footer span:last-child{display:flex;gap:2px;margin-right:-10px}
+@media (hover:hover){
+nav a:hover{color:var(--ink)}
+.sub a:hover{color:var(--blue)}
+.item:hover h2,.item:hover h3{color:var(--blue);letter-spacing:-.045em}
+.item:hover .go i{transform:translateX(8px);color:var(--blue)}
+.btn:hover{background:var(--ink);color:#fff}
+footer a:hover{color:#fff;text-decoration:underline}}
+@media (prefers-reduced-motion:no-preference){
+.hero h1,.hero .sub{animation:up .9s cubic-bezier(.2,.7,.2,1) both}.hero .sub{animation-delay:.12s}
+@keyframes up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}}
+@media (max-width:900px){
+.wrap{padding:0 28px}.hero{padding:48px 0 64px}.sub,.item,a.item{grid-template-columns:1fr;gap:16px}.sub a,.item p,.item .go{justify-self:start}
+.sec{padding-top:96px}.end{margin-top:100px}.end .wrap{padding-top:88px}nav a{padding:0 9px}}
+dialog{margin:auto;border:0;border-radius:4px;background:var(--bg);color:var(--ink);width:min(480px,calc(100% - 32px));padding:38px;overflow:visible}
+dialog::backdrop{background:rgba(14,14,16,.55)}
+dialog h2{font-weight:600;font-size:32px;letter-spacing:-.04em;line-height:1.05;margin-bottom:24px}
+.modal-close{position:absolute;top:6px;right:8px;width:44px;height:44px;background:none;border:0;font-size:28px;line-height:1;cursor:pointer;color:var(--ink)}
+.contact-success{background:#e4e4de;padding:12px 14px;margin-bottom:18px;font-size:15px}
+.contact-form{display:flex;flex-direction:column;gap:18px}
+.contact-form label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+.contact-form input,.contact-form textarea{background:transparent;border:0;border-bottom:1px solid var(--ink);padding:8px 0;font:400 17px/1.4 'Bricolage Grotesque',system-ui,sans-serif;color:var(--ink);border-radius:0;letter-spacing:0;text-transform:none}
+.contact-form input:focus-visible,.contact-form textarea:focus-visible{outline:0;border-bottom:2px solid var(--blue)}
+.contact-form textarea{min-height:96px;resize:vertical}
+.contact-form .btn{background:var(--blue);color:#fff;margin-top:6px;align-self:flex-start}
+.contact-form .btn:hover{background:var(--ink)}
+.contact-honey{position:absolute;left:-9999px}
+
+.about{display:grid;grid-template-columns:repeat(12,1fr);gap:48px 40px;padding:6vh 0 4vh;align-items:start}
+.about .ph{grid-column:1/6;margin:0;line-height:0;background:#000}
+.about .ph img{width:100%;height:auto;display:block}
+.about .tx{grid-column:7/13}
+.about h1{font-size:clamp(48px,7vw,112px);margin-bottom:40px}
+.about p{font-size:20px;color:#3a3a40;max-width:44ch}
+.about p+p{margin-top:20px}
+.about .btn{background:var(--blue);color:#fff;margin-top:40px}
+@media (hover:hover){.about .btn:hover{background:var(--ink)}}
+@media (max-width:900px){.about{padding:24px 0}.about .ph,.about .tx{grid-column:1/13}.about .ph{max-width:420px}}
+nav a[aria-current]{color:var(--ink);border-bottom:2px solid var(--blue);min-height:0;padding:8px 14px 6px;align-self:center}
+</style>
+</head>
+<body>
+<header class="wrap">
+<nav aria-label="Hauptnavigation"><a href="/" style="padding-left:0;font-weight:700;font-size:20px;letter-spacing:-.03em;color:var(--ink)">Driftware</a><div><a href="/#projekte">Projekte</a><a href="/#leistungen">Leistungen</a><a href="/ueber-mich/" aria-current="page">Über mich</a><a href="#kontakt" id="nav-contact">Kontakt</a></div></nav>
+</header>
+<main class="wrap">
+<div class="about">
+<figure class="ph"><img src="/img/massimo.jpg" width="724" height="1086" alt="Schwarz-Weiß-Porträt von Massimo"></figure>
+<div class="tx">
+<h1>Ich bin <em>Massimo</em>.</h1>
+<p>Ich habe jahrzehntelange Erfahrung mit Software: SAP-Customizing, HTML, Swift und Adobe-Programme gehören dazu. Bei den aktuellen Techniken halte ich mich auf dem Laufenden und setze sie ein.</p>
+<p>Unter dem Namen Driftware entwickle ich Apps und Webseiten, allein und von der Gestaltung bis zum Server. Snoxi, mein Foto- und Video-Editor für das iPhone, ist im App Store. Daneben entstehen kleinere, kostenlose Projekte.</p>
+<p>Gestaltung und Code kommen bei mir aus einer Hand. Deshalb passt die Oberfläche zu dem, was dahinter arbeitet.</p>
+<button class="btn open-contact" type="button">Projekt anfragen</button>
+</div>
+</div>
+</main>
+<div class="end" id="kontakt" style="margin-top:100px">
+<div class="wrap" style="padding-top:24px;padding-bottom:12px">
+<footer style="padding:48px 0 16px">
+<span>© 2026 Driftware</span>
+<span><a href="/privacy.html">Datenschutz</a><a href="/terms.html">Nutzungsbedingungen</a><a href="/impressum.html">Impressum</a></span>
+</footer>
+</div>
+</div>
+<dialog id="contact-modal" aria-labelledby="contact-title">
+<button class="modal-close" id="contact-close" type="button" aria-label="Schließen">&times;</button>
+<h2 id="contact-title">Kontakt aufnehmen</h2>
+<div class="contact-success" id="contact-success" role="status" style="display:none;">Danke für deine Nachricht! Ich melde mich so schnell wie möglich bei dir.</div>
+<form class="contact-form" method="POST" action="https://formsubmit.co/0b4cb7348b4cff5d1891bf8d99f1e757">
+<input type="hidden" name="_subject" value="Driftware — neue Kontaktanfrage">
+<input type="hidden" name="_template" value="table">
+<input type="hidden" name="_next" id="contact-next" value="">
+<input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">
+<label><span>Name</span><input type="text" name="name" autocomplete="name" required></label>
+<label><span>Deine E-Mail-Adresse</span><input type="email" name="email" autocomplete="email" required></label>
+<label><span>Nachricht</span><textarea name="message" required></textarea></label>
+<button class="btn" type="submit">Senden</button>
+</form>
+</dialog>
+<script>
+(function () {
+var dlg = document.getElementById('contact-modal');
+document.getElementById('contact-next').value = window.location.origin + window.location.pathname + '?contact=success';
+function open(e) { if (e) e.preventDefault(); if (!dlg.open) dlg.showModal(); }
+document.querySelectorAll('.open-contact,#nav-contact').forEach(function (el) { el.addEventListener('click', open); });
+document.getElementById('contact-close').addEventListener('click', function () { dlg.close(); });
+dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+if (/[?&]contact=success/.test(window.location.search)) {
+document.getElementById('contact-success').style.display = 'block';
+open();
+}
+})();
+</script>
+</body>
+</html>

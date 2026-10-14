@@ -3,521 +3,156 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Driftware — Apps</title>
-<meta name="description" content="Driftware: kleine, unabhängige Apps ohne Schnickschnack. Foto- & Video-Editor Snoxi und weitere Projekte.">
-<link rel="stylesheet" href="/fonts/fonts.css?v=1">
+<title>Driftware — Apps, die gut aussehen und zuverlässig laufen</title>
+<meta name="description" content="Driftware: Gestaltung, iOS-, Android- und Web-Entwicklung, Server und Daten aus einer Hand.">
+<link rel="preload" href="/fonts/BricolageGrotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-:root {
---bg: #0c1224;
---panel: #141c33;
---accent: #3aa8ff;
---text: #f5f7fa;
---muted: #9aa3c0;
---border: rgba(255,255,255,0.08);
-}
-* { box-sizing: border-box; }
-body {
-margin: 0;
-background: var(--bg);
-color: var(--text);
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-line-height: 1.5;
-}
-header {
-max-width: 720px;
-margin: 0 auto;
-padding: 88px 24px 24px;
-text-align: center;
-}
-.brand {
-display: flex;
-align-items: center;
-justify-content: center;
-gap: 14px;
-margin: 0 0 12px;
-}
-.brand-mark {
-width: 48px;
-height: 48px;
-border-radius: 14px;
-background: linear-gradient(135deg, #3aa8ff, #7f5aff);
-display: flex;
-align-items: center;
-justify-content: center;
-font-family: 'Space Grotesk', -apple-system, sans-serif;
-font-weight: 700;
-font-size: 24px;
-color: #0c1224;
-flex-shrink: 0;
-}
-.logo {
-font-family: 'Space Grotesk', -apple-system, sans-serif;
-font-size: 40px;
-font-weight: 700;
-letter-spacing: -0.03em;
-margin: 0;
-background: linear-gradient(90deg, #3aa8ff, #7f5aff);
--webkit-background-clip: text;
-background-clip: text;
-color: transparent;
-}
-.tagline {
-color: var(--muted);
-font-size: 17px;
-margin: 0;
-}
-main {
-max-width: 860px;
-margin: 0 auto;
-padding: 40px 24px 64px;
-}
-.apps {
-display: grid;
-grid-template-columns: repeat(3, 1fr);
-gap: 20px;
-}
-@media (max-width: 720px) {
-.apps { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 480px) {
-.apps { grid-template-columns: 1fr; }
-}
-.app-card {
-display: flex;
-flex-direction: column;
-gap: 16px;
-background: var(--panel);
-border: 1px solid var(--border);
-border-radius: 20px;
-padding: 28px;
-text-decoration: none;
-color: var(--text);
-position: relative;
-transition: transform 0.15s ease, border-color 0.15s ease;
-}
-.app-card:hover {
-transform: translateY(-2px);
-border-color: rgba(255,255,255,0.16);
-}
-.app-card-badge {
-position: absolute;
-top: 20px;
-right: 20px;
-background: rgba(58,168,255,0.14);
-border: 1px solid rgba(58,168,255,0.35);
-color: var(--accent);
-font-size: 11px;
-font-weight: 700;
-padding: 5px 10px;
-border-radius: 20px;
-}
-.app-icon {
-width: 64px;
-height: 64px;
-border-radius: 18px;
-box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-}
-.app-icon-custom {
-width: 64px;
-height: 64px;
-border-radius: 18px;
-box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-display: flex;
-align-items: center;
-justify-content: center;
-}
-.app-icon-custom svg { width: 30px; height: 30px; }
-.app-name {
-font-family: 'Space Grotesk', -apple-system, sans-serif;
-font-weight: 600;
-font-size: 19px;
-}
-.app-desc {
-color: var(--muted);
-font-size: 14px;
-line-height: 1.55;
-margin: 8px 0 0;
-}
-.app-cta {
-color: var(--accent);
-font-size: 13px;
-font-weight: 700;
-margin-top: auto;
-padding-top: 8px;
-}
-.app-card.soon {
-opacity: 0.62;
-cursor: default;
-}
-.app-card.soon:hover {
-transform: none;
-border-color: var(--border);
-}
-.app-card.soon .app-card-badge {
-background: rgba(255,255,255,0.08);
-border-color: rgba(255,255,255,0.18);
-color: var(--muted);
-}
-.app-card.soon .app-cta { display: none; }
-.apps-more {
-display: flex;
-align-items: center;
-justify-content: center;
-gap: 10px;
-margin: 36px 0 0;
-color: var(--muted);
-font-size: 13px;
-}
-.apps-more span.dot {
-width: 5px;
-height: 5px;
-border-radius: 50%;
-background: var(--border);
-}
-.utility-block {
-position: fixed;
-top: 12px;
-left: 50%;
-transform: translateX(-50%);
-z-index: 50;
-display: flex;
-flex-direction: row;
-gap: 10px;
-}
-.utility-tile {
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 3px;
-text-decoration: none;
-color: var(--text);
-width: 40px;
-}
-.utility-icon {
-width: 40px;
-height: 40px;
-border-radius: 11px;
-display: flex;
-align-items: center;
-justify-content: center;
-box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-.utility-icon svg { width: 18px; height: 18px; }
-.utility-icon.placeholder {
-background: rgba(255,255,255,0.06);
-border: 1px dashed var(--border);
-box-shadow: none;
-}
-.utility-label { font-size: 9px; color: var(--muted); }
-.utility-tile.soon { opacity: 0.45; pointer-events: none; }
-  .utility-icon { position: relative; } .hidden-dot { position: absolute; bottom: 2px; right: 2px; width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.12); }
-footer {
-max-width: 720px;
-margin: 0 auto;
-padding: 24px;
-text-align: center;
-color: var(--muted);
-font-size: 13px;
-border-top: 1px solid var(--border);
-}
-footer a { color: var(--accent); text-decoration: none; }
-.modal-overlay {
-display: none;
-position: fixed;
-inset: 0;
-background: rgba(0,0,0,0.55);
-align-items: center;
-justify-content: center;
-padding: 24px;
-z-index: 100;
-}
-.modal-overlay.open { display: flex; }
-.modal-panel {
-background: var(--panel);
-border: 1px solid var(--border);
-border-radius: 16px;
-padding: 24px;
-max-width: 400px;
-width: 100%;
-}
-.modal-panel h3 { margin: 0 0 12px; font-size: 17px; }
-.modal-close {
-float: right;
-background: none;
-border: none;
-color: var(--muted);
-font-size: 20px;
-cursor: pointer;
-line-height: 1;
-}
-.contact-email-line { margin: 0 0 16px; font-size: 14px; color: var(--muted); }
-.contact-email-line a { color: var(--accent); }
-.contact-success {
-background: rgba(58,168,255,.12);
-border: 1px solid rgba(58,168,255,.3);
-color: var(--accent);
-border-radius: 10px;
-padding: 12px 16px;
-margin-bottom: 16px;
-font-size: 14px;
-}
-.contact-form { display: flex; flex-direction: column; gap: 12px; }
-.contact-form label { font-size: 13px; color: var(--muted); font-weight: 600; display: flex; flex-direction: column; gap: 6px; }
-.contact-form input, .contact-form textarea {
-background: var(--bg);
-border: 1px solid var(--border);
-border-radius: 10px;
-padding: 10px 12px;
-color: var(--text);
-font-family: inherit;
-font-size: 14px;
-}
-.contact-form textarea { min-height: 90px; resize: vertical; }
-.contact-form button {
-align-self: flex-start;
-background: var(--accent);
-color: #06223d;
-border: none;
-border-radius: 10px;
-padding: 10px 22px;
-font-weight: 700;
-font-size: 14px;
-cursor: pointer;
-}
-.contact-honey { position: absolute; left: -9999px; }
-/* Animationen (GSAP + Lenis): nur aktiv, wenn das Script die Klasse .fx setzt */
-html.lenis, html.lenis body { height: auto; }
-.lenis.lenis-smooth { scroll-behavior: auto !important; }
-.fx .app-card {
-transition: border-color 0.15s ease;
-background: radial-gradient(260px circle at var(--mx, -999px) var(--my, -999px), rgba(58,168,255,0.16), transparent 65%), var(--panel);
-transform-style: preserve-3d;
-will-change: transform;
-}
-.fx .app-card:hover { transform: none; }
-.fx .apps { perspective: 900px; }
-.split-char { display: inline-block; white-space: pre; }
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:300 800;font-display:swap;src:url(/fonts/BricolageGrotesque-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:300 800;font-display:swap;src:url(/fonts/BricolageGrotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+:root{--bg:#F3F3F0;--ink:#0E0E10;--mut:#66666c;--blue:#2236FF;--blue-deep:#1626c4;--rule:#d7d7d2}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:400 18px/1.55 'Bricolage Grotesque',system-ui,-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;accent-color:var(--blue);caret-color:var(--blue)}
+::selection{background:var(--blue);color:#fff}
+a{color:inherit}
+:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 56px}
+nav{display:flex;justify-content:space-between;align-items:center}
+nav b{font-weight:700;font-size:20px;letter-spacing:-.03em}
+nav div{display:flex;gap:6px}
+nav a{display:inline-flex;align-items:center;min-height:72px;padding:0 14px;font-size:15px;text-decoration:none;color:var(--mut)}
+nav b{display:inline-flex;align-items:center;min-height:72px}
+.hero{padding:9vh 0 11vh}
+h1{font-weight:300;font-size:clamp(50px,10vw,164px);line-height:.92;letter-spacing:-.06em;text-wrap:balance}
+h1 em{font-style:normal;font-weight:700;color:var(--blue)}
+.sub{margin-top:56px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end}
+.sub p{font-size:24px;line-height:1.45;max-width:26ch;color:var(--mut)}
+.sub a{justify-self:end;display:inline-flex;gap:14px;align-items:center;min-height:44px;font-weight:600;font-size:20px;text-decoration:none;border-bottom:2px solid var(--blue)}
+.lead{padding:56px 0 30px;font-size:15px;color:var(--mut);letter-spacing:.02em}
+.list{border-top:1px solid var(--ink)}
+.item{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;padding:42px 0;border-bottom:1px solid var(--rule);align-items:center;text-decoration:none;color:inherit}
+.item h2,.item h3{font-weight:300;font-size:clamp(40px,6.2vw,104px);letter-spacing:-.055em;line-height:.95;transition:color .3s,letter-spacing .4s}
+.item p{line-height:1.5;font-size:19px;color:var(--mut);max-width:38ch;justify-self:end}
+a.item{grid-template-columns:1.8fr 1fr}
+.item .go{justify-self:end;display:flex;gap:18px;align-items:center;font-size:19px;color:var(--mut)}
+.item .go i{font-style:normal;font-size:34px;color:var(--ink);transition:transform .35s,color .3s}
+.sec{padding-top:140px}
+.end{margin-top:150px;background:var(--blue);color:#fff;padding:8px 0}
+.end .wrap{padding-top:130px;padding-bottom:30px}
+.end h2{font-weight:300;font-size:clamp(54px,12vw,200px);line-height:.88;letter-spacing:-.065em}
+.end h2 b{font-weight:700}
+.end p{margin-top:36px;font-size:22px;max-width:34ch;opacity:.92}
+.btn{display:inline-flex;align-items:center;min-height:56px;margin-top:44px;background:#fff;color:var(--blue);border:0;padding:0 34px;font:600 18px/1.4 'Bricolage Grotesque',system-ui,sans-serif;border-radius:999px;cursor:pointer;transition:background .25s,color .25s}
+footer{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;padding:110px 0 24px;font-size:14px;color:rgba(255,255,255,.8)}
+footer a{color:rgba(255,255,255,.8);text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0 10px}
+footer span:last-child{display:flex;gap:2px;margin-right:-10px}
+@media (hover:hover){
+nav a:hover{color:var(--ink)}
+.sub a:hover{color:var(--blue)}
+.item:hover h2,.item:hover h3{color:var(--blue);letter-spacing:-.045em}
+.item:hover .go i{transform:translateX(8px);color:var(--blue)}
+.btn:hover{background:var(--ink);color:#fff}
+footer a:hover{color:#fff;text-decoration:underline}}
+@media (prefers-reduced-motion:no-preference){
+.hero h1,.hero .sub{animation:up .9s cubic-bezier(.2,.7,.2,1) both}.hero .sub{animation-delay:.12s}
+@keyframes up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}}
+@media (max-width:900px){
+.wrap{padding:0 28px}.hero{padding:48px 0 64px}.sub,.item,a.item{grid-template-columns:1fr;gap:16px}.sub a,.item p,.item .go{justify-self:start}
+.sec{padding-top:96px}.end{margin-top:100px}.end .wrap{padding-top:88px}nav a{padding:0 9px}}
+dialog{margin:auto;border:0;border-radius:4px;background:var(--bg);color:var(--ink);width:min(480px,calc(100% - 32px));padding:38px;overflow:visible}
+dialog::backdrop{background:rgba(14,14,16,.55)}
+dialog h2{font-weight:600;font-size:32px;letter-spacing:-.04em;line-height:1.05;margin-bottom:24px}
+.modal-close{position:absolute;top:6px;right:8px;width:44px;height:44px;background:none;border:0;font-size:28px;line-height:1;cursor:pointer;color:var(--ink)}
+.contact-success{background:#e4e4de;padding:12px 14px;margin-bottom:18px;font-size:15px}
+.contact-form{display:flex;flex-direction:column;gap:18px}
+.contact-form label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+.contact-form input,.contact-form textarea{background:transparent;border:0;border-bottom:1px solid var(--ink);padding:8px 0;font:400 17px/1.4 'Bricolage Grotesque',system-ui,sans-serif;color:var(--ink);border-radius:0;letter-spacing:0;text-transform:none}
+.contact-form input:focus-visible,.contact-form textarea:focus-visible{outline:0;border-bottom:2px solid var(--blue)}
+.contact-form textarea{min-height:96px;resize:vertical}
+.contact-form .btn{background:var(--blue);color:#fff;margin-top:6px;align-self:flex-start}
+.contact-form .btn:hover{background:var(--ink)}
+.contact-honey{position:absolute;left:-9999px}
 </style>
 </head>
 <body>
-<div class="utility-block">
-<a class="utility-tile" href="/">
-<div class="utility-icon" style="background:#d98c1f">
-<svg viewBox="0 0 24 24" fill="#f5cb7a" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5z"/></svg>
-</div>
-<span class="utility-label">Home</span>
-</a>
-<a class="utility-tile" href="#" id="utility-mail">
-<div class="utility-icon" style="background:#4a90d9">
-<svg viewBox="0 0 24 24" fill="#bfe0ff" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>
-</div>
-<span class="utility-label">Mail</span>
-</a>
-<div class="utility-tile soon">
-  <div class="utility-icon placeholder"><span class="hidden-dot"></span></div>
-  <span class="utility-label">Bald</span>
-</div>
-<div class="utility-tile soon">
-<div class="utility-icon placeholder"></div>
-<span class="utility-label">Bald</span>
-</div>
-</div>
-<header>
-<div class="brand">
-<div class="brand-mark">D</div>
-<p class="logo">Driftware</p>
-</div>
-<p class="tagline">Kleine, unabhängige Apps ohne Schnickschnack.</p>
+<header class="wrap">
+<nav aria-label="Hauptnavigation"><b>Driftware</b><div><a href="#projekte">Projekte</a><a href="#leistungen">Leistungen</a><a href="/ueber-mich/">Über mich</a><a href="#kontakt" id="nav-contact">Kontakt</a></div></nav>
 </header>
-<main>
-<div class="apps" id="apps-container"></div>
-<div class="apps-more"><span class="dot"></span><span>Weitere Apps sind in Arbeit</span><span class="dot"></span></div>
-</main>
-<footer>
-&copy; 2026 Driftware
-<div><a href="#" id="contact-link">Kontakt</a> · <a href="/privacy.html">Datenschutz</a> · <a href="/terms.html">Nutzungsbedingungen</a> · <a href="/impressum.html">Impressum</a></div>
-</footer>
 
-<div class="modal-overlay" id="contact-modal">
-<div class="modal-panel">
-<button class="modal-close" id="contact-close" aria-label="Schließen">&times;</button>
-<h3>Kontakt aufnehmen</h3>
-<div class="contact-success" id="contact-success" style="display:none;">Danke für deine Nachricht! Wir melden uns so schnell wie möglich bei dir.</div>
+<main>
+<div class="wrap">
+<div class="hero">
+<h1>Apps, die gut <em>aussehen</em> und zuverlässig laufen.</h1>
+<div class="sub"><p>Gestaltung, iOS-, Android- und Web-Entwicklung, Server und Daten aus einer Hand.</p><a href="#kontakt" class="open-contact">Projekt anfragen <span aria-hidden="true">→</span></a></div>
+</div>
+
+<section id="leistungen" aria-labelledby="t-leist">
+<div class="lead" id="t-leist">Was du bekommst</div>
+<div class="list">
+<div class="item"><h2>Gestaltung</h2><p>Eine Oberfläche mit eigener Handschrift statt Vorlage, vom Entwurf bis zur fertigen Bedienung.</p></div>
+<div class="item"><h2>iOS und Android</h2><p>Apps von der ersten Skizze bis in den Store. iOS nativ in Swift, dazu Android.</p></div>
+<div class="item"><h2>Server</h2><p>Ein eigener Server mit Datenbank und Echtzeit-Verbindung, abgesichert durch automatische Tests.</p></div>
+<div class="item"><h2>Daten und KI</h2><p>Datenbanken mit automatischem Abgleich externer Quellen und die Anbindung von KI in eigene Anwendungen.</p></div>
+</div>
+</section>
+
+<section id="projekte" class="sec" aria-labelledby="t-proj">
+<div class="lead" id="t-proj">Projekte</div>
+<div class="list">
+<a class="item" href="/snoxi/"><h3>Snoxi</h3><span class="go">Foto- und Video-Editor<i aria-hidden="true">→</i></span></a>
+<a class="item" href="/dekaden/"><h3>Ultimate Music Master</h3><span class="go">Playlists, kostenlos<i aria-hidden="true">→</i></span></a>
+</div>
+</section>
+
+<section class="sec" aria-labelledby="t-ich">
+<div class="lead" id="t-ich">Der Mensch dahinter</div>
+<div class="list">
+<a class="item" href="/ueber-mich/"><h3>Über mich</h3><span class="go">Erfahrung und Hintergrund<i aria-hidden="true">→</i></span></a>
+</div>
+</section>
+</div>
+
+<div class="end" id="kontakt">
+<div class="wrap">
+<h2>Dein <b>Projekt?</b></h2>
+<p>Es gibt keine Festpreise: Der Preis richtet sich nach dem Umfang der Arbeit. Schreib mir, worum es geht.</p>
+<button class="btn open-contact" type="button">Projekt anfragen</button>
+<footer>
+<span>© 2026 Driftware</span>
+<span><a href="/privacy.html">Datenschutz</a><a href="/terms.html">Nutzungsbedingungen</a><a href="/impressum.html">Impressum</a></span>
+</footer>
+</div>
+</div>
+</main>
+
+<dialog id="contact-modal" aria-labelledby="contact-title">
+<button class="modal-close" id="contact-close" type="button" aria-label="Schließen">&times;</button>
+<h2 id="contact-title">Kontakt aufnehmen</h2>
+<div class="contact-success" id="contact-success" role="status" style="display:none;">Danke für deine Nachricht! Ich melde mich so schnell wie möglich bei dir.</div>
 <form class="contact-form" method="POST" action="https://formsubmit.co/0b4cb7348b4cff5d1891bf8d99f1e757">
 <input type="hidden" name="_subject" value="Driftware — neue Kontaktanfrage">
 <input type="hidden" name="_template" value="table">
 <input type="hidden" name="_next" id="contact-next" value="">
 <input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">
-<label><span>Name</span><input type="text" name="name" required></label>
-<label><span>Deine E-Mail-Adresse</span><input type="email" name="email" required></label>
+<label><span>Name</span><input type="text" name="name" autocomplete="name" required></label>
+<label><span>Deine E-Mail-Adresse</span><input type="email" name="email" autocomplete="email" required></label>
 <label><span>Nachricht</span><textarea name="message" required></textarea></label>
-<button type="submit">Senden</button>
+<button class="btn" type="submit">Senden</button>
 </form>
-</div>
-</div>
+</dialog>
 
 <script>
 (function () {
-// Neue App hinzufügen: einfach ein Objekt unten in APPS ergänzen.
-// (Home/Mail sind Utility-Kacheln oben links, nicht Teil dieser Liste.)
-var APPS = [
-{ href: '/snoxi/', icon: '/snoxi/icon.png', label: 'Snoxi', desc: 'Foto- & Video-Editor ohne Abo — Filter, Sticker, Wasserzeichen, Gesichter unkenntlich machen.', badge: 'Live im App Store' },
-{ href: 'https://collectview.site/', icon: '/collectview/icon.png', label: 'CollectView', desc: 'Barcode scannen oder Cover fotografieren, sofort den Marktwert sehen — komplett kostenlos, ganz ohne Konto.', badge: 'On Air' },
-{ href: '/dekaden/', svg: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><text x="12" y="17" font-size="14" text-anchor="middle">🎵</text></svg>', bg: 'linear-gradient(135deg, #ff2fb3, #7c5cff, #29e2ff)', label: 'Ultimate Music Master', desc: 'Songs nach Jahrzehnt und Stimmung sortiert — Playlisten von den 70ern bis heute, bereit für Spotify, Apple Music & YouTube Music.', badge: 'On Air' },
-  { href: '/schriftgenerator/', svg: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#ffffff"><path d="M3 15 L11 9 L11 6 L14 9 L21 7 L15 12 L21 17 L14 14 L11 17 L11 14 L3 15 Z"/></svg>', bg: 'linear-gradient(135deg, #ffc2d9, #ffb3d1)', label: 'Schriftgenerator', desc: 'Text in Fett, Kursiv, Schreibschrift & mehr umwandeln, plus Emoji-Tastatur mit Suche — für Posts, die auffallen.', badge: 'Tool' },
-{ href: '/driftmail/', svg: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#eafff5"><path d="M2 5h20v14H2V5zm2 2v.4l8 5.4 8-5.4V7H4zm16 2.9-8 5.4-8-5.4V17h16V9.9z"/></svg>', bg: 'linear-gradient(135deg, #14b881, #0891b2)', label: 'Driftmail', desc: 'Sicherer Mail-Client mit KI-Anbindung — verschlüsselt, aufgeräumt, ohne Daten zu sammeln.', badge: 'On Air' },
-];
-
-function renderApps() {
-var container = document.getElementById('apps-container');
-if (!container) return;
-APPS.forEach(function (app) {
-var a = document.createElement('a');
-a.className = 'app-card' + (app.soon ? ' soon' : '');
-a.href = app.href || '#';
-if (app.soon) {
-a.addEventListener('click', function (e) { e.preventDefault(); });
-}
-if (app.action === 'contact') {
-a.addEventListener('click', function (e) {
-e.preventDefault();
-var link = document.getElementById('contact-link');
-if (link) link.click();
-});
-}
-if (app.badge) {
-var badge = document.createElement('span');
-badge.className = 'app-card-badge';
-badge.textContent = app.badge;
-a.appendChild(badge);
-}
-if (app.icon) {
-var img = document.createElement('img');
-img.className = 'app-icon';
-img.src = app.icon;
-img.alt = app.label + ' Icon';
-a.appendChild(img);
-} else if (app.svg) {
-var iconBox = document.createElement('div');
-iconBox.className = 'app-icon-custom';
-iconBox.style.background = app.bg || 'var(--accent)';
-iconBox.innerHTML = app.svg;
-a.appendChild(iconBox);
-}
-var name = document.createElement('span');
-name.className = 'app-name';
-name.textContent = app.label;
-a.appendChild(name);
-if (app.desc) {
-var desc = document.createElement('p');
-desc.className = 'app-desc';
-desc.textContent = app.desc;
-a.appendChild(desc);
-}
-var cta = document.createElement('span');
-cta.className = 'app-cta';
-cta.textContent = 'Ansehen →';
-a.appendChild(cta);
-container.appendChild(a);
-});
-}
-renderApps();
-})();
-</script>
-
-<script>
-(function () {
-var overlay = document.getElementById('contact-modal');
-var link = document.getElementById('contact-link');
-var mailTile = document.getElementById('utility-mail');
-var closeBtn = document.getElementById('contact-close');
-var nextField = document.getElementById('contact-next');
-nextField.value = window.location.origin + window.location.pathname + '?contact=success';
-
-function open() { overlay.classList.add('open'); }
-function close() { overlay.classList.remove('open'); }
-
-link.addEventListener('click', function (e) { e.preventDefault(); open(); });
-if (mailTile) mailTile.addEventListener('click', function (e) { e.preventDefault(); open(); });
-closeBtn.addEventListener('click', close);
-overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
-
+var dlg = document.getElementById('contact-modal');
+document.getElementById('contact-next').value = window.location.origin + window.location.pathname + '?contact=success';
+function open(e) { if (e) e.preventDefault(); if (!dlg.open) dlg.showModal(); }
+document.querySelectorAll('.open-contact,#nav-contact').forEach(function (el) { el.addEventListener('click', open); });
+document.getElementById('contact-close').addEventListener('click', function () { dlg.close(); });
+dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
 if (/[?&]contact=success/.test(window.location.search)) {
 document.getElementById('contact-success').style.display = 'block';
 open();
 }
-})();
-</script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js"></script>
-<script>
-(function () {
-// Animationen: weiches Scrollen (Lenis), Intro, Karten-Einblendung,
-// Lichtkegel + Neigung beim Hover. Fehlt das CDN oder ist
-// "Bewegung reduzieren" aktiv, bleibt die Seite einfach statisch.
-if (!window.gsap || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-document.documentElement.classList.add('fx');
-gsap.registerPlugin(ScrollTrigger);
-
-if (window.Lenis) {
-var lenis = new Lenis({ lerp: 0.1 });
-lenis.on('scroll', ScrollTrigger.update);
-gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
-gsap.ticker.lagSmoothing(0);
-}
-
-// Tagline Buchstabe für Buchstabe (wie SplitText bei React Bits)
-var tagline = document.querySelector('.tagline');
-var text = tagline.textContent;
-tagline.setAttribute('aria-label', text);
-tagline.textContent = '';
-text.split('').forEach(function (c) {
-var span = document.createElement('span');
-span.className = 'split-char';
-span.setAttribute('aria-hidden', 'true');
-span.textContent = c;
-tagline.appendChild(span);
-});
-
-var cards = gsap.utils.toArray('.app-card');
-var tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-tl.from('.utility-tile', { y: -16, opacity: 0, duration: 0.5, stagger: 0.06 })
-.from('.brand-mark', { scale: 0, rotate: -90, duration: 0.8, ease: 'back.out(1.8)' }, 0.1)
-.from('.logo', { x: -24, opacity: 0, filter: 'blur(10px)', duration: 0.8 }, 0.25)
-.from('.tagline .split-char', { y: 14, opacity: 0, duration: 0.5, stagger: 0.018 }, 0.5);
-
-// Karten im Sichtbereich direkt nach dem Intro, weiter unten beim Scrollen
-gsap.set(cards, { y: 48, opacity: 0, rotateX: -12 });
-ScrollTrigger.batch(cards, {
-start: 'top 92%',
-once: true,
-onEnter: function (batch) {
-gsap.to(batch, { y: 0, opacity: 1, rotateX: 0, duration: 0.8, ease: 'power3.out', stagger: 0.1, delay: tl.progress() < 1 ? 0.6 : 0 });
-}
-});
-gsap.from('.apps-more', { opacity: 0, y: 12, duration: 0.6, scrollTrigger: { trigger: '.apps-more', start: 'top 95%' } });
-
-// Lichtkegel + Neigung (wie SpotlightCard / TiltedCard), nur mit Maus
-if (!matchMedia('(hover: hover)').matches) return;
-cards.forEach(function (card) {
-var rx = gsap.quickTo(card, 'rotateX', { duration: 0.4, ease: 'power2.out' });
-var ry = gsap.quickTo(card, 'rotateY', { duration: 0.4, ease: 'power2.out' });
-var lift = gsap.quickTo(card, 'y', { duration: 0.4, ease: 'power2.out' });
-card.addEventListener('pointermove', function (e) {
-var r = card.getBoundingClientRect();
-var x = e.clientX - r.left, y = e.clientY - r.top;
-card.style.setProperty('--mx', x + 'px');
-card.style.setProperty('--my', y + 'px');
-rx((0.5 - y / r.height) * 10);
-ry((x / r.width - 0.5) * 10);
-lift(-4);
-});
-card.addEventListener('pointerleave', function () {
-card.style.setProperty('--mx', '-999px');
-rx(0); ry(0); lift(0);
-});
-});
 })();
 </script>
 </body>
