@@ -3,6 +3,10 @@
 (function () {
   var q = location.search, safari = /^((?!chrome|chromium|crios|fxios|android).)*safari/i.test(navigator.userAgent);
   if ((safari && !/[?&]lite=0/.test(q)) || /[?&]lite=1/.test(q)) document.documentElement.classList.add('lite');
+  /* ?perf=1: Mess-Feld zum Eingrenzen von Rucklern (shared/perf-probe.js) */
+  if (/[?&]perf=1/.test(q) && document.currentScript) {
+    var ps = document.createElement('script'); ps.src = document.currentScript.src.replace(/decades\.js.*$/, 'perf-probe.js?v=1'); document.head.appendChild(ps);
+  }
 })();
 
 /* Gemeinsame Render-Logik fuer alle Dekaden-Seiten (80er, 90er, 2000er, ...).
