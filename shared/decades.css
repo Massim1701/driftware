@@ -581,6 +581,8 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
   overflow-y: auto;
   padding: 4px;
 }
+/* Platzhalter der gefensterten Songliste (siehe renderSongGrid) */
+.song-grid-spacer { flex: none; width: 100%; pointer-events: none; }
 .song-grid-section-heading {
   padding: 8px 10px;
   margin: 4px 0 2px;

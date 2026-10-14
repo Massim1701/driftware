@@ -3793,19 +3793,18 @@ function renderSongGrid(container, songs) {
     visible = mwGroup.concat(restGroup);
   }
   lastGridSongs = visible;
-  if (showMostWanted) {
-    var mwHeading = document.createElement('div');
-    mwHeading.className = 'song-grid-section-heading song-grid-section-heading-mostwanted';
-    mwHeading.innerHTML = CC_ICON.flame + ' <strong>Most Wanted</strong> — die ' + POPULARITY_SPLIT + ' meistgespielten Songs (nach YouTube-Aufrufen)';
-    container.appendChild(mwHeading);
-  }
-  function ccBuildTile(song, songIdx) {
-    if (showMostWanted && songIdx === POPULARITY_SPLIT) {
-      var restHeading = document.createElement('div');
-      restHeading.className = 'song-grid-section-heading';
-      restHeading.textContent = 'Weitere ' + (visible.length - POPULARITY_SPLIT) + ' Songs';
-      container.appendChild(restHeading);
+  function buildHeading(kind) {
+    var el = document.createElement('div');
+    if (kind === 'mw') {
+      el.className = 'song-grid-section-heading song-grid-section-heading-mostwanted';
+      el.innerHTML = CC_ICON.flame + ' <strong>Most Wanted</strong> — die ' + POPULARITY_SPLIT + ' meistgespielten Songs (nach YouTube-Aufrufen)';
+    } else {
+      el.className = 'song-grid-section-heading';
+      el.textContent = 'Weitere ' + (visible.length - POPULARITY_SPLIT) + ' Songs';
     }
+    return el;
+  }
+  function ccBuildTile(song, row) {
     var tile = document.createElement('button');
     tile.className = 'song-tile' + (isSongSelected(song) ? ' selected' : '');
     tile.type = 'button';
@@ -3886,7 +3885,7 @@ function renderSongGrid(container, songs) {
       e.stopPropagation();
       flagSong(song);
       tile.classList.add('flagged-out');
-      setTimeout(function () { if (tile.parentNode) tile.parentNode.removeChild(tile); }, 250);
+      setTimeout(function () { if (container.__ccDrop) container.__ccDrop(row); else if (tile.parentNode) tile.parentNode.removeChild(tile); }, 250);
     }
     nofit.addEventListener('click', doFlag);
     nofit.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doFlag(e); } });
@@ -3995,27 +3994,118 @@ function renderSongGrid(container, songs) {
       document.body.classList.remove('dnd-dragging');
     });
 
-    container.appendChild(tile);
+    return tile;
   }
 
-  /* Stueckweise aufbauen (Bugfix 9.10., Nutzer: "das Wechseln der Dekaden
-     erzeugt eine kleine Unterbrechung"): bis zu 7000 Zeilen mit je ~10
-     Elementen + Handlern am Stueck blockierten den Browser spuerbar --
-     Konsole/Wellenform froren ein, je nach Rechner stockte der Ton. Jetzt
-     kommen die ersten Zeilen sofort, der Rest in kleinen Paketen pro
-     Frame. Ein neuer Aufruf (anderes Genre, Suche, Dekade) bricht einen
-     noch laufenden Aufbau ab. */
-  var token = (container.__ccRenderToken || 0) + 1;
-  container.__ccRenderToken = token;
-  var pos = 0;
-  function renderChunk(n) {
-    if (container.__ccRenderToken !== token) return;
-    var end = Math.min(visible.length, pos + n);
-    for (; pos < end; pos++) ccBuildTile(visible[pos], pos);
-    refreshMixableHighlight();
-    if (pos < visible.length) requestAnimationFrame(function () { renderChunk(250); });
+  /* Fensterung (Bugfix 14.10., Nutzer: "der untere Teil, wo alle Lieder stehen, ruckelt in Safari beim
+     Scrollen"): die 80er-Liste hat ueber 9000 Zeilen mit je ~19 Elementen (176.000 Knoten) -- das verwaltet
+     Safari beim Scrollen nicht fluessig. Jetzt existieren nur die sichtbaren Zeilen plus Puffer; davor und
+     dahinter steht je ein Platzhalter in passender Hoehe, die Bildlaufleiste bleibt unveraendert. Listen bis
+     WINDOW_MIN Zeilen werden wie bisher komplett aufgebaut. Vorher (9.10.) wurde stueckweise aufgebaut, damit
+     das Wechseln der Dekade nicht blockiert; das entfaellt jetzt, weil nie mehr als ~100 Zeilen entstehen. */
+  if (container.__ccDetach) container.__ccDetach();
+  container.__ccDrop = null;
+  container.scrollTop = 0;
+  var rows = [];
+  visible.forEach(function (song, i) {
+    if (showMostWanted && i === 0) rows.push({ h: 'mw' });
+    if (showMostWanted && i === POPULARITY_SPLIT) rows.push({ h: 'rest' });
+    rows.push({ song: song });
+  });
+  function rowEl(r) {
+    if (!r.el) r.el = r.h ? buildHeading(r.h) : ccBuildTile(r.song, r);
+    return r.el;
   }
-  renderChunk(120);
+  var WINDOW_MIN = 200, OVERSCAN = 40, MARGIN = 8;
+  var topSp = document.createElement('div'), botSp = document.createElement('div');
+  topSp.className = botSp.className = 'song-grid-spacer';
+  topSp.setAttribute('aria-hidden', 'true'); botSp.setAttribute('aria-hidden', 'true');
+  var tileH = 44, headH = 38, gap = 2, offs = [], shown = [], cur = null, stamp = 0, scrolls = false, raf = 0;
+  function layout() {
+    offs = new Array(rows.length + 1);
+    var y = 0;
+    for (var i = 0; i < rows.length; i++) { offs[i] = y; y += (rows[i].h ? headH : tileH) + gap; }
+    offs[rows.length] = y;
+  }
+  function paint(a, b) {
+    var st = ++stamp, frag = document.createDocumentFragment();
+    topSp.style.display = a > 0 ? 'block' : 'none';
+    topSp.style.height = Math.max(0, offs[a] - gap) + 'px';
+    frag.appendChild(topSp);
+    for (var i = a; i < b; i++) { rows[i].stamp = st; frag.appendChild(rowEl(rows[i])); }
+    botSp.style.display = b < rows.length ? 'block' : 'none';
+    botSp.style.height = Math.max(0, offs[rows.length] - offs[b] - gap) + 'px';
+    frag.appendChild(botSp);
+    shown.forEach(function (r) { if (r.stamp !== st) r.el = null; });
+    shown = rows.slice(a, b);
+    container.replaceChildren(frag);
+    cur = { a: a, b: b };
+    refreshMixableHighlight();
+  }
+  function rowAt(y) {
+    var lo = 0, hi = rows.length - 1;
+    while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (offs[mid] <= y) lo = mid; else hi = mid - 1; }
+    return lo;
+  }
+  function remeasure() {
+    /* echte Zeilenhoehen uebernehmen (Schrift, Breakpoints); true = Hoehen haben sich geaendert */
+    var changed = false, t = null, h = null;
+    for (var i = 0; i < shown.length && (!t || !h); i++) { if (shown[i].h) h = h || shown[i]; else t = t || shown[i]; }
+    if (t && t.el && t.el.isConnected) {
+      var th = t.el.getBoundingClientRect().height;
+      if (th > 4 && Math.abs(th - tileH) > 0.5) { tileH = th; changed = true; }
+    }
+    if (h && h.el && h.el.isConnected) {
+      var cs = getComputedStyle(h.el), hh = h.el.getBoundingClientRect().height + (parseFloat(cs.marginTop) || 0) + (parseFloat(cs.marginBottom) || 0);
+      if (hh > 4 && Math.abs(hh - headH) > 0.5) { headH = hh; changed = true; }
+    }
+    var g = parseFloat(getComputedStyle(container).rowGap);
+    if (isFinite(g) && g !== gap) { gap = g; changed = true; }
+    return changed;
+  }
+  function update(force) {
+    raf = 0;
+    if (!container.isConnected) return;
+    var cs = getComputedStyle(container);
+    scrolls = /(auto|scroll)/.test(cs.overflowY) && container.scrollHeight > container.clientHeight + 1;
+    var top = scrolls ? container.scrollTop : Math.max(0, -container.getBoundingClientRect().top);
+    var hgt = scrolls ? container.clientHeight : window.innerHeight;
+    var first = rowAt(top), last = rowAt(top + hgt);
+    if (!force && cur && !(cur.a > 0 && first < cur.a + MARGIN) && !(cur.b < rows.length && last >= cur.b - MARGIN)) return;
+    paint(Math.max(0, first - OVERSCAN), Math.min(rows.length, last + 1 + OVERSCAN));
+    if (remeasure()) { layout(); var t2 = scrolls ? container.scrollTop : top; paint(Math.max(0, rowAt(t2) - OVERSCAN), Math.min(rows.length, rowAt(t2 + hgt) + 1 + OVERSCAN)); }
+  }
+  function schedule() { if (!raf) raf = requestAnimationFrame(function () { update(false); }); }
+  layout();
+  if (rows.length <= WINDOW_MIN) {
+    paint(0, rows.length);
+  } else {
+    container.style.overflowAnchor = 'none';
+    paint(0, Math.min(rows.length, 60));
+    if (remeasure()) layout();
+    update(true);
+    var ro = window.ResizeObserver ? new ResizeObserver(function () { if (remeasure()) layout(); update(true); }) : null;
+    if (ro) ro.observe(container);
+    container.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    container.__ccDrop = function (row) {
+      var i = rows.indexOf(row);
+      if (i < 0) return;
+      rows.splice(i, 1);
+      if (row.el && row.el.parentNode) row.el.parentNode.removeChild(row.el);
+      row.el = null;
+      layout(); update(true);
+    };
+    container.__ccDetach = function () {
+      container.removeEventListener('scroll', schedule);
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      if (ro) ro.disconnect();
+      if (raf) cancelAnimationFrame(raf);
+      container.__ccDetach = null; container.__ccDrop = null;
+    };
+  }
 }
 
 /* Genre-Kacheln zeigen dezente Linien-Icons statt Emoji (Emoji wirken auf
