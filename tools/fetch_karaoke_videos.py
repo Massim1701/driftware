@@ -35,6 +35,7 @@ import os
 import random
 import re
 import subprocess
+import sys
 import time
 import unicodedata
 import urllib.error
@@ -172,6 +173,22 @@ def yt_json(args, timeout=60):
 STANDBILD_MAX_DIFF = 8.0  # mittlere Helligkeitsabweichung 0-255; Standbild ~0-3, echtes Video >15
 
 
+def ensure_pillow():
+    """Pillow fuer die Cover-Erkennung; fehlt es (der Workflow installiert es nicht), wird es einmal nachinstalliert."""
+    try:
+        import PIL  # noqa: F401
+        return True
+    except ImportError:
+        pass
+    try:
+        subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", "pillow"], check=True, timeout=240)
+        import PIL  # noqa: F401
+        return True
+    except Exception as e:
+        print(f"::warning::Pillow nicht verfuegbar, keine Cover-Erkennung: {str(e)[:100]}")
+        return False
+
+
 def ist_standbild(vid):
     """True = nur Plattencover (die 3 Vorschaubilder 1/2/3.jpg von i.ytimg.com sind praktisch gleich),
     False = bewegtes Video, None = nicht feststellbar. Ohne Anmeldung, nicht bot-gesperrt wie yt-dlp-Einzelabrufe."""
@@ -295,6 +312,52 @@ def _pick(res, a_key, t_key, durations):
     return waehle([(vid, dur) for diff, _, vid, dur in sorted(cands)])
 
 
+def nachpruefen(videos, songs, maximum):
+    """Alte Treffer (ohne Feld "s") nebenbei pruefen: Plattencover -> "s": 1; Video -> nach einem Cover suchen und
+    ersetzen, sonst "s": 0 (wird nicht erneut geprueft). Hoechstens `maximum` Eintraege pro Lauf."""
+    if maximum <= 0 or not ensure_pillow():
+        return
+    by_key = {song_key(x): x for x in songs}
+    offen = [k for k, v in videos.items() if "s" not in v]
+    print(f"Nachpruefen: {len(offen)} Treffer ohne Cover-Pruefung, jetzt hoechstens {maximum}.")
+    n = {"cover": 0, "ersetzt": 0, "video": 0, "unklar": 0}
+    fehler = 0
+    for k in offen[:maximum]:
+        if time.time() - START_TS > TIME_BUDGET_SECONDS * 0.2:
+            break
+        v = videos[k]
+        still = ist_standbild(v["yk"])
+        if still is None:
+            n["unklar"] += 1
+            continue
+        if still:
+            v["s"] = 1
+            n["cover"] += 1
+            continue
+        song = by_key.get(k)
+        hit = None
+        if song:
+            try:
+                durations = lrclib_durations(song["a"], song["t"])
+                if durations:
+                    hit = find_topic_video(song["a"], song["t"], durations) or find_audio_upload(song["a"], song["t"], durations)
+                fehler = 0
+            except YouTubeFehler as e:
+                fehler += 1
+                print(f"  Nachpruefen: YouTube-Fehler ({fehler}): {e}")
+                if fehler >= 3:
+                    break
+                continue
+            time.sleep(random.uniform(1.0, 2.0))
+        if hit and hit.get("s"):
+            videos[k] = hit
+            n["ersetzt"] += 1
+        else:
+            v["s"] = 0
+            n["video"] += 1
+    print(f"Nachpruefen fertig: {n}")
+
+
 # ------------------------------------------------------------ Ablauf
 
 def collect_songs():
@@ -336,6 +399,7 @@ def due(entry):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0, help="hoechstens N Songs (0 = bis Zeitbudget)")
+    ap.add_argument("--recheck", type=int, default=150, help="hoechstens N alte Treffer pro Lauf auf Plattencover pruefen (0 = aus)")
     args = ap.parse_args()
 
     global AUSSCHLUSS
@@ -345,6 +409,9 @@ def main():
     songs = collect_songs()
     todo = [s for s in songs if due(status.get(song_key(s)))]
     print(f"{len(songs)} Songs gesamt, {len(videos)} mit Karaoke-Fassung, {len(todo)} offen.")
+    ensure_pillow()
+    nachpruefen(videos, songs, args.recheck)
+    save_json(VIDEOS_PATH, videos)
 
     counts = {"ok": 0, "kein_text": 0, "kein_topic": 0, "fehler": 0}
     fehler_in_folge = 0
