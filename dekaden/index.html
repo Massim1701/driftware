@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>/* Leicht-Modus: Safari (und ?lite=1) bekommt weniger Dauer-Animation; ?lite=0 schaltet ihn ab */
+(function () { var q = location.search, safari = /^((?!chrome|chromium|crios|fxios|android).)*safari/i.test(navigator.userAgent);
+  if ((safari && !/[?&]lite=0/.test(q)) || /[?&]lite=1/.test(q)) document.documentElement.classList.add("lite"); })();</script>
 <title>Ultimate Music Master — Driftware</title>
 <meta name="description" content="Songs nach Jahrzehnt und Stimmung sortiert — Playlisten von den 70ern bis heute, bereit für Spotify, Apple Music & YouTube Music.">
 <link rel="stylesheet" href="/fonts/fonts.css?v=1">
@@ -45,6 +48,9 @@
     -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4);
     border-bottom-color: var(--border);
   }
+  html.lite .topbar.scrolled { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(9,9,13,0.94); }
+  html.lite { scroll-behavior: smooth; }
+  html.lite section[id], html.lite [id].section { scroll-margin-top: 72px; }
   .topbar-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
   .home-link { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-size: 14px; color: var(--muted); transition: color 0.2s ease; }
   .home-link:hover { color: var(--text); }
@@ -954,8 +960,9 @@
       if (!MOTION) return;
       gsap.registerPlugin(ScrollTrigger);
 
+      var LITE = document.documentElement.classList.contains('lite');
       var lenis = null;
-      if (window.Lenis) {
+      if (window.Lenis && !LITE) {
         lenis = new Lenis({ lerp: 0.1 });
         lenis.on('scroll', ScrollTrigger.update);
         gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
@@ -1016,7 +1023,11 @@
         .to('#ttArm', { rotation: 24, svgOrigin: '372 92', duration: 1.6, ease: 'power2.inOut' }, 0.1);
       var dotsEls = ['#ttDots1', '#ttDots2', '#ttDots3', '#ttDots4'].map(function (q) { return document.querySelector(q); });
       var drift = [0.6, -0.35, 0, 0.9]; /* Reihe 3 = 33 1/3 bei 50 Hz: steht bei exakter Drehzahl */
+      var ttSeen = true, ttAcc = 0;
+      if ('IntersectionObserver' in window) new IntersectionObserver(function (e) { ttSeen = e[0].isIntersecting; }).observe(document.querySelector('.hero'));
       gsap.ticker.add(function (time, dt) {
+        if (!ttSeen || document.hidden) { ttAcc = 0; return; }
+        ttAcc += dt; if (LITE && ttAcc < 33) return; dt = ttAcc; ttAcc = 0;
         var sec = dt / 1000, rate = TT.speed * (1 + TT.pitch);
         TT.disc = (TT.disc + REV * rate * sec) % 360;
         gsap.set('#ttDisc', { rotation: TT.disc, svgOrigin: '184 177' });
@@ -1035,7 +1046,7 @@
           document.getElementById('ttPitchCap').setAttribute('transform', 'translate(0 ' + (-TT.pitch / 0.08 * 52).toFixed(1) + ')');
         } }); } });
       });
-      gsap.to('.hero .wrap', { yPercent: -18, opacity: 0.2, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+      if (!LITE) gsap.to('.hero .wrap', { yPercent: -18, opacity: 0.2, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
 
       // Überschriften + Kacheln einblenden
       gsap.utils.toArray('.section-head, .request-panel').forEach(function (el) {
@@ -1050,7 +1061,7 @@
       });
 
       // Parallax in den Fotos
-      gsap.utils.toArray('.tile-media img').forEach(function (img) {
+      if (!LITE) gsap.utils.toArray('.tile-media img').forEach(function (img) {
         gsap.fromTo(img, { yPercent: -6 }, { yPercent: 6, ease: 'none', scrollTrigger: { trigger: img.closest('.tile'), start: 'top bottom', end: 'bottom top', scrub: true } });
       });
 
