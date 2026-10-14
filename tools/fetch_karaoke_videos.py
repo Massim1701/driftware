@@ -14,7 +14,7 @@ Ablauf je Song (eindeutig nach Interpret|Titel ueber alle */songs.json):
      playable_in_embed.
 
 Ergebnis:
-  karaoke/videos.json  {"<a>|<t>": {"yk": <video-id>, "d": <sekunden>}}
+  karaoke/videos.json  {"<a>|<t>": {"yk": <video-id>, "d": <sekunden>, "s": 1 = nur Plattencover}}
                        (laedt die Seite, sobald Karaoke an ist)
   karaoke/status.json  {"<a>|<t>": [<ergebnis>, "<datum>"]} -- was schon
                        versucht wurde; kein_text/kein_topic nach
@@ -169,62 +169,56 @@ def yt_json(args, timeout=60):
     return json.loads(p.stdout)
 
 
-_YTM = None
+STANDBILD_MAX_DIFF = 8.0  # mittlere Helligkeitsabweichung 0-255; Standbild ~0-3, echtes Video >15
 
 
-def ytmusic():
-    """YouTube Music (ytmusicapi, ohne Anmeldung): fuehrt reine Studio-Titel getrennt als 'Songs'."""
-    global _YTM
-    if _YTM is None:
-        from ytmusicapi import YTMusic
-        _YTM = YTMusic()
-    return _YTM
-
-
-def find_ytmusic_song(artist, title, durations):
-    """Reiner Studio-Titel ("Song" bei YouTube Music) mit passender Laenge, sonst None."""
-    a_key = norm(lyrics_artist(artist))
-    t_key = norm(lyrics_clean(title))
+def ist_standbild(vid):
+    """True = nur Plattencover (die 3 Vorschaubilder 1/2/3.jpg von i.ytimg.com sind praktisch gleich),
+    False = bewegtes Video, None = nicht feststellbar. Ohne Anmeldung, nicht bot-gesperrt wie yt-dlp-Einzelabrufe."""
     try:
-        res = ytmusic().search(f"{lyrics_artist(artist)} {lyrics_clean(title)}", filter="songs", limit=6)
-    except ImportError:
+        from PIL import Image, ImageChops, ImageStat
+        import io
+        frames = []
+        for i in (1, 2, 3):
+            req = urllib.request.Request(f"https://i.ytimg.com/vi/{vid}/{i}.jpg", headers={"User-Agent": USER_AGENT})
+            with urllib.request.urlopen(req, timeout=20) as r:
+                frames.append(Image.open(io.BytesIO(r.read())).convert("L"))
+        diff = max(ImageStat.Stat(ImageChops.difference(frames[0], f)).mean[0] for f in frames[1:])
+        return diff <= STANDBILD_MAX_DIFF
+    except Exception:
         return None
-    except Exception as e:
-        raise YouTubeFehler(f"YT-Music: {type(e).__name__}: {str(e)[:120]}")
-    cands = []
-    for r in res or []:
-        vid, dur, ttl = r.get("videoId"), r.get("duration_seconds"), r.get("title") or ""
-        if not vid or not dur or not ist_studio_titel(ttl):
+
+
+def waehle(cands):
+    """cands: [(video-id, sekunden)] nach Prioritaet. Einbettbare Kandidaten (hoechstens 3) pruefen,
+    Standbild (Plattencover = reine Studio-Aufnahme) vor bewegtem Video; "s": 1 markiert ein Standbild."""
+    fallback = None
+    for vid, dur in cands[:3]:
+        if not embeddable(vid):
+            time.sleep(random.uniform(0.3, 0.6))
             continue
-        if norm(lyrics_clean(ttl)) != t_key:
-            continue
-        names = [norm(x.get("name", "")) for x in (r.get("artists") or [])]
-        artist_ok = any(n and (n == a_key or (len(n) > 3 and len(a_key) > 3 and (n in a_key or a_key in n))) for n in names)
-        if not artist_ok:
-            continue
-        diff = min(abs(dur - d) for d in durations)
-        if diff <= DURATION_TOLERANCE:
-            cands.append((diff, vid, dur))
-    for diff, vid, dur in sorted(cands)[:2]:
-        if embeddable(vid):
-            return {"yk": vid, "d": int(dur)}
-        time.sleep(random.uniform(0.3, 0.6))
-    return None
+        still = ist_standbild(vid)
+        if still:
+            return {"yk": vid, "d": int(dur), "s": 1}
+        if fallback is None:
+            fallback = {"yk": vid, "d": int(dur)}
+    return fallback
 
 
 def find_audio_upload(artist, title, durations):
-    """Direkt bei YouTube: reiner Audio-Upload ("Official Audio", "Topic"), kein Musikvideo, kein Mix/Live."""
+    """Direkt bei YouTube: Upload des Interpreten/Labels mit nacktem Titel und passender Laenge; Topic und
+    "Official Audio" werden bevorzugt, kein Mix/Live/Lyric-Video."""
     a_key = norm(lyrics_artist(artist))
     t_key = norm(lyrics_clean(title))
     res = yt_json([f"ytsearch10:{lyrics_artist(artist)} {lyrics_clean(title)} official audio", "--flat-playlist"])
+    res = {"entries": (res.get("entries") or []) + (yt_json([f"ytsearch10:{lyrics_artist(artist)} {lyrics_clean(title)}", "--flat-playlist"]).get("entries") or [])}
     cands = []
     for e in res.get("entries") or []:
         raw = e.get("title") or ""
         low = raw.lower()
         ch_raw = e.get("channel") or e.get("uploader") or ""
         is_topic = bool(re.search(r"-\s*topic$", ch_raw, flags=re.IGNORECASE))
-        if not is_topic and not re.search(r"\b(official audio|audio only|\(audio\)|\[audio\])", low):
-            continue
+        is_audio = is_topic or bool(re.search(r"\b(official audio|audio only|\(audio\)|\[audio\])", low))
         if re.search(r"official video|music video|\blyrics?\b|visuali[sz]er|\blive\b|remix|\bmix\b|cover|reaction|karaoke|instrumental|\d+d audio|slowed|sped|nightcore", low):
             continue
         rest = re.sub(r"[\(\[]\s*(official\s+)?(audio|hd|hq|4k|explicit|clean)[^\)\]]*[\)\]]", " ", raw, flags=re.IGNORECASE)
@@ -243,12 +237,8 @@ def find_audio_upload(artist, title, durations):
             continue
         diff = min(abs(dur - d) for d in durations)
         if diff <= DURATION_TOLERANCE:
-            cands.append((0 if is_topic else 1, diff, -(e.get("view_count") or 0), e["id"], dur))
-    for _, diff, _, vid, dur in sorted(cands)[:2]:
-        if embeddable(vid):
-            return {"yk": vid, "d": int(dur)}
-        time.sleep(random.uniform(0.3, 0.6))
-    return None
+            cands.append((0 if is_topic else 1 if is_audio else 2, diff, -(e.get("view_count") or 0), e["id"], dur))
+    return waehle([(vid, dur) for _, diff, _, vid, dur in sorted(cands)])
 
 
 def find_topic_video(artist, title, durations):
@@ -302,11 +292,7 @@ def _pick(res, a_key, t_key, durations):
             is_topic = bool(re.search(r"-\s*topic$", (e.get("channel") or e.get("uploader") or ""), flags=re.IGNORECASE))
             if is_topic:  # nur echte "Interpret - Topic"-Kanaele (Studio-Audio)
                 cands.append((diff, -(e.get("view_count") or 0), e["id"], dur))
-    for diff, _, vid, dur in sorted(cands)[:2]:
-        if embeddable(vid):
-            return {"yk": vid, "d": int(dur)}
-        time.sleep(random.uniform(0.5, 1.0))
-    return None
+    return waehle([(vid, dur) for diff, _, vid, dur in sorted(cands)])
 
 
 # ------------------------------------------------------------ Ablauf
@@ -377,7 +363,7 @@ def main():
             result = "kein_text"
         else:
             try:
-                hit = (find_ytmusic_song(s["a"], s["t"], durations) or find_topic_video(s["a"], s["t"], durations)
+                hit = (find_topic_video(s["a"], s["t"], durations)
                        or find_audio_upload(s["a"], s["t"], durations))
                 fehler_in_folge = 0
                 if hit:
@@ -393,7 +379,7 @@ def main():
         status[k] = [result, TODAY]
         counts[result] += 1
         done += 1
-        extra = f" -> {videos[k]['yk']} ({videos[k]['d']} s)" if result == "ok" else ""
+        extra = f" -> {videos[k]['yk']} ({videos[k]['d']} s, {'Plattencover' if videos[k].get('s') else 'Video/unklar'})" if result == "ok" else ""
         print(f"[{done}] {s['a']} - {s['t']}: {result}{extra}")
         if done % SAVE_EVERY == 0:
             save_json(VIDEOS_PATH, videos)
