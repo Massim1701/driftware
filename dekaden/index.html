@@ -19,7 +19,8 @@
     --wrap: 1180px;
   }
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; overflow-x: hidden; max-width: 100%; }
+  @supports (overflow: clip) { html { overflow-x: clip; } }
   html.lenis, html.lenis body { height: auto; }
   .lenis.lenis-smooth { scroll-behavior: auto !important; }
   body {
@@ -56,8 +57,9 @@
 
   /* ---------- Hero ---------- */
   .hero { position: relative; min-height: 100vh; min-height: 100svh; display: flex; align-items: center; overflow: hidden; padding: 110px 0 70px; }
-  .hero-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent); mask-image: linear-gradient(180deg, #000 70%, transparent); }
-  .glow { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.55; }
+  .hero-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .hero-bg::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 30%; z-index: 9; pointer-events: none; background: linear-gradient(180deg, rgba(9,9,13,0), var(--bg)); }
+  .glow { position: absolute; border-radius: 50%; opacity: 0.55; }
   .glow-a { width: 620px; height: 620px; left: -160px; top: -120px; background: radial-gradient(circle, rgba(124,92,255,0.55), transparent 65%); }
   .glow-b { width: 560px; height: 560px; right: -140px; top: 120px; background: radial-gradient(circle, rgba(45,212,191,0.38), transparent 65%); }
   /* Plattenspieler im Stil eines Technics-MK2-Direktantriebs (9.10.):
@@ -124,6 +126,8 @@
   .disco-spots { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: screen; }
   .grain { position: absolute; inset: 0; opacity: 0.06; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
   @media (max-width: 760px) { .vinyl { right: -45vw; width: 110vw; opacity: 0.32; } }
+  /* Handy: keine 3D-Szene, keine Platte, keine Disco-Kugel -- die Seite bleibt schmal und leicht (Safari stuerzte hier ab) */
+  @media (max-width: 760px) { .tt-scene, .vinyl, .disco-ball, .disco-spots, .glow { display: none !important; } }
 
   .hero > .wrap { width: 100%; }
   .hero .wrap > * { position: relative; z-index: 1; }
@@ -914,13 +918,14 @@
           sx.globalAlpha = 1;
         }
       }
-      var rot = 0.6, last = performance.now(), visible = true;
+      var rot = 0.6, last = performance.now(), visible = true, lastDraw = 0;
       if ('IntersectionObserver' in window) new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }).observe(document.querySelector('.hero'));
       if (!MOTION) { draw(rot); return; }
       (function loop(now) {
         requestAnimationFrame(loop);
+        if (!visible || document.hidden || ball.offsetParent === null || now - lastDraw < 33) return;
+        lastDraw = now;
         var dt = Math.min(0.1, (now - last) / 1000); last = now;
-        if (!visible) return;
         rot += dt * (Math.PI * 2 / 40); /* 1,5 Umdrehungen pro Minute */
         draw(rot);
         drawBeams(dt);
