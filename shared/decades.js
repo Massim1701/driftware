@@ -5,7 +5,7 @@
   if ((safari && !/[?&]lite=0/.test(q)) || /[?&]lite=1/.test(q)) document.documentElement.classList.add('lite');
   /* ?perf=1: Mess-Feld zum Eingrenzen von Rucklern (shared/perf-probe.js) */
   if (/[?&]perf=1/.test(q) && document.currentScript) {
-    var ps = document.createElement('script'); ps.src = document.currentScript.src.replace(/decades\.js.*$/, 'perf-probe.js?v=1'); document.head.appendChild(ps);
+    var ps = document.createElement('script'); ps.src = document.currentScript.src.replace(/decades\.js.*$/, 'perf-probe.js?v=2'); document.head.appendChild(ps);
   }
 })();
 
@@ -3828,6 +3828,7 @@ function renderSongGrid(container, songs) {
     img.src = song.th || song.cv || '';
     img.alt = song.a + ' – ' + song.t;
     img.loading = 'lazy';
+    img.decoding = 'async';
     img.addEventListener('error', function () { coverFallback(media, song); });
     media.appendChild(img);
     if (!img.getAttribute('src')) coverFallback(media, song);
@@ -4027,7 +4028,7 @@ function renderSongGrid(container, songs) {
     if (!r.el) r.el = r.h ? buildHeading(r.h) : ccBuildTile(r.song, r);
     return r.el;
   }
-  var WINDOW_MIN = 200, OVERSCAN = 40, MARGIN = 8;
+  var WINDOW_MIN = 200, OVERSCAN = 32, MARGIN = 24; /* Nachbau frueh und in kleinen Schritten (~9 Zeilen), nicht selten und gross */
   var topSp = document.createElement('div'), botSp = document.createElement('div');
   topSp.className = botSp.className = 'song-grid-spacer';
   topSp.setAttribute('aria-hidden', 'true'); botSp.setAttribute('aria-hidden', 'true');
