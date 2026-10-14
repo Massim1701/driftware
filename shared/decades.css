@@ -2704,3 +2704,12 @@ html:not([data-device="phone"]) .generator-body { scroll-margin-top: calc(var(--
   transition: opacity 0.25s ease; will-change: transform; mix-blend-mode: screen;
   background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, color-mix(in srgb, var(--accent, #7c5cff) 16%, transparent) 30%, transparent 68%);
 }
+
+/* ---------- Safari-Leicht-Modus (Klasse "lite" auf <html>, gesetzt in decades.js) ----------
+   Safari beschleunigt diese Dinge nicht per Grafikkarte; sie werden bei jedem Bild neu berechnet:
+   - Mauszeiger-Licht: mix-blend-mode zwingt die ganze Seite darunter in eine Misch-Ebene
+   - Fortschrittsring der Decks: drop-shadow-Filter auf SVG, 10-20 Mal pro Sekunde aktualisiert
+   - Navigationsleiste: backdrop-filter, auch im unsichtbaren Zustand */
+html.lite #cc-cursor-light { mix-blend-mode: normal; will-change: auto; }
+html.lite .cc-ring .fg { filter: none; transition: none; stroke-width: 4.5; }
+html.lite:not([data-device="phone"]) .utility-block { -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--bg) 94%, transparent); }
