@@ -4770,7 +4770,73 @@ function videoIdFor(song) { return song ? song.yt : null; }
 function ccLyricsOffsets() {
   try { return JSON.parse(localStorage.getItem(CC_LYRICS_OFFSET_KEY)) || {}; } catch (e) { return {}; }
 }
-function ccLyricsGetOffset(key) { return ccLyricsOffsets()[key] || 0; }
+/* Zeitabbildung: Video-Zeit = Versatz + Tempo * Text-Zeit. Eigene Einstellung (localStorage) vor der
+   gemeinsamen der Besucher (Supabase, Median der letzten Werte, erst ab 2 Stimmen) vor 0 / 1. */
+var CC_LYRICS_SCALE_KEY = 'driftware-lyrics-scale-v1';
+var CC_LYRICS_VOTED_KEY = 'driftware-lyrics-voted-v1';
+var CC_SYNC_URL = 'https://viyfqufxwmdpggirmbjd.supabase.co/rest/v1/rpc/';
+var CC_SYNC_ANON = 'sb_publishable_GG54x-4VLnTtRHVc1alK8w__dUpqxUt';
+var ccLyricsCrowd = {}; /* Video-ID -> {o, s, n} | null (keine Werte / Dienst fehlt) */
+function ccLyricsScales() {
+  try { return JSON.parse(localStorage.getItem(CC_LYRICS_SCALE_KEY)) || {}; } catch (e) { return {}; }
+}
+function ccLyricsSetScale(key, val) {
+  try {
+    var o = ccLyricsScales();
+    if (!val || Math.abs(val - 1) < 0.0005) delete o[key]; else o[key] = Math.round(val * 10000) / 10000;
+    localStorage.setItem(CC_LYRICS_SCALE_KEY, JSON.stringify(o));
+  } catch (e) {}
+}
+function ccLyricsHasLocal(key) { return ccLyricsOffsets()[key] !== undefined; }
+function ccLyricsCrowdOf(key) {
+  var c = (key && key === ccLyrics.songKey && ccLyrics.vid) ? ccLyricsCrowd[ccLyrics.vid] : null;
+  return c && c.n >= 2 ? c : null;
+}
+function ccLyricsGetOffset(key) {
+  var o = ccLyricsOffsets()[key];
+  if (o !== undefined) return o;
+  var c = ccLyricsCrowdOf(key);
+  return c ? c.o : 0;
+}
+function ccLyricsGetScale(key) {
+  var s = ccLyricsScales()[key];
+  if (s) return s;
+  if (ccLyricsHasLocal(key)) return 1; /* Versatz und Tempo gehoeren zusammen */
+  var c = ccLyricsCrowdOf(key);
+  return c ? c.s : 1;
+}
+/* vor jeder eigenen Aenderung: das bisher wirksame Tempo festhalten, sonst springt es auf 1 */
+function ccLyricsAdopt(key) { if (!ccLyricsHasLocal(key)) ccLyricsSetScale(key, ccLyricsGetScale(key)); }
+function ccLyricsCrowdLoad(vid) {
+  if (!vid || vid in ccLyricsCrowd || !/^[A-Za-z0-9_-]{6,20}$/.test(vid)) return;
+  ccLyricsCrowd[vid] = null;
+  try {
+    fetch(CC_SYNC_URL + 'lyrics_sync_get', { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': CC_SYNC_ANON, 'Authorization': 'Bearer ' + CC_SYNC_ANON }, body: JSON.stringify({ p_video: vid }) })
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (rows) {
+        var r = rows && rows[0];
+        if (r && r.n > 0 && isFinite(r.median_offset)) ccLyricsCrowd[vid] = { o: Math.round(r.median_offset * 10) / 10, s: r.median_scale > 0.9 && r.median_scale < 1.1 ? r.median_scale : 1, n: r.n };
+      }).catch(function () {});
+  } catch (e) {}
+}
+/* Eigene Einstellung bleibt 15 s unveraendert -> anonym als Stimme melden (nur Video-ID, Versatz, Tempo;
+   hoechstens 3 Stimmen pro Video und Browser, damit einer den Median nicht allein bestimmt). */
+function ccLyricsSyncWatch(key, vid) {
+  if (!key || !vid) return;
+  var o = ccLyricsOffsets()[key], sc = ccLyricsScales()[key] || 1, sig = o === undefined ? '' : o + '|' + sc;
+  var w = ccLyrics.syncWatch;
+  if (!w || w.key !== key) { ccLyrics.syncWatch = { key: key, sig: sig, at: 0, dirty: false }; return; }
+  if (sig !== w.sig) { w.sig = sig; w.at = performance.now(); w.dirty = sig !== ''; return; }
+  if (!w.dirty || performance.now() - w.at < 15000) return;
+  w.dirty = false;
+  try {
+    var voted = JSON.parse(localStorage.getItem(CC_LYRICS_VOTED_KEY)) || {};
+    if ((voted[vid] || 0) >= 3) return;
+    voted[vid] = (voted[vid] || 0) + 1;
+    localStorage.setItem(CC_LYRICS_VOTED_KEY, JSON.stringify(voted));
+    fetch(CC_SYNC_URL + 'lyrics_sync_vote', { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': CC_SYNC_ANON, 'Authorization': 'Bearer ' + CC_SYNC_ANON }, body: JSON.stringify({ p_video: vid, p_offset: o, p_scale: sc }), keepalive: true }).catch(function () {});
+  } catch (e) {}
+}
 function ccLyricsSetOffset(key, val) {
   try {
     var o = ccLyricsOffsets();
@@ -5031,11 +5097,14 @@ function ccLyricsTick() {
     ccLyrics.songKey = key;
     ccLyrics.lines = null;
     ccLyrics.view = null;
+    ccLyrics.vid = videoIdFor(song);
+    ccLyricsCrowdLoad(ccLyrics.vid);
     ccLyricsEl('cc-lyrics-offset').textContent = ccLyricsFormatOffset(key ? ccLyricsGetOffset(key) : 0);
     ccLyrics.attached = false;
     ccLyrics.msg = song ? 'Liedtext wird gesucht …' : 'Song starten – hier läuft der Text zum Mitsingen';
   }
   ccLyricsPrefetch();
+  ccLyricsSyncWatch(key, ccLyrics.vid);
   /* Suche fuer den aktuellen Song laeuft (oder ist fertig) -> Ergebnis
      einmal abholen. Gesucht wird in ccLyricsPrefetch, sobald das Deck
      fertig geladen hat. */
@@ -5061,7 +5130,11 @@ function ccLyricsTick() {
   ccLyricsSetAvail(avail);
   if (!song) { ccLyricsRender('none'); ccLyricsBall(0, 0, 0); return; }
   if (!deck.player || !deck.player.getCurrentTime) return;
-  var t = ccLyricsClock(deckKey, deck, key) - ccLyricsGetOffset(key);
+  var off = ccLyricsGetOffset(key), sc = ccLyricsGetScale(key);
+  var offTxt = ccLyricsFormatOffset(off) + (Math.abs(sc - 1) >= 0.0005 ? ' · ' + (sc * 100).toFixed(1).replace('.', ',') + ' %' : '');
+  var offEl = ccLyricsEl('cc-lyrics-offset');
+  if (offEl && offEl.textContent !== offTxt) offEl.textContent = offTxt;
+  var t = (ccLyricsClock(deckKey, deck, key) - off) / sc;
   var lines = ccLyrics.lines;
   if (!lines) { ccLyricsRender('msg'); ccLyricsIdleHop(t, deckKey); return; }
 
@@ -5169,7 +5242,8 @@ function ccKarBroadcast() {
     var dur = 0; try { dur = deck.player.getDuration() || 0; } catch (e) {}
     /* JEDER Song im aktiven Deck: Studiofassungen (kar) laufen synchron, bei Musikvideos kann der Text abweichen (-/+ im Tab) */
     ccKarChan.postMessage({ type: 'state', key: ccLyricsSongKey(song), a: song.a, t: song.t, kar: !!song.kar, kd: song.kd || 0, dur: dur,
-      time: deck.player.getCurrentTime() || 0, playing: !!deck.isPlaying, rate: deck.rate || 1, ts: Date.now(), info: info });
+      time: deck.player.getCurrentTime() || 0, playing: !!deck.isPlaying, rate: deck.rate || 1, ts: Date.now(), info: info,
+      off: ccLyricsGetOffset(ccLyricsSongKey(song)), sc: ccLyricsGetScale(ccLyricsSongKey(song)) });
   } catch (e) {}
 }
 setInterval(ccKarBroadcast, 150);
@@ -5293,6 +5367,7 @@ function ccLyricsInit(bar) {
   if (!ccLyricsEl('cc-lyrics')) return;
   function nudge(d) {
     if (!ccLyrics.songKey) return;
+    ccLyricsAdopt(ccLyrics.songKey);
     ccLyricsSetOffset(ccLyrics.songKey, ccLyricsGetOffset(ccLyrics.songKey) + d);
     ccLyricsEl('cc-lyrics-offset').textContent = ccLyricsFormatOffset(ccLyricsGetOffset(ccLyrics.songKey));
   }
@@ -5312,11 +5387,21 @@ function ccLyricsInit(bar) {
     if (!key || !lines || !deck || !deck.player || !deck.player.getCurrentTime) return;
     var raw = 0;
     try { raw = deck.player.getCurrentTime() || 0; } catch (e) { return; }
-    var shown = raw - ccLyricsGetOffset(key);
+    var sc0 = ccLyricsGetScale(key);
+    var shown = (raw - ccLyricsGetOffset(key)) / sc0;
     var target = null;
     for (var i = 0; i < lines.length; i++) { if (lines[i].t > shown) { target = lines[i]; break; } }
     if (!target) return;
-    ccLyricsSetOffset(key, raw - 0.15 - target.t);
+    /* Zweiter Druck bei einer mindestens 20 s spaeteren Zeile: aus beiden Punkten ergibt sich das Tempo
+       (Video-Zeit pro Text-Zeit), z. B. bei einer schneller/langsamer laufenden Aufnahme. */
+    var sc = sc0, prev = ccLyrics.lastTap;
+    if (prev && prev.key === key && target.t - prev.t >= 20) {
+      var s2 = (raw - prev.raw) / (target.t - prev.t);
+      if (s2 > 0.9 && s2 < 1.1) sc = s2;
+    }
+    ccLyrics.lastTap = { key: key, raw: raw, t: target.t };
+    ccLyricsSetScale(key, sc);
+    ccLyricsSetOffset(key, raw - 0.15 - sc * target.t);
     ccLyricsEl('cc-lyrics-offset').textContent = ccLyricsFormatOffset(ccLyricsGetOffset(key));
     ccLyrics.view = null;
   });

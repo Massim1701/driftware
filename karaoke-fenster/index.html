@@ -43,10 +43,11 @@
   h1 span { display: inline-block; background: linear-gradient(180deg, var(--gold), var(--pink)); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 6px 0 rgba(155, 92, 255, .55)) drop-shadow(0 0 26px rgba(255, 61, 129, .4)); animation: bounce 1.6s ease-in-out infinite; }
   h1 span:nth-child(2n) { background-image: linear-gradient(180deg, var(--cyan), var(--violet)); }
   @keyframes bounce { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-.09em) rotate(-3deg); } }
-  body.live h1 { font-size: clamp(30px, 6vw, 84px); }
+  body.live h1 { display: none; } /* im Live-Betrieb gehoert die Mitte dem Text */
 
-  .stage { width: 100%; max-width: 1500px; margin-top: 10px; display: none; --rh: clamp(46px, 9.6vh, 112px); --rows: 7; }
-  body.live .stage { display: block; }
+  .stage { width: 100%; max-width: 1500px; margin-top: 10px; display: none; --rh: clamp(40px, min(9.6vh, calc((100vh - 140px) / 7)), 112px); --rows: 7; }
+  /* aktive Zeile = Fenstermitte, egal wie gross/klein das Fenster ist */
+  body.live .stage { display: block; position: fixed; left: 0; right: 0; margin: 0 auto; top: calc(50% - var(--rh) * var(--rows) / 2); }
   .view { height: calc(var(--rh) * var(--rows, 7)); overflow: hidden; position: relative; perspective: 900px; perspective-origin: 50% 50%; }
   .rows { position: absolute; left: 0; right: 0; top: 50%; transform-style: preserve-3d; will-change: transform; }
   .row { position: relative; backface-visibility: hidden; will-change: transform, opacity; height: var(--rh); display: flex; align-items: center; justify-content: center; padding: 0 12px; white-space: nowrap; font-weight: 800; color: var(--muted); }
@@ -102,7 +103,7 @@
 </div>
 <script>
 (function () {
-  var OFFSET_KEY = 'driftware-lyrics-offset-v1';
+  var OFFSET_KEY = 'driftware-lyrics-offset-v1', SCALE_KEY = 'driftware-lyrics-scale-v1';
   var chan = null;
   try { chan = new BroadcastChannel('driftware-karaoke'); } catch (e) {}
   var cur = { key: null, lines: null, msg: null, kd: 0 }, pend = {};
@@ -138,6 +139,14 @@
   function setOff(k, v) {
     try { var o = offsets(); if (Math.abs(v) < 0.01) delete o[k]; else o[k] = Math.round(v * 10) / 10; localStorage.setItem(OFFSET_KEY, JSON.stringify(o)); } catch (e) {}
   }
+  function scales() { try { return JSON.parse(localStorage.getItem(SCALE_KEY)) || {}; } catch (e) { return {}; } }
+  function setSc(k, v) {
+    try { var o = scales(); if (!v || Math.abs(v - 1) < 0.0005) delete o[k]; else o[k] = Math.round(v * 10000) / 10000; localStorage.setItem(SCALE_KEY, JSON.stringify(o)); } catch (e) {}
+  }
+  /* wirksame Werte kommen vom Player (eigene Einstellung, sonst die gemeinsame der Besucher) */
+  function effOff() { return last && typeof last.off === 'number' ? last.off : (last ? getOff(last.key) : 0); }
+  function effSc() { return last && last.sc > 0 ? last.sc : 1; }
+  function nudge(d) { if (!last) return; var sc = effSc(); setSc(last.key, sc); setOff(last.key, effOff() + d); }
   function fmt(v) { return (v > 0 ? '+' : '') + v.toFixed(1).replace('.', ',') + ' s'; }
 
   function loadLyrics(s) {
@@ -254,12 +263,12 @@
     if (el('art').textContent !== last.a) el('art').textContent = last.a;
     if (el('ttl').textContent !== last.t) el('ttl').textContent = last.t;
     el('note').textContent = last.kar ? 'Studiofassung – Text läuft synchron' : 'Musikvideo – Text kann abweichen (−/+ unten rechts)';
-    var t = last.time + (last.playing ? (Date.now() - last.ts) / 1000 * (last.rate || 1) : 0) - getOff(last.key);
-    el('off').textContent = fmt(getOff(last.key));
+    var t = (last.time + (last.playing ? (Date.now() - last.ts) / 1000 * (last.rate || 1) : 0) - effOff()) / effSc();
+    el('off').textContent = fmt(effOff()) + (Math.abs(effSc() - 1) >= 0.0005 ? ' · Tempo ' + (effSc() * 100).toFixed(1).replace('.', ',') + ' %' : '');
     var lines = cur.lines;
     if (!lines) {
       var sig0 = 'msg:' + cur.msg;
-      if (shown.lines !== sig0) { rowsEl.innerHTML = '<div class="row c" style="position:relative;top:calc(var(--rh) * 2);font-size:' + Math.min(window.innerWidth * 0.035, 40) + 'px">' + esc(cur.msg || '') + '</div>'; rowsEl.style.transform = 'none'; rowEls = []; shown = { lines: sig0, active: null, wi: null }; }
+      if (shown.lines !== sig0) { rowsEl.innerHTML = '<div class="row c" style="position:relative;top:calc(var(--rh) * -0.5);font-size:' + Math.min(window.innerWidth * 0.035, 40) + 'px">' + esc(cur.msg || '') + '</div>'; rowsEl.style.transform = 'none'; rowEls = []; shown = { lines: sig0, active: null, wi: null }; }
       ballEl.style.opacity = 0;
       return;
     }
@@ -286,8 +295,8 @@
     for (var i = 0; i < 14; i++) { var s = document.createElement('span'); s.textContent = sym[i % 4]; s.style.cssText = 'left:' + (4 + i * 7) + '%;color:' + cols[i % 4] + ';animation-delay:' + (-i * 0.9) + 's;animation-duration:' + (9 + (i % 5) * 2) + 's;font-size:' + (24 + (i % 4) * 8) + 'px'; n.appendChild(s); }
     var eq = el('eq'); for (var k = 0; k < 40; k++) { var b = document.createElement('i'); b.style.animationDelay = (-(k * 0.17) % 0.9) + 's'; b.style.animationDuration = (0.6 + (k % 7) * 0.12) + 's'; eq.appendChild(b); }
   })();
-  el('earlier').addEventListener('click', function () { if (last) setOff(last.key, getOff(last.key) - 0.5); });
-  el('later').addEventListener('click', function () { if (last) setOff(last.key, getOff(last.key) + 0.5); });
+  el('earlier').addEventListener('click', function () { nudge(-0.5); });
+  el('later').addEventListener('click', function () { nudge(0.5); });
   requestAnimationFrame(tick);
 })();
 </script>
