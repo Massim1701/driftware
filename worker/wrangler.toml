@@ -1,0 +1,23 @@
+# Mini-Backend fuer driftware.online (ersetzt Supabase "driftware-analytics"):
+# Besuchszaehler, "gerade online", "Passt nicht"-Meldungen, gemeinsame Karaoke-Zeitkorrektur.
+name = "driftware-api"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[vars]
+# Seiten, die Antworten lesen duerfen (CORS). localhost ist immer erlaubt (nur zum Testen).
+ALLOWED_ORIGINS = "https://driftware.online,https://www.driftware.online"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "driftware"
+# Nach "wrangler d1 create driftware" hier die ausgegebene ID eintragen.
+database_id = "bbc6ca47-2621-4cf8-8a56-51728e894015"
+
+[[durable_objects.bindings]]
+name = "ONLINE"
+class_name = "Online"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Online"]
