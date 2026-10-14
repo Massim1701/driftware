@@ -2713,3 +2713,13 @@ html:not([data-device="phone"]) .generator-body { scroll-margin-top: calc(var(--
 html.lite #cc-cursor-light { mix-blend-mode: normal; will-change: auto; }
 html.lite .cc-ring .fg { filter: none; transition: none; stroke-width: 4.5; }
 html.lite:not([data-device="phone"]) .utility-block { -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--bg) 94%, transparent); }
+
+/* Schatten: in Safari die Ursache fuer das Ruckeln der Songliste (Nutzertest 14.10.: "Schatten aus -> ruckelt nicht mehr").
+   Weichgezeichnete Schatten werden dort bei jedem Scroll-Bild neu gezeichnet (hunderte runde Knoepfe, Decks, Kacheln).
+   Darum im Leicht-Modus keine box-/text-Schatten; die gruenen/orangen Ringe der Auswahl bleiben als Umriss sichtbar. */
+html.lite *, html.lite *::before, html.lite *::after { box-shadow: none !important; text-shadow: none !important; }
+html.lite .song-tile.selected { outline: 2px solid rgba(34, 197, 94, 0.65); outline-offset: -2px; }
+html.lite .song-tile.song-tile-mixable { outline: 1px solid rgba(245, 166, 35, 0.6); outline-offset: -1px; }
+html.lite .song-tile.song-tile-mixable.selected { outline: 2px solid rgba(34, 197, 94, 0.8); outline-offset: -2px; }
+html.lite :focus-visible { outline: 2px solid var(--accent, #7c5cff); outline-offset: 2px; }
+
