@@ -492,7 +492,6 @@
     </div>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js"></script>
@@ -686,45 +685,33 @@
     /* Anonyme Besucherzaehlung (Nutzerfrage 20.9.: "ich möchte sehen wieviel
        gerade online sind und wieviele die seite besucht haben"), siehe auch
        /privacy.html Abschnitt 3 fuer die Offenlegung. Zwei getrennte, bewusst
-       minimale Bausteine:
-       - "Besuche gesamt": ein einzelner Zaehler in Supabase (site_stats-
-         Tabelle, ueber increment_total_views()/get_total_views() erreichbar,
-         siehe dortige RLS/SECURITY DEFINER-Konfiguration) -- kein Log pro
+       minimale Bausteine, beide ueber den eigenen Worker (Quelltext in worker/):
+       - "Besuche gesamt": ein einzelner Zaehler (POST /v1/views) -- kein Log pro
          Besuch, keine IP, kein Cookie, keine Wiedererkennung.
-       - "Gerade online": laeuft komplett ueber Supabase Realtime Presence,
-         OHNE jede Datenbank-Speicherung -- jeder offene Tab meldet sich mit
-         einer zufaelligen, nur fuer diese eine Verbindung gueltigen ID in
-         einem gemeinsamen Kanal an; schliesst der Tab oder verlaesst die
-         Seite, verschwindet der Eintrag automatisch (kein Aufraeum-Job
-         noetig). */
+       - "Gerade online": ein WebSocket zu /v1/online. Der Server zaehlt nur die
+         offenen Verbindungen und schickt die Zahl an alle; es gibt weder eine
+         ID noch eine Speicherung. Schliesst der Tab, verschwindet die Verbindung. */
     (function () {
-      if (!window.supabase || !window.supabase.createClient) return;
-      var SUPABASE_URL = 'https://viyfqufxwmdpggirmbjd.supabase.co';
-      var SUPABASE_ANON_KEY = 'sb_publishable_GG54x-4VLnTtRHVc1alK8w__dUpqxUt';
-      var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      var API = 'https://driftware-api.driftware-api.workers.dev/v1';
 
       var visitsEl = document.getElementById('total-visits');
-      client.rpc('increment_total_views').then(function (res) {
-        if (!visitsEl || !res || res.error || res.data == null) return;
-        countTo(visitsEl, Number(res.data));
+      fetch(API + '/views', { method: 'POST' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (res) {
+        if (!visitsEl || !res || res.total == null) return;
+        countTo(visitsEl, Number(res.total));
       }).catch(function () {});
 
       var onlineEl = document.getElementById('online-count');
-      var presenceKey = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Math.random()).slice(2);
-      var channel = client.channel('driftware-online', { config: { presence: { key: presenceKey } } });
-
-      function updateOnlineCount() {
-        if (!onlineEl) return;
-        var state = channel.presenceState();
-        var count = Object.keys(state).length;
-        onlineEl.textContent = String(Math.max(count, 1));
+      if (!onlineEl || !window.WebSocket) return;
+      var ws = null, retry = 0, pinger = null;
+      function connect() {
+        try { ws = new WebSocket(API.replace(/^http/, 'ws') + '/online'); } catch (e) { return; }
+        ws.onmessage = function (ev) {
+          try { var d = JSON.parse(ev.data); if (d && d.online > 0) onlineEl.textContent = String(d.online); } catch (e) {}
+        };
+        ws.onopen = function () { retry = 0; clearInterval(pinger); pinger = setInterval(function () { try { ws.send('ping'); } catch (e) {} }, 30000); };
+        ws.onclose = function () { clearInterval(pinger); setTimeout(connect, Math.min(60000, 2000 * Math.pow(2, retry++))); };
       }
-
-      channel
-        .on('presence', { event: 'sync' }, updateOnlineCount)
-        .subscribe(function (status) {
-          if (status === 'SUBSCRIBED') channel.track({ joined: Date.now() });
-        });
+      connect();
     })();
 
     /* Label der Schallplatte: die 30 praegendsten 80er-Hits wechseln per

@@ -3724,8 +3724,9 @@ function toggleFav(song) {
    diesen Browser (localStorage). Entfernt wird nichts automatisch, die
    Meldungen werden manuell geprueft. */
 var FLAG_KEY = 'dw_flagged_v1';
-var FLAG_URL = 'https://viyfqufxwmdpggirmbjd.supabase.co/rest/v1/rpc/flag_song';
-var FLAG_ANON = 'sb_publishable_GG54x-4VLnTtRHVc1alK8w__dUpqxUt';
+/* Mini-Backend (Cloudflare Worker + D1, Quelltext in worker/): Meldungen, Karaoke-Zeitkorrektur */
+var DW_API = 'https://driftware-api.driftware-api.workers.dev/v1';
+var FLAG_URL = DW_API + '/flag';
 var flagCache = null;
 function flagLoad() {
   if (flagCache) return flagCache;
@@ -3744,8 +3745,8 @@ function flagSong(song) {
   try {
     fetch(FLAG_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': FLAG_ANON, 'Authorization': 'Bearer ' + FLAG_ANON },
-      body: JSON.stringify({ p_key: String(song.yt || songId(song)).slice(0, 200), p_page: flagPage(), p_genre: String(song._bucket || song.g || ''), p_artist: String(song.a || ''), p_title: String(song.t || '') }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: String(song.yt || songId(song)).slice(0, 200), page: flagPage(), genre: String(song._bucket || song.g || ''), artist: String(song.a || ''), title: String(song.t || '') }),
       keepalive: true
     }).catch(function () {});
   } catch (e) {}
@@ -4771,11 +4772,9 @@ function ccLyricsOffsets() {
   try { return JSON.parse(localStorage.getItem(CC_LYRICS_OFFSET_KEY)) || {}; } catch (e) { return {}; }
 }
 /* Zeitabbildung: Video-Zeit = Versatz + Tempo * Text-Zeit. Eigene Einstellung (localStorage) vor der
-   gemeinsamen der Besucher (Supabase, Median der letzten Werte, erst ab 2 Stimmen) vor 0 / 1. */
+   gemeinsamen der Besucher (Worker, Median der letzten Werte, erst ab 2 Stimmen) vor 0 / 1. */
 var CC_LYRICS_SCALE_KEY = 'driftware-lyrics-scale-v1';
 var CC_LYRICS_VOTED_KEY = 'driftware-lyrics-voted-v1';
-var CC_SYNC_URL = 'https://viyfqufxwmdpggirmbjd.supabase.co/rest/v1/rpc/';
-var CC_SYNC_ANON = 'sb_publishable_GG54x-4VLnTtRHVc1alK8w__dUpqxUt';
 var ccLyricsCrowd = {}; /* Video-ID -> {o, s, n} | null (keine Werte / Dienst fehlt) */
 function ccLyricsScales() {
   try { return JSON.parse(localStorage.getItem(CC_LYRICS_SCALE_KEY)) || {}; } catch (e) { return {}; }
@@ -4811,10 +4810,9 @@ function ccLyricsCrowdLoad(vid) {
   if (!vid || vid in ccLyricsCrowd || !/^[A-Za-z0-9_-]{6,20}$/.test(vid)) return;
   ccLyricsCrowd[vid] = null;
   try {
-    fetch(CC_SYNC_URL + 'lyrics_sync_get', { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': CC_SYNC_ANON, 'Authorization': 'Bearer ' + CC_SYNC_ANON }, body: JSON.stringify({ p_video: vid }) })
-      .then(function (r) { return r.ok ? r.json() : []; })
-      .then(function (rows) {
-        var r = rows && rows[0];
+    fetch(DW_API + '/sync?video=' + encodeURIComponent(vid))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (r) {
         if (r && r.n > 0 && isFinite(r.median_offset)) ccLyricsCrowd[vid] = { o: Math.round(r.median_offset * 10) / 10, s: r.median_scale > 0.9 && r.median_scale < 1.1 ? r.median_scale : 1, n: r.n };
       }).catch(function () {});
   } catch (e) {}
@@ -4834,7 +4832,7 @@ function ccLyricsSyncWatch(key, vid) {
     if ((voted[vid] || 0) >= 3) return;
     voted[vid] = (voted[vid] || 0) + 1;
     localStorage.setItem(CC_LYRICS_VOTED_KEY, JSON.stringify(voted));
-    fetch(CC_SYNC_URL + 'lyrics_sync_vote', { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': CC_SYNC_ANON, 'Authorization': 'Bearer ' + CC_SYNC_ANON }, body: JSON.stringify({ p_video: vid, p_offset: o, p_scale: sc }), keepalive: true }).catch(function () {});
+    fetch(DW_API + '/sync/vote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ video: vid, offset: o, scale: sc }), keepalive: true }).catch(function () {});
   } catch (e) {}
 }
 function ccLyricsSetOffset(key, val) {
