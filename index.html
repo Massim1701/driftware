@@ -33,7 +33,8 @@ h1 em{font-style:normal;font-weight:700;color:var(--blue)}
 .item{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;padding:42px 0;border-bottom:1px solid var(--rule);align-items:center;text-decoration:none;color:inherit}
 .item h2,.item h3{font-weight:300;font-size:clamp(40px,6.2vw,104px);letter-spacing:-.055em;line-height:.95;transition:color .3s,letter-spacing .4s}
 .item p{line-height:1.5;font-size:19px;color:var(--mut);max-width:38ch;justify-self:end}
-a.item{grid-template-columns:1.8fr 1fr}
+a.item{grid-template-columns:1.9fr 1fr}
+a.item h3{font-size:clamp(36px,4.7vw,78px)}
 .item .go{justify-self:end;display:flex;gap:18px;align-items:center;font-size:19px;color:var(--mut)}
 .item .go i{font-style:normal;font-size:34px;color:var(--ink);transition:transform .35s,color .3s}
 .sec{padding-top:140px}
@@ -54,7 +55,7 @@ nav a:hover{color:var(--ink)}
 .btn:hover{background:var(--ink);color:#fff}
 footer a:hover{color:#fff;text-decoration:underline}}
 @media (prefers-reduced-motion:no-preference){
-.hero h1,.hero .sub{animation:up .9s cubic-bezier(.2,.7,.2,1) both}.hero .sub{animation-delay:.12s}
+.stage h1,.stage .sub{animation:up 1.1s cubic-bezier(.2,.7,.2,1) both}.stage .sub{animation-delay:.15s}
 @keyframes up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}}
 @media (max-width:900px){
 .wrap{padding:0 28px}.hero{padding:48px 0 64px}.sub,.item,a.item{grid-template-columns:1fr;gap:16px}.sub a,.item p,.item .go{justify-self:start}
@@ -72,49 +73,83 @@ dialog h2{font-weight:600;font-size:32px;letter-spacing:-.04em;line-height:1.05;
 .contact-form .btn{background:var(--blue);color:#fff;margin-top:6px;align-self:flex-start}
 .contact-form .btn:hover{background:var(--ink)}
 .contact-honey{position:absolute;left:-9999px}
+
+/* Bühne mit Video */
+.stage{position:relative;min-height:100svh;display:flex;align-items:flex-end;overflow:hidden;background:#0a0d24;color:#fff}
+.stage-media{position:absolute;inset:-8% 0 -8% 0;will-change:transform}
+.stage-media video{width:100%;height:100%;object-fit:cover;display:block}
+.stage-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,11,36,.55) 0%,rgba(8,11,36,.15) 38%,rgba(8,11,36,.72) 100%)}
+.stage-in{position:relative;width:100%;padding-top:140px;padding-bottom:9vh}
+.stage h1{font-weight:300;font-size:clamp(50px,9.4vw,152px);line-height:.93;letter-spacing:-.06em;text-wrap:balance;color:#fff}
+.stage h1 em{font-style:normal;font-weight:700;color:#b9c4ff}
+.stage .sub{margin-top:48px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end}
+.stage .sub p{font-size:24px;line-height:1.45;max-width:26ch;color:rgba(255,255,255,.86)}
+.stage .sub a{justify-self:end;display:inline-flex;gap:14px;align-items:center;min-height:56px;padding:0 32px;font-weight:600;font-size:19px;text-decoration:none;background:#fff;color:var(--blue);border-radius:999px;transition:background .25s,color .25s}
+.cue{position:absolute;right:56px;bottom:3vh;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7);writing-mode:vertical-rl;display:none}
+header.site{position:fixed;top:0;left:0;right:0;z-index:20;transition:background .35s,box-shadow .35s,color .35s;color:#fff}
+header.site nav{max-width:1360px;margin:0 auto;padding:0 56px}
+header.site .brand{padding:0;font-weight:700;font-size:20px;letter-spacing:-.03em;text-decoration:none;display:inline-flex;align-items:center;min-height:72px;color:inherit}
+header.site nav a:not(.brand){color:rgba(255,255,255,.82);min-height:72px}
+header.site.solid{background:rgba(243,243,240,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 1px 0 var(--rule);color:var(--ink)}
+header.site.solid nav a:not(.brand){color:var(--mut)}
+@media (hover:hover){header.site nav a:not(.brand):hover{color:#fff}header.site.solid nav a:not(.brand):hover{color:var(--ink)}.stage .sub a:hover{background:var(--blue);color:#fff}}
+/* Einblenden beim Scrollen */
+.js .rv{opacity:0;transform:translateY(34px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.js .rv.in{opacity:1;transform:none}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-stopped{overflow:hidden}
+@media (prefers-reduced-motion:reduce){.js .rv{opacity:1;transform:none;transition:none}}
+@media (max-width:900px){.stage .sub{grid-template-columns:1fr;gap:28px}.stage .sub a{justify-self:start}header.site nav{padding:0 20px}.stage-in{padding-top:110px}}
 </style>
 </head>
 <body>
-<header class="wrap">
-<nav aria-label="Hauptnavigation"><b>Driftware</b><div><a href="#projekte">Projekte</a><a href="#leistungen">Leistungen</a><a href="/ueber-mich/">Über mich</a><a href="#kontakt" id="nav-contact">Kontakt</a></div></nav>
+<header class="site" id="site-header">
+<nav aria-label="Hauptnavigation"><a class="brand" href="/">Driftware</a><div><a href="#projekte">Projekte</a><a href="#leistungen">Leistungen</a><a href="/ueber-mich/">Über mich</a><a href="#kontakt" id="nav-contact">Kontakt</a></div></nav>
 </header>
 
 <main>
-<div class="wrap">
-<div class="hero">
+<section class="stage" id="stage">
+<div class="stage-media" aria-hidden="true"><video id="hero-video" muted loop playsinline preload="none" poster="/media/hero-poster.jpg" data-src="/media/hero.mp4"></video></div>
+<div class="stage-shade" aria-hidden="true"></div>
+<div class="wrap stage-in">
 <h1>Apps, die gut <em>aussehen</em> und zuverlässig laufen.</h1>
 <div class="sub"><p>Gestaltung, iOS-, Android- und Web-Entwicklung, Server und Daten aus einer Hand.</p><a href="#kontakt" class="open-contact">Projekt anfragen <span aria-hidden="true">→</span></a></div>
+<span class="cue" aria-hidden="true">Scrollen</span>
 </div>
+</section>
+
+<div class="wrap">
 
 <section id="leistungen" aria-labelledby="t-leist">
-<div class="lead" id="t-leist">Was du bekommst</div>
+<div class="lead rv" id="t-leist">Was du bekommst</div>
 <div class="list">
-<div class="item"><h2>Gestaltung</h2><p>Eine Oberfläche mit eigener Handschrift statt Vorlage, vom Entwurf bis zur fertigen Bedienung.</p></div>
-<div class="item"><h2>iOS und Android</h2><p>Apps von der ersten Skizze bis in den Store. iOS nativ in Swift, dazu Android.</p></div>
-<div class="item"><h2>Server</h2><p>Ein eigener Server mit Datenbank und Echtzeit-Verbindung, abgesichert durch automatische Tests.</p></div>
-<div class="item"><h2>Daten und KI</h2><p>Datenbanken mit automatischem Abgleich externer Quellen und die Anbindung von KI in eigene Anwendungen.</p></div>
+<div class="item rv"><h2>Gestaltung</h2><p>Eine Oberfläche mit eigener Handschrift statt Vorlage, vom Entwurf bis zur fertigen Bedienung.</p></div>
+<div class="item rv"><h2>iOS und Android</h2><p>Apps von der ersten Skizze bis in den Store. iOS nativ in Swift, dazu Android.</p></div>
+<div class="item rv"><h2>Server</h2><p>Ein eigener Server mit Datenbank und Echtzeit-Verbindung, abgesichert durch automatische Tests.</p></div>
+<div class="item rv"><h2>Daten und KI</h2><p>Datenbanken mit automatischem Abgleich externer Quellen und die Anbindung von KI in eigene Anwendungen.</p></div>
 </div>
 </section>
 
 <section id="projekte" class="sec" aria-labelledby="t-proj">
-<div class="lead" id="t-proj">Projekte</div>
+<div class="lead rv" id="t-proj">Projekte</div>
 <div class="list">
-<a class="item" href="/snoxi/"><h3>Snoxi</h3><span class="go">Foto- und Video-Editor<i aria-hidden="true">→</i></span></a>
-<a class="item" href="/dekaden/"><h3>Ultimate Music Master</h3><span class="go">Playlists, kostenlos<i aria-hidden="true">→</i></span></a>
+<a class="item rv" href="/snoxi/"><h3>Snoxi</h3><span class="go">Foto- und Video-Editor<i aria-hidden="true">→</i></span></a>
+<a class="item rv" href="/dekaden/"><h3>Ultimate Music Master</h3><span class="go">Playlists, kostenlos<i aria-hidden="true">→</i></span></a>
 </div>
 </section>
 
 <section class="sec" aria-labelledby="t-ich">
-<div class="lead" id="t-ich">Der Mensch dahinter</div>
+<div class="lead rv" id="t-ich">Der Mensch dahinter</div>
 <div class="list">
-<a class="item" href="/ueber-mich/"><h3>Über mich</h3><span class="go">Erfahrung und Hintergrund<i aria-hidden="true">→</i></span></a>
+<a class="item rv" href="/ueber-mich/"><h3>Über mich</h3><span class="go">Erfahrung und Hintergrund<i aria-hidden="true">→</i></span></a>
 </div>
 </section>
 </div>
 
 <div class="end" id="kontakt">
 <div class="wrap">
-<h2>Dein <b>Projekt?</b></h2>
+<h2 class="rv">Dein <b>Projekt?</b></h2>
 <p>Es gibt keine Festpreise: Der Preis richtet sich nach dem Umfang der Arbeit. Schreib mir, worum es geht.</p>
 <button class="btn open-contact" type="button">Projekt anfragen</button>
 <footer>
@@ -153,6 +188,58 @@ if (/[?&]contact=success/.test(window.location.search)) {
 document.getElementById('contact-success').style.display = 'block';
 open();
 }
+})();
+</script>
+<script src="/js/lenis.min.js"></script>
+<script>
+(function () {
+var root = document.documentElement;
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var header = document.getElementById('site-header');
+var stage = document.getElementById('stage');
+var media = stage.querySelector('.stage-media');
+var video = document.getElementById('hero-video');
+var lenis = null;
+if (!reduce) root.classList.add('js');
+// Video nur laden, wenn Bewegung erlaubt und keine Datensparmodus aktiv
+var saver = navigator.connection && navigator.connection.saveData;
+if (!reduce && !saver) {
+video.src = video.getAttribute('data-src');
+var p = video.play(); if (p && p.catch) p.catch(function () {});
+}
+function onScroll(y) {
+var h = stage.offsetHeight;
+header.classList.toggle('solid', y > h - 90);
+if (!reduce && y < h * 1.2) media.style.transform = 'translate3d(0,' + (y * 0.22).toFixed(1) + 'px,0)';
+}
+if (!reduce && window.Lenis) {
+lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.9 });
+lenis.on('scroll', function (e) { onScroll(e.scroll); });
+(function raf(t) { lenis.raf(t); requestAnimationFrame(raf); })(0);
+document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+a.addEventListener('click', function (e) {
+var id = a.getAttribute('href');
+if (id.length < 2 || a.id === 'nav-contact' || a.classList.contains('open-contact')) return;
+var t = document.querySelector(id); if (!t) return;
+e.preventDefault(); lenis.scrollTo(t, { offset: -64, duration: 1.4 });
+});
+});
+} else {
+window.addEventListener('scroll', function () { onScroll(window.scrollY); }, { passive: true });
+}
+onScroll(window.scrollY || 0);
+// Einblenden
+var els = document.querySelectorAll('.rv');
+if (!reduce && 'IntersectionObserver' in window) {
+var io = new IntersectionObserver(function (entries) {
+entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+}, { threshold: 0.15, rootMargin: '0px 0px -6% 0px' });
+els.forEach(function (el) { io.observe(el); });
+} else { els.forEach(function (el) { el.classList.add('in'); }); }
+// Kontaktfenster: Scrollen anhalten
+var dlg = document.getElementById('contact-modal');
+dlg.addEventListener('close', function () { if (lenis) lenis.start(); });
+new MutationObserver(function () { if (lenis) { dlg.open ? lenis.stop() : lenis.start(); } }).observe(dlg, { attributes: true, attributeFilter: ['open'] });
 })();
 </script>
 </body>
