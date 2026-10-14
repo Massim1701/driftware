@@ -594,7 +594,7 @@ function renderDecadePrivacy(cfg) {
     '  <h1>Datenschutzerklärung – ' + cfg.name + '</h1>' +
     '  <p class="stand">Stand: September 2026</p>' +
     '  <h2>1. Verantwortlicher</h2>' +
-    '  <p>Vollständiger Name und ladungsfähige Anschrift werden auf Anfrage über das Kontaktformular unten mitgeteilt.</p>' +
+    '  <p>Driftware, Inhaber Massimo Manca, Nohlstr. 215, 46045 Oberhausen, Deutschland · E-Mail: info@driftware.online</p>' +
     '  <h2>2. Worum es hier geht</h2>' +
     '  <p>' + cfg.name + ' ist ein Projekt, das Songs aus ' + cfg.years + ' aus der offenen Musikdatenbank Discogs nach Stimmung/Genre sortiert und als Playlisten für Streaming-Dienste aufbereitet. ' + cfg.sourceNote + '</p>' +
     '  <h2>3. Keine Erhebung personenbezogener Daten</h2>' +
