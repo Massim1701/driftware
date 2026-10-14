@@ -534,7 +534,7 @@ window.addEventListener('popstate', function () {
 
 function contactFormHTML(subject) {
   return '' +
-    '<form class="contact-form" method="POST" action="https://formsubmit.co/0b4cb7348b4cff5d1891bf8d99f1e757">' +
+    '<form class="contact-form" method="POST" action="https://formsubmit.co/info@driftware.online">' +
     '  <input type="hidden" name="_subject" value="' + subject + '">' +
     '  <input type="hidden" name="_template" value="table">' +
     '  <input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">' +

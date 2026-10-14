@@ -2,10 +2,10 @@
 (function () {
   "use strict";
 
-  var CONTACT_EMAIL = "welove80sde@gmail.com";
+  var CONTACT_EMAIL = "info@driftware.online";
   // FormSubmit-ID statt nackter E-Mail-Adresse im Formular-action, damit Bots die Adresse nicht
   // aus dem Quelltext scrapen können (CONTACT_EMAIL bleibt für die sichtbare mailto-Zeile).
-  var FORMSUBMIT_ID = "0b4cb7348b4cff5d1891bf8d99f1e757";
+  var FORMSUBMIT_ID = "info@driftware.online";
 
   var SUPPORTED_LANGUAGES = ["de","en","es","fr"];
   var LANG_NAMES = {
