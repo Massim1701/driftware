@@ -4,52 +4,119 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Impressum — Driftware</title>
+<meta name="description" content="Impressum von Driftware.">
+<link rel="preload" href="/fonts/BricolageGrotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-  :root { --bg:#0c1224; --panel:#141c33; --accent:#3aa8ff; --text:#f5f7fa; --muted:#9aa3c0; --border:rgba(255,255,255,0.08); }
-  * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
-  main { max-width:680px; margin:0 auto; padding:56px 24px 64px; }
-  a { color:var(--accent); }
-  h1 { font-size:28px; margin-bottom:32px; }
-  h2 { font-size:18px; margin-top:32px; color:var(--text); border-bottom:1px solid var(--border); padding-bottom:6px; }
-  p { color:#dbe0ee; }
-  .back { display:inline-block; margin-bottom:24px; color:var(--muted); text-decoration:none; font-size:14px; }
-  .contact-panel { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:20px 24px; margin:32px 0; }
-  .contact-form { display:flex; flex-direction:column; gap:12px; margin-top:16px; }
-  .contact-form label { font-size:13px; color:var(--muted); font-weight:600; display:flex; flex-direction:column; gap:6px; }
-  .contact-form input, .contact-form textarea { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-family:inherit; font-size:14px; }
-  .contact-form textarea { min-height:100px; resize:vertical; }
-  .contact-form button { align-self:flex-start; background:var(--accent); color:#06223d; border:none; border-radius:10px; padding:10px 22px; font-weight:700; font-size:14px; cursor:pointer; }
-  .contact-honey { position:absolute; left:-9999px; }
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:300 800;font-display:swap;src:url(/fonts/BricolageGrotesque-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:300 800;font-display:swap;src:url(/fonts/BricolageGrotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+:root{--bg:#F3F3F0;--ink:#0E0E10;--mut:#66666c;--blue:#2236FF;--blue-deep:#1626c4;--rule:#d7d7d2}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:400 18px/1.6 'Bricolage Grotesque',system-ui,-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;accent-color:var(--blue);caret-color:var(--blue)}
+::selection{background:var(--blue);color:#fff}
+a{color:inherit}
+:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 56px}
+header.site{border-bottom:1px solid var(--rule)}
+header.site nav{display:flex;justify-content:space-between;align-items:center}
+header.site nav .brand{font-weight:700;font-size:20px;letter-spacing:-.03em;text-decoration:none;display:inline-flex;align-items:center;min-height:72px;color:var(--ink)}
+header.site nav div{display:flex;gap:6px}
+header.site nav div a{display:inline-flex;align-items:center;min-height:72px;padding:0 14px;font-size:15px;text-decoration:none;color:var(--mut)}
+.hero{padding:9vh 0 7vh}
+.back{display:inline-flex;align-items:center;min-height:44px;font-size:16px;color:var(--mut);text-decoration:none;margin-bottom:28px}
+h1{font-weight:300;font-size:clamp(46px,8.6vw,136px);line-height:.94;letter-spacing:-.06em;text-wrap:balance}
+h1 em{font-style:normal;font-weight:700;color:var(--blue)}
+.stand{margin-top:34px;font-size:19px;color:var(--mut);max-width:48ch}
+.doc{display:grid;grid-template-columns:repeat(12,1fr);gap:56px;padding-top:56px;border-top:1px solid var(--ink)}
+.toc{grid-column:1/4;position:sticky;top:32px;align-self:start}
+.toc p{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin-bottom:14px}
+.toc ol{list-style:none;padding:0;display:grid;gap:2px}
+.toc a{display:flex;gap:12px;align-items:baseline;min-height:36px;text-decoration:none;color:var(--mut);font-size:16px;padding:4px 0;border-bottom:1px solid transparent}
+.toc a b{font-weight:600;color:var(--ink);min-width:1.3em}
+.art{grid-column:5/13;max-width:62ch}
+.art section{padding:0 0 52px;scroll-margin-top:32px}
+.art h2{font-weight:500;font-size:clamp(28px,3vw,42px);line-height:1.08;letter-spacing:-.03em;margin-bottom:16px}
+.art h2 span{color:var(--blue);margin-right:.3em}
+.art p{font-size:19px;line-height:1.65;color:#2c2c30}
+.art p a{color:var(--blue);text-decoration-thickness:1px;text-underline-offset:4px}
+.form{margin-top:12px;padding:44px 0 0;border-top:1px solid var(--ink)}
+.form h2{margin-bottom:24px}
+.cf{display:grid;gap:22px;max-width:520px}
+.cf label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+.cf input,.cf textarea{background:transparent;border:0;border-bottom:1px solid var(--ink);padding:8px 0;font:400 18px/1.4 'Bricolage Grotesque',system-ui,sans-serif;color:var(--ink);border-radius:0;letter-spacing:0;text-transform:none}
+.cf input:focus-visible,.cf textarea:focus-visible{outline:0;border-bottom:2px solid var(--blue)}
+.cf textarea{min-height:110px;resize:vertical}
+.btn{display:inline-flex;align-items:center;min-height:56px;padding:0 34px;background:var(--blue);color:#fff;border:0;font:600 18px/1.4 'Bricolage Grotesque',system-ui,sans-serif;border-radius:999px;cursor:pointer;transition:background .25s;justify-self:start}
+.contact-honey{position:absolute;left:-9999px}
+.end{margin-top:140px;background:var(--blue);color:#fff;padding:8px 0}
+.end .wrap{padding-top:80px;padding-bottom:20px}
+.end h2{font-weight:300;font-size:clamp(44px,8vw,128px);line-height:.9;letter-spacing:-.065em}
+.end h2 b{font-weight:700}
+.end footer{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;padding:80px 0 24px;font-size:14px;color:rgba(255,255,255,.8)}
+.end footer a{color:rgba(255,255,255,.85);text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0 10px}
+.end footer span:last-child{display:flex;gap:2px;margin-right:-10px}
+.end footer a[aria-current]{color:#fff;text-decoration:underline;text-underline-offset:6px}
+@media (hover:hover){header.site nav div a:hover,.toc a:hover{color:var(--ink)}.toc a:hover{border-bottom-color:var(--blue)}.back:hover{color:var(--blue)}.btn:hover{background:var(--ink)}.end footer a:hover{color:#fff;text-decoration:underline}}
+@media (prefers-reduced-motion:no-preference){.hero h1,.hero .stand,.hero .back{animation:up .9s cubic-bezier(.2,.7,.2,1) both}.hero .stand{animation-delay:.1s}@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}}
+@media (max-width:900px){.wrap{padding:0 24px}.hero{padding:44px 0 48px}.doc{grid-template-columns:1fr;gap:36px}.toc{position:static;grid-column:1/-1}.art{grid-column:1/-1}.toc ol{grid-template-columns:1fr 1fr}.end{margin-top:90px}header.site nav div a{padding:0 9px}}
 </style>
 </head>
 <body>
-<main>
-  <a class="back" href="/">&larr; Zurück zu Driftware</a>
-  <h1>Impressum</h1>
+<header class="site">
+<div class="wrap"><nav aria-label="Hauptnavigation"><a class="brand" href="/">Driftware</a><div><a href="/#projekte">Projekte</a><a href="/#leistungen">Leistungen</a><a href="/ueber-mich/">Über mich</a><a href="#kontakt">Kontakt</a></div></nav></div>
+</header>
 
-  <h2>Angaben gemäß § 5 TMG</h2>
-  <p>Massimo</p>
-  <p>Vollständiger Name und ladungsfähige Anschrift werden auf Anfrage über das Kontaktformular unten mitgeteilt.</p>
+<main class="wrap">
+<div class="hero">
+<a class="back" href="/">← Zurück zu Driftware</a>
+<h1>Impressum<em>.</em></h1>
 
-  <h2>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
-  <p>Massimo</p>
+</div>
 
-  <h2>Anfragen</h2>
-  <p>Anfragen zum Impressum bitte über das Kontaktformular unten.</p>
+<div class="doc">
+<nav class="toc" aria-label="Inhalt">
+<p>Inhalt</p>
+<ol>
+<li><a href="#s1"><b>1</b> Angaben gemäß § 5 TMG</a></li><li><a href="#s2"><b>2</b> Verantwortlich für den Inhalt</a></li><li><a href="#s3"><b>3</b> Anfragen</a></li>
+</ol>
+</nav>
 
-  <div class="contact-panel" id="kontakt">
-    <h2 style="margin-top:0;border-bottom:none;padding-bottom:0;">Kontaktformular</h2>
-    <form class="contact-form" method="POST" action="https://formsubmit.co/0b4cb7348b4cff5d1891bf8d99f1e757">
-      <input type="hidden" name="_subject" value="Driftware — neue Kontaktanfrage">
-      <input type="hidden" name="_template" value="table">
-      <input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">
-      <label><span>Name</span><input type="text" name="name" required></label>
-      <label><span>Deine E-Mail-Adresse</span><input type="email" name="email" required></label>
-      <label><span>Nachricht</span><textarea name="message" required></textarea></label>
-      <button type="submit">Senden</button>
-    </form>
-  </div>
+<article class="art">
+<section id="s1"><h2>Angaben gemäß § 5 TMG</h2>
+<p>Massimo</p>
+<p>Vollständiger Name und ladungsfähige Anschrift werden auf Anfrage über das Kontaktformular unten mitgeteilt.</p></section>
+
+<section id="s2"><h2>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
+<p>Massimo</p></section>
+
+<section id="s3"><h2>Anfragen</h2>
+<p>Anfragen zum Impressum bitte über das Kontaktformular unten.</p></section>
+
+
+<div class="form" id="kontakt">
+<h2>Kontaktformular</h2>
+<form class="cf" method="POST" action="https://formsubmit.co/0b4cb7348b4cff5d1891bf8d99f1e757">
+<input type="hidden" name="_subject" value="Driftware — neue Kontaktanfrage">
+<input type="hidden" name="_template" value="table">
+<input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">
+<label><span>Name</span><input type="text" name="name" autocomplete="name" required></label>
+<label><span>Deine E-Mail-Adresse</span><input type="email" name="email" autocomplete="email" required></label>
+<label><span>Nachricht</span><textarea name="message" required></textarea></label>
+<button class="btn" type="submit">Senden</button>
+</form>
+</div>
+</article>
+</div>
 </main>
+
+<div class="end">
+<div class="wrap">
+<h2>Driftware<b>.</b></h2>
+<footer>
+<span>© 2026 Driftware</span>
+<span><a href="/privacy.html">Datenschutz</a><a href="/terms.html">Nutzungsbedingungen</a><a href="/impressum.html" aria-current="page">Impressum</a></span>
+</footer>
+</div>
+</div>
 </body>
 </html>
