@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>/* Leicht-Modus: Safari (und ?lite=1) bekommt weniger Dauer-Animation; ?lite=0 schaltet ihn ab */
 (function () { var q = location.search, safari = /^((?!chrome|chromium|crios|fxios|android).)*safari/i.test(navigator.userAgent);
-  if ((safari && !/[?&]lite=0/.test(q)) || /[?&]lite=1/.test(q)) document.documentElement.classList.add("lite"); })();</script>
+  if ((safari && !/[?&]lite=0/.test(q)) || /[?&]lite=1/.test(q)) document.documentElement.classList.add("lite");
+  /* ?perf=1: Mess-Feld (shared/perf-probe.js) */
+  if (/[?&]perf=1/.test(q)) { var ps = document.createElement("script"); ps.src = "../shared/perf-probe.js?v=2"; document.head.appendChild(ps); } })();</script>
 <title>Ultimate Music Master — Driftware</title>
 <meta name="description" content="Songs nach Jahrzehnt und Stimmung sortiert — Playlisten von den 70ern bis heute, bereit für Spotify, Apple Music & YouTube Music.">
 <link rel="stylesheet" href="/fonts/fonts.css?v=1">
@@ -178,6 +180,9 @@
     .stat { flex: 1 1 40%; padding: 0 12px 0 0; }
     .stat + .stat { padding-left: 0; border-left: 0; }
   }
+  /* Leicht-Modus (Safari): animierter box-shadow wird dort bei jedem Bild neu gezeichnet -> Deckkraft-Puls */
+  @keyframes live-fade { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  html.lite .eyebrow::before, html.lite .stat-live strong::before { box-shadow: none; animation: live-fade 2s infinite; }
   @keyframes live-pulse {
     0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.55); }
     70% { box-shadow: 0 0 0 7px rgba(52,211,153,0); }
