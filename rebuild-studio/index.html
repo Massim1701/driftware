@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rebuild Studio — Songs zerlegen und neu bauen | Driftware</title>
+<meta name="description" content="Rebuild Studio trennt Songs auf deinem Rechner in Gesang, Schlagzeug, Bass und mehr. Mischen, arrangieren, neu spielen und exportieren in einem Studio. Preis auf Anfrage.">
+<link rel="preload" href="/fonts/BricolageGrotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:300 800;font-display:swap;src:url(/fonts/BricolageGrotesque-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:300 800;font-display:swap;src:url(/fonts/BricolageGrotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+:root{--bg:#0b0c0d;--bg2:#121315;--panel:#1b1d20;--panel2:#23262a;--line:rgba(255,255,255,.09);--text:#e7e9ec;--dim:#9aa0a8;--accent:#2de2e6;--mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font:400 18px/1.6 'Bricolage Grotesque',system-ui,-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;accent-color:var(--accent);caret-color:var(--accent)}
+::selection{background:var(--accent);color:#04282a}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 56px}
+h1,h2,h3{font-weight:300;letter-spacing:-.04em;text-wrap:balance}
+h2 b,h1 b{font-weight:700}
+header.site{position:fixed;top:0;left:0;right:0;z-index:30;transition:background .35s}
+header.site.solid{background:rgba(11,12,13,.82);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 1px 0 var(--line)}
+header.site .in{max-width:1360px;margin:0 auto;padding:0 56px;display:flex;justify-content:space-between;align-items:center;min-height:72px}
+header.site .brand{font-weight:700;font-size:20px;letter-spacing:-.03em;text-decoration:none;display:inline-flex;align-items:center;min-height:56px}
+header.site nav{display:flex;gap:6px;align-items:center}
+header.site nav a{display:inline-flex;align-items:center;min-height:56px;padding:0 14px;font-size:15px;text-decoration:none;color:var(--dim)}
+.btn{display:inline-flex;align-items:center;gap:10px;min-height:56px;padding:0 32px;background:var(--accent);color:#04282a;border:0;font:600 18px/1.4 'Bricolage Grotesque',system-ui,sans-serif;border-radius:999px;cursor:pointer;text-decoration:none;transition:background .25s,transform .25s}
+.btn.ghost{background:transparent;color:var(--text);border:1.5px solid rgba(255,255,255,.28);box-shadow:none}
+header.site nav a.btn{min-height:44px;padding:0 22px;font-size:15px;margin-left:10px;color:#04282a}
+/* Buehne */
+.stage{position:relative;min-height:100svh;padding:130px 0 70px;display:flex;align-items:center;overflow:hidden}
+.stage::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 50% at 78% 38%,rgba(45,226,230,.13),transparent 70%),radial-gradient(40% 40% at 10% 90%,rgba(199,125,255,.09),transparent 70%)}
+.stage .wrap{position:relative;width:100%;display:grid;grid-template-columns:repeat(12,1fr);gap:40px;align-items:center}
+.stage .tx{grid-column:1/6}
+.stage h1{font-size:clamp(46px,6.6vw,108px);line-height:.93}
+.stage h1 em{font-style:normal;color:var(--accent);font-weight:600}
+.stage p.lead{margin-top:32px;font-size:22px;line-height:1.5;color:var(--dim);max-width:30ch}
+.stage .cta{margin-top:40px;display:flex;gap:14px;flex-wrap:wrap}
+.stage .note{margin-top:22px;font-size:14.5px;color:#868c94}
+/* Pult (Illustration) */
+.desk{grid-column:6/13;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 22px 24px;box-shadow:0 40px 90px -40px #000,inset 0 1px 0 rgba(255,255,255,.05);background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px)}
+.tr{display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.tr .lcd{font:500 18px var(--mono);color:var(--accent);background:#050707;border:1px solid var(--line);border-radius:6px;padding:8px 14px;letter-spacing:.04em}
+.tr .lcd s{text-decoration:none;color:#2b8587}
+.tr .pb{width:34px;height:34px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center}
+.tr .pb::after{content:"";border-left:11px solid var(--text);border-top:7px solid transparent;border-bottom:7px solid transparent;margin-left:3px}
+.tr .sp{flex:1}
+.tr .chip{font:500 12px var(--mono);letter-spacing:.08em;color:var(--dim);border:1px solid var(--line);border-radius:5px;padding:6px 10px}
+.tr .chip.on{color:#04282a;background:var(--accent);border-color:var(--accent)}
+.lanes{margin-top:16px;display:grid;gap:5px}
+.lane{position:relative;height:34px;background:#0e0f11;border-radius:4px;overflow:hidden}
+.lane svg{position:absolute;inset:0;width:100%;height:100%}
+.lane polygon{fill:var(--c);opacity:.85}
+.lane span{position:absolute;left:8px;top:6px;z-index:1;font:500 11px var(--mono);letter-spacing:.06em;color:#0b0c0d;mix-blend-mode:normal;background:var(--c);padding:1px 6px;border-radius:3px}
+.lane::after{content:"";position:absolute;top:0;bottom:0;left:38%;width:2px;background:#fff;box-shadow:0 0 10px #fff;opacity:.9}
+.mix{margin-top:18px;display:grid;grid-template-columns:repeat(6,1fr) 1.15fr;gap:10px;padding-top:18px;border-top:1px solid var(--line)}
+.ch{background:linear-gradient(180deg,#1f2226,#17191b);border:1px solid var(--line);border-radius:8px;padding:12px 8px 10px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:150px auto auto;gap:6px 4px;justify-items:center}
+.mt{width:10px;height:100%;background:#050606;border-radius:3px;position:relative;overflow:hidden;-webkit-mask:repeating-linear-gradient(0deg,#000 0 4px,transparent 4px 6px);mask:repeating-linear-gradient(0deg,#000 0 4px,transparent 4px 6px)}
+.mt i{position:absolute;left:0;right:0;bottom:0;height:70%;background:linear-gradient(0deg,var(--c) 0,var(--c) 62%,#ffd23f 82%,#ff5a4f 100%);transform-origin:bottom;animation:lvl var(--t) ease-in-out var(--d) infinite alternate}
+@keyframes lvl{0%{transform:scaleY(.25)}35%{transform:scaleY(.8)}60%{transform:scaleY(.45)}100%{transform:scaleY(.95)}}
+.fd{position:relative;width:100%;height:100%}
+.fd::before{content:"";position:absolute;left:50%;top:6px;bottom:6px;width:4px;margin-left:-2px;background:#050606;border-radius:2px;box-shadow:0 0 0 1px var(--line)}
+.fd b{position:absolute;left:50%;width:24px;height:30px;margin-left:-12px;top:calc((1 - var(--v)) * 112px);background:linear-gradient(180deg,#4a4f56,#2a2d31);border-radius:4px;box-shadow:0 4px 8px rgba(0,0,0,.6),inset 0 3px 0 var(--c)}
+.nm{grid-column:1/3;font-size:11.5px;color:var(--dim);letter-spacing:.02em}
+.ms{grid-column:1/3;display:flex;gap:5px}
+.ms u{text-decoration:none;font:600 11px var(--mono);width:24px;height:22px;border-radius:4px;display:grid;place-items:center;background:var(--panel2);color:var(--dim);border:1px solid var(--line)}
+.ms u.on{background:var(--c);color:#0b0c0d;border-color:var(--c)}
+.master{background:linear-gradient(180deg,#1f2226,#17191b);border:1px solid var(--line);border-radius:8px;padding:12px 10px;display:grid;grid-template-rows:150px auto;gap:6px;justify-items:center}
+.master .pair{display:flex;gap:5px;height:100%}
+.master .mt{--c:var(--accent)}
+.master span{font-size:11.5px;color:var(--dim)}
+/* Abschnitte */
+.sec{padding:150px 0 0}
+.sec h2{font-size:clamp(38px,5.4vw,86px);line-height:.96;max-width:15ch}
+.sec .intro{margin-top:26px;font-size:21px;color:var(--dim);max-width:44ch}
+.feat{margin-top:70px;border-top:1px solid var(--line)}
+.f{display:grid;grid-template-columns:90px minmax(0,1.1fr) minmax(0,1.3fr);gap:36px;padding:42px 0;border-bottom:1px solid var(--line);align-items:start}
+.f .dot{width:46px;height:46px;border-radius:50%;background:var(--c);margin-top:6px}
+.f h3{font-weight:400;font-size:clamp(28px,3.2vw,48px);line-height:1.02}
+.f p{font-size:19px;line-height:1.6;color:var(--dim);max-width:46ch}
+.f p b{color:var(--text);font-weight:500}
+.use{margin-top:70px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line)}
+.use div{padding:34px 28px 10px 0;border-right:1px solid var(--line)}
+.use div+div{padding-left:28px}.use div:last-child{border-right:0}
+.use h3{font-weight:500;font-size:26px;letter-spacing:-.025em;line-height:1.1}
+.use p{margin-top:12px;font-size:16.5px;line-height:1.55;color:var(--dim)}
+.legal{margin-top:28px;font-size:14.5px;color:#868c94;max-width:70ch}
+.local{margin-top:70px;display:grid;grid-template-columns:repeat(3,1fr);gap:36px}
+.local div{border-top:2px solid var(--accent);padding-top:22px}
+.local h3{font-weight:500;font-size:28px;letter-spacing:-.025em}
+.local p{margin-top:10px;font-size:17.5px;color:var(--dim);line-height:1.55}
+.price{margin-top:150px;padding:120px 0;background:var(--accent);color:#04282a}
+.price .wrap{display:grid;grid-template-columns:repeat(12,1fr);gap:40px;align-items:end}
+.price h2{grid-column:1/9;font-size:clamp(44px,8vw,128px);line-height:.9;letter-spacing:-.06em;font-weight:300}
+.price h2 b{font-weight:700}
+.price p{grid-column:1/8;margin-top:6px;font-size:22px;line-height:1.5;max-width:40ch}
+.price .btn{background:#04282a;color:var(--accent);box-shadow:none;grid-column:1/8;justify-self:start;margin-top:10px}
+footer.site2{padding:90px 0 32px;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;font-size:14px;color:#868c94}
+footer.site2 a{color:#8b9097;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0 10px}
+footer.site2 span:last-child{display:flex;gap:2px;margin-right:-10px}
+/* Kontaktfenster */
+dialog{margin:auto;border:1px solid var(--line);background:var(--panel);color:var(--text);width:min(480px,calc(100% - 32px));padding:36px;border-radius:12px;overflow:visible}
+dialog::backdrop{background:rgba(0,0,0,.7)}
+dialog h2{font-size:30px;letter-spacing:-.03em;font-weight:500;margin-bottom:22px}
+.modal-close{position:absolute;top:6px;right:8px;width:44px;height:44px;background:none;border:0;font-size:28px;line-height:1;cursor:pointer;color:var(--text)}
+.contact-success{background:#0e2e30;padding:12px 14px;margin-bottom:18px;font-size:15px;border-radius:6px}
+.cf{display:grid;gap:18px}
+.cf label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.cf input,.cf textarea{background:transparent;border:0;border-bottom:1px solid #fff;padding:8px 0;font:400 17px/1.4 'Bricolage Grotesque',system-ui,sans-serif;color:var(--text);border-radius:0;text-transform:none;letter-spacing:0}
+.cf input:focus-visible,.cf textarea:focus-visible{outline:0;border-bottom:2px solid var(--accent)}
+.cf textarea{min-height:96px;resize:vertical}
+.contact-honey{position:absolute;left:-9999px}
+html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!important}
+.js .rv{opacity:0;transform:translateY(34px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}.js .rv.in{opacity:1;transform:none}
+@media (hover:hover){header.site nav a:not(.btn):hover{color:#fff}.btn:hover{transform:translateY(-2px)}.btn.ghost:hover{background:rgba(255,255,255,.08)}.price .btn:hover{background:#000}footer.site2 a:hover{color:#fff}}
+@media (prefers-reduced-motion:no-preference){.stage h1,.stage .lead,.stage .cta{animation:up .9s cubic-bezier(.2,.7,.2,1) both}.stage .lead{animation-delay:.1s}.stage .cta{animation-delay:.2s}.desk{animation:up 1.1s .15s cubic-bezier(.2,.7,.2,1) both}@keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}}
+@media (prefers-reduced-motion:reduce){.mt i{animation:none}.js .rv{opacity:1;transform:none;transition:none}}
+@media (max-width:1100px){.stage .tx,.desk{grid-column:1/-1}.stage{padding-top:110px}}
+@media (max-width:900px){.wrap,header.site .in{padding:0 22px}header.site nav a:not(.btn){display:none}.f{grid-template-columns:56px 1fr;gap:16px 20px}.f p{grid-column:2}.f .dot{width:34px;height:34px}.use,.local{grid-template-columns:1fr}.use div,.use div+div{padding:26px 0;border-right:0;border-bottom:1px solid var(--line)}.mix{grid-template-columns:repeat(3,1fr)}.master{display:none}.price .wrap{grid-template-columns:1fr}.price h2,.price p,.price .btn{grid-column:1/-1}.sec{padding-top:100px}}
+</style>
+</head>
+<body>
+<header class="site" id="hd"><div class="in"><a class="brand" href="/">Driftware</a><nav aria-label="Hauptnavigation"><a href="#funktionen">Funktionen</a><a href="#wofuer">Wofür</a><a href="#preis">Preis</a><a class="btn open-contact" href="#preis">Anfragen</a></nav></div></header>
+
+<main>
+<section class="stage" id="stage">
+<div class="wrap">
+<div class="tx">
+<h1>Zerlege jeden Song. <em>Baue ihn neu.</em></h1>
+<p class="lead">Rebuild Studio trennt Songs auf deinem Rechner in ihre Spuren. Dann mischst, arrangierst und spielst du sie neu, in einem Studio, das sich wie Hardware anfühlt.</p>
+<div class="cta"><a class="btn open-contact" href="#preis">Preis anfragen</a><a class="btn ghost" href="#funktionen">Was es kann</a></div>
+<p class="note">Für den Mac. Windows und Linux sind in Vorbereitung.</p>
+</div>
+<div class="desk" role="img" aria-label="Illustration: Mischpult von Rebuild Studio mit sechs Spuren, Wellenformen, Pegelanzeigen und Fadern">
+<div class="tr"><div class="pb"></div><div class="lcd">01:42.380 <s>/ 05:29.000</s></div><div class="sp"></div><div class="chip">4</div><div class="chip on">6 SPUREN</div><div class="chip">BIBLIOTHEK</div></div>
+<div class="lanes"><div class="lane" style="--c:#ffd23f"><span>Gesang</span><svg viewBox="0 0 900 34" preserveAspectRatio="none" aria-hidden="true"><polygon points="0.0,9.7 6.0,0.0 12.1,0.0 18.1,7.5 24.2,3.6 30.2,4.2 36.2,0.9 42.3,0.0 48.3,9.6 54.4,10.6 60.4,0.0 66.4,4.2 72.5,0.0 78.5,11.1 84.6,4.4 90.6,0.3 96.6,8.0 102.7,0.0 108.7,0.0 114.8,11.3 120.8,11.6 126.8,5.0 132.9,0.3 138.9,7.8 145.0,10.1 151.0,8.1 157.0,12.7 163.1,11.0 169.1,9.3 175.2,9.3 181.2,12.0 187.2,12.4 193.3,12.9 199.3,11.8 205.4,13.3 211.4,14.6 217.4,8.7 223.5,10.1 229.5,8.8 235.6,12.1 241.6,4.3 247.7,4.8 253.7,11.8 259.7,9.2 265.8,4.3 271.8,3.8 277.9,0.5 283.9,6.6 289.9,0.7 296.0,2.5 302.0,7.3 308.1,3.0 314.1,0.0 320.1,0.0 326.2,3.5 332.2,2.0 338.3,10.6 344.3,7.2 350.3,0.0 356.4,4.5 362.4,8.3 368.5,2.4 374.5,0.0 380.5,0.6 386.6,5.5 392.6,4.6 398.7,3.8 404.7,0.1 410.7,4.2 416.8,6.3 422.8,5.3 428.9,11.7 434.9,11.7 440.9,3.9 447.0,1.1 453.0,6.2 459.1,8.9 465.1,11.5 471.1,8.7 477.2,5.0 483.2,7.6 489.3,10.1 495.3,8.5 501.3,13.2 507.4,12.0 513.4,8.8 519.5,10.5 525.5,10.8 531.5,11.8 537.6,9.0 543.6,4.6 549.7,13.2 555.7,4.8 561.7,3.8 567.8,2.4 573.8,3.5 579.9,2.1 585.9,5.3 591.9,4.4 598.0,5.9 604.0,10.9 610.1,0.0 616.1,2.9 622.1,8.3 628.2,3.5 634.2,3.6 640.3,5.5 646.3,5.6 652.3,2.5 658.4,1.1 664.4,1.3 670.5,3.8 676.5,10.7 682.6,7.6 688.6,8.5 694.6,2.4 700.7,0.0 706.7,0.0 712.8,0.2 718.8,0.4 724.8,8.5 730.9,1.0 736.9,3.7 743.0,11.4 749.0,12.4 755.0,12.7 761.1,5.0 767.1,10.8 773.2,12.4 779.2,8.2 785.2,11.1 791.3,13.6 797.3,13.3 803.4,11.3 809.4,14.0 815.4,13.0 821.5,9.6 827.5,10.8 833.6,11.4 839.6,9.6 845.6,13.3 851.7,9.5 857.7,8.7 863.8,10.8 869.8,11.4 875.8,1.6 881.9,5.9 887.9,9.4 894.0,3.8 900.0,0.4 900.0,33.6 894.0,30.2 887.9,24.6 881.9,28.1 875.8,32.4 869.8,22.6 863.8,23.2 857.7,25.3 851.7,24.5 845.6,20.7 839.6,24.4 833.6,22.6 827.5,23.2 821.5,24.4 815.4,21.0 809.4,20.0 803.4,22.7 797.3,20.7 791.3,20.4 785.2,22.9 779.2,25.8 773.2,21.6 767.1,23.2 761.1,29.0 755.0,21.3 749.0,21.6 743.0,22.6 736.9,30.3 730.9,33.0 724.8,25.5 718.8,33.6 712.8,33.8 706.7,34.0 700.7,34.0 694.6,31.6 688.6,25.5 682.6,26.4 676.5,23.3 670.5,30.2 664.4,32.7 658.4,32.9 652.3,31.5 646.3,28.4 640.3,28.5 634.2,30.4 628.2,30.5 622.1,25.7 616.1,31.1 610.1,34.0 604.0,23.1 598.0,28.1 591.9,29.6 585.9,28.7 579.9,31.9 573.8,30.5 567.8,31.6 561.7,30.2 555.7,29.2 549.7,20.8 543.6,29.4 537.6,25.0 531.5,22.2 525.5,23.2 519.5,23.5 513.4,25.2 507.4,22.0 501.3,20.8 495.3,25.5 489.3,23.9 483.2,26.4 477.2,29.0 471.1,25.3 465.1,22.5 459.1,25.1 453.0,27.8 447.0,32.9 440.9,30.1 434.9,22.3 428.9,22.3 422.8,28.7 416.8,27.7 410.7,29.8 404.7,33.9 398.7,30.2 392.6,29.4 386.6,28.5 380.5,33.4 374.5,34.0 368.5,31.6 362.4,25.7 356.4,29.5 350.3,34.0 344.3,26.8 338.3,23.4 332.2,32.0 326.2,30.5 320.1,34.0 314.1,34.0 308.1,31.0 302.0,26.7 296.0,31.5 289.9,33.3 283.9,27.4 277.9,33.5 271.8,30.2 265.8,29.7 259.7,24.8 253.7,22.2 247.7,29.2 241.6,29.7 235.6,21.9 229.5,25.2 223.5,23.9 217.4,25.3 211.4,19.4 205.4,20.7 199.3,22.2 193.3,21.1 187.2,21.6 181.2,22.0 175.2,24.7 169.1,24.7 163.1,23.0 157.0,21.3 151.0,25.9 145.0,23.9 138.9,26.2 132.9,33.7 126.8,29.0 120.8,22.4 114.8,22.7 108.7,34.0 102.7,34.0 96.6,26.0 90.6,33.7 84.6,29.6 78.5,22.9 72.5,34.0 66.4,29.8 60.4,34.0 54.4,23.4 48.3,24.4 42.3,34.0 36.2,33.1 30.2,29.8 24.2,30.4 18.1,26.5 12.1,34.0 6.0,34.0 0.0,24.3"/></svg></div><div class="lane" style="--c:#ff5a4f"><span>Schlagzeug</span><svg viewBox="0 0 900 34" preserveAspectRatio="none" aria-hidden="true"><polygon points="0.0,0.0 6.0,0.0 12.1,10.7 18.1,10.5 24.2,0.0 30.2,1.2 36.2,3.0 42.3,8.7 48.3,5.6 54.4,6.4 60.4,7.6 66.4,12.6 72.5,10.7 78.5,11.8 84.6,9.6 90.6,6.3 96.6,5.3 102.7,8.2 108.7,8.5 114.8,9.9 120.8,12.5 126.8,12.3 132.9,5.5 138.9,7.2 145.0,5.7 151.0,0.0 157.0,2.3 163.1,1.2 169.1,6.9 175.2,10.8 181.2,4.9 187.2,8.4 193.3,1.1 199.3,0.0 205.4,0.0 211.4,7.7 217.4,0.0 223.5,0.0 229.5,0.0 235.6,0.0 241.6,0.0 247.7,0.0 253.7,6.7 259.7,0.0 265.8,0.0 271.8,10.9 277.9,4.2 283.9,5.7 289.9,9.3 296.0,9.4 302.0,10.6 308.1,8.5 314.1,10.8 320.1,7.0 326.2,10.5 332.2,4.1 338.3,2.7 344.3,7.2 350.3,5.0 356.4,0.0 362.4,1.2 368.5,4.2 374.5,8.1 380.5,6.0 386.6,0.0 392.6,8.3 398.7,0.0 404.7,6.0 410.7,0.0 416.8,5.1 422.8,0.0 428.9,0.0 434.9,1.4 440.9,1.3 447.0,0.0 453.0,0.6 459.1,6.0 465.1,8.1 471.1,3.4 477.2,0.0 483.2,2.9 489.3,11.5 495.3,1.8 501.3,4.1 507.4,2.9 513.4,11.7 519.5,6.9 525.5,13.9 531.5,9.8 537.6,12.8 543.6,12.6 549.7,6.0 555.7,12.7 561.7,7.6 567.8,2.7 573.8,9.7 579.9,9.7 585.9,0.0 591.9,5.5 598.0,0.2 604.0,11.2 610.1,5.2 616.1,8.3 622.1,0.0 628.2,9.6 634.2,0.0 640.3,10.6 646.3,0.0 652.3,10.6 658.4,6.1 664.4,0.0 670.5,8.3 676.5,7.9 682.6,0.0 688.6,4.9 694.6,11.1 700.7,0.0 706.7,9.9 712.8,11.9 718.8,8.0 724.8,5.0 730.9,4.3 736.9,12.4 743.0,10.5 749.0,14.0 755.0,11.0 761.1,9.6 767.1,8.9 773.2,6.4 779.2,6.6 785.2,4.3 791.3,5.0 797.3,7.0 803.4,9.7 809.4,2.9 815.4,7.4 821.5,10.4 827.5,4.3 833.6,0.0 839.6,9.2 845.6,0.6 851.7,3.9 857.7,1.3 863.8,8.3 869.8,0.0 875.8,6.0 881.9,0.0 887.9,3.0 894.0,10.8 900.0,0.8 900.0,33.2 894.0,23.2 887.9,31.0 881.9,34.0 875.8,28.0 869.8,34.0 863.8,25.7 857.7,32.7 851.7,30.1 845.6,33.4 839.6,24.8 833.6,34.0 827.5,29.7 821.5,23.6 815.4,26.6 809.4,31.1 803.4,24.3 797.3,27.0 791.3,29.0 785.2,29.7 779.2,27.4 773.2,27.6 767.1,25.1 761.1,24.4 755.0,23.0 749.0,20.0 743.0,23.5 736.9,21.6 730.9,29.7 724.8,29.0 718.8,26.0 712.8,22.1 706.7,24.1 700.7,34.0 694.6,22.9 688.6,29.1 682.6,34.0 676.5,26.1 670.5,25.7 664.4,34.0 658.4,27.9 652.3,23.4 646.3,34.0 640.3,23.4 634.2,34.0 628.2,24.4 622.1,34.0 616.1,25.7 610.1,28.8 604.0,22.8 598.0,33.8 591.9,28.5 585.9,34.0 579.9,24.3 573.8,24.3 567.8,31.3 561.7,26.4 555.7,21.3 549.7,28.0 543.6,21.4 537.6,21.2 531.5,24.2 525.5,20.1 519.5,27.1 513.4,22.3 507.4,31.1 501.3,29.9 495.3,32.2 489.3,22.5 483.2,31.1 477.2,34.0 471.1,30.6 465.1,25.9 459.1,28.0 453.0,33.4 447.0,34.0 440.9,32.7 434.9,32.6 428.9,34.0 422.8,34.0 416.8,28.9 410.7,34.0 404.7,28.0 398.7,34.0 392.6,25.7 386.6,34.0 380.5,28.0 374.5,25.9 368.5,29.8 362.4,32.8 356.4,34.0 350.3,29.0 344.3,26.8 338.3,31.3 332.2,29.9 326.2,23.5 320.1,27.0 314.1,23.2 308.1,25.5 302.0,23.4 296.0,24.6 289.9,24.7 283.9,28.3 277.9,29.8 271.8,23.1 265.8,34.0 259.7,34.0 253.7,27.3 247.7,34.0 241.6,34.0 235.6,34.0 229.5,34.0 223.5,34.0 217.4,34.0 211.4,26.3 205.4,34.0 199.3,34.0 193.3,32.9 187.2,25.6 181.2,29.1 175.2,23.2 169.1,27.1 163.1,32.8 157.0,31.7 151.0,34.0 145.0,28.3 138.9,26.8 132.9,28.5 126.8,21.7 120.8,21.5 114.8,24.1 108.7,25.5 102.7,25.8 96.6,28.7 90.6,27.7 84.6,24.4 78.5,22.2 72.5,23.3 66.4,21.4 60.4,26.4 54.4,27.6 48.3,28.4 42.3,25.3 36.2,31.0 30.2,32.8 24.2,34.0 18.1,23.5 12.1,23.3 6.0,34.0 0.0,34.0"/></svg></div><div class="lane" style="--c:#3d9bff"><span>Bass</span><svg viewBox="0 0 900 34" preserveAspectRatio="none" aria-hidden="true"><polygon points="0.0,12.0 6.0,9.3 12.1,11.4 18.1,9.9 24.2,9.5 30.2,14.1 36.2,14.4 42.3,5.7 48.3,11.3 54.4,11.3 60.4,1.8 66.4,7.7 72.5,2.4 78.5,6.8 84.6,4.0 90.6,10.8 96.6,3.1 102.7,0.0 108.7,4.0 114.8,0.0 120.8,0.6 126.8,11.2 132.9,0.0 138.9,0.9 145.0,6.1 151.0,11.3 157.0,0.0 163.1,2.0 169.1,0.0 175.2,0.0 181.2,0.0 187.2,0.0 193.3,2.6 199.3,0.0 205.4,1.3 211.4,0.0 217.4,0.0 223.5,8.9 229.5,8.0 235.6,6.1 241.6,0.0 247.7,1.0 253.7,0.0 259.7,4.2 265.8,0.0 271.8,2.3 277.9,3.2 283.9,0.0 289.9,0.0 296.0,0.0 302.0,0.0 308.1,0.0 314.1,0.0 320.1,0.0 326.2,0.0 332.2,8.4 338.3,0.0 344.3,0.0 350.3,0.0 356.4,1.4 362.4,0.0 368.5,8.5 374.5,0.0 380.5,2.8 386.6,8.0 392.6,11.8 398.7,0.0 404.7,0.0 410.7,12.0 416.8,2.4 422.8,8.2 428.9,11.8 434.9,10.4 440.9,5.3 447.0,4.8 453.0,13.9 459.1,8.7 465.1,14.3 471.1,8.9 477.2,12.0 483.2,6.7 489.3,5.0 495.3,9.1 501.3,3.3 507.4,10.4 513.4,12.9 519.5,6.1 525.5,13.1 531.5,10.7 537.6,7.3 543.6,3.9 549.7,10.5 555.7,12.1 561.7,0.0 567.8,7.2 573.8,0.0 579.9,0.0 585.9,5.2 591.9,3.3 598.0,1.9 604.0,0.0 610.1,0.0 616.1,0.2 622.1,0.0 628.2,0.0 634.2,0.6 640.3,2.0 646.3,0.0 652.3,6.0 658.4,4.5 664.4,0.0 670.5,0.0 676.5,0.0 682.6,10.8 688.6,1.5 694.6,0.0 700.7,10.6 706.7,0.0 712.8,0.0 718.8,9.7 724.8,0.0 730.9,0.6 736.9,0.0 743.0,3.3 749.0,0.0 755.0,0.0 761.1,10.9 767.1,10.2 773.2,0.0 779.2,0.0 785.2,6.6 791.3,2.6 797.3,0.2 803.4,5.8 809.4,5.2 815.4,6.5 821.5,5.7 827.5,2.0 833.6,7.5 839.6,6.5 845.6,0.5 851.7,12.6 857.7,4.7 863.8,2.7 869.8,9.2 875.8,10.7 881.9,3.6 887.9,11.0 894.0,11.9 900.0,9.5 900.0,24.5 894.0,22.1 887.9,23.0 881.9,30.4 875.8,23.3 869.8,24.8 863.8,31.3 857.7,29.3 851.7,21.4 845.6,33.5 839.6,27.5 833.6,26.5 827.5,32.0 821.5,28.3 815.4,27.5 809.4,28.8 803.4,28.2 797.3,33.8 791.3,31.4 785.2,27.4 779.2,34.0 773.2,34.0 767.1,23.8 761.1,23.1 755.0,34.0 749.0,34.0 743.0,30.7 736.9,34.0 730.9,33.4 724.8,34.0 718.8,24.3 712.8,34.0 706.7,34.0 700.7,23.4 694.6,34.0 688.6,32.5 682.6,23.2 676.5,34.0 670.5,34.0 664.4,34.0 658.4,29.5 652.3,28.0 646.3,34.0 640.3,32.0 634.2,33.4 628.2,34.0 622.1,34.0 616.1,33.8 610.1,34.0 604.0,34.0 598.0,32.1 591.9,30.7 585.9,28.8 579.9,34.0 573.8,34.0 567.8,26.8 561.7,34.0 555.7,21.9 549.7,23.5 543.6,30.1 537.6,26.7 531.5,23.3 525.5,20.9 519.5,27.9 513.4,21.1 507.4,23.6 501.3,30.7 495.3,24.9 489.3,29.0 483.2,27.3 477.2,22.0 471.1,25.1 465.1,19.7 459.1,25.3 453.0,20.1 447.0,29.2 440.9,28.7 434.9,23.6 428.9,22.2 422.8,25.8 416.8,31.6 410.7,22.0 404.7,34.0 398.7,34.0 392.6,22.2 386.6,26.0 380.5,31.2 374.5,34.0 368.5,25.5 362.4,34.0 356.4,32.6 350.3,34.0 344.3,34.0 338.3,34.0 332.2,25.6 326.2,34.0 320.1,34.0 314.1,34.0 308.1,34.0 302.0,34.0 296.0,34.0 289.9,34.0 283.9,34.0 277.9,30.8 271.8,31.7 265.8,34.0 259.7,29.8 253.7,34.0 247.7,33.0 241.6,34.0 235.6,27.9 229.5,26.0 223.5,25.1 217.4,34.0 211.4,34.0 205.4,32.7 199.3,34.0 193.3,31.4 187.2,34.0 181.2,34.0 175.2,34.0 169.1,34.0 163.1,32.0 157.0,34.0 151.0,22.7 145.0,27.9 138.9,33.1 132.9,34.0 126.8,22.8 120.8,33.4 114.8,34.0 108.7,30.0 102.7,34.0 96.6,30.9 90.6,23.2 84.6,30.0 78.5,27.2 72.5,31.6 66.4,26.3 60.4,32.2 54.4,22.7 48.3,22.7 42.3,28.3 36.2,19.6 30.2,19.9 24.2,24.5 18.1,24.1 12.1,22.6 6.0,24.7 0.0,22.0"/></svg></div><div class="lane" style="--c:#ff9f43"><span>Gitarre</span><svg viewBox="0 0 900 34" preserveAspectRatio="none" aria-hidden="true"><polygon points="0.0,9.2 6.0,10.6 12.1,6.7 18.1,9.6 24.2,10.6 30.2,6.0 36.2,0.0 42.3,0.1 48.3,0.5 54.4,8.0 60.4,3.5 66.4,7.1 72.5,8.6 78.5,9.6 84.6,8.1 90.6,0.0 96.6,0.0 102.7,0.3 108.7,0.7 114.8,9.0 120.8,7.6 126.8,3.9 132.9,3.0 138.9,2.0 145.0,2.2 151.0,11.4 157.0,6.2 163.1,6.0 169.1,8.2 175.2,11.6 181.2,9.4 187.2,12.9 193.3,6.9 199.3,8.2 205.4,10.9 211.4,12.9 217.4,10.2 223.5,11.7 229.5,9.3 235.6,8.8 241.6,10.5 247.7,10.7 253.7,8.7 259.7,9.6 265.8,11.6 271.8,10.0 277.9,4.4 283.9,12.1 289.9,11.8 296.0,4.9 302.0,8.7 308.1,5.3 314.1,5.8 320.1,7.1 326.2,0.0 332.2,8.7 338.3,5.6 344.3,8.4 350.3,2.3 356.4,7.2 362.4,6.0 368.5,0.5 374.5,6.5 380.5,3.2 386.6,0.0 392.6,9.7 398.7,10.4 404.7,8.2 410.7,1.2 416.8,3.4 422.8,8.6 428.9,7.6 434.9,9.7 440.9,6.6 447.0,11.7 453.0,4.7 459.1,3.2 465.1,3.2 471.1,6.0 477.2,4.5 483.2,13.3 489.3,11.3 495.3,6.7 501.3,8.8 507.4,11.8 513.4,9.2 519.5,11.6 525.5,10.4 531.5,12.8 537.6,13.0 543.6,10.9 549.7,12.8 555.7,10.5 561.7,5.0 567.8,10.1 573.8,12.8 579.9,12.3 585.9,10.7 591.9,3.6 598.0,8.0 604.0,8.5 610.1,10.6 616.1,0.0 622.1,6.1 628.2,8.7 634.2,10.6 640.3,10.5 646.3,8.9 652.3,1.7 658.4,9.0 664.4,10.5 670.5,4.1 676.5,7.5 682.6,0.0 688.6,9.4 694.6,3.8 700.7,0.6 706.7,5.7 712.8,0.0 718.8,5.2 724.8,8.5 730.9,6.6 736.9,11.4 743.0,7.1 749.0,9.4 755.0,2.6 761.1,3.8 767.1,7.8 773.2,12.7 779.2,10.9 785.2,11.4 791.3,12.0 797.3,12.2 803.4,8.1 809.4,13.5 815.4,14.3 821.5,10.1 827.5,11.7 833.6,8.7 839.6,11.7 845.6,7.7 851.7,8.8 857.7,7.1 863.8,6.9 869.8,8.6 875.8,12.0 881.9,10.6 887.9,3.2 894.0,2.3 900.0,1.5 900.0,32.5 894.0,31.7 887.9,30.8 881.9,23.4 875.8,22.0 869.8,25.4 863.8,27.1 857.7,26.9 851.7,25.2 845.6,26.3 839.6,22.3 833.6,25.3 827.5,22.3 821.5,23.9 815.4,19.7 809.4,20.5 803.4,25.9 797.3,21.8 791.3,22.0 785.2,22.6 779.2,23.1 773.2,21.3 767.1,26.2 761.1,30.2 755.0,31.4 749.0,24.6 743.0,26.9 736.9,22.6 730.9,27.4 724.8,25.5 718.8,28.8 712.8,34.0 706.7,28.3 700.7,33.4 694.6,30.2 688.6,24.6 682.6,34.0 676.5,26.5 670.5,29.9 664.4,23.5 658.4,25.0 652.3,32.3 646.3,25.1 640.3,23.5 634.2,23.4 628.2,25.3 622.1,27.9 616.1,34.0 610.1,23.4 604.0,25.5 598.0,26.0 591.9,30.4 585.9,23.3 579.9,21.7 573.8,21.2 567.8,23.9 561.7,29.0 555.7,23.5 549.7,21.2 543.6,23.1 537.6,21.0 531.5,21.2 525.5,23.6 519.5,22.4 513.4,24.8 507.4,22.2 501.3,25.2 495.3,27.3 489.3,22.7 483.2,20.7 477.2,29.5 471.1,28.0 465.1,30.8 459.1,30.8 453.0,29.3 447.0,22.3 440.9,27.4 434.9,24.3 428.9,26.4 422.8,25.4 416.8,30.6 410.7,32.8 404.7,25.8 398.7,23.6 392.6,24.3 386.6,34.0 380.5,30.8 374.5,27.5 368.5,33.5 362.4,28.0 356.4,26.8 350.3,31.7 344.3,25.6 338.3,28.4 332.2,25.3 326.2,34.0 320.1,26.9 314.1,28.2 308.1,28.7 302.0,25.3 296.0,29.1 289.9,22.2 283.9,21.9 277.9,29.6 271.8,24.0 265.8,22.4 259.7,24.4 253.7,25.3 247.7,23.3 241.6,23.5 235.6,25.2 229.5,24.7 223.5,22.3 217.4,23.8 211.4,21.1 205.4,23.1 199.3,25.8 193.3,27.1 187.2,21.1 181.2,24.6 175.2,22.4 169.1,25.8 163.1,28.0 157.0,27.8 151.0,22.6 145.0,31.8 138.9,32.0 132.9,31.0 126.8,30.1 120.8,26.4 114.8,25.0 108.7,33.3 102.7,33.7 96.6,34.0 90.6,34.0 84.6,25.9 78.5,24.4 72.5,25.4 66.4,26.9 60.4,30.5 54.4,26.0 48.3,33.5 42.3,33.9 36.2,34.0 30.2,28.0 24.2,23.4 18.1,24.4 12.1,27.3 6.0,23.4 0.0,24.8"/></svg></div><div class="lane" style="--c:#c77dff"><span>Klavier</span><svg viewBox="0 0 900 34" preserveAspectRatio="none" aria-hidden="true"><polygon points="0.0,0.5 6.0,0.0 12.1,0.0 18.1,0.0 24.2,0.3 30.2,0.0 36.2,11.8 42.3,6.1 48.3,0.6 54.4,5.2 60.4,3.2 66.4,12.4 72.5,9.5 78.5,12.1 84.6,10.4 90.6,11.1 96.6,14.6 102.7,12.7 108.7,11.6 114.8,4.9 120.8,5.3 126.8,11.3 132.9,3.1 138.9,10.8 145.0,3.8 151.0,10.3 157.0,11.9 163.1,0.0 169.1,8.1 175.2,7.8 181.2,0.0 187.2,0.0 193.3,6.0 199.3,0.0 205.4,1.5 211.4,0.0 217.4,7.5 223.5,0.0 229.5,0.0 235.6,0.0 241.6,0.0 247.7,7.0 253.7,6.4 259.7,9.7 265.8,10.3 271.8,11.7 277.9,9.1 283.9,6.1 289.9,13.4 296.0,7.1 302.0,11.0 308.1,11.9 314.1,8.9 320.1,11.8 326.2,12.2 332.2,10.2 338.3,7.4 344.3,13.0 350.3,2.5 356.4,12.7 362.4,3.2 368.5,1.1 374.5,12.0 380.5,0.3 386.6,6.1 392.6,2.4 398.7,11.3 404.7,10.5 410.7,8.1 416.8,0.0 422.8,7.6 428.9,0.0 434.9,0.0 440.9,0.0 447.0,5.1 453.0,5.1 459.1,2.4 465.1,0.0 471.1,9.9 477.2,0.2 483.2,0.1 489.3,0.0 495.3,11.9 501.3,0.6 507.4,11.9 513.4,9.5 519.5,7.3 525.5,5.3 531.5,11.3 537.6,7.6 543.6,11.3 549.7,12.6 555.7,11.9 561.7,12.5 567.8,13.0 573.8,11.9 579.9,5.3 585.9,0.6 591.9,10.5 598.0,11.7 604.0,0.0 610.1,3.8 616.1,5.3 622.1,7.7 628.2,1.5 634.2,0.0 640.3,3.3 646.3,3.7 652.3,10.1 658.4,0.0 664.4,10.5 670.5,2.4 676.5,0.0 682.6,9.0 688.6,0.0 694.6,0.0 700.7,1.7 706.7,0.0 712.8,10.5 718.8,6.3 724.8,10.6 730.9,2.4 736.9,9.7 743.0,8.5 749.0,3.9 755.0,6.4 761.1,6.6 767.1,11.5 773.2,11.8 779.2,9.2 785.2,10.2 791.3,11.2 797.3,9.5 803.4,11.7 809.4,8.5 815.4,0.2 821.5,0.0 827.5,3.3 833.6,4.6 839.6,6.6 845.6,10.2 851.7,7.0 857.7,0.0 863.8,0.0 869.8,4.8 875.8,0.0 881.9,0.0 887.9,0.0 894.0,0.0 900.0,0.0 900.0,34.0 894.0,34.0 887.9,34.0 881.9,34.0 875.8,34.0 869.8,29.2 863.8,34.0 857.7,34.0 851.7,27.0 845.6,23.8 839.6,27.4 833.6,29.4 827.5,30.7 821.5,34.0 815.4,33.8 809.4,25.5 803.4,22.3 797.3,24.5 791.3,22.8 785.2,23.8 779.2,24.8 773.2,22.2 767.1,22.5 761.1,27.4 755.0,27.6 749.0,30.1 743.0,25.5 736.9,24.3 730.9,31.6 724.8,23.4 718.8,27.7 712.8,23.5 706.7,34.0 700.7,32.3 694.6,34.0 688.6,34.0 682.6,25.0 676.5,34.0 670.5,31.6 664.4,23.5 658.4,34.0 652.3,23.9 646.3,30.3 640.3,30.7 634.2,34.0 628.2,32.5 622.1,26.3 616.1,28.7 610.1,30.2 604.0,34.0 598.0,22.3 591.9,23.5 585.9,33.4 579.9,28.7 573.8,22.1 567.8,21.0 561.7,21.5 555.7,22.1 549.7,21.4 543.6,22.7 537.6,26.4 531.5,22.7 525.5,28.7 519.5,26.7 513.4,24.5 507.4,22.1 501.3,33.4 495.3,22.1 489.3,34.0 483.2,33.9 477.2,33.8 471.1,24.1 465.1,34.0 459.1,31.6 453.0,28.9 447.0,28.9 440.9,34.0 434.9,34.0 428.9,34.0 422.8,26.4 416.8,34.0 410.7,25.9 404.7,23.5 398.7,22.7 392.6,31.6 386.6,27.9 380.5,33.7 374.5,22.0 368.5,32.9 362.4,30.8 356.4,21.3 350.3,31.5 344.3,21.0 338.3,26.6 332.2,23.8 326.2,21.8 320.1,22.2 314.1,25.1 308.1,22.1 302.0,23.0 296.0,26.9 289.9,20.6 283.9,27.9 277.9,24.9 271.8,22.3 265.8,23.7 259.7,24.3 253.7,27.6 247.7,27.0 241.6,34.0 235.6,34.0 229.5,34.0 223.5,34.0 217.4,26.5 211.4,34.0 205.4,32.5 199.3,34.0 193.3,28.0 187.2,34.0 181.2,34.0 175.2,26.2 169.1,25.9 163.1,34.0 157.0,22.1 151.0,23.7 145.0,30.2 138.9,23.2 132.9,30.9 126.8,22.7 120.8,28.7 114.8,29.1 108.7,22.4 102.7,21.3 96.6,19.4 90.6,22.9 84.6,23.6 78.5,21.9 72.5,24.5 66.4,21.6 60.4,30.8 54.4,28.8 48.3,33.4 42.3,27.9 36.2,22.2 30.2,34.0 24.2,33.7 18.1,34.0 12.1,34.0 6.0,34.0 0.0,33.5"/></svg></div><div class="lane" style="--c:#3ddc84"><span>Sonstiges</span><svg viewBox="0 0 900 34" preserveAspectRatio="none" aria-hidden="true"><polygon points="0.0,4.9 6.0,5.2 12.1,9.2 18.1,11.8 24.2,14.5 30.2,9.0 36.2,11.1 42.3,9.1 48.3,11.7 54.4,7.8 60.4,11.9 66.4,6.3 72.5,6.5 78.5,9.4 84.6,7.5 90.6,5.4 96.6,11.0 102.7,6.0 108.7,2.1 114.8,9.3 120.8,1.1 126.8,2.3 132.9,0.0 138.9,7.1 145.0,10.8 151.0,0.0 157.0,0.0 163.1,4.1 169.1,10.2 175.2,8.2 181.2,0.0 187.2,6.1 193.3,0.0 199.3,0.0 205.4,7.4 211.4,0.0 217.4,3.9 223.5,0.0 229.5,0.0 235.6,0.4 241.6,0.0 247.7,0.0 253.7,0.0 259.7,0.0 265.8,10.4 271.8,3.4 277.9,0.0 283.9,4.6 289.9,0.0 296.0,9.2 302.0,0.0 308.1,0.3 314.1,8.9 320.1,0.0 326.2,5.1 332.2,7.5 338.3,2.0 344.3,8.9 350.3,7.7 356.4,0.0 362.4,0.0 368.5,11.7 374.5,0.0 380.5,11.9 386.6,6.7 392.6,0.0 398.7,2.7 404.7,8.0 410.7,7.2 416.8,7.3 422.8,11.3 428.9,0.0 434.9,12.7 440.9,8.3 447.0,4.9 453.0,9.4 459.1,3.5 465.1,11.7 471.1,4.9 477.2,6.4 483.2,9.0 489.3,7.8 495.3,11.5 501.3,7.9 507.4,7.6 513.4,9.6 519.5,9.6 525.5,6.7 531.5,9.4 537.6,12.8 543.6,4.6 549.7,10.1 555.7,6.9 561.7,2.4 567.8,10.6 573.8,12.6 579.9,10.9 585.9,3.4 591.9,6.7 598.0,8.1 604.0,4.6 610.1,0.0 616.1,7.5 622.1,4.5 628.2,0.0 634.2,0.2 640.3,6.5 646.3,2.3 652.3,2.0 658.4,8.6 664.4,3.7 670.5,5.0 676.5,0.0 682.6,4.5 688.6,0.0 694.6,0.0 700.7,0.0 706.7,3.1 712.8,0.0 718.8,4.3 724.8,2.6 730.9,0.7 736.9,0.0 743.0,0.0 749.0,5.0 755.0,11.0 761.1,1.9 767.1,10.1 773.2,10.7 779.2,0.0 785.2,9.2 791.3,0.0 797.3,4.6 803.4,0.0 809.4,0.0 815.4,10.7 821.5,8.5 827.5,0.0 833.6,1.6 839.6,5.2 845.6,0.0 851.7,0.0 857.7,5.1 863.8,5.8 869.8,11.5 875.8,8.0 881.9,11.3 887.9,5.3 894.0,6.0 900.0,12.0 900.0,22.0 894.0,28.0 887.9,28.7 881.9,22.7 875.8,26.0 869.8,22.5 863.8,28.2 857.7,28.9 851.7,34.0 845.6,34.0 839.6,28.8 833.6,32.4 827.5,34.0 821.5,25.5 815.4,23.3 809.4,34.0 803.4,34.0 797.3,29.4 791.3,34.0 785.2,24.8 779.2,34.0 773.2,23.3 767.1,23.9 761.1,32.1 755.0,23.0 749.0,29.0 743.0,34.0 736.9,34.0 730.9,33.3 724.8,31.4 718.8,29.7 712.8,34.0 706.7,30.9 700.7,34.0 694.6,34.0 688.6,34.0 682.6,29.5 676.5,34.0 670.5,29.0 664.4,30.3 658.4,25.4 652.3,32.0 646.3,31.7 640.3,27.5 634.2,33.8 628.2,34.0 622.1,29.5 616.1,26.5 610.1,34.0 604.0,29.4 598.0,25.9 591.9,27.3 585.9,30.6 579.9,23.1 573.8,21.4 567.8,23.4 561.7,31.6 555.7,27.1 549.7,23.9 543.6,29.4 537.6,21.2 531.5,24.6 525.5,27.3 519.5,24.4 513.4,24.4 507.4,26.4 501.3,26.1 495.3,22.5 489.3,26.2 483.2,25.0 477.2,27.6 471.1,29.1 465.1,22.3 459.1,30.5 453.0,24.6 447.0,29.1 440.9,25.7 434.9,21.3 428.9,34.0 422.8,22.7 416.8,26.7 410.7,26.8 404.7,26.0 398.7,31.3 392.6,34.0 386.6,27.3 380.5,22.1 374.5,34.0 368.5,22.3 362.4,34.0 356.4,34.0 350.3,26.3 344.3,25.1 338.3,32.0 332.2,26.5 326.2,28.9 320.1,34.0 314.1,25.1 308.1,33.7 302.0,34.0 296.0,24.8 289.9,34.0 283.9,29.4 277.9,34.0 271.8,30.6 265.8,23.6 259.7,34.0 253.7,34.0 247.7,34.0 241.6,34.0 235.6,33.6 229.5,34.0 223.5,34.0 217.4,30.1 211.4,34.0 205.4,26.6 199.3,34.0 193.3,34.0 187.2,27.9 181.2,34.0 175.2,25.8 169.1,23.8 163.1,29.9 157.0,34.0 151.0,34.0 145.0,23.2 138.9,26.9 132.9,34.0 126.8,31.7 120.8,32.9 114.8,24.7 108.7,31.9 102.7,28.0 96.6,23.0 90.6,28.6 84.6,26.5 78.5,24.6 72.5,27.5 66.4,27.7 60.4,22.1 54.4,26.2 48.3,22.3 42.3,24.9 36.2,22.9 30.2,25.0 24.2,19.5 18.1,22.2 12.1,24.8 6.0,28.8 0.0,29.1"/></svg></div></div>
+<div class="mix"><div class="ch" style="--c:#ffd23f;--v:0.78;--t:1.10s;--d:-0.00s"><div class="mt"><i></i></div><div class="fd"><b></b></div><div class="nm">Gesang</div><div class="ms"><u>M</u><u class="">S</u></div></div><div class="ch" style="--c:#ff5a4f;--v:0.66;--t:1.33s;--d:-0.37s"><div class="mt"><i></i></div><div class="fd"><b></b></div><div class="nm">Schlagzeug</div><div class="ms"><u>M</u><u class="">S</u></div></div><div class="ch" style="--c:#3d9bff;--v:0.58;--t:1.56s;--d:-0.74s"><div class="mt"><i></i></div><div class="fd"><b></b></div><div class="nm">Bass</div><div class="ms"><u>M</u><u class="">S</u></div></div><div class="ch" style="--c:#ff9f43;--v:0.5;--t:1.79s;--d:-1.11s"><div class="mt"><i></i></div><div class="fd"><b></b></div><div class="nm">Gitarre</div><div class="ms"><u>M</u><u class="">S</u></div></div><div class="ch" style="--c:#c77dff;--v:0.44;--t:2.02s;--d:-1.48s"><div class="mt"><i></i></div><div class="fd"><b></b></div><div class="nm">Klavier</div><div class="ms"><u>M</u><u class="">S</u></div></div><div class="ch" style="--c:#3ddc84;--v:0.52;--t:2.25s;--d:-1.85s"><div class="mt"><i></i></div><div class="fd"><b></b></div><div class="nm">Sonstiges</div><div class="ms"><u>M</u><u class="on">S</u></div></div><div class="master"><div class="pair"><div class="mt" style="--t:1.05s;--d:-.2s"><i></i></div><div class="mt" style="--t:1.3s;--d:-.6s"><i></i></div></div><span>Master</span></div></div>
+</div>
+</div>
+</section>
+
+<section class="sec" id="funktionen"><div class="wrap">
+<h2 class="rv">Ein Song. <b>Alle Spuren.</b></h2>
+<p class="intro rv">Alles, was du brauchst, um aus einem fertigen Stück etwas Eigenes zu machen.</p>
+<div class="feat">
+<div class="f rv" style="--c:#ffd23f"><div class="dot"></div><h3>Songs in Spuren trennen</h3><p>Gesang, Schlagzeug, Bass und der Rest, auf Wunsch sechs Spuren mit <b>Gitarre und Klavier</b>. Beliebige Länge, ohne Cloud: Die Trennung rechnet direkt auf deinem Rechner, ein ganzer Song braucht auf einem aktuellen Mac oft nur etwa eine Minute.</p></div>
+<div class="f rv" style="--c:#ff5a4f"><div class="dot"></div><h3>Mischen wie im Studio</h3><p>Jede Spur bekommt einen eigenen Kanalzug mit <b>Fader, Mute, Solo und Pegelanzeige</b>. Alle Spuren laufen synchron und lassen sich trotzdem einzeln bedienen, jede mit ihrer Wellenform.</p></div>
+<div class="f rv" style="--c:#3d9bff"><div class="dot"></div><h3>Bis zu drei Songs kombinieren</h3><p>Das Schlagzeug von Song A, der Gesang von Song B: Lade bis zu <b>drei Songs gleichzeitig</b> und mische ihre Spuren nebeneinander in einer Reihe. Jeder Song behält seine eigene Laufzeit.</p></div>
+<div class="f rv" style="--c:#ff9f43"><div class="dot"></div><h3>Tempo je Spur</h3><p>Jede Spur lässt sich einzeln zwischen <b>50 und 200 Prozent</b> verlangsamen oder beschleunigen, die Tonhöhe bleibt dabei erhalten. Das Tempo des Sequencers lässt sich aus dem Song übernehmen.</p></div>
+<div class="f rv" style="--c:#c77dff"><div class="dot"></div><h3>Neu spielen</h3><p>Ein voller Step-Sequencer und eine Piano-Roll. Schließe ein <b>MIDI-Keyboard</b> an, spiele live und nimm es direkt in den Song auf.</p></div>
+<div class="f rv" style="--c:#2de2e6"><div class="dot"></div><h3>Eigene Instrumente hinzufügen</h3><p>Lade <b>deine eigenen Klänge</b> und spiele sie als Instrument auf der Klaviatur: ein Gitarren-Sample, ein Synth-Ton, ein Geräusch, alles, was du aufgenommen hast. Du legst den Grundton fest, und der Klang folgt jeder Taste. <b>Bis zu fünf eigene Instrumente</b> pro Projekt, dazu eingebaute Synthesizer-Klänge.</p></div>
+<div class="f rv" style="--c:#ff6ad5"><div class="dot"></div><h3>Aufnehmen</h3><p>Gesang oder Instrument über Mikrofon oder Audio-Interface in eine neue Spur einspielen, mit <b>Latenzausgleich</b>, damit alles auf dem Takt sitzt.</p></div>
+<div class="f rv" style="--c:#3ddc84"><div class="dot"></div><h3>Speichern und exportieren</h3><p>Projekte speichern und später weiterbauen. Einzelne Spuren mit <b>eigenem Namen</b> sichern, als fertiger Mixdown in WAV oder MP3, auch als <b>Instrumental ohne Gesang</b>. Alle getrennten Songs liegen sauber in deiner Bibliothek.</p></div>
+</div>
+</div></section>
+
+<section class="sec" id="wofuer"><div class="wrap">
+<h2 class="rv">Wofür <b>das gut ist.</b></h2>
+<p class="intro rv">Für alle, die Musik nicht nur hören, sondern anfassen wollen.</p>
+<div class="use">
+<div class="rv"><h3>Remixen und Mashups</h3><p>Spuren aus mehreren Songs zu etwas Neuem verbinden, im eigenen Tempo und mit eigenen Beats.</p></div>
+<div class="rv"><h3>Üben und Mitspielen</h3><p>Dein Instrument aus dem Song nehmen und selbst einspielen, oder langsamer üben, ohne dass die Tonhöhe kippt.</p></div>
+<div class="rv"><h3>Instrumentals und Acapellas</h3><p>Den Gesang entfernen oder pur herausziehen, für Auftritte, Karaoke oder eigene Versionen.</p></div>
+<div class="rv"><h3>Songs auffrischen</h3><p>Alte Aufnahmen neu arrangieren und mit modernen Klängen und Beats aufpeppen.</p></div>
+</div>
+<p class="legal rv">Bitte nutze nur Material, an dem du die nötigen Rechte hast oder dessen Bearbeitung ausdrücklich erlaubt ist.</p>
+</div></section>
+
+<section class="sec"><div class="wrap">
+<h2 class="rv">Läuft bei dir. <b>Gehört dir.</b></h2>
+<div class="local">
+<div class="rv"><h3>Lokal und privat</h3><p>Alles passiert auf deinem Rechner. Deine Songs werden nirgends hochgeladen.</p></div>
+<div class="rv"><h3>Einmal kaufen</h3><p>Kein Abo. Du schaltest einmal frei, online oder per Code, und nutzt die App auf bis zu zwei Rechnern.</p></div>
+<div class="rv"><h3>Zum Ausprobieren</h3><p>Eine Demo mit Beispiel-Songs zeigt dir, wie es sich anfühlt, bevor du dich entscheidest.</p></div>
+</div>
+</div></section>
+
+<section class="price" id="preis"><div class="wrap">
+<h2 class="rv">Preis <b>auf Anfrage.</b></h2>
+<p class="rv">Rebuild Studio wird laufend erweitert, deshalb nenne ich den Preis im persönlichen Gespräch. Schreib mir, was du damit vorhast, ich melde mich bei dir.</p>
+<button class="btn open-contact rv" type="button">Preis anfragen</button>
+</div></section>
+</main>
+
+<div class="wrap"><footer class="site2"><span>© 2026 Driftware</span><span><a href="/">Driftware</a><a href="/privacy.html">Datenschutz</a><a href="/terms.html">Nutzungsbedingungen</a><a href="/impressum.html">Impressum</a></span></footer></div>
+
+<dialog id="contact-modal" aria-labelledby="contact-title">
+<button class="modal-close" id="contact-close" type="button" aria-label="Schließen">&times;</button>
+<h2 id="contact-title">Rebuild Studio anfragen</h2>
+<div class="contact-success" id="contact-success" role="status" style="display:none;">Danke für deine Nachricht! Ich melde mich so schnell wie möglich bei dir.</div>
+<form class="cf" method="POST" action="https://formsubmit.co/0b4cb7348b4cff5d1891bf8d99f1e757">
+<input type="hidden" name="_subject" value="Driftware — Anfrage Rebuild Studio">
+<input type="hidden" name="_template" value="table">
+<input type="hidden" name="_next" id="contact-next" value="">
+<input type="text" name="_honey" class="contact-honey" tabindex="-1" autocomplete="off">
+<label><span>Name</span><input type="text" name="name" autocomplete="name" required></label>
+<label><span>Deine E-Mail-Adresse</span><input type="email" name="email" autocomplete="email" required></label>
+<label><span>Nachricht</span><textarea name="message" required></textarea></label>
+<button class="btn" type="submit">Senden</button>
+</form>
+</dialog>
+
+<script src="/js/lenis.min.js"></script>
+<script>
+(function () {
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var hd = document.getElementById('hd'), lenis = null;
+if (!reduce) document.documentElement.classList.add('js');
+function onScroll(y) { hd.classList.toggle('solid', y > 40); }
+if (!reduce && window.Lenis) {
+lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.9 });
+lenis.on('scroll', function (e) { onScroll(e.scroll); });
+(function raf(t) { lenis.raf(t); requestAnimationFrame(raf); })(0);
+document.querySelectorAll('a[href^="#"]').forEach(function (a) { a.addEventListener('click', function (e) { var id = a.getAttribute('href'); if (id.length < 2 || a.classList.contains('open-contact')) return; var t = document.querySelector(id); if (!t) return; e.preventDefault(); lenis.scrollTo(t, { offset: -60, duration: 1.4 }); }); });
+} else { addEventListener('scroll', function () { onScroll(scrollY); }, { passive: true }); }
+var els = document.querySelectorAll('.rv');
+if (!reduce && 'IntersectionObserver' in window) {
+var io = new IntersectionObserver(function (es) { es.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } }); }, { threshold: 0.12, rootMargin: '0px 0px -5% 0px' });
+els.forEach(function (el) { io.observe(el); });
+} else { els.forEach(function (el) { el.classList.add('in'); }); }
+var dlg = document.getElementById('contact-modal');
+document.getElementById('contact-next').value = location.origin + location.pathname + '?contact=success';
+function open(e) { if (e) e.preventDefault(); if (!dlg.open) dlg.showModal(); }
+document.querySelectorAll('.open-contact').forEach(function (b) { b.addEventListener('click', open); });
+document.getElementById('contact-close').addEventListener('click', function () { dlg.close(); });
+dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+new MutationObserver(function () { if (lenis) { dlg.open ? lenis.stop() : lenis.start(); } }).observe(dlg, { attributes: true, attributeFilter: ['open'] });
+if (/[?&]contact=success/.test(location.search)) { document.getElementById('contact-success').style.display = 'block'; open(); }
+})();
+</script>
+</body>
+</html>
