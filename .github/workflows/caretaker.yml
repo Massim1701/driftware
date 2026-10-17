@@ -1,0 +1,47 @@
+name: Caretaker (Fehler sofort bereinigen)
+
+# Reagiert sofort, wenn einer der taeglichen Daten-Workflows endet:
+#  - fehlgeschlagen -> frisch neu starten (max. 2x pro 24h), danach Ticket
+#  - erfolgreich    -> offenes Wächter-Ticket schliessen
+# Logik: tools/wachter.sh
+on:
+  workflow_run:
+    types: [completed]
+    workflows:
+      - "Fehlende Songs verarbeiten"
+      - "Song-Statistik aktualisieren"
+      - "Tote Videos pruefen"
+      - "Billboard-Hits nachziehen"
+      - "Christmas-Playlist erweitern"
+      - "YouTube-Aufrufzahlen aktualisieren"
+      - "UK-Charts-Hits nachziehen"
+      - "BPM-Werte ermitteln"
+      - "Karaoke-Songs nachziehen"
+
+concurrency:
+  group: caretaker
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: write
+  issues: write
+
+jobs:
+  caretaker:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lauf auswerten
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_NAME: ${{ github.event.workflow_run.name }}
+          RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        run: |
+          if [ "$RUN_CONCLUSION" = "failure" ]; then
+            tools/wachter.sh fail "$RUN_NAME"
+          else
+            tools/wachter.sh ok "$RUN_NAME"
+          fi
