@@ -133,14 +133,14 @@ jobs:
             fi
             echo "Push abgelehnt (Versuch $i), hole Remote-Stand..."
             git fetch origin "$GITHUB_REF_NAME"
-            if git rebase "origin/$GITHUB_REF_NAME"; then
+            if git rebase --autostash "origin/$GITHUB_REF_NAME"; then
               continue
             fi
             # Echter Konflikt: wie in expand-decade-genres.yml nicht von Hand
             # zusammenfuehren, sondern auf frischem Stand neu ausfuehren --
             # merge_into_json.py ist wiederholbar (bereits Eingetragenes zaehlt
             # beim erneuten Abgleich als "vorhanden").
-            git rebase --abort
+            git rebase --abort || true
             git reset --hard "origin/$GITHUB_REF_NAME"
             ELAPSED=$(( $(date +%s) - JOB_START_TS ))
             if [ "${{ inputs.schritt }}" = "anreichern" ]; then

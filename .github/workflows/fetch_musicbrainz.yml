@@ -135,7 +135,7 @@ jobs:
             fi
             echo "Push abgelehnt (Versuch $i), hole Remote-Stand..."
             git fetch origin "$GITHUB_REF_NAME"
-            git rebase "origin/$GITHUB_REF_NAME" || { git rebase --abort; echo "::error::Rebase-Konflikt in data/musicbrainz -- CSVs liegen im Artifact."; exit 1; }
+            git rebase --autostash "origin/$GITHUB_REF_NAME" || { git rebase --abort || true; echo "::error::Rebase-Konflikt in data/musicbrainz -- CSVs liegen im Artifact."; exit 1; }
           done
           echo "::error::Push nach mehreren Versuchen fehlgeschlagen -- CSVs liegen im Artifact."
           exit 1

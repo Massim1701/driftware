@@ -47,6 +47,6 @@ jobs:
           for i in 1 2 3 4 5; do
             if git push; then exit 0; fi
             git fetch origin master
-            git rebase origin/master || { git rebase --abort; git reset --hard origin/master; python3 tools/count_songs.py; git add dekaden/stats.json; git commit -q -m "Song-Statistik aktualisiert"; }
+            git rebase --autostash origin/master || { git rebase --abort || true; git reset --hard origin/master; python3 tools/count_songs.py; git add dekaden/stats.json; git commit -q -m "Song-Statistik aktualisiert"; }
           done
           exit 1

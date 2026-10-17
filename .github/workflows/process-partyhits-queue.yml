@@ -59,13 +59,13 @@ jobs:
             echo "Push abgelehnt (Versuch $i), hole Remote-Stand..."
             git fetch origin master
 
-            if git rebase origin/master; then
+            if git rebase --autostash origin/master; then
               echo "Sauber rebased, versuche erneut zu pushen."
               continue
             fi
 
             echo "Echter Rebase-Konflikt -- Rebase abgebrochen, Lauf wird auf dem neuen Remote-Stand neu aufgesetzt."
-            git rebase --abort
+            git rebase --abort || true
             git reset --hard origin/master
 
             ELAPSED=$(( $(date +%s) - JOB_START_TS ))
