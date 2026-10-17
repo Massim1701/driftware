@@ -240,7 +240,7 @@
      <dekade>-music/songs.json auf; erst DANN verschwindet der Eintrag
      aus der Warteliste. Der YouTube-Link kommt hier bereits validiert
      aus extractYoutubeId() -- nie eine unvalidierte URL. ---- */
-  var QUEUE_PROXY_URL = 'https://driftware-warteliste-proxy.welove80sde.workers.dev/';
+  var QUEUE_PROXY_URL = 'https://driftware-api.driftware-api.workers.dev/v1/queue';
 
   function pushToOnlineQueue(a, t, ytId, vkUrl, manualMeta) {
     setAutosaveStatus('Wird online gespeichert …');

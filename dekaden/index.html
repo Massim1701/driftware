@@ -671,7 +671,7 @@
        fuer die Warteliste (queue/fehlende-lieder.json) sofort aus, statt bis
        04:17 UTC zu warten. Laeuft ueber denselben Cloudflare-Worker-Proxy
        wie das "Song nicht gefunden"-Formular -- kein Token im Frontend. */
-    var FETCH_DISPATCH_URL = 'https://driftware-warteliste-proxy.welove80sde.workers.dev/dispatch';
+    var FETCH_DISPATCH_URL = 'https://driftware-api.driftware-api.workers.dev/v1/queue/dispatch';
     var fetchBtn = document.getElementById('fetch-btn');
     var fetchStatus = document.getElementById('fetch-status');
     fetchBtn.addEventListener('click', function () {

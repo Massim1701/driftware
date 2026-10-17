@@ -3462,7 +3462,7 @@ function closeSongModal() {
    Bucket "Ohne"), und verschiebt ihn nur in den gewaehlten Bucket -- keine
    erneute Discogs-/YouTube-Suche noetig, alle vorhandenen Song-Daten
    (Cover, YouTube-Link etc.) bleiben erhalten. */
-var GENRE_FIX_PROXY_URL = 'https://driftware-warteliste-proxy.welove80sde.workers.dev/';
+var GENRE_FIX_PROXY_URL = 'https://driftware-api.driftware-api.workers.dev/v1/queue';
 
 /* Nutzerwunsch (13.9.): "in den Playlisten sind auch fragwuerdige Dinger
    drin ... Videos die keinen Bezug zum Song haben, irgendwelche Werbung,

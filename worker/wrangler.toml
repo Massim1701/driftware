@@ -7,6 +7,9 @@ compatibility_date = "2026-10-01"
 [vars]
 # Seiten, die Antworten lesen duerfen (CORS). localhost ist immer erlaubt (nur zum Testen).
 ALLOWED_ORIGINS = "https://driftware.online,https://www.driftware.online"
+GITHUB_REPO = "Massim1701/driftware"
+GITHUB_BRANCH = "master"
+# Secret GITHUB_TOKEN (fine-grained, nur dieses Repo: Contents + Actions read/write): npx wrangler secret put GITHUB_TOKEN
 
 [[d1_databases]]
 binding = "DB"
