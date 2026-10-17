@@ -46,6 +46,9 @@ concurrency:
   group: ${{ (inputs.apply && inputs.schritt == 'eintragen') && 'expand-decade-genres' || format('merge-songs-{0}', inputs.dekade) }}
   cancel-in-progress: false
 
+env:
+  PYTHONUNBUFFERED: '1'
+
 permissions:
   contents: write
 

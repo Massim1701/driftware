@@ -111,7 +111,7 @@ def build_song_entry(cand, yt_info):
         year = int(year) if year else None
     except (TypeError, ValueError):
         pass
-    return {
+    entry = {
         "a": cand["a"],
         "t": cand["t"],
         "y": year,
@@ -128,6 +128,9 @@ def build_song_entry(cand, yt_info):
         "hv": cand.get("hv", 0),
         "yt": yt_id,
     }
+    if cand.get("mb"):
+        entry["mb"] = cand["mb"]  # MusicBrainz-Release-Group-ID (tools/merge_into_json.py)
+    return entry
 
 
 def main():
