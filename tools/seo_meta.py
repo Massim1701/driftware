@@ -13,6 +13,9 @@ import os
 import re
 
 BASE = "https://driftware.online"
+FONT_PRELOADS = "".join(
+    f'<link rel="preload" href="/fonts/Inter-normal-{w}-latin-567244.woff2" as="font" type="font/woff2" crossorigin>\n'
+    for w in (400, 500, 600, 700))  # Inter wird ueberall oberhalb der Falz gebraucht: frueh laden, sonst springt der Text
 ICONS = ('<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n'
          '<link rel="icon" href="/favicon.ico" sizes="any">\n'
          '<link rel="apple-touch-icon" href="/apple-touch-icon.png">')
@@ -29,7 +32,7 @@ def head_block(url, title, desc, image, data_url=None):
     # Songdaten schon beim HTML-Parsen laden (sonst erst nach dem Start von decades.js). Muss exakt
     # der dataUrl der Seite entsprechen -- nach Aenderung von ?v= dieses Skript erneut ausfuehren.
     preload = f'<link rel="preload" as="fetch" href="{data_url}" crossorigin>\n' if data_url else ""
-    return (f"<!-- seo -->\n{preload}<title>{e(title)}</title>\n"
+    return (f"<!-- seo -->\n{FONT_PRELOADS}{preload}<title>{e(title)}</title>\n"
             f'<link rel="canonical" href="{url}">\n{ICONS}\n'
             f'<meta property="og:type" content="website">\n<meta property="og:locale" content="de_DE">\n'
             f'<meta property="og:site_name" content="Driftware">\n<meta property="og:title" content="{e(title)}">\n'

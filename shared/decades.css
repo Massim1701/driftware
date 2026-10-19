@@ -1,6 +1,5 @@
 /* Gemeinsame Styles fuer alle Dekaden-Seiten (80er, 90er, 2000er, ...).
    Farben kommen als CSS-Variablen von der jeweiligen Seite (siehe decades.js). */
-@import url('/fonts/fonts.css?v=1');
 :root {
   --bg: #0c0d11;
   --panel: #16171d;
@@ -2453,6 +2452,7 @@ html:not([data-device="phone"]) #dj-player .dj-decks { padding-top: 16px; }
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.25);
 }
 .generator-body .song-grid {
+  min-height: min(480px, 60vh); /* Platz vorab reservieren: kein Springen, wenn die Songs geladen sind */
   padding: 8px; overflow-y: auto;
   background: linear-gradient(180deg, color-mix(in srgb, var(--deck-a) 7%, transparent), transparent 140px), color-mix(in srgb, var(--panel) 94%, var(--deck-a));
   border-top: 2px solid color-mix(in srgb, var(--deck-a) 55%, transparent);
