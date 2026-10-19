@@ -137,18 +137,8 @@ def _yt_dlp_search(query, player_client=None):
         return None
 
 
-def search_youtube(artist, title):
-    """GitHub-Actions-Runner-IPs werden von YouTube haeufiger als
-    "verdaechtig" eingestuft als ein normaler Heim-/Browser-Zugriff (das ist
-    der Grund, warum manuell auf youtube.com sofort Treffer da sind, wo der
-    Workflow "kein YouTube-Link gefunden" meldet) -- der Standard-yt-dlp-
-    Client bekommt in dem Fall oft eine leere/blockierte Antwort statt eines
-    Fehlers. Deshalb: bei leerem Ergebnis mit dem Android-Client erneut
-    versuchen (umgeht die Bot-Pruefung meist, laeuft ueber eine andere
-    YouTube-API-Oberflaeche) -- und im endgueltigen Fehlerfall stderr loggen,
-    damit ein echter Blocker (statt "Song existiert wirklich nicht") in den
-    Action-Logs sichtbar ist, statt stillschweigend zu verschwinden.
-    """
+def _youtube_candidates(artist, title):
+    """Bis zu 5 YouTube-Treffer (yt-dlp-JSON). Mit Android-Client-Retry, siehe search_youtube."""
     query = f"ytsearch5:{artist} {title}"
     out = _yt_dlp_search(query)
     candidates = []
@@ -172,6 +162,22 @@ def search_youtube(artist, title):
         elif out is not None and out.stderr and out.stderr.strip():
             print(f"  yt-dlp ohne Treffer, stderr: {out.stderr.strip()[:300]}")
 
+    return candidates
+
+
+def search_youtube(artist, title):
+    """GitHub-Actions-Runner-IPs werden von YouTube haeufiger als
+    "verdaechtig" eingestuft als ein normaler Heim-/Browser-Zugriff (das ist
+    der Grund, warum manuell auf youtube.com sofort Treffer da sind, wo der
+    Workflow "kein YouTube-Link gefunden" meldet) -- der Standard-yt-dlp-
+    Client bekommt in dem Fall oft eine leere/blockierte Antwort statt eines
+    Fehlers. Deshalb: bei leerem Ergebnis mit dem Android-Client erneut
+    versuchen (umgeht die Bot-Pruefung meist, laeuft ueber eine andere
+    YouTube-API-Oberflaeche) -- und im endgueltigen Fehlerfall stderr loggen,
+    damit ein echter Blocker (statt "Song existiert wirklich nicht") in den
+    Action-Logs sichtbar ist, statt stillschweigend zu verschwinden.
+    """
+    candidates = _youtube_candidates(artist, title)
     if not candidates:
         return None
     # VEVO-Kanaele bevorzugen (Standing Rule aus dem Projekt: beste Qualitaet).
@@ -180,6 +186,72 @@ def search_youtube(artist, title):
         if "vevo" in channel:
             return c.get("id")
     return candidates[0].get("id")
+
+
+def _words(text):
+    return {w for w in re.findall(r"[a-z0-9]+", (text or "").lower()) if len(w) > 2}
+
+
+def youtube_match(artist, title):
+    """Bestes YouTube-Video, das wirklich zum Song passt: mind. die Haelfte der Titelwoerter und
+    ein Interpret-Wort im Videotitel/Kanalnamen. Sonst None (lieber nichts als ein falsches Video)."""
+    tw, aw = _words(title), _words(artist)
+    good = []
+    for c in _youtube_candidates(artist, title):
+        hay = _words((c.get("title") or "") + " " + (c.get("channel") or c.get("uploader") or ""))
+        t_hit = not tw or len(tw & hay) >= max(1, len(tw) // 2)
+        a_hit = not aw or bool(aw & hay)
+        if t_hit and a_hit and c.get("id"):
+            good.append(c)
+    for c in good:
+        if "vevo" in (c.get("channel") or c.get("uploader") or "").lower():
+            return c
+    return good[0] if good else None
+
+
+def _upload_year(yt_id):
+    out = _yt_dlp_search(f"https://www.youtube.com/watch?v={yt_id}")
+    if out is None:
+        return None
+    for line in out.stdout.splitlines():
+        try:
+            m = re.match(r"(\d{4})", json.loads(line).get("upload_date") or "")
+            if m:
+                return int(m.group(1))
+        except Exception:
+            continue
+    return None
+
+
+def fallback_release(artist, title, entry):
+    """Discogs kennt den Song nicht: Jahr + Tags von MusicBrainz, das Video von YouTube.
+    Liefert ein Discogs-aehnliches release-Dict oder None (dann bleibt der Eintrag in der Warteliste).
+    Hat auch MusicBrainz kein Jahr, zaehlt als letzte Notloesung das YouTube-Upload-Jahr."""
+    mb = None
+    try:
+        import musicbrainz_lookup
+        mb = musicbrainz_lookup.lookup(artist, title)
+    except Exception as e:
+        print(f"  MusicBrainz-Abfrage fehlgeschlagen: {e}")
+    yt_id = valid_yt_id(entry.get("yt"))
+    cand = None
+    if not yt_id:
+        cand = youtube_match(artist, title)
+        if not cand:
+            print("  weder Discogs noch YouTube kennen den Song, bleibt in der Warteliste")
+            return None
+        yt_id = cand["id"]
+    year, quelle = (mb or {}).get("year"), "musicbrainz"
+    if not year:
+        m = re.match(r"(\d{4})", (cand or {}).get("upload_date") or "")
+        year = int(m.group(1)) if m else _upload_year(yt_id)
+        quelle = "youtube-upload"
+    if not year:
+        print("  kein Jahr zu ermitteln, bleibt in der Warteliste")
+        return None
+    print(f"  Discogs ohne Treffer -> Jahr {year} ({quelle}), Video {yt_id}")
+    return {"year": year, "genres": [], "styles": ((mb or {}).get("tags") or [])[:5], "country": None,
+            "labels": [], "images": [], "uri": None, "community": {}, "_yt": yt_id, "_quelle": quelle}
 
 
 def pick_bucket(catalog_data, discogs_release_data):
@@ -483,9 +555,10 @@ def main():
                     print(f"  keine Treffer fuer \"{title}\", versuche ohne Klammerzusatz: \"{alt_title}\"")
                     release = discogs_search(artist, alt_title)
             if not release or not release.get("year"):
-                print("  keine Discogs-Metadaten gefunden, bleibt in der Warteliste")
-                remaining.append(entry)
-                continue
+                release = fallback_release(artist, title, entry)
+                if not release:
+                    remaining.append(entry)
+                    continue
 
             catalog_path_rel = catalog_path_for_year(release["year"])
             if not catalog_path_rel:
@@ -493,7 +566,7 @@ def main():
                 remaining.append(entry)
                 continue
 
-            yt_id = valid_yt_id(entry.get("yt")) or search_youtube(artist, title)
+            yt_id = release.get("_yt") or valid_yt_id(entry.get("yt")) or search_youtube(artist, title)
             vk_url = valid_vk_url(entry.get("vk"))
             if not yt_id and not vk_url:
                 print("  kein YouTube-Link und kein VK-Link gefunden, bleibt in der Warteliste")
@@ -512,6 +585,8 @@ def main():
 
             bucket = pick_bucket(catalog_data, release)
             song = build_song_entry(artist, title, release, yt_id, vk_url)
+            if release.get("_quelle"):
+                song["src"] = "fallback-" + release["_quelle"]  # nicht von Discogs
             catalog_data.setdefault(bucket, []).append(song)
             print(f"  hinzugefuegt zu {catalog_path_rel} / {bucket}")
             # erfolgreich verarbeitet -> NICHT zu remaining hinzufuegen
