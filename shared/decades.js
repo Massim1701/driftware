@@ -1394,7 +1394,7 @@ function deckHTML(key) {
     '        <div class="dj-vinyl-ring" aria-hidden="true"><span class="dj-vinyl-dot"></span></div>' +
     '      </div>' +
     '      <div class="dj-vinyl-hint">Song hierher ziehen</div>' +
-    '      <div class="cc-jog" id="deck-' + key + '-jog" title="Plattenteller drehen: Song stehend = Position suchen, laufend = Tempo kurz anschieben/bremsen" aria-label="Deck ' + key + ': Plattenteller drehen"></div>' +
+    '      <div class="cc-jog" id="deck-' + key + '-jog" role="group" title="Plattenteller drehen: Song stehend = Position suchen, laufend = Tempo kurz anschieben/bremsen" aria-label="Deck ' + key + ': Plattenteller drehen"></div>' +
     '      <div class="dj-vinyl-dragshield" id="deck-' + key + '-dragshield" aria-hidden="true"></div>' +
     '    </div>' +
     '    <div class="cc-pads">' +

@@ -652,7 +652,7 @@
       '</div>' +
       '<div class="gen-queue-playlist-row">' +
       '<span class="gen-queue-row-label">Gespeichert</span>' +
-      '<select id="gen-queue-pl-select" class="gen-queue-pl-select"><option value="">Playlist wählen…</option></select>' +
+      '<select id="gen-queue-pl-select" class="gen-queue-pl-select" aria-label="Gespeicherte Playlist wählen"><option value="">Playlist wählen…</option></select>' +
       '<button type="button" id="gen-queue-load" class="gen-queue-pl-btn" title="Ausgewählte Playlist abspielen (ersetzt die kommenden Songs)">' + playIconSvg + ' Abspielen</button>' +
       '<button type="button" id="gen-queue-pl-export" class="gen-queue-pl-btn" title="Ausgewählte Playlist als CSV herunterladen">' + dlIconSvg + '</button>' +
       '<button type="button" id="gen-queue-delete" class="gen-queue-pl-btn gen-queue-pl-delete" title="Ausgewählte Playlist löschen">' + clearIconSvg + '</button>' +
