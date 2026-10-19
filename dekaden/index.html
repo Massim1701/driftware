@@ -252,13 +252,6 @@
   @media (max-width: 720px) { .mood-grid { grid-template-columns: repeat(2, 1fr); } }
   .mood-tile { aspect-ratio: 1 / 1; padding: 18px; border-radius: 18px; }
   .mood-tile .tile-media { background: var(--mbg); }
-  .mood-chip {
-    position: absolute; top: 14px; left: 14px; width: 36px; height: 36px; border-radius: 11px;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.24);
-    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-  }
-  .mood-chip svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .mood-tile .tile-name { font-size: 18px; }
   .mood-tile .tile-desc { font-size: 12.5px; }
   @media (max-width: 520px) {
@@ -642,8 +635,6 @@
         a.style.setProperty('--mbg', d.bg);
         var slug = d.href.replace(/-music\/?$/, '');
         a.appendChild(tileMedia('img/mood/' + slug + '.jpg?v=1'));
-        var chip = document.createElement('div'); chip.className = 'mood-chip'; chip.setAttribute('aria-hidden', 'true'); chip.innerHTML = d.icon;
-        a.appendChild(chip);
         tileText(a, null, d.name, d.desc);
         container.appendChild(a);
       });
