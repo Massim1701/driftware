@@ -122,6 +122,10 @@ case "${1:-}" in
     now=$(date -u +%s)
     for entry in "${WATCHED[@]}"; do
       name="${entry%|*}"; max_h="${entry#*|}"
+      # Christmas laeuft nur Nov-Jan (Weihnachtslieder kommen im Sommer nicht in die Charts)
+      if [ "$name" = "Christmas-Playlist erweitern" ]; then
+        case "$(date -u +%-m)" in 11|12|1) ;; *) echo "AUS    $name (nur Nov-Jan)"; close_issue "$name"; continue ;; esac
+      fi
       last=$(gh run list -R "$REPO" -w "$name" --status success --limit 1 --json createdAt --jq '.[0].createdAt // empty')
       if [ -z "$last" ]; then age_h=9999; else age_h=$(( (now - $(epoch "$last")) / 3600 )); fi
       if [ "$age_h" -le "$max_h" ]; then

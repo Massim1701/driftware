@@ -3,7 +3,7 @@ name: Nachtlauf (Daten-Kette)
 # ENTWURF -- noch ohne Zeitplan, nur manuell startbar (workflow_dispatch).
 # Ersetzt spaeter diese einzeln laufenden Workflows durch EINE Kette, in der immer
 # nur ein Job gleichzeitig in die *-music/songs.json schreibt:
-#   Fehlende Songs -> Christmas -> YouTube-Aufrufzahlen -> Billboard -> UK-Charts
+#   Fehlende Songs -> Christmas (nur Nov-Jan) -> YouTube-Aufrufzahlen -> Billboard -> UK-Charts
 #   -> BPM -> Statistik
 # Jeder Job holt vor dem Start den aktuellen Stand von master und pusht ueber
 # tools/push_retry.sh (behebt den Exit-128-Fehler der alten Inline-Pushes). Faellt
@@ -90,19 +90,34 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Saison pruefen (nur Nov-Jan, manuell immer)
+        id: saison
+        run: |
+          m=$(date -u +%-m)
+          if [ "${{ inputs.nur }}" = "christmas" ] || [ "$m" = 11 ] || [ "$m" = 12 ] || [ "$m" = 1 ]; then
+            echo "aktiv=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "aktiv=false" >> "$GITHUB_OUTPUT"
+            echo "Ausserhalb der Saison (Nov-Jan) -- Christmas wird uebersprungen."
+          fi
+
       - name: Startzeit merken
+        if: steps.saison.outputs.aktiv == 'true'
         run: echo "JOB_START_TS=$(date +%s)" >> "$GITHUB_ENV"
 
       - name: Abhaengigkeiten installieren
+        if: steps.saison.outputs.aktiv == 'true'
         run: |
           pip install --quiet yt-dlp
 
       - name: Warteliste verarbeiten
+        if: steps.saison.outputs.aktiv == 'true'
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: python3 tools/process_christmas_queue.py
 
       - name: Committen und pushen
+        if: steps.saison.outputs.aktiv == 'true'
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
