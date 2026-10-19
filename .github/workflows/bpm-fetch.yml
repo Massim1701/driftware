@@ -16,11 +16,7 @@ on:
           - 2000er
           - 2010er
           - 2020er
-  schedule:
-    # Taeglich um 05:52 UTC (nicht auf :00, siehe Kommentar in den anderen
-    # Workflows -- zeitlich versetzt zu deren 04:37, damit nicht alle vier
-    # Jobs gleichzeitig um die geteilte Concurrency-Gruppe konkurrieren).
-    - cron: '52 5 * * *'
+  # Zeitplan entfaellt: laeuft seit dem 19.10.2026 in nachts.yml (Nachtlauf, Daten-Kette).
 
 # Eigene Gruppe statt der frueher geteilten "process-missing-songs" --
 # die geteilte Gruppe fuehrte dazu, dass GitHub aeltere, noch wartende

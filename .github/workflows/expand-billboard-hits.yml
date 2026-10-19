@@ -16,12 +16,7 @@ on:
           - 2000er
           - 2010er
           - 2020er
-  schedule:
-    # Taeglich um 03:47 UTC -- zeitlich versetzt zu process-missing-songs
-    # (04:17), expand-christmas-songs (04:37) und bpm-fetch (05:52), siehe
-    # Kommentar dort/in expand-decade-genres.yml zur eigenen Concurrency-
-    # Gruppe je Workflow.
-    - cron: '47 3 * * *'
+  # Zeitplan entfaellt: laeuft seit dem 19.10.2026 in nachts.yml (Nachtlauf, Daten-Kette).
 
 # Eigene Gruppe, gleicher Grund wie bei den anderen drei taeglichen
 # Workflows (siehe expand-decade-genres.yml fuer die ausfuehrliche

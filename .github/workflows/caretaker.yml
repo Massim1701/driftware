@@ -13,14 +13,9 @@ on:
   workflow_run:
     types: [completed]
     workflows:
-      - "Fehlende Songs verarbeiten"
+      - "Nachtlauf (Daten-Kette)"
       - "Song-Statistik aktualisieren"
       - "Tote Videos pruefen"
-      - "Billboard-Hits nachziehen"
-      - "Christmas-Playlist erweitern"
-      - "YouTube-Aufrufzahlen aktualisieren"
-      - "UK-Charts-Hits nachziehen"
-      - "BPM-Werte ermitteln"
       - "Karaoke-Songs nachziehen"
   workflow_dispatch:
     inputs:

@@ -16,11 +16,7 @@ on:
           - 2000er
           - 2010er
           - 2020er
-  schedule:
-    # Taeglich um 05:22 UTC -- zeitlich versetzt zu den anderen taeglichen
-    # Workflows (03:47/04:17/04:37/04:57/05:52), siehe expand-decade-genres.yml
-    # zur ausfuehrlichen Begruendung der eigenen Concurrency-Gruppe je Workflow.
-    - cron: '22 5 * * *'
+  # Zeitplan entfaellt: laeuft seit dem 19.10.2026 in nachts.yml (Nachtlauf, Daten-Kette).
 
 # Eigene Gruppe, gleicher Grund wie bei den anderen taeglichen Workflows.
 concurrency:
