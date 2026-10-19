@@ -65,11 +65,13 @@ jobs:
       - name: Warteliste verarbeiten
         env:
           DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: python3 tools/process_missing_queue.py
 
       - name: Committen und pushen
         env:
           DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
           tools/push_retry.sh "Warteliste automatisch verarbeitet" \
           'QUEUE_TIME_BUDGET_SECONDS=$REDO_BUDGET_SECONDS python3 tools/process_missing_queue.py' \

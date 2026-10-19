@@ -43,6 +43,23 @@ DECADE_CATALOGS = [
 ]
 
 
+YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY", "")
+
+
+def _youtube_api(path, params):
+    """YouTube-Data-API v3 -- laeuft unabhaengig von der Bot-Erkennung, die yt-dlp auf
+    GitHub-Actions-Runnern oft leer laufen laesst. None bei fehlendem Schluessel oder Fehler."""
+    if not YOUTUBE_API_KEY:
+        return None
+    url = "https://www.googleapis.com/youtube/v3/" + path + "?" + urllib.parse.urlencode({**params, "key": YOUTUBE_API_KEY})
+    try:
+        with urllib.request.urlopen(url, timeout=20) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except Exception as e:
+        print(f"  YouTube-API fehlgeschlagen: {e}")
+        return None
+
+
 def valid_yt_id(value):
     """Nur eine exakte YouTube-Video-ID durchlassen -- niemals eine
     beliebige URL oder etwas anderes als 'echten Link' interpretieren."""
@@ -162,6 +179,16 @@ def _youtube_candidates(artist, title):
         elif out is not None and out.stderr and out.stderr.strip():
             print(f"  yt-dlp ohne Treffer, stderr: {out.stderr.strip()[:300]}")
 
+    if not candidates:
+        data = _youtube_api("search", {"part": "snippet", "q": f"{artist} {title}", "type": "video", "maxResults": "5"})
+        for item in (data or {}).get("items", []):
+            vid = (item.get("id") or {}).get("videoId")
+            sn = item.get("snippet") or {}
+            if vid:
+                candidates.append({"id": vid, "title": sn.get("title", ""), "channel": sn.get("channelTitle", ""),
+                                   "upload_date": (sn.get("publishedAt") or "")[:10].replace("-", "")})
+        if candidates:
+            print("  (YouTube-API statt yt-dlp)")
     return candidates
 
 
@@ -210,6 +237,11 @@ def youtube_match(artist, title):
 
 
 def _upload_year(yt_id):
+    data = _youtube_api("videos", {"part": "snippet", "id": yt_id})
+    for item in (data or {}).get("items", []):
+        m = re.match(r"(\d{4})", (item.get("snippet") or {}).get("publishedAt") or "")
+        if m:
+            return int(m.group(1))
     out = _yt_dlp_search(f"https://www.youtube.com/watch?v={yt_id}")
     if out is None:
         return None
