@@ -4174,6 +4174,12 @@ function rawIconSVG(iconName) {
 }
 
 var THEME_KEY_ICON = {
+  SoundtrackKlassik: 'headphones',
+  JazzBlues: 'horn',
+  NoveltyKids: 'dice',
+  HeavyMetal: 'metal',
+  ReggaeDancehall: 'palm',
+  FolkCeltic: 'banjo',
   AlternativePostHardcore: 'metal', AlternativePostPunk: 'punk', AlternativeRock: 'guitar',
   Ambient: 'cloud', AmbientDowntempo: 'cloud', AmbientHouse: 'house', AmbientLoFi: 'cloud',
   AsiaPop: 'globe', Ballads: 'heart', BigBeat: 'pulse', BluesSouthernRock: 'guitar',

@@ -9,7 +9,7 @@
 </head>
 <body>
 <div id="decade-root"></div>
-<script src="../shared/decades.js?v=132"></script>
+<script src="../shared/decades.js?v=133"></script>
 <script src="../shared/midi.js?v=5"></script>
 <script src="../shared/manualadd.js?v=13"></script>
 <script src="../shared/continuity.js?v=4"></script>
@@ -43,7 +43,7 @@ renderDecadeIndex({
 
 renderPlaylistGenerator(document.querySelector('main.decade-main'), {
   mountBefore: '.info-note',
-  dataUrl: 'songs.json?v=101',
+  dataUrl: 'songs.json?v=102',
   csvPrefix: '2000er',
   themes: [
     { key: 'AlternativeRock', label: 'Alternative & Post-Hardcore' },
@@ -70,6 +70,11 @@ renderPlaylistGenerator(document.querySelector('main.decade-main'), {
     { key: 'RockClassic', label: 'Rock' },
     { key: 'SynthPop', label: 'Synth-Pop & Electroclash' },
     { key: 'Trance', label: 'Trance' },
+    { key: 'SoundtrackKlassik', label: 'Soundtrack, Klassik & New Age' },
+    { key: 'JazzBlues', label: 'Jazz, Blues & Swing' },
+    { key: 'NoveltyKids', label: 'Novelty, Comedy & Kids' },
+    { key: 'ReggaeDancehall', label: 'Reggae & Dancehall' },
+    { key: 'FolkCeltic', label: 'Folk & Celtic' },
     { key: 'Karaoke', label: 'Karaoke' },
     { key: 'Ohne', label: 'Ohne Genre' }
   ]
