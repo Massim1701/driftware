@@ -19,15 +19,10 @@ ESKALATION_H=60     # so lange ohne Erfolg (und ohne Fehlschlag-Serie) -> trotzd
 
 # Name|maximales Alter des letzten Erfolgs in Stunden
 WATCHED=(
-  "Fehlende Songs verarbeiten|36"
   "Song-Statistik aktualisieren|36"
   "Tote Videos pruefen|36"
-  "Billboard-Hits nachziehen|36"
-  "Christmas-Playlist erweitern|36"
-  "YouTube-Aufrufzahlen aktualisieren|36"
-  "UK-Charts-Hits nachziehen|36"
-  "BPM-Werte ermitteln|36"
   "Karaoke-Songs nachziehen|30"
+  "Nachtlauf (Daten-Kette)|36"
 )
 
 run() { if [ "${DRY_RUN:-0}" = 1 ]; then echo "[dry-run] $*"; else "$@"; fi; }

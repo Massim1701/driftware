@@ -2,12 +2,6 @@ name: Christmas-Playlist erweitern
 
 on:
   workflow_dispatch: {}
-  schedule:
-    # Taeglich um 04:37 UTC (nicht auf :00, weniger Last in der Minute, in
-    # der die meisten Cron-Jobs weltweit feuern -- gleiche Konvention wie
-    # process-missing-songs.yml, nur zeitlich leicht versetzt).
-    # Nur November bis Januar: Weihnachtslieder kommen im Sommer nicht in die Charts.
-    - cron: '37 4 * 11,12,1 *'
 
 # Eigene Gruppe statt der frueher geteilten "process-missing-songs" --
 # die geteilte Gruppe fuehrte dazu, dass GitHub aeltere, noch wartende

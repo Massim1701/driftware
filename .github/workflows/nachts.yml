@@ -1,6 +1,6 @@
 name: Nachtlauf (Daten-Kette)
 
-# ENTWURF -- noch ohne Zeitplan, nur manuell startbar (workflow_dispatch).
+# Taeglich 03:17 UTC; manuell startbar (workflow_dispatch, Eingabe 'nur' fuer einzelne Schritte).
 # Ersetzt spaeter diese einzeln laufenden Workflows durch EINE Kette, in der immer
 # nur ein Job gleichzeitig in die *-music/songs.json schreibt:
 #   Fehlende Songs -> Christmas (nur Nov-Jan) -> YouTube-Aufrufzahlen -> Billboard -> UK-Charts
@@ -27,8 +27,8 @@ on:
           - uk
           - bpm
           - statistik
-  # schedule:
-  #   - cron: '17 3 * * *'   # erst beim Umstellen aktivieren
+  schedule:
+    - cron: '17 3 * * *'
 
 concurrency:
   group: nachtlauf

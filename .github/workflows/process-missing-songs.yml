@@ -1,10 +1,6 @@
 name: Fehlende Songs verarbeiten
 
 on:
-  schedule:
-    # Taeglich um 04:17 UTC (Uhrzeit bewusst nicht auf :00, weniger Last
-    # in der Minute, in der die meisten Cron-Jobs weltweit feuern).
-    - cron: '17 4 * * *'
   workflow_dispatch: {}
 
 # Verhindert parallele Laeufe DIESES Workflows -- ohne das wuerden zwei
