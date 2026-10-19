@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metall</title>
+<meta name="description" content="Metall: über 1100 Metal-Songs aus allen Jahrzehnten — von Heavy Metal über Thrash und Death bis Metalcore, mit Cover, DJ-Player und Playlist-Generator.">
+<link rel="stylesheet" href="../shared/decades.css?v=134">
+</head>
+<body>
+<div id="decade-root"></div>
+<script src="../shared/decades.js?v=132"></script>
+<script src="../shared/midi.js?v=5"></script>
+<script src="../shared/manualadd.js?v=13"></script>
+<script src="../shared/continuity.js?v=4"></script>
+<script src="../shared/nextup.js?v=28"></script>
+<script>
+renderDecadeIndex({
+  name: 'Metall',
+  years: 'Alle Jahrzehnte',
+  icon: '🤘',
+  iconBg: 'linear-gradient(135deg, #b91c1c, #27272a)',
+  tagline: 'Über 1100 Metal-Songs aus allen Jahrzehnten — von Heavy Metal und Thrash über Death und Black Metal bis Metalcore.',
+  badgeText: '🤘 Metal aus allen Jahrzehnten — Playlist-Generator live',
+  colors: {
+    bg: '#09090b',
+    panel: '#151518',
+    accent: '#ef4444',
+    accent2: '#a1a1aa',
+    text: '#f3f3f6',
+    muted: '#94959f'
+  },
+  sourceNote: 'Die Songs stammen aus der offenen Musikdatenbank Discogs und sind nach Metal-Stil (Heavy, Thrash, Death, Black, Doom, Nu Metal, Metalcore …) aus allen Jahrzehnten zusammengestellt — inklusive Cover, bereit für den Import in Spotify, Apple Music & YouTube Music oder direkt im eigenen DJ-Player.',
+  features: [
+    { emoji: '🤘', title: 'Heavy Metal', desc: 'Von den Klassikern bis zu den Newcomern.' },
+    { emoji: '⚡', title: 'Thrash & Speed', desc: 'Tempo, Riffs, Doppelbass.' },
+    { emoji: '💀', title: 'Extrem', desc: 'Death, Black, Doom und Grind.' }
+  ]
+});
+
+renderPlaylistGenerator(document.querySelector('main.decade-main'), {
+  mountBefore: '.info-note',
+  dataUrl: 'songs.json?v=1',
+  csvPrefix: 'Metall',
+  themes: [
+    { key: 'BlackMetal', label: '🖤 Black Metal' },
+    { key: 'DeathGrind', label: '💀 Death & Grind' },
+    { key: 'DoomStoner', label: '🌫️ Doom & Stoner' },
+    { key: 'ThrashSpeed', label: '⚡ Thrash & Speed' },
+    { key: 'PowerSymphonic', label: '🏰 Power & Symphonic' },
+    { key: 'DarkIndustrial', label: '🌑 Dark & Industrial' },
+    { key: 'ProgAlternative', label: '🧠 Progressive & Alternative' },
+    { key: 'NuMetal', label: '🔊 Nu Metal' },
+    { key: 'Metalcore', label: '🔥 Metalcore & Screamo' },
+    { key: 'HeavyMetal', label: '🤘 Heavy Metal' }
+  ]
+});
+</script>
+</body>
+</html>
