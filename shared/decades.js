@@ -4616,7 +4616,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     '  <a id="gen-download" download title="Liste als CSV herunterladen (für Soundiiz/TuneMyMusic)">' + DOWNLOAD_SVG + ' CSV</a>' +
     '</div>' +
     '<div class="generator-body">' +
-    '  <div class="song-grid" id="gen-grid"></div>' +
+    '  <div class="song-grid" id="gen-grid"><p class="song-hint">Songs werden geladen …</p></div>' +
     '  <aside class="gen-history">' +
     '    <h3>' + CLOCK_SVG + ' Zuletzt gespielt</h3>' +
     '    <ul id="gen-history-list"><li class="gen-history-empty">Noch nichts gespielt.</li></ul>' +

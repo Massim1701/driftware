@@ -24,9 +24,12 @@ def field(t, key):
     return m.group(1).replace("\\'", "'") if m else None
 
 
-def head_block(url, title, desc, image):
+def head_block(url, title, desc, image, data_url=None):
     e = html.escape
-    return (f"<!-- seo -->\n<title>{e(title)}</title>\n"
+    # Songdaten schon beim HTML-Parsen laden (sonst erst nach dem Start von decades.js). Muss exakt
+    # der dataUrl der Seite entsprechen -- nach Aenderung von ?v= dieses Skript erneut ausfuehren.
+    preload = f'<link rel="preload" as="fetch" href="{data_url}" crossorigin>\n' if data_url else ""
+    return (f"<!-- seo -->\n{preload}<title>{e(title)}</title>\n"
             f'<link rel="canonical" href="{url}">\n{ICONS}\n'
             f'<meta property="og:type" content="website">\n<meta property="og:locale" content="de_DE">\n'
             f'<meta property="og:site_name" content="Driftware">\n<meta property="og:title" content="{e(title)}">\n'
@@ -37,10 +40,12 @@ def head_block(url, title, desc, image):
 
 def apply(path, url, title, desc, image, h1=None):
     t = open(path, encoding="utf-8").read()
+    m = re.search(r"dataUrl:\s*'([^']+)'", t)
+    data_url = m.group(1) if m else None
     t = re.sub(r"<!-- seo -->.*?<!-- /seo -->\n?", "", t, flags=re.S)
     t = re.sub(r"<title>.*?</title>\n?", "", t, count=1, flags=re.S)
     t = re.sub(r"<link rel=\"canonical\"[^>]*>\n?", "", t)
-    block = head_block(url, title, desc, image) + "\n"
+    block = head_block(url, title, desc, image, data_url) + "\n"
     t = t.replace('<meta name="viewport" content="width=device-width, initial-scale=1.0">\n',
                   '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' + block, 1)
     if h1 and "<h1" not in t:
