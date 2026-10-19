@@ -587,6 +587,8 @@ function renderDecadeIndex(cfg) {
        unveraendert (SEO/Tab-Titel, unabhaengig vom sichtbaren Hero). */
     '<main class="decade-main">' +
     '  <div class="info-note"><strong>Woher kommen die Songs?</strong> ' + cfg.sourceNote + '</div>' +
+    /* Pflichtangabe laut Discogs API Terms of Use ("API Terms of Use", Abschnitt Discogs Intellectual Property). Wortlaut nicht aendern. */
+    '  <p class="info-note discogs-notice">This application uses Discogs\u2019 API but is not affiliated with, sponsored or endorsed by Discogs. \u2018Discogs\u2019 is a trademark of Zink Media, LLC.</p>' +
     '</main>' +
     '<footer class="decade-footer">' +
     '  <span>&copy; 2026 Massimo — ' + cfg.name + '</span>' +
