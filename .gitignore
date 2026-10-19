@@ -2,3 +2,4 @@ bpm_*.log
 __pycache__/
 queue/dead-videos-state.json
 data/musicbrainz/backup/
+.DS_Store
