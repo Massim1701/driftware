@@ -1,0 +1,24 @@
+name: Metal bei Discogs zaehlen
+
+# Nur Lesen: zaehlt Discogs-Master-Releases je Metal-Stil und Dekade und vergleicht
+# mit dem Katalog. Ergebnis in der Job-Zusammenfassung. Aendert keine Daten.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  zaehlen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Zaehlen
+        env:
+          DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
+          PYTHONUNBUFFERED: '1'
+        run: python3 tools/discogs_metal_zaehlen.py | tee -a "$GITHUB_STEP_SUMMARY"
