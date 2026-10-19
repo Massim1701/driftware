@@ -547,10 +547,32 @@ function contactFormHTML(subject) {
     '</form>';
 }
 
+/* Titel, Canonical, Open-Graph-Vorschau und <h1> passend zur angezeigten Seite setzen -- gleiche Formeln wie
+   tools/seo_meta.py (statisches HTML fuer Crawler ohne JS); wichtig auch nach dem AJAX-Seitenwechsel. */
+function updateSeoMeta(cfg) {
+  var m = location.pathname.match(/\/([a-z0-9]+-music)\//i);
+  var dir = m ? m[1] : null;
+  var isDecade = /^\d/.test(cfg.name);
+  var title = isDecade ? cfg.name + ' \u2013 Hits ' + cfg.years + ' als Playlist | Driftware'
+                       : cfg.name + ' Playlist \u2013 Songs aus allen Jahrzehnten | Driftware';
+  document.title = title;
+  function setMeta(sel, attr, val) { var el = document.querySelector(sel); if (el) el.setAttribute(attr, val); }
+  if (dir) {
+    var url = location.origin + '/' + dir + '/', slug = dir.replace(/-music$/, '');
+    setMeta('link[rel="canonical"]', 'href', url);
+    setMeta('meta[property="og:url"]', 'content', url);
+    setMeta('meta[property="og:image"]', 'content', location.origin + (isDecade ? '/dekaden/img/' + slug + '.jpg' : '/dekaden/img/mood/' + slug + '.jpg'));
+  }
+  setMeta('meta[property="og:title"]', 'content', title);
+  setMeta('meta[property="og:description"]', 'content', cfg.name + ': ' + cfg.tagline);
+  var h1 = document.querySelector('h1[style*="position:absolute"]');
+  if (h1) h1.textContent = cfg.name + (cfg.tagline ? ': ' + cfg.tagline : '');
+}
+
 /* ---------- Startseite der Dekade (index.html) ---------- */
 function renderDecadeIndex(cfg) {
   applyPalette(cfg.colors);
-  document.title = cfg.name + ' — ' + cfg.years + ' nach Stimmung sortiert';
+  updateSeoMeta(cfg);
   var metaDesc = document.querySelector('meta[name="description"]');
   if (metaDesc) metaDesc.setAttribute('content', cfg.name + ': ' + cfg.tagline);
 

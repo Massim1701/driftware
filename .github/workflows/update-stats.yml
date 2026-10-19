@@ -26,19 +26,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # fuer die Aenderungsdaten in sitemap.xml (git log)
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Zaehlen
-        run: python3 tools/count_songs.py
+      - name: Zaehlen und Sitemap erzeugen
+        run: |
+          python3 tools/count_songs.py
+          python3 tools/build_sitemap.py
 
       - name: Aenderung committen und pushen
         run: |
           git config user.name "driftware-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add dekaden/stats.json
+          git add dekaden/stats.json sitemap.xml
           if git diff --cached --quiet; then
             echo "Keine Aenderung."
             exit 0
@@ -47,6 +51,6 @@ jobs:
           for i in 1 2 3 4 5; do
             if git push; then exit 0; fi
             git fetch origin master
-            git rebase --autostash origin/master || { git rebase --abort || true; git reset --hard origin/master; python3 tools/count_songs.py; git add dekaden/stats.json; git commit -q -m "Song-Statistik aktualisiert"; }
+            git rebase --autostash origin/master || { git rebase --abort || true; git reset --hard origin/master; python3 tools/count_songs.py; python3 tools/build_sitemap.py; git add dekaden/stats.json sitemap.xml; git commit -q -m "Song-Statistik aktualisiert"; }
           done
           exit 1

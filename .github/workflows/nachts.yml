@@ -299,6 +299,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
+          fetch-depth: 0   # fuer sitemap.xml (git log)
 
       - uses: actions/setup-python@v5
         with:
@@ -307,11 +308,13 @@ jobs:
       - name: Startzeit merken
         run: echo "JOB_START_TS=$(date +%s)" >> "$GITHUB_ENV"
 
-      - name: Zaehlen
-        run: python3 tools/count_songs.py
+      - name: Zaehlen und Sitemap erzeugen
+        run: |
+          python3 tools/count_songs.py
+          python3 tools/build_sitemap.py
 
       - name: Committen und pushen
         run: |
           tools/push_retry.sh "Song-Statistik aktualisiert" \
-          'python3 tools/count_songs.py' \
-          dekaden/stats.json
+          'python3 tools/count_songs.py && python3 tools/build_sitemap.py' \
+          dekaden/stats.json sitemap.xml
