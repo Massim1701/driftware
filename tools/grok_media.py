@@ -2,6 +2,7 @@
 """Bilder per xAI-API (Grok Imagine) erzeugen -- mit Budgetschutz.
 
   python3 tools/grok_media.py bild "<Prompt>" --out ~/Pictures/grok/haushalt [--n 2] [--model ...] [--aspect 4:3]
+  python3 tools/grok_media.py video "<Prompt>" --out ~/Pictures/grok/video [--dauer 5] [--aufloesung 480p] [--bild datei.jpg]
   python3 tools/grok_media.py status          # Guthaben-Stand laut eigener Buchfuehrung
 
 Schluessel: Umgebungsvariable XAI_API_KEY oder ~/.config/xai/api-key.txt (nie im Repo, nie im Chat).
@@ -30,6 +31,9 @@ BILD_PREISE = {       # USD je Bild (Models-Seite der Konsole, 19.10.2026)
     "grok-imagine-image": 0.02,
     "grok-imagine-image-2.0": 0.04,
     "grok-imagine-image-quality": 0.05,
+}
+VIDEO_PREISE = {      # USD je Sekunde, 480p (Models-Seite der Konsole, 19.10.2026)
+    "grok-imagine-video-1.5-lite": 0.02,
 }
 TICKS = 10_000_000_000
 
@@ -106,6 +110,60 @@ def cmd_bild(a):
         print(p)
 
 
+def get(pfad):
+    req = urllib.request.Request(API + pfad, headers={
+        "Authorization": "Bearer " + schluessel(), "User-Agent": "DriftwareMedia/1.0"})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        return json.loads(r.read().decode())
+
+
+def cmd_video(a):
+    preis = VIDEO_PREISE.get(a.model)
+    if preis is None:
+        sys.exit(f"Unbekanntes Modell {a.model}; bekannt: {', '.join(VIDEO_PREISE)}")
+    schaetzung = preis * a.dauer
+    b = budget()
+    rest = b["start_usd"] - b["spent_usd"]
+    print(f"Modell {a.model}, {a.dauer}s {a.aufloesung}: geschaetzt ${schaetzung:.2f}, Restbudget ${rest:.2f}")
+    if schaetzung > rest:
+        sys.exit("Abbruch: Schaetzung liegt ueber dem Restbudget.")
+    if schaetzung > MAX_RUN_USD and not a.ja:
+        sys.exit(f"Abbruch: ueber ${MAX_RUN_USD:.2f} je Lauf. Mit --ja bestaetigen.")
+    body = {"model": a.model, "prompt": a.prompt, "duration": a.dauer,
+            "aspect_ratio": a.aspect, "resolution": a.aufloesung}
+    if a.bild:
+        rohdaten = base64.b64encode(open(os.path.expanduser(a.bild), "rb").read()).decode()
+        body["image"] = {"url": "data:image/jpeg;base64," + rohdaten}
+    start = post("/videos/generations", body)
+    rid = start.get("request_id")
+    if not rid:
+        sys.exit(f"Unerwartete Antwort: {json.dumps(start)[:400]}")
+    print("Auftrag", rid, "-- warte ...")
+    for _ in range(120):
+        time.sleep(5)
+        erg = get("/videos/" + rid)
+        if erg.get("status") in ("done", "completed") or erg.get("video"):
+            break
+        if erg.get("status") in ("failed", "expired", "error"):
+            sys.exit(f"Fehlgeschlagen: {json.dumps(erg)[:400]}")
+    else:
+        sys.exit("Zeitueberschreitung beim Warten auf das Video.")
+    kosten = erg.get("usage", {}).get("cost_in_usd_ticks", 0) / TICKS or schaetzung
+    b["spent_usd"] = round(b["spent_usd"] + kosten, 4)
+    budget_speichern(b)
+    url = (erg.get("video") or {}).get("url")
+    if not url:
+        sys.exit(f"Keine Video-URL in der Antwort: {json.dumps(erg)[:400]}")
+    os.makedirs(os.path.expanduser(a.out), exist_ok=True)
+    pfad = os.path.join(os.path.expanduser(a.out), f"{slug(a.prompt)}-{time.strftime('%H%M%S')}.mp4")
+    urllib.request.urlretrieve(url, pfad)
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(json.dumps({"zeit": time.strftime("%Y-%m-%d %H:%M:%S"), "modell": a.model, "dauer": a.dauer,
+                            "kosten_usd": round(kosten, 4), "prompt": a.prompt[:200]}, ensure_ascii=False) + "\n")
+    print(f"Kosten ${kosten:.3f}; Restbudget ${b['start_usd'] - b['spent_usd']:.2f}")
+    print(pfad)
+
+
 def cmd_status(_):
     b = budget()
     print(f"Start ${b['start_usd']:.2f}, ausgegeben ${b['spent_usd']:.2f}, Rest ${b['start_usd'] - b['spent_usd']:.2f}")
@@ -123,6 +181,16 @@ if __name__ == "__main__":
     b.add_argument("--resolution", default="1k")
     b.add_argument("--ja", action="store_true", help="Lauf ueber dem Kostenlimit bestaetigen")
     b.set_defaults(f=cmd_bild)
+    v = s.add_parser("video")
+    v.add_argument("prompt")
+    v.add_argument("--out", default="~/Pictures/grok/video")
+    v.add_argument("--dauer", type=int, default=5)
+    v.add_argument("--model", default="grok-imagine-video-1.5-lite")
+    v.add_argument("--aspect", default="16:9")
+    v.add_argument("--aufloesung", default="480p")
+    v.add_argument("--bild", help="Startbild fuer Bild-zu-Video")
+    v.add_argument("--ja", action="store_true", help="Lauf ueber dem Kostenlimit bestaetigen")
+    v.set_defaults(f=cmd_video)
     st = s.add_parser("status")
     st.set_defaults(f=cmd_status)
     a = p.parse_args()
