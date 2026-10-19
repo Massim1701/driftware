@@ -12,6 +12,12 @@ on:
         type: choice
         default: alle
         options: [alle, 70er, 80er, 90er, 2000er, 2010er, 2020er]
+      modus:
+        description: 'normal = alle Metal-Stile, dark = nur Dark & Industrial aufstocken'
+        required: false
+        type: choice
+        default: normal
+        options: [normal, dark]
 
 concurrency:
   group: metal-kandidaten
@@ -33,6 +39,7 @@ jobs:
         env:
           DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
           PYTHONUNBUFFERED: '1'
+          METAL_MODUS: ${{ inputs.modus }}
         run: |
           if [ "${{ inputs.dekade }}" = "alle" ]; then python3 tools/fetch_metal_candidates.py
           else python3 tools/fetch_metal_candidates.py "${{ inputs.dekade }}"; fi

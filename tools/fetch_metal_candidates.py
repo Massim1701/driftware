@@ -35,6 +35,11 @@ WEIGHT = {
 NUR_AB = {"Nu Metal": 1990}  # Stil gibt es vorher nicht
 MIN_HAVE = 20
 
+# Modus 'dark' (METAL_MODUS=dark): nur Dark & Industrial aufstocken. Eigene Stil-Gewichte und Kontingente;
+# Industrial zaehlt nur zusammen mit einem Metal-Stil (ist_metal), kein EBM/Techno.
+DARK_WEIGHT = {"Gothic Metal": .7, "Industrial": .3}
+DARK_QUOTA = {"70er": 0, "80er": 10, "90er": 60, "2000er": 80, "2010er": 70, "2020er": 50}
+
 
 def ist_metal(r, style):
     stile = [s.lower() for s in (r.get("style") or [])]
@@ -67,7 +72,11 @@ def sammeln(style, years):
 
 def dekade(dec):
     ids, tkeys = fd.existing_release_ids(dec)
-    stile = {s: w for s, w in WEIGHT.items() if min(fd.DECADE_YEARS[dec]) + 9 >= NUR_AB.get(s, 0)}
+    dark = os.environ.get("METAL_MODUS") == "dark"
+    quota = DARK_QUOTA if dark else QUOTA
+    if quota[dec] == 0:
+        return
+    stile = {s: w for s, w in (DARK_WEIGHT if dark else WEIGHT).items() if min(fd.DECADE_YEARS[dec]) + 9 >= NUR_AB.get(s, 0)}
     summe = sum(stile.values())
     pools = {}
     for style in stile:
@@ -75,7 +84,7 @@ def dekade(dec):
         print(f"  {dec} {style}: {len(pools[style])} Kandidaten", flush=True)
     gewaehlt, gesehen_ids, gesehen_keys = [], set(ids), set(tkeys)
     for style in sorted(pools, key=lambda s: len(pools[s])):  # kleine Pools zuerst
-        ziel = round(QUOTA[dec] * stile[style] / summe)
+        ziel = round(quota[dec] * stile[style] / summe)
         n = 0
         for c in pools[style]:
             k = fd.song_id(c["a"], c["t"])

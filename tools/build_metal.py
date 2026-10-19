@@ -32,7 +32,7 @@ UNTERKATEGORIEN = [
     ("PowerSymphonic", "🏰 Power & Symphonic", ["power metal", "symphonic metal", "folk metal",
                                                "melodic metal", "neoclassical metal"]),
     ("DarkIndustrial", "🌑 Dark & Industrial", ["gothic metal", "industrial metal", "dark metal",
-                                               "doom/gothic"]),
+                                               "doom/gothic", "industrial"]),
     ("ProgAlternative", "🧠 Progressive & Alternative", ["progressive metal", "alternative metal",
                                                         "funk metal", "avant-garde metal", "post-metal"]),
     ("NuMetal", "🔊 Nu Metal", ["nu metal", "rap metal", "rap rock"]),
@@ -40,7 +40,7 @@ UNTERKATEGORIEN = [
     ("HeavyMetal", "🤘 Heavy Metal", ["heavy metal", "nwobhm", "metal"]),
 ]
 # diese Stile zaehlen nur mit Rock/Metal im Discogs-Genre
-MEHRDEUTIG = {"melodic hardcore", "crust", "drone", "screamo", "rap rock"}
+MEHRDEUTIG = {"melodic hardcore", "crust", "drone", "screamo", "rap rock", "industrial"}
 # Bewusst NICHT enthalten: reiner 'Hardcore'/'Post-Hardcore' (Punk, Demos), 'Hard Rock', 'Glam',
 # 'Emo' -- kein Metal. 'rap rock' (Limp-Bizkit-Naehe) nur zusammen mit einem weiteren Stil.
 NUR_ZUSAMMEN = {"rap rock"}
