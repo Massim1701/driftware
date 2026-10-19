@@ -103,8 +103,12 @@ def anwenden(decs):
                 json.dump(kat, open(kat_pfad, "w", encoding="utf-8"), separators=(",", ":"), ensure_ascii=False)
                 neu += n
             q = os.path.join(klon, "queue", f"{dec}-metal.json")
-            if os.path.exists(q):
-                os.remove(q)
+            if os.path.exists(q):  # nur Erledigte (Treffer und Fehlanzeigen) entfernen, Rest bleibt in der Warteschlange
+                rest = [c for c in json.load(open(q, encoding="utf-8")) if str(c["id"]) not in erg]
+                if rest:
+                    json.dump(rest, open(q, "w", encoding="utf-8"), separators=(",", ":"), ensure_ascii=False)
+                else:
+                    os.remove(q)
             print(f"{dec}: {n} Songs eingefuegt", flush=True)
         subprocess.run([sys.executable, os.path.join(klon, "tools", "build_metal.py"), "--apply"], check=True)
         git("add", "-A", "--", "*-music/songs.json", "queue")
