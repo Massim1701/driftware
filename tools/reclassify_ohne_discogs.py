@@ -32,7 +32,9 @@ import fetch_billboard_hits as fb  # noqa: E402  (api_get mit Token und Retry)
 import reclassify_ohne_v2 as v2  # noqa: E402
 
 MIN_INTERVAL = 1.05  # mit Token 60 Anfragen/min
-MIN_TREFFER, ANTEIL = 2, 0.60
+MIN_TREFFER, ANTEIL = 4, 0.75  # streng: Bericht vom 19.10. zeigte bei 2/60 % viele Fehlgriffe
+XMAS_TOK = {"holiday", "christmas", "xmas"}
+XMAS_TITEL = re.compile(r"christmas|xmas|santa|sleigh|jingle|rudolph|mistletoe|snowman|noel", re.I)
 TIME_BUDGET = int(os.environ.get("OHNE_TIME_BUDGET_SECONDS", "19200"))
 START = time.time()
 _last = [0.0]
@@ -67,6 +69,8 @@ def suche(song):
 
 def entscheide(treffer, style_map):
     """Stimmen: je Treffer zaehlt jede Kategorie, auf die einer seiner Stile zeigt, einmal."""
+    if any(x in XMAS_TOK for t in treffer for x in t["tok"]):
+        return None  # Weihnachtslieder gehoeren in die Christmas-Playlist (Schritt 'weihnacht')
     stimmen = collections.Counter()
     for t in treffer:
         for cat in {style_map[x] for x in t["tok"] if x in style_map and x not in v2.GENERIC}:
@@ -161,13 +165,59 @@ def cmd_anwenden(args):
     print(f"GESAMT: {gesamt} verschoben")
 
 
+def ist_weihnacht(song):
+    tok = {t.strip().lower() for f in ("s", "g") for t in (song.get(f) or "").split(",")}
+    return bool(tok & XMAS_TOK) or bool(XMAS_TITEL.search(song.get("t") or ""))
+
+
+def cmd_weihnacht(args):
+    """Verschiebt Weihnachtslieder aus 'Ohne' in christmas-music/songs.json (Kategorie nach
+    den Regeln von process_christmas_queue.py). Ist der Song dort schon vorhanden, wird er
+    nur aus 'Ohne' entfernt (Dublette)."""
+    import process_christmas_queue as pc
+    with open("christmas-music/songs.json", encoding="utf-8") as f:
+        xmas = json.load(f)
+    vorhanden = {alnum(s.get("a")) + "|" + alnum(s.get("t")) for l in xmas.values() if isinstance(l, list) for s in l}
+    neu, dubl = collections.Counter(), 0
+    for dec in dekaden(args.dekade):
+        path = f"{dec}-music/songs.json"
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        rest = []
+        for s in data.get("Ohne", []):
+            if not ist_weihnacht(s):
+                rest.append(s)
+                continue
+            k = alnum(s.get("a")) + "|" + alnum(s.get("t"))
+            if k in vorhanden:
+                dubl += 1
+                continue
+            cat = pc.classify(s.get("s"))
+            xmas.setdefault(cat, []).append(s)
+            vorhanden.add(k)
+            neu[cat] += 1
+        data["Ohne"] = rest
+        speichere_kompakt(path, data)
+    speichere_kompakt("christmas-music/songs.json", xmas)
+    print(f"Weihnachtslieder: {sum(neu.values())} nach Christmas verschoben {dict(neu)}, {dubl} Dubletten entfernt")
+
+
+def speichere_kompakt(path, data):
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f, separators=(",", ":"), ensure_ascii=False)
+    os.replace(tmp, path)
+
+
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("schritt", choices=["suchen", "anwenden"])
+    p.add_argument("schritt", choices=["suchen", "anwenden", "weihnacht"])
     p.add_argument("--dekade", default="alle", choices=["alle"] + v2.DECADES)
-    p.add_argument("--cache", required=True)
+    p.add_argument("--cache")
     p.add_argument("--bericht")
     args = p.parse_args()
+    if args.schritt == "weihnacht":
+        return cmd_weihnacht(args)
     if args.schritt == "suchen" and not os.environ.get("DISCOGS_TOKEN"):
         print("WARNUNG: kein DISCOGS_TOKEN -- unauthentifiziert sehr langsam.")
     (cmd_suchen if args.schritt == "suchen" else cmd_anwenden)(args)
