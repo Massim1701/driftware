@@ -1,70 +1,29 @@
 /* Button "Song nicht gefunden" neben dem MIDI-Button. Oeffnet ein kleines
    Formular: Interpret + Titel eintragen, per Klick eine YouTube-Suche in
-   neuem Tab oeffnen, den gefundenen Link zurueck einfuegen -> Song wird
-   sofort auf Deck geladen/abspielbar UND in einer eigenen kleinen Liste
-   "Manuell hinzugefuegt (Ohne Genre)" gesammelt (localStorage, pro Seite).
+   neuem Tab oeffnen, den gefundenen Link zurueck einfuegen -> der Song geht
+   ueber den Worker (POST /v1/queue) in die Online-Warteliste
+   (queue/fehlende-lieder.json im Repo). Eine taegliche GitHub-Action baut
+   die Eintraege in die songs.json ein und nimmt sie dabei aus der Warteliste.
 
-   Kein Backend auf einer GitHub-Pages-Seite moeglich -- ABER: per File
-   System Access API (Chrome/Edge) kann der Nutzer EINMALIG eine lokale
-   Datei auswaehlen ("Automatisch speichern"); danach schreibt JEDER neue
-   Song automatisch (ohne weiteren Klick/Export) in diese Datei, seitenweit
-   ueber alle Dekaden-/Ambient-Seiten hinweg (Berechtigung wird per
-   IndexedDB gemerkt, kein erneuter Dialog noetig, sofern der Browser die
-   Berechtigung noch kennt). Diese Datei kann direkt aus dem Projektordner
-   heraus dauerhaft per Merge-Skript in die jeweilige songs.json uebernommen
-   werden -- kein manuelles Kopieren/Einfuegen mehr.
+   Die Liste im Fenster zeigt den ECHTEN Stand dieser Warteliste (wird beim
+   Oeffnen und alle 30 s neu gelesen): was eingebaut wurde, verschwindet von
+   selbst. Es gibt keine lokale Sicherungsdatei mehr (frueher "Autosave",
+   File System Access API) -- das war eine Notloesung fuer den ausgefallenen
+   Online-Speicher und loeste das macOS-Fenster "Datei ersetzen?" aus.
 
-   Fallback fuer Browser ohne File System Access API (Safari/Firefox):
-   Button "Als JSON kopieren" wie bisher (Zwischenablage).
+   Postausgang: Ein Song, der nicht rausging (offline, Worker-Fehler), bleibt
+   im localStorage (driftware-outbox-v1) und wird automatisch erneut gesendet.
 
    Eigenstaendige Datei (wie midi.js/continuity.js/nextup.js) -- liest nur
    window.playDeckSong etc. aus decades.js, keine Aenderung dort noetig. */
 
 (function () {
-  var STORAGE_PREFIX = 'driftware-manualadd-';
-  /* pageKey/STORAGE_KEY werden bei jedem init() neu bestimmt (nicht mehr nur
-     einmal beim Laden des Scripts) -- die AJAX-Navigation zwischen Dekaden-/
-     Ambient-Seiten (siehe navigateToPage in decades.js) aendert location.pathname
-     per pushState, OHNE dass dieses Script neu geladen wird. Ohne die
-     Neuberechnung wuerden manuell hinzugefuegte Songs nach einem Wechsel
-     weiterhin unter dem ALTEN Seiten-Key gespeichert. */
-  var pageKey = 'unbekannt';
-  var STORAGE_KEY = STORAGE_PREFIX + pageKey;
-  function refreshPageKey() {
-    var m = location.pathname.match(/\/([a-z0-9]+)-music\//i);
-    pageKey = m ? m[1] : 'unbekannt';
-    STORAGE_KEY = STORAGE_PREFIX + pageKey;
-  }
-  var HAS_FS_ACCESS = typeof window.showSaveFilePicker === 'function';
-
   var panelEl = null;
   var listEl = null;
   var modalEl = null;
-  var autosaveStatusEl = null;
-  var fileHandle = null; /* seitenweite Auto-Speicher-Datei, sobald gewaehlt/wiederhergestellt -- ueberlebt einen AJAX-Wechsel absichtlich unangetastet */
+  var statusEl = null;
   var stylesInjected = false;
   var globalListenersBound = false;
-
-  function loadEntries() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      return [];
-    }
-  }
-
-  function saveEntries(entries) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-    } catch (e) {}
-  }
-
-  function escapeHtml(s) {
-    return (s || '').replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
 
   /* Akzeptiert volle YouTube-URL (watch?v=, youtu.be/, shorts/) oder direkt
      eine nackte 11-stellige Video-ID. */
@@ -93,183 +52,126 @@
     return m ? m[1] : null;
   }
 
-  /* ---- IndexedDB: FileSystemFileHandle seitenweit (originweit) merken,
-     damit die Auto-Speicherung nur EINMAL pro Browser eingerichtet werden
-     muss, nicht pro Dekaden-Seite. ---- */
-  var DB_NAME = 'driftware-manualadd-db';
-  var STORE_NAME = 'handles';
-  var HANDLE_KEY = 'autosave-file';
+  /* ---- Postausgang + Online-Warteliste ---- */
+  var OUTBOX_KEY = 'driftware-outbox-v1';
+  var QUEUE_PROXY_URL = 'https://driftware-api.driftware-api.workers.dev/v1/queue';
+  var QUEUE_RAW_URL = 'https://raw.githubusercontent.com/Massim1701/driftware/master/queue/fehlende-lieder.json';
+  var queueList = [];
+  var queueLoaded = false;
+  var sending = false;
+  var pollTimer = null;
+  var retryTimer = null;
 
-  function openDb() {
-    return new Promise(function (resolve, reject) {
-      var req = indexedDB.open(DB_NAME, 1);
-      req.onupgradeneeded = function () {
-        req.result.createObjectStore(STORE_NAME);
-      };
-      req.onsuccess = function () { resolve(req.result); };
-      req.onerror = function () { reject(req.error); };
-    });
+  function loadOutbox() {
+    try { return JSON.parse(localStorage.getItem(OUTBOX_KEY) || '[]') || []; } catch (e) { return []; }
+  }
+  function saveOutbox(list) {
+    try { localStorage.setItem(OUTBOX_KEY, JSON.stringify(list)); } catch (e) {}
   }
 
-  function idbGet(key) {
-    return openDb().then(function (db) {
-      return new Promise(function (resolve, reject) {
-        var tx = db.transaction(STORE_NAME, 'readonly');
-        var req = tx.objectStore(STORE_NAME).get(key);
-        req.onsuccess = function () { resolve(req.result); };
-        req.onerror = function () { reject(req.error); };
+  function setStatus(text) {
+    if (statusEl) statusEl.textContent = text;
+  }
+
+  function payloadOf(e) {
+    var p = { a: e.a, t: e.t, yt: e.yt || null };
+    if (e.vk) p.vk = e.vk;
+    if (e.g) { p.g = e.g; p.y = e.y; }
+    return p;
+  }
+
+  /* Liest die Online-Warteliste frisch (Zeitstempel im URL umgeht den CDN-Cache). */
+  function refreshQueue() {
+    return fetch(QUEUE_RAW_URL + '?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('read-failed'); return r.json(); })
+      .then(function (list) {
+        queueList = Array.isArray(list) ? list : [];
+        queueLoaded = true;
+        renderList();
+      })
+      .catch(function () {
+        if (!queueLoaded) setStatus('Warteliste konnte nicht geladen werden.');
       });
-    });
   }
 
-  function idbSet(key, value) {
-    return openDb().then(function (db) {
-      return new Promise(function (resolve, reject) {
-        var tx = db.transaction(STORE_NAME, 'readwrite');
-        tx.objectStore(STORE_NAME).put(value, key);
-        tx.oncomplete = function () { resolve(); };
-        tx.onerror = function () { reject(tx.error); };
-      });
-    });
-  }
-
-  function setAutosaveStatus(text) {
-    if (autosaveStatusEl) autosaveStatusEl.textContent = text;
-  }
-
-  /* Schreibt ALLE bisher (auf JEDER Dekaden-Seite) manuell hinzugefuegten
-     Songs gesammelt in die eine gewaehlte Autosave-Datei -- Format:
-     { "80er": [...], "ballermann": [...], ... } je Seiten-Key. So landet
-     alles in EINER Datei, unabhaengig davon, auf welcher Seite gerade
-     etwas hinzugefuegt wird. */
-  function writeAutosaveFile() {
-    if (!fileHandle) return Promise.resolve();
-    return fileHandle.queryPermission({ mode: 'readwrite' }).then(function (perm) {
-      if (perm !== 'granted') throw new Error('no-permission');
-      return fileHandle.getFile();
-    }).then(function (file) {
-      return file.text().catch(function () { return '{}'; });
-    }).then(function (text) {
-      var all;
-      try { all = JSON.parse(text); } catch (e) { all = {}; }
-      if (!all || typeof all !== 'object') all = {};
-      all[pageKey] = loadEntries().map(function (e) {
-        return { a: e.a, t: e.t, yt: e.yt };
-      });
-      return fileHandle.createWritable().then(function (writable) {
-        return writable.write(JSON.stringify(all, null, 2)).then(function () {
-          return writable.close();
-        });
-      });
-    }).then(function () {
-      setAutosaveStatus('Automatisch gespeichert ✓');
-    }).catch(function (err) {
-      if (err && err.message === 'no-permission') {
-        setAutosaveStatus('Zugriff auf Autosave-Datei fehlt -- bitte neu einrichten.');
-        fileHandle = null;
-      } else {
-        setAutosaveStatus('Autosave fehlgeschlagen (Datei verschoben/gelöscht?).');
-      }
-    });
-  }
-
-  function restoreAutosaveHandle() {
-    if (!HAS_FS_ACCESS) return;
-    idbGet(HANDLE_KEY).then(function (handle) {
-      if (!handle) return;
-      return handle.queryPermission({ mode: 'readwrite' }).then(function (perm) {
-        if (perm === 'granted') {
-          fileHandle = handle;
-          setAutosaveStatus('Automatische Speicherung aktiv (' + (handle.name || 'Datei') + ').');
-        } else {
-          setAutosaveStatus('Automatische Speicherung eingerichtet -- Klick auf "Autosave" bestätigt den Zugriff erneut.');
+  /* Sendet den Postausgang nacheinander. Erfolg -> Eintrag raus aus dem Postausgang;
+     ungueltig (400) -> verwerfen, wuerde nie klappen; Netz-/Serverfehler/Limit -> bleibt,
+     naechster Versuch automatisch. Der Worker ignoriert Dubletten. */
+  function sendOutbox() {
+    if (sending) return Promise.resolve();
+    var box = loadOutbox();
+    if (!box.length) return Promise.resolve();
+    sending = true;
+    setStatus('Wird online gespeichert …');
+    var failed = false;
+    function next() {
+      box = loadOutbox();
+      if (!box.length) return Promise.resolve();
+      var e = box[0];
+      return fetch(QUEUE_PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payloadOf(e))
+      }).then(function (r) {
+        if (r.ok || r.status === 400) {
+          saveOutbox(loadOutbox().filter(function (x) { return x.id !== e.id; }));
+          return next();
         }
+        failed = true;
       });
-    }).catch(function () {});
+    }
+    return next().catch(function () { failed = true; }).then(function () {
+      sending = false;
+      setStatus(failed ? 'Senden hat nicht geklappt – neuer Versuch in 60 Sekunden.' : 'Gesendet ✓');
+      renderList();
+      return refreshQueue();
+    });
   }
 
-  function setupAutosave() {
-    if (!HAS_FS_ACCESS) return;
-    window.showSaveFilePicker({
-      suggestedName: 'driftware-manuelle-songs.json',
-      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
-    }).then(function (handle) {
-      fileHandle = handle;
-      idbSet(HANDLE_KEY, handle);
-      setAutosaveStatus('Automatische Speicherung aktiv (' + (handle.name || 'Datei') + ').');
-      return writeAutosaveFile();
-    }).catch(function (err) {
-      if (err && err.name !== 'AbortError') setAutosaveStatus('Einrichtung abgebrochen/fehlgeschlagen.');
+  function addEntry(a, t, ytId, vkUrl, manualMeta) {
+    var box = loadOutbox();
+    box.push({ id: Date.now() + '-' + Math.random().toString(36).slice(2, 7), a: a, t: t, yt: ytId, vk: vkUrl || null,
+      g: manualMeta ? manualMeta.g : null, y: manualMeta ? manualMeta.y : null });
+    saveOutbox(box);
+    renderList();
+    sendOutbox();
+  }
+
+  function itemsToShow() {
+    var items = loadOutbox().map(function (e, i) {
+      return { src: 'o', i: i, a: e.a, t: e.t, yt: e.yt, vk: e.vk, state: 'wird gesendet' };
     });
+    queueList.forEach(function (e, i) {
+      items.push({ src: 'q', i: i, a: e.a, t: e.t, yt: e.yt, vk: e.vk, state: 'wartet auf Einbau' });
+    });
+    return items;
   }
 
   function renderList() {
-    var entries = loadEntries();
     if (!listEl) return;
-    if (!entries.length) {
-      listEl.innerHTML = '<li class="manualadd-empty">Noch nichts hinzugefügt.</li>';
+    var items = itemsToShow();
+    if (!items.length) {
+      listEl.innerHTML = '<li class="manualadd-empty">' + (queueLoaded ? 'Die Warteliste ist leer – alles eingebaut ✓' : 'Lade …') + '</li>';
       return;
     }
-    listEl.innerHTML = entries.map(function (e, i) {
+    listEl.innerHTML = items.map(function (e) {
       return '<li class="manualadd-item">' +
-        '<span class="manualadd-text"><strong>' + escapeHtml(e.t) + '</strong><span>' + escapeHtml(e.a) + '</span></span>' +
-        '<button type="button" class="manualadd-play" data-i="' + i + '" title="Abspielen">▶</button>' +
-        '<button type="button" class="manualadd-remove" data-i="' + i + '" title="Entfernen">✕</button>' +
+        '<span class="manualadd-text"><strong>' + escapeHtml(e.t) + '</strong><span>' + escapeHtml(e.a) + '</span><span class="manualadd-state">' + e.state + '</span></span>' +
+        (e.yt || e.vk ? '<button type="button" class="manualadd-play" data-src="' + e.src + '" data-i="' + e.i + '" title="Abspielen">▶</button>' : '') +
+        (e.src === 'o' ? '<button type="button" class="manualadd-remove" data-i="' + e.i + '" title="Aus dem Postausgang entfernen">✕</button>' : '') +
         '</li>';
     }).join('');
   }
 
-  function addEntry(a, t, ytId, vkUrl, manualMeta) {
-    var entries = loadEntries();
-    entries.push({ a: a, t: t, yt: ytId, vk: vkUrl || null, g: (manualMeta && manualMeta.g) || 'Ohne', addedAt: Date.now() });
-    saveEntries(entries);
+  function removeFromOutbox(i) {
+    var box = loadOutbox();
+    box.splice(i, 1);
+    saveOutbox(box);
     renderList();
-    if (fileHandle) writeAutosaveFile();
-    pushToOnlineQueue(a, t, ytId, vkUrl, manualMeta);
   }
 
-  /* ---- Online-Warteliste: schreibt den Song automatisch (ohne
-     Rueckfrage) in eine nicht verlinkte Datei im Projekt
-     (queue/fehlende-lieder.json). Der Browser ruft dafuer NUR einen
-     eigenen Cloudflare-Worker-Proxy auf -- kein GitHub-Token liegt im
-     Frontend-Code (frueher war das so, GitHub hat den Push deshalb zu
-     Recht als Secret-Leak blockiert). Der Worker haelt den GitHub-Token
-     als Server-Secret und schreibt serverseitig per GitHub-Contents-API.
-     Eine taegliche GitHub-Action liest diese Datei, sucht Discogs-
-     Metadaten + YouTube-Link und nimmt den Song in die passende
-     <dekade>-music/songs.json auf; erst DANN verschwindet der Eintrag
-     aus der Warteliste. Der YouTube-Link kommt hier bereits validiert
-     aus extractYoutubeId() -- nie eine unvalidierte URL. ---- */
-  var QUEUE_PROXY_URL = 'https://driftware-api.driftware-api.workers.dev/v1/queue';
-
-  function pushToOnlineQueue(a, t, ytId, vkUrl, manualMeta) {
-    setAutosaveStatus('Wird online gespeichert …');
-    var payload = { a: a, t: t, yt: ytId };
-    if (vkUrl) payload.vk = vkUrl;
-    if (manualMeta) {
-      payload.g = manualMeta.g;
-      payload.y = manualMeta.y;
-    }
-    fetch(QUEUE_PROXY_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(function (r) { if (!r.ok) throw new Error('write-failed'); setAutosaveStatus('Gesendet ✓'); })
-      .catch(function () { setAutosaveStatus('Online-Speicherung fehlgeschlagen (lokal trotzdem gespeichert).'); });
-  }
-
-  function removeEntry(i) {
-    var entries = loadEntries();
-    entries.splice(i, 1);
-    saveEntries(entries);
-    renderList();
-    if (fileHandle) writeAutosaveFile();
-  }
-
-  function playEntry(i) {
-    var entries = loadEntries();
-    var e = entries[i];
+  function playEntry(src, i) {
+    var e = src === 'o' ? loadOutbox()[i] : queueList[i];
     if (!e) return;
     if (!e.yt) {
       /* Kein YouTube-Video -- bei einem hinterlegten VK-Link diesen oeffnen
@@ -287,22 +189,16 @@
     window.playDeckSong(deckKey, song, true);
   }
 
-  /* Fallback fuer Browser ohne File System Access API (Safari/Firefox). */
-  function exportEntriesToClipboard() {
-    var entries = loadEntries();
-    var json = JSON.stringify(entries.map(function (e) {
-      return { a: e.a, t: e.t, yt: e.yt };
-    }), null, 2);
-    var ta = document.createElement('textarea');
-    ta.value = json;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand('copy'); } catch (e) {}
-    document.body.removeChild(ta);
-    setAutosaveStatus(entries.length + ' Song(s) als JSON in die Zwischenablage kopiert.');
-    window.setTimeout(function () { setAutosaveStatus(''); }, 4000);
+  function startTimers() {
+    if (!pollTimer) pollTimer = window.setInterval(function () { sendOutbox(); refreshQueue(); }, 30000);
+  }
+  function stopPolling() {
+    if (pollTimer) { window.clearInterval(pollTimer); pollTimer = null; }
+  }
+  /* Postausgang auch ohne offenes Fenster nachsenden (nur wenn etwas drinliegt). */
+  function startRetry() {
+    if (retryTimer) return;
+    retryTimer = window.setInterval(function () { if (loadOutbox().length) sendOutbox(); }, 60000);
   }
 
   /* Bucket-Keys 1:1 wie in den *-music/songs.json (ohne "Ohne", das ist
@@ -343,9 +239,6 @@
   }
 
   function buildModal() {
-    var autosaveBtnHtml = HAS_FS_ACCESS
-      ? '<button type="button" class="manualadd-autosave" id="manualadd-autosave">📁 Autosave einrichten</button>'
-      : '<button type="button" class="manualadd-export" id="manualadd-export">Als JSON kopieren</button>';
     var backdrop = document.createElement('div');
     backdrop.className = 'manualadd-backdrop';
     backdrop.id = 'manualadd-backdrop';
@@ -369,10 +262,9 @@
       '  </div>' +
       '  <button type="button" class="manualadd-add" id="manualadd-add">Zur Liste hinzufügen</button>' +
       '  <p class="manualadd-error" id="manualadd-error" hidden></p>' +
-      '  <h4>Manuell hinzugefügt (Ohne Genre, dieser Browser)</h4>' +
+      '  <h4>Warteliste – wird jede Nacht eingebaut</h4>' +
       '  <ul class="manualadd-list" id="manualadd-list"></ul>' +
-      '  ' + autosaveBtnHtml +
-      '  <p class="manualadd-autosave-status"></p>' +
+      '  <p class="manualadd-status" role="status"></p>' +
       '</div>';
     return backdrop;
   }
@@ -408,9 +300,9 @@
       '.manualadd-text{flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden;}' +
       '.manualadd-text strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;}' +
       '.manualadd-text span{opacity:.65;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;}' +
+      '.manualadd-text .manualadd-state{font-size:10px;opacity:.5;}' +
       '.manualadd-play,.manualadd-remove{background:transparent;border:1px solid #5a527a;border-radius:5px;color:#e6e0f5;cursor:pointer;font-size:11px;padding:2px 6px;flex:0 0 auto;}' +
-      '.manualadd-autosave,.manualadd-export{width:100%;background:transparent;color:#b3a5c2;border:1px solid #5a527a;border-radius:6px;padding:6px 8px;cursor:pointer;font-size:11px;}' +
-      '.manualadd-autosave-status{font-size:11px;opacity:.75;margin:6px 0 0;min-height:14px;}';
+      '.manualadd-status{font-size:11px;opacity:.75;margin:6px 0 0;min-height:14px;}';
     document.head.appendChild(style);
   }
 
@@ -419,12 +311,8 @@
      Playlist-Generator (und damit den Anker fuer .manualadd-panel) bei
      jedem Wechsel neu auf; das Modal selbst haengt direkt am <body> und
      wuerde sonst als Karteileiche mehrfach existieren. decades.js ruft
-     nach jedem Wechsel window.reinitManualAdd() explizit auf. fileHandle
-     (Autosave) bleibt dabei bewusst unangetastet -- die Berechtigung gilt
-     seitenweit, nicht pro Dekade. */
+     nach jedem Wechsel window.reinitManualAdd() explizit auf. */
   function init() {
-    refreshPageKey();
-
     var stalePanel = document.querySelector('.manualadd-panel');
     if (stalePanel) stalePanel.remove();
     var staleModal = document.querySelector('.manualadd-backdrop');
@@ -447,9 +335,10 @@
     document.body.appendChild(modalEl);
 
     listEl = modalEl.querySelector('#manualadd-list');
-    autosaveStatusEl = modalEl.querySelector('.manualadd-autosave-status');
+    statusEl = modalEl.querySelector('.manualadd-status');
     renderList();
-    restoreAutosaveHandle();
+    sendOutbox();
+    startRetry();
 
     var useDiscogsCb = modalEl.querySelector('#manualadd-use-discogs');
     var manualFieldsEl = modalEl.querySelector('#manualadd-manual-fields');
@@ -475,8 +364,8 @@
     });
 
     var toggleBtn = panelEl.querySelector('#manualadd-toggle');
-    function openModal() { modalEl.hidden = false; }
-    function closeModal() { modalEl.hidden = true; }
+    function openModal() { modalEl.hidden = false; refreshQueue(); sendOutbox(); startTimers(); }
+    function closeModal() { modalEl.hidden = true; stopPolling(); }
     toggleBtn.addEventListener('click', openModal);
     modalEl.querySelector('#manualadd-close').addEventListener('click', closeModal);
     modalEl.addEventListener('click', function (ev) {
@@ -489,7 +378,7 @@
     if (!globalListenersBound) {
       globalListenersBound = true;
       document.addEventListener('keydown', function (ev) {
-        if (ev.key === 'Escape' && modalEl && !modalEl.hidden) modalEl.hidden = true;
+        if (ev.key === 'Escape' && modalEl && !modalEl.hidden) { modalEl.hidden = true; stopPolling(); }
       });
     }
 
@@ -558,22 +447,9 @@
     listEl.addEventListener('click', function (ev) {
       var playBtn = ev.target.closest('.manualadd-play');
       var removeBtn = ev.target.closest('.manualadd-remove');
-      if (playBtn) playEntry(parseInt(playBtn.dataset.i, 10));
-      else if (removeBtn) removeEntry(parseInt(removeBtn.dataset.i, 10));
+      if (playBtn) playEntry(playBtn.dataset.src, parseInt(playBtn.dataset.i, 10));
+      else if (removeBtn) removeFromOutbox(parseInt(removeBtn.dataset.i, 10));
     });
-
-    var autosaveBtn = modalEl.querySelector('#manualadd-autosave');
-    if (autosaveBtn) autosaveBtn.addEventListener('click', function () {
-      if (fileHandle) {
-        fileHandle.requestPermission({ mode: 'readwrite' }).then(function (perm) {
-          if (perm === 'granted') writeAutosaveFile();
-        });
-      } else {
-        setupAutosave();
-      }
-    });
-    var exportBtn = modalEl.querySelector('#manualadd-export');
-    if (exportBtn) exportBtn.addEventListener('click', exportEntriesToClipboard);
   }
 
   window.reinitManualAdd = init;
