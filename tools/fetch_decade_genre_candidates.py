@@ -58,8 +58,14 @@ USER_AGENT = "DriftwareCatalogBot/1.0 +https://driftware.online"
 
 
 def api_get(url, retries=5):
+    headers = {"User-Agent": USER_AGENT}
+    # Optional: mit Token (60 statt ~25 Anfragen/min, dazu thumb/cover_image
+    # in der Suche). Ohne Token laeuft alles wie bisher unauthentifiziert.
+    discogs_token = os.environ.get("DISCOGS_TOKEN")
+    if discogs_token:
+        headers["Authorization"] = "Discogs token=" + discogs_token
     for attempt in range(retries):
-        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        req = urllib.request.Request(url, headers=headers)
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
                 return json.loads(resp.read().decode("utf-8"))
@@ -126,7 +132,7 @@ def existing_release_ids(decade_key):
     return ids, title_keys
 
 
-MIN_HAVE = 20  # Qualitaets-Untergrenze: der BESTEHENDE Katalog hat median~400
+MIN_HAVE = int(os.environ.get("MIN_HAVE") or 20)  # per Umgebungsvariable aenderbar; Qualitaets-Untergrenze: der BESTEHENDE Katalog hat median~400
 # Discogs-"have" (Popularitaets-Proxy) und nur ~4% aller Eintraege liegen
 # unter 20 -- eine rohe Jahr+Style-Suche ohne Filter zieht dagegen sehr
 # viel Nischen-/Bootleg-Material rein (median bei einem Testlauf: 13, siehe
