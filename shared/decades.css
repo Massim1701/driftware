@@ -1911,6 +1911,8 @@ body.dnd-dragging .cc-jog { pointer-events: none; }
 /* Kompaktes Handy-Deck (nur html[data-device="phone"]) */
 .dj-phone-toggle { display: none; }
 .dj-mini { display: none; }
+/* Platz fuer die absolut positionierten Navigations-Kacheln (.utility-block) darueber */
+html[data-device="phone"] .dj-player.dj-phone { margin-top: 66px; }
 html[data-device="phone"] .dj-phone-toggle {
   display: block; width: 100%; padding: 12px 14px; border: 0; border-bottom: 1px solid rgba(255,255,255,0.08);
   background: transparent; color: var(--text); font-size: 14px; font-weight: 600; text-align: center; cursor: pointer;
@@ -2601,6 +2603,12 @@ html:not([data-device="phone"]) .generator-body { scroll-margin-top: calc(var(--
   #decade-root .generator > .manualadd-panel { grid-column: 10 / 13; }
   #decade-root .generator:not(:has(> .decade-link-row)) > .decade-nav-row { grid-column: 1 / 13; }
   #decade-root .generator .generator-actions.visible { flex-wrap: wrap; }
+}
+@media (max-width: 760px) {
+  /* nach der 1250er-Regel, damit sie auf dem Handy nicht ueberschrieben wird */
+  #decade-root .generator > .dj-midi-panel { grid-row: 2; grid-column: 1 / 7; justify-self: start; }
+  #decade-root .generator > .manualadd-panel { grid-row: 2; grid-column: 7 / 13; justify-self: end; }
+  #decade-root .generator .dj-midi-toggle, #decade-root .generator .manualadd-toggle { white-space: normal; line-height: 1.25; text-align: left; }
 }
 
 /* Platte flippt beim Ablegen eines Songs (siehe ccFlipDeck) */
