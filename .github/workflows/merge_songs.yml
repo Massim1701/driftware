@@ -20,6 +20,9 @@ on:
           - '80'
           - '70'
           - '90'
+          - '2000'
+          - '2010'
+          - '2020'
       schritt:
         description: 'Schritt (ohne apply=true laeuft nur der Bericht)'
         required: true
@@ -36,6 +39,11 @@ on:
         default: false
       min_have:
         description: 'Nur fuer eintragen: Mindest-Sammlerzahl (Discogs "have")'
+        required: false
+        type: string
+        default: ''
+      tag:
+        description: 'Tag-Modus (z. B. techno): Dateien aus data/musicbrainz-tags/<tag>/ statt data/musicbrainz/. Leer = wie bisher.'
         required: false
         type: string
         default: ''
@@ -66,14 +74,27 @@ jobs:
       - name: Startzeit merken
         run: echo "JOB_START_TS=$(date +%s)" >> "$GITHUB_ENV"
 
+      - name: Eingaben pruefen
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          if [ -n "$TAG" ] && ! [[ "$TAG" =~ ^[a-z0-9-]{1,30}$ ]]; then
+            echo "::error::tag: nur Kleinbuchstaben, Ziffern und - (max. 30 Zeichen)"
+            exit 1
+          fi
+
       - name: Bericht (Dry-Run)
         timeout-minutes: 15
-        run: python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" --dry-run --bericht "$RUNNER_TEMP/bericht-${{ inputs.dekade }}er.csv"
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          TAG_ARGS=(); [ -n "$TAG" ] && TAG_ARGS=(--tag "$TAG")
+          python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" "${TAG_ARGS[@]}" --dry-run --bericht "$RUNNER_TEMP/bericht-${{ inputs.dekade }}er.csv"
 
       - name: Bericht als Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bericht-${{ inputs.dekade }}er
+          name: bericht-${{ inputs.dekade }}er${{ inputs.tag && format('-{0}', inputs.tag) || '' }}
           path: ${{ runner.temp }}/bericht-${{ inputs.dekade }}er.csv
           retention-days: 30
 
@@ -83,26 +104,33 @@ jobs:
         env:
           DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
           MERGE_TIME_BUDGET_SECONDS: '19200'
-        run: python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" --anreichern
+          TAG: ${{ inputs.tag }}
+        run: |
+          TAG_ARGS=(); [ -n "$TAG" ] && TAG_ARGS=(--tag "$TAG")
+          python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" "${TAG_ARGS[@]}" --anreichern
 
       - name: In die Warteliste eintragen
         if: inputs.apply && inputs.schritt == 'eintragen'
         timeout-minutes: 15
         env:
           MIN_HAVE: ${{ inputs.min_have }}
+          TAG: ${{ inputs.tag }}
         run: |
           if ! [[ "$MIN_HAVE" =~ ^[0-9]+$ ]]; then
             echo "::error::Fuer eintragen bitte min_have als Zahl angeben."
             exit 1
           fi
-          python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" --eintragen --min-have "$MIN_HAVE"
+          TAG_ARGS=(); [ -n "$TAG" ] && TAG_ARGS=(--tag "$TAG")
+          python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" "${TAG_ARGS[@]}" --eintragen --min-have "$MIN_HAVE"
 
       - name: Backup als Artifact
         if: inputs.apply && inputs.schritt == 'eintragen'
         uses: actions/upload-artifact@v4
         with:
-          name: backup-${{ inputs.dekade }}er
-          path: data/musicbrainz/backup/
+          name: backup-${{ inputs.dekade }}er${{ inputs.tag && format('-{0}', inputs.tag) || '' }}
+          path: |
+            data/musicbrainz/backup/
+            data/musicbrainz-tags/*/backup/
           if-no-files-found: ignore
           retention-days: 90
 
@@ -110,15 +138,18 @@ jobs:
         if: inputs.apply && inputs.schritt != 'bericht'
         env:
           DEK: ${{ inputs.dekade }}er
+          TAG: ${{ inputs.tag }}
         run: |
           git config user.name "driftware-bot"
           git config user.email "actions@users.noreply.github.com"
+          if [ -n "$TAG" ]; then SRC="data/musicbrainz-tags/${TAG}"; SELTEN="queue/${DEK}-musicbrainz-${TAG}-selten.json"; LABEL="MusicBrainz ${DEK} (${TAG})"
+          else SRC="data/musicbrainz"; SELTEN="queue/${DEK}-musicbrainz-selten.json"; LABEL="MusicBrainz ${DEK}"; fi
           if [ "${{ inputs.schritt }}" = "anreichern" ]; then
-            FILES="data/musicbrainz/angereichert-${DEK}.json"
-            MSG="MusicBrainz ${DEK}: Discogs-Anreicherung"
+            FILES="${SRC}/angereichert-${DEK}.json"
+            MSG="${LABEL}: Discogs-Anreicherung"
           else
-            FILES="queue/${DEK}-erweiterung.json queue/${DEK}-musicbrainz-selten.json"
-            MSG="MusicBrainz ${DEK}: neue Songs in die Warteliste (min. ${{ inputs.min_have }} Sammler)"
+            FILES="queue/${DEK}-erweiterung.json ${SELTEN}"
+            MSG="${LABEL}: neue Songs in die Warteliste (min. ${{ inputs.min_have }} Sammler)"
           fi
           for f in $FILES; do [ -f "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then

@@ -33,6 +33,12 @@ weiter. Nach vollstaendigem Jahr wird die Fortschrittsdatei geloescht.
 
 Aufruf: python3 tools/fetch_musicbrainz.py 1980 [1981 ...]
         python3 tools/fetch_musicbrainz.py --dekade 80
+        python3 tools/fetch_musicbrainz.py --tag techno --dekade 2010
+
+Tag-Modus (--tag NAME): zusaetzlich AND tag:"NAME" in der Suche, Ausgabe nach
+data/musicbrainz-tags/<tag>/<jahr>.csv (eigener Fortschrittsordner), die
+normalen Jahres-CSVs bleiben unberuehrt. Hat ein Jahr <= 500 Treffer, wird es
+direkt seitenweise geholt (statt Namens-Haeppchen + Kontrolldurchlauf).
 """
 import csv
 import json
@@ -58,6 +64,8 @@ MAX_PREFIX_LEN = 3  # danach Aufteilung ueber rgid statt weiterer Buchstaben
 ALNUM = string.ascii_lowercase + string.digits
 HEX = "0123456789abcdef"
 TIME_BUDGET_SECONDS = int(os.environ.get("MB_TIME_BUDGET_SECONDS", "19800"))  # 5.5h
+
+TAG = None  # per --tag gesetzt
 
 START_TS = time.time()
 _last_request = 0.0
@@ -147,6 +155,8 @@ class YearFetcher:
     def __init__(self, year):
         self.year = year
         self.base = f"primarytype:single AND firstreleasedate:{year}"
+        if TAG:
+            self.base += f' AND tag:"{TAG}"'
         self.prog = load_progress(year)
         self.stats = {"ueber_500_ohne_teilung": []}
         self.prog.setdefault("gain", {})
@@ -227,6 +237,10 @@ class YearFetcher:
             self._collect(data)
             self._save()
         print(f"  API-count fuer {self.year}: {self.prog['api_count']}")
+        if TAG and self.prog["api_count"] <= MAX_RESULTS:
+            # kleines Jahr: komplett seitenweise holen, keine Haeppchen noetig
+            self.leaf("direkt", "primarytype:single")
+            return 0, 0
         for c in ALNUM:
             self.by_prefix(c)
         before_rest = len(self.prog["rows"])
@@ -244,14 +258,22 @@ class YearFetcher:
 
 def years_for_decade(d):
     d = str(d).strip().rstrip("er")
-    start = {"70": 1970, "80": 1980, "90": 1990}.get(d)
+    start = {"70": 1970, "80": 1980, "90": 1990, "2000": 2000, "2010": 2010, "2020": 2020}.get(d)
     if not start:
-        raise SystemExit(f"Unbekannte Dekade {d!r} (erlaubt: 70, 80, 90)")
+        raise SystemExit(f"Unbekannte Dekade {d!r} (erlaubt: 70, 80, 90, 2000, 2010, 2020)")
     return list(range(start, start + 10))
 
 
 def main():
+    global TAG, OUT_DIR, PROGRESS_DIR
     args = sys.argv[1:]
+    if "--tag" in args:
+        i = args.index("--tag")
+        TAG = args[i + 1].strip().lower()
+        del args[i:i + 2]
+        safe = "".join(ch if ch.isalnum() else "-" for ch in TAG)
+        OUT_DIR = os.path.join(ROOT, "data", "musicbrainz-tags", safe)
+        PROGRESS_DIR = os.path.join(OUT_DIR, "fortschritt")
     if not args:
         raise SystemExit(__doc__)
     if args[0] == "--dekade":

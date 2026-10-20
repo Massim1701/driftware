@@ -34,6 +34,12 @@ Discogs und MusicBrainz ab). Remixe/Versionen/Doppel-A-Seiten werden nicht
 automatisch zusammengelegt, sondern als "unklar" bzw. markiert berichtet.
 
 Aufruf: python3 tools/merge_into_json.py --dekade 80 --dry-run [--bericht x.csv]
+
+Tag-Modus (--tag NAME, z.B. techno): liest statt data/musicbrainz/ die Dateien aus
+data/musicbrainz-tags/<tag>/ (tools/fetch_musicbrainz.py --tag ...), legt die
+angereicherten Songs dort ab und schreibt die Selten-Liste nach
+queue/<dekade>-musicbrainz-<tag>-selten.json. Erlaubt auch die Dekaden 2000/2010/2020.
+Der Abgleich laeuft wie immer gegen ALLE Kataloge und Wartelisten.
 """
 import argparse
 import collections
@@ -52,7 +58,8 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 MB_DIR = os.path.join(ROOT, "data", "musicbrainz")
 BACKUP_DIR = os.path.join(MB_DIR, "backup")
-DECADES = {"70": "70er", "80": "80er", "90": "90er"}
+DECADES = {"70": "70er", "80": "80er", "90": "90er", "2000": "2000er", "2010": "2010er", "2020": "2020er"}
+TAG = None  # per --tag gesetzt
 ALL_CATALOGS = ["70er", "80er", "90er", "2000er", "2010er", "2020er"]
 TIME_BUDGET_SECONDS = int(os.environ.get("MERGE_TIME_BUDGET_SECONDS", "19800"))  # 5.5h
 DISCOGS_MIN_INTERVAL = 1.05  # mit Token 60 Anfragen/min
@@ -135,6 +142,8 @@ def queue_path(dek):
 
 
 def selten_path(dek):
+    if TAG:
+        return os.path.join(ROOT, "queue", f"{dek}-musicbrainz-{TAG}-selten.json")
     return os.path.join(ROOT, "queue", f"{dek}-musicbrainz-selten.json")
 
 
@@ -176,8 +185,10 @@ class CatalogIndex:
                     idx.add(s.get("a"), s.get("t"), f"{dek}-music/{bucket}", s.get("mb"))
                     n += 1
             idx.sizes[f"{dek}-music/songs.json"] = n
-            for qp, label in ((queue_path(dek), f"queue/{dek}-erweiterung"),
-                              (selten_path(dek), f"queue/{dek}-musicbrainz-selten")):
+            # alle Selten-Listen dieser Dekade (normal und je Tag) zaehlen fuer den Abgleich
+            selten = sorted(glob.glob(os.path.join(ROOT, "queue", f"{dek}-musicbrainz*-selten.json")))
+            for qp, label in [(queue_path(dek), f"queue/{dek}-erweiterung")] + [
+                    (sp_, "queue/" + os.path.basename(sp_)[:-5]) for sp_ in selten]:
                 q = load_json(qp, []) or []
                 for c in q:
                     idx.add(c.get("a"), c.get("t"), label, c.get("mb"), fassungen=not label.endswith("-selten"))
@@ -187,7 +198,7 @@ class CatalogIndex:
 
 
 def read_csvs(dek):
-    start = 1900 + int(dek[:2])
+    start = int(dek[:4]) if dek.startswith("20") else 1900 + int(dek[:2])
     rows, missing = [], []
     for y in range(start, start + 10):
         p = os.path.join(MB_DIR, f"{y}.csv")
@@ -429,6 +440,7 @@ def eintragen(dek, results, min_have):
 def main():
     ap = argparse.ArgumentParser(description="MusicBrainz-CSVs mit dem Katalog abgleichen")
     ap.add_argument("--dekade", required=True, choices=sorted(DECADES))
+    ap.add_argument("--tag", help="Tag-Modus: Dateien aus data/musicbrainz-tags/<tag>/ (siehe Kopfkommentar)")
     mode = ap.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--anreichern", action="store_true")
@@ -439,10 +451,15 @@ def main():
     if args.eintragen and args.min_have is None:
         ap.error("--eintragen braucht --min-have N")
 
+    global TAG, MB_DIR, BACKUP_DIR
+    if args.tag:
+        TAG = "".join(ch if ch.isalnum() else "-" for ch in args.tag.strip().lower())
+        MB_DIR = os.path.join(ROOT, "data", "musicbrainz-tags", TAG)
+        BACKUP_DIR = os.path.join(MB_DIR, "backup")
     dek = DECADES[args.dekade]
     rows, missing = read_csvs(dek)
     if not rows:
-        raise SystemExit(f"Keine CSVs fuer {dek} in data/musicbrainz/")
+        raise SystemExit(f"Keine CSVs fuer {dek} in {os.path.relpath(MB_DIR, ROOT)}/")
     idx = CatalogIndex.build()
     results = classify(rows, idx)
     print_report(dek, results, missing, idx, args.bericht)
