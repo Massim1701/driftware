@@ -47,6 +47,11 @@ on:
         required: false
         type: string
         default: ''
+      kette:
+        description: 'Nur anreichern: nach dem Lauf sich selbst neu starten, solange noch Songs offen sind'
+        required: false
+        type: boolean
+        default: false
 
 # eintragen teilt sich die Gruppe mit expand-decade-genres.yml, damit nie
 # beide gleichzeitig queue/<dekade>-erweiterung.json schreiben.
@@ -59,6 +64,7 @@ env:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   merge:
@@ -107,7 +113,10 @@ jobs:
           TAG: ${{ inputs.tag }}
         run: |
           TAG_ARGS=(); [ -n "$TAG" ] && TAG_ARGS=(--tag "$TAG")
-          python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" "${TAG_ARGS[@]}" --anreichern
+          python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" "${TAG_ARGS[@]}" --anreichern | tee "$RUNNER_TEMP/anreichern.log"
+          # Rest fuer den Ketten-Schritt merken (pipefail ist an: Fehler bricht ab)
+          grep -o 'Fertig fuer diesen Lauf: [0-9]* nachgeschlagen, [0-9]* noch offen' "$RUNNER_TEMP/anreichern.log" | tail -1 \
+            | sed -E 's/.*: ([0-9]+) nachgeschlagen, ([0-9]+) noch offen/LOOKED_UP=\1\nREST=\2/' >> "$GITHUB_ENV" || true
 
       - name: In die Warteliste eintragen
         if: inputs.apply && inputs.schritt == 'eintragen'
@@ -186,3 +195,20 @@ jobs:
           done
           echo "::error::Push nach mehreren Versuchen fehlgeschlagen."
           exit 1
+
+      # Kette: Lauf beendet, es sind noch Songs offen und dieser Lauf hat Fortschritt
+      # gemacht -> naechsten Lauf starten. Stoppt von selbst bei 0 offen oder 0 Treffern.
+      - name: Naechsten Lauf starten
+        if: success() && inputs.apply && inputs.schritt == 'anreichern' && inputs.kette
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          echo "nachgeschlagen: ${LOOKED_UP:-?}, offen: ${REST:-?}"
+          if [ "${REST:-0}" -gt 0 ] && [ "${LOOKED_UP:-0}" -gt 0 ]; then
+            gh workflow run merge_songs.yml -R "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME" \
+              -f dekade="${{ inputs.dekade }}" -f schritt=anreichern -f apply=true -f kette=true -f tag="$TAG"
+            echo "Naechster Lauf gestartet."
+          else
+            echo "Kette beendet."
+          fi
