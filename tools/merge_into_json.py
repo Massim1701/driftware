@@ -445,6 +445,8 @@ def main():
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--anreichern", action="store_true")
     mode.add_argument("--eintragen", action="store_true")
+    mode.add_argument("--offen", action="store_true",
+                      help="nur ausgeben, wie viele neue Songs noch nicht bei Discogs angereichert sind (OFFEN=<n>), kein Netzwerk")
     ap.add_argument("--min-have", type=int)
     ap.add_argument("--bericht", help="Bericht zusaetzlich als CSV schreiben (Pfad)")
     args = ap.parse_args()
@@ -462,6 +464,10 @@ def main():
         raise SystemExit(f"Keine CSVs fuer {dek} in {os.path.relpath(MB_DIR, ROOT)}/")
     idx = CatalogIndex.build()
     results = classify(rows, idx)
+    if args.offen:
+        staged = load_json(staging_path(dek), {}) or {}
+        print(f"OFFEN={sum(1 for r in results if r['status'] == 'neu' and r['mbid'] not in staged)}")
+        return
     print_report(dek, results, missing, idx, args.bericht)
     if args.anreichern:
         anreichern(dek, results)

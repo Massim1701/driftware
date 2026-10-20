@@ -1,0 +1,37 @@
+name: Anreicherungs-Kette
+
+# Haelt die Discogs-Anreicherung (merge_songs.yml, schritt=anreichern) am Laufen, ohne
+# dass ein Rechner anbleiben muss: Sobald ein merge_songs-Lauf endet, startet dieser
+# Workflow den naechsten noetigen Lauf (Reihenfolge siehe tools/anreichern_kette.sh).
+# Pausieren: Datei kette-pause.txt im Repo-Stamm anlegen.
+# Von Hand anstossen: Actions -> Anreicherungs-Kette -> Run workflow.
+on:
+  workflow_run:
+    workflows: ["MusicBrainz-Songs abgleichen"]
+    types: [completed]
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: anreichern-kette
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  weiter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Naechsten Lauf starten, falls noch etwas offen ist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash tools/anreichern_kette.sh
