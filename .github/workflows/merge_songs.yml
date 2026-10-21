@@ -56,7 +56,7 @@ on:
 # eintragen teilt sich die Gruppe mit expand-decade-genres.yml, damit nie
 # beide gleichzeitig queue/<dekade>-erweiterung.json schreiben.
 concurrency:
-  group: ${{ (inputs.apply && inputs.schritt == 'eintragen') && 'expand-decade-genres' || format('merge-songs-{0}', inputs.dekade) }}
+  group: ${{ (inputs.apply && inputs.schritt == 'eintragen') && 'expand-decade-genres' || format('merge-songs-{0}{1}', inputs.dekade, inputs.tag && format('-{0}', inputs.tag) || '') }}
   cancel-in-progress: false
 
 env:

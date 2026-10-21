@@ -200,7 +200,10 @@ class CatalogIndex:
 def read_csvs(dek):
     start = int(dek[:4]) if dek.startswith("20") else 1900 + int(dek[:2])
     rows, missing = [], []
-    for y in range(start, start + 10):
+    jahre = list(range(start, start + 10))
+    if TAG and start == 1990:
+        jahre = [1989] + jahre  # die wenigen Techno-Songs von 1989 gehoeren zu den 90ern
+    for y in jahre:
         p = os.path.join(MB_DIR, f"{y}.csv")
         if not os.path.exists(p):
             missing.append(y)
