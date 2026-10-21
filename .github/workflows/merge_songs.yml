@@ -71,7 +71,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 350
     steps:
+      # Branch-Spitze statt Ausloese-Commit: ein in der Concurrency-Gruppe wartender Lauf
+      # wuerde sonst auf dem veralteten Stand starten und beim Push am Konflikt scheitern.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
 
       - uses: actions/setup-python@v5
         with:
