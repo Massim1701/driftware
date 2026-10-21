@@ -390,6 +390,35 @@ def backup(path):
     return dst
 
 
+def _titel_schluessel(t):
+    t = re.sub(r"^(new|re)(?=[A-Z0-9])", "", t or "")  # kaputte Discogs-Praefixe ("NewYMCA")
+    t = re.sub(r"[\(\[\{].*$", "", t)  # Zusatz in Klammern weg
+    return re.sub(r"[^a-z0-9]", "", t.lower())
+
+
+def ohne_discogs_doppel(old, new_items):
+    """Gleiche Discogs-ID UND gleicher/aehnlicher Titel = derselbe Song (MusicBrainz
+    fuehrt ihn oft mehrfach). Der erste bleibt; verschiedene Songs derselben
+    Single (gleiche ID, anderer Titel) bleiben beide."""
+    gesehen = collections.defaultdict(list)
+    for x in old:
+        if x.get("id"):
+            gesehen[x["id"]].append(_titel_schluessel(x.get("t")))
+    out, verworfen = [], 0
+    for x in new_items:
+        k = _titel_schluessel(x.get("t"))
+        i = x.get("id")
+        if i and any(k and g and (k == g or k.startswith(g) or g.startswith(k)) for g in gesehen[i]):
+            verworfen += 1
+            continue
+        if i:
+            gesehen[i].append(k)
+        out.append(x)
+    if verworfen:
+        print(f"  {verworfen} Doppelte (gleiche Discogs-ID, gleicher Titel) nicht eingetragen")
+    return out
+
+
 def append_checked(path, new_items):
     if not new_items:
         print(f"  {os.path.relpath(path, ROOT)}: nichts anzuhaengen, unveraendert")
@@ -433,6 +462,7 @@ def eintragen(dek, results, min_have):
                               "mb": r["mbid"], "src": "musicbrainz", "discogs": "nicht nachgeschlagen (Remix/Version)"})
     print(f"\nEintragen {dek} (min-have {min_have}): {len(to_queue)} in die Warteliste, "
           f"{len(to_selten)} in die Selten-Liste, {len(still_new) - len(to_queue) - n_staged_selten} neu, aber noch nicht angereichert")
+    to_queue = ohne_discogs_doppel(load_json(queue_path(dek), []) or [], to_queue)
     append_checked(queue_path(dek), to_queue)
     append_checked(selten_path(dek), to_selten)
 
