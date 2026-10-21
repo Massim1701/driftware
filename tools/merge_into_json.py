@@ -436,6 +436,24 @@ def append_checked(path, new_items):
           f"Backup {os.path.relpath(b, ROOT) if b else '-'}")
 
 
+# Tag-Modus: Songs, deren Discogs-Stil das Stichwort enthaelt, bekommen statt des
+# Katalog-Buckets eine eigene Kategorie (entsteht beim Einsortieren neu, falls es sie
+# noch nicht gibt; die Kachel braucht einen Eintrag in <dekade>-music/index.html).
+TAG_KATEGORIE = {"techno": ("Techno", "techno")}
+
+
+def tag_kategorie(cands):
+    if TAG not in TAG_KATEGORIE:
+        return
+    key, wort = TAG_KATEGORIE[TAG]
+    n = 0
+    for c in cands:
+        if wort in (c.get("s") or "").lower() and c.get("genre_key") != key:
+            c["genre_key"] = key
+            n += 1
+    print(f"  {n} Songs der Kategorie {key} zugeordnet (Discogs-Stil enthaelt '{wort}')")
+
+
 def eintragen(dek, results, min_have):
     staged = load_json(staging_path(dek), {}) or {}
     if not staged:
@@ -462,6 +480,8 @@ def eintragen(dek, results, min_have):
                               "mb": r["mbid"], "src": "musicbrainz", "discogs": "nicht nachgeschlagen (Remix/Version)"})
     print(f"\nEintragen {dek} (min-have {min_have}): {len(to_queue)} in die Warteliste, "
           f"{len(to_selten)} in die Selten-Liste, {len(still_new) - len(to_queue) - n_staged_selten} neu, aber noch nicht angereichert")
+    tag_kategorie(to_queue)
+    tag_kategorie(to_selten)
     to_queue = ohne_discogs_doppel(load_json(queue_path(dek), []) or [], to_queue)
     append_checked(queue_path(dek), to_queue)
     append_checked(selten_path(dek), to_selten)
