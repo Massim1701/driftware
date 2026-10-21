@@ -9,7 +9,7 @@
 # Pausieren: Datei kette-pause.txt im Repo-Stamm anlegen (und pushen).
 # DRY=1: nur anzeigen, nichts starten (zum lokalen Testen).
 set -u
-PLAN="${PLAN:-2010:techno 90}"
+PLAN="${PLAN:-2010:techno 90 90:techno}"
 REPO="${GITHUB_REPOSITORY:-Massim1701/driftware}"
 
 if [ -f kette-pause.txt ]; then echo "kette-pause.txt vorhanden -- Kette pausiert."; exit 0; fi
