@@ -151,6 +151,18 @@ def main():
         return
     catalog = load_json(catalog_path)
 
+    # Optional (z. B. lokal): nur ein Genre bzw. nur die ersten N Kandidaten verarbeiten,
+    # der Rest der Warteliste bleibt unveraendert stehen.
+    nur_genre = os.environ.get("DECADE_GENRE")
+    limit = int(os.environ.get("DECADE_LIMIT", "0"))
+    uebrig = []
+    if nur_genre:
+        uebrig = [c for c in queue if c.get("genre_key") != nur_genre]
+        queue = [c for c in queue if c.get("genre_key") == nur_genre]
+    if limit and len(queue) > limit:
+        uebrig = queue[limit:] + uebrig
+        queue = queue[:limit]
+
     processed = 0
     found = 0
     remaining = []
@@ -183,12 +195,13 @@ def main():
 
         if processed % SAVE_EVERY == 0:
             save_json(catalog_path, catalog)
-            save_json(queue_path, remaining + queue[i:])
+            save_json(queue_path, remaining + queue[i:] + uebrig)
             print(f"  Zwischenstand gespeichert ({processed} verarbeitet, {found} gefunden).")
 
         time.sleep(random.uniform(1.0, 2.0))  # groessere, gestreute Pause, kein Grund YouTube zu stressen
 
     remaining.extend(queue[i:])
+    remaining.extend(uebrig)
     save_json(catalog_path, catalog)
     save_json(queue_path, remaining)
     print(f"Fertig fuer diesen Lauf ({decade_key}): {processed} verarbeitet, {found} neue Songs hinzugefuegt, "
