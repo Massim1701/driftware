@@ -20,26 +20,58 @@ button:disabled{opacity:.6}.priv{font-size:14px;color:var(--mut);margin-top:12px
 .s-ok{color:var(--ok)}.s-warn{color:var(--warn)}.s-fail{color:var(--fail)}.s-info{color:var(--mut)}
 .fix{color:var(--mut);margin:6px 0 0}.note{color:var(--mut);font-size:14px;margin-top:24px}
 .err{color:var(--fail);margin-top:16px}
+dialog{border:0;border-radius:14px;padding:28px;max-width:520px;width:calc(100% - 32px);box-shadow:0 24px 60px rgba(0,0,0,.35);color:var(--ink);background:#fff}
+dialog::backdrop{background:rgba(14,14,16,.55)}dialog h2{margin:0 0 10px;font-size:22px;font-weight:600}
+dialog p{margin:0 0 12px;font-size:15px}dialog .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.ghost{background:#fff;color:var(--ink);border:1px solid var(--ink)}
 </style></head><body><main>
 <p><a href="/">← Driftware</a></p>
 <h1>Domain-Check auf KI</h1>
 <p class="lead">Ihre Domain eingeben und prüfen: Können Suchmaschinen und KI-Systeme wie ChatGPT, Claude oder Google Ihre Startseite lesen und nennen? Sie bekommen eine ehrliche Antwort, auch wenn sie lautet: Hier ist kein Umbau nötig.</p>
 <form id="f"><input id="u" name="u" placeholder="ihre-domain.de" autocomplete="off" required><button id="b">Prüfen</button></form>
-<p class="priv">Wir speichern nichts: keine Domain, kein Ergebnis, keine Cookies. Die Domain wird nur zur Prüfung an unseren Server gesendet. Geprüft werden Ihre öffentliche Startseite und bis zu vier weitere Seiten aus der Sitemap. <a href="/privacy.html">Datenschutz</a> · <a href="/impressum.html">Impressum</a></p>
+<p class="priv">Wir speichern nichts: keine Domain, kein Ergebnis, keine Cookies. Die Domain wird nur zur Prüfung an unseren Server gesendet, nach deiner Zustimmung. Geprüft werden Ihre öffentliche Startseite und bis zu vier weitere Seiten aus der Sitemap. <a href="/privacy.html">Datenschutz</a> · <a href="/impressum.html">Impressum</a></p>
 <div id="out" aria-live="polite"></div>
+<dialog id="dlg" aria-labelledby="dlg-t">
+<h2 id="dlg-t">Datenschutz</h2>
+<p>Für die Prüfung senden wir die eingegebene Domain an unseren Dienst bei Cloudflare. Er ruft deine öffentliche Startseite und bis zu vier weitere Seiten aus der Sitemap ab und zeigt dir das Ergebnis.</p>
+<p>Wir speichern weder Domain noch Ergebnis noch deine IP-Adresse und setzen keine Cookies. Pro Minute sind höchstens 5 Prüfungen möglich. Die vollständige <a href="/privacy.html#domaincheck" target="_blank" rel="noopener">Datenschutzerklärung</a> findest du hier.</p>
+<p>Ohne deine Zustimmung führen wir keine Prüfung durch.</p>
+<div class="row"><button type="button" id="dlg-ok">Akzeptieren und prüfen</button><button type="button" id="dlg-no" class="ghost">Ablehnen</button></div>
+</dialog>
 </main>
 <script>
 const API="https://ki-check.driftware-api.workers.dev";
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const mark={ok:"✓",warn:"!",fail:"✗",info:"i"};
-$("#f").addEventListener("submit",async e=>{
-  e.preventDefault();const b=$("#b"),out=$("#out");b.disabled=true;out.innerHTML="<p>Prüfe …</p>";
+function hasConsent(){try{return sessionStorage.getItem("dc-consent")==="1"}catch(e){return false}}
+function saveConsent(){try{sessionStorage.setItem("dc-consent","1")}catch(e){}}
+function ask(){
+  return new Promise(function(resolve){
+    var dlg=$("#dlg");
+    function done(v){dlg.close();resolve(v)}
+    $("#dlg-ok").onclick=function(){done(true)};
+    $("#dlg-no").onclick=function(){done(false)};
+    dlg.addEventListener("cancel",function(){resolve(false)},{once:true});
+    dlg.showModal();
+  });
+}
+async function run(){
+  const b=$("#b"),out=$("#out");b.disabled=true;out.innerHTML="<p>Prüfe …</p>";
   try{
-    const r=await fetch(API+"/api/check",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({url:$("#u").value})});
+    const r=await fetch(API+"/api/check",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({url:$("#u").value,consent:true})});
     const d=await r.json();if(!r.ok)throw new Error(d.error||"Fehler");render(d);
   }catch(x){out.innerHTML='<p class="err">'+esc(x.message)+"</p>"}
   b.disabled=false;
+}
+$("#f").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!hasConsent()){
+    const ok=await ask();
+    if(!ok){$("#out").innerHTML='<p class="err">Ohne deine Zustimmung zur Datenschutzerklärung führen wir keine Prüfung durch.</p>';return}
+    saveConsent();
+  }
+  run();
 });
 function render(d){
   const v=d.verdict;
