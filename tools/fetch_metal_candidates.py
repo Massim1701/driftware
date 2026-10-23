@@ -72,6 +72,9 @@ def sammeln(style, years):
 
 def dekade(dec):
     ids, tkeys = fd.existing_release_ids(dec)
+    ohne = os.path.join(ROOT, "queue", "metal-ohne-treffer.json")  # von process_metal_ci.py: ohne YouTube-Treffer
+    if os.path.exists(ohne):
+        ids = set(ids) | set(json.load(open(ohne, encoding="utf-8")))
     dark = os.environ.get("METAL_MODUS") == "dark"
     quota = DARK_QUOTA if dark else QUOTA
     if quota[dec] == 0:

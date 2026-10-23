@@ -1,0 +1,57 @@
+name: Metall-Songs einbauen
+
+# Phase B der Metall-Erweiterung (nach "Metall-Kandidaten sammeln"): YouTube-Links ueber die
+# YouTube-Data-API aufloesen, Treffer in die Dekaden einbauen, Metall-Playlist neu bauen, pushen.
+# Ersetzt tools/process_metal_local.py (lief frueher auf dem Mac). Ist das API-Tageskontingent
+# aufgebraucht, bleibt der Rest in queue/<dekade>-metal.json und der Workflow kann spaeter erneut laufen.
+on:
+  workflow_dispatch:
+    inputs:
+      dekade:
+        description: 'Dekade (alle = alle sechs)'
+        required: true
+        type: choice
+        default: alle
+        options: [alle, 70er, 80er, 90er, 2000er, 2010er, 2020er]
+
+concurrency:
+  group: metal-einbauen
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  einbauen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Startzeit merken
+        run: echo "JOB_START_TS=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Songs einbauen
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          PYTHONUNBUFFERED: '1'
+          DEKADE: ${{ inputs.dekade }}
+        run: |
+          if [ "$DEKADE" = "alle" ]; then python3 tools/process_metal_ci.py
+          else python3 tools/process_metal_ci.py "$DEKADE"; fi
+
+      - name: Committen und pushen
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          PYTHONUNBUFFERED: '1'
+          DEKADE: ${{ inputs.dekade }}
+        run: |
+          tools/push_retry.sh "Metall-Erweiterung: Songs per YouTube-API eingebaut ($DEKADE)" \
+          'METAL_TIME_BUDGET_SECONDS=$REDO_BUDGET_SECONDS; export METAL_TIME_BUDGET_SECONDS; if [ "$DEKADE" = "alle" ]; then python3 tools/process_metal_ci.py; else python3 tools/process_metal_ci.py "$DEKADE"; fi' \
+          queue/ '*-music/songs.json' 'metal-music/' dekaden/
