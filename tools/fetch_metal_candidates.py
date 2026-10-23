@@ -38,7 +38,7 @@ MIN_HAVE = 20
 # Modus 'dark' (METAL_MODUS=dark): nur Dark & Industrial aufstocken. Eigene Stil-Gewichte und Kontingente;
 # Industrial zaehlt nur zusammen mit einem Metal-Stil (ist_metal), kein EBM/Techno.
 DARK_WEIGHT = {"Gothic Metal": .7, "Industrial": .3}
-DARK_QUOTA = {"70er": 0, "80er": 10, "90er": 60, "2000er": 80, "2010er": 70, "2020er": 50}
+DARK_QUOTA = {"70er": 0, "80er": 15, "90er": 90, "2000er": 110, "2010er": 90, "2020er": 65}
 
 
 def ist_metal(r, style):
