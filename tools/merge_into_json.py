@@ -470,8 +470,8 @@ def eintragen(dek, results, min_have):
         if v.get("status") == "gefunden" and (v["cand"].get("hv") or 0) >= min_have:
             to_queue.append(v["cand"])
         elif v.get("status") == "gefunden":
-            to_selten.append(v["cand"])
-            n_staged_selten += 1
+            # unter min-have: kein eigenes Genre, aber trotzdem in die Dekade (Kategorie 'Ohne')
+            to_queue.append({**v["cand"], "genre_key": "Ohne"})
         else:
             n_staged_selten += 1
             row = v["row"]
@@ -490,6 +490,28 @@ def eintragen(dek, results, min_have):
     append_checked(selten_path(dek), to_selten)
 
 
+def selten_freigeben(dek):
+    """Verschiebt von Discogs gefundene Songs aus der Selten-Liste als Kategorie 'Ohne'
+    in die Warteliste (Songs ohne Discogs-Daten bleiben in der Selten-Liste)."""
+    sp = selten_path(dek)
+    selten = load_json(sp, []) or []
+    idx = CatalogIndex.build()
+    move, rest = [], []
+    for x in selten:
+        if x.get("id") and not x.get("discogs") and x.get("mb") not in idx.mbids:
+            move.append({**x, "genre_key": "Ohne"})
+        else:
+            rest.append(x)
+    print(f"\nSelten-Liste {dek}: {len(move)} von {len(selten)} werden als 'Ohne' in die Warteliste verschoben")
+    move = ohne_discogs_doppel(load_json(queue_path(dek), []) or [], move)
+    if not move:
+        return
+    append_checked(queue_path(dek), move)
+    moved_mb = {x.get("mb") for x in move}
+    backup(sp)
+    save_json(sp, [x for x in selten if not (x.get("mb") in moved_mb and x.get("id"))])
+
+
 def main():
     ap = argparse.ArgumentParser(description="MusicBrainz-CSVs mit dem Katalog abgleichen")
     ap.add_argument("--dekade", required=True, choices=sorted(DECADES))
@@ -498,6 +520,8 @@ def main():
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--anreichern", action="store_true")
     mode.add_argument("--eintragen", action="store_true")
+    mode.add_argument("--selten-freigeben", action="store_true",
+                      help="gefundene Songs aus der Selten-Liste als 'Ohne' in die Warteliste verschieben")
     mode.add_argument("--offen", action="store_true",
                       help="nur ausgeben, wie viele neue Songs noch nicht bei Discogs angereichert sind (OFFEN=<n>), kein Netzwerk")
     ap.add_argument("--min-have", type=int)
@@ -512,6 +536,9 @@ def main():
         MB_DIR = os.path.join(ROOT, "data", "musicbrainz-tags", TAG)
         BACKUP_DIR = os.path.join(MB_DIR, "backup")
     dek = DECADES[args.dekade]
+    if args.selten_freigeben:
+        selten_freigeben(dek)
+        return
     rows, missing = read_csvs(dek)
     if not rows:
         raise SystemExit(f"Keine CSVs fuer {dek} in {os.path.relpath(MB_DIR, ROOT)}/")
