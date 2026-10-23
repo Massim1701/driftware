@@ -498,7 +498,9 @@ def selten_freigeben(dek):
     idx = CatalogIndex.build()
     move, rest = [], []
     for x in selten:
-        if x.get("id") and not x.get("discogs") and x.get("mb") not in idx.mbids:
+        herkunft = idx.full.get((artist_key(x.get("a")), title_full_key(x.get("t"))))
+        schon_da = bool(herkunft) and not str(herkunft).endswith("-selten")  # Selten-Listen sind mit im Index
+        if x.get("id") and not x.get("discogs") and not schon_da:
             move.append({**x, "genre_key": "Ohne"})
         else:
             rest.append(x)
