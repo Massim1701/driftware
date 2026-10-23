@@ -4,6 +4,8 @@ name: MusicBrainz-Songs abgleichen
 #   apply=false            -> immer NUR Bericht (Dry-Run), egal welcher Schritt
 #   schritt=anreichern     -> neue Songs bei Discogs nachschlagen, Ergebnis nach
 #     + apply=true            data/musicbrainz/angereichert-<dekade>.json
+#   schritt=freigeben      -> von Discogs gefundene Songs aus der Selten-Liste als Kategorie
+#     + apply=true            'Ohne' in die Warteliste verschieben (einmalig nachholen)
 #   schritt=eintragen      -> an queue/<dekade>-erweiterung.json anhaengen (YouTube-
 #     + apply=true            Suche danach per expand-decade-genres.yml), Rest nach
 #     + min_have              queue/<dekade>-musicbrainz-selten.json
@@ -32,6 +34,7 @@ on:
           - bericht
           - anreichern
           - eintragen
+          - freigeben
       apply:
         description: 'apply=true: Schritt wirklich ausfuehren und committen'
         required: true
@@ -58,7 +61,7 @@ on:
 # eintragen teilt sich die Gruppe mit expand-decade-genres.yml, damit nie
 # beide gleichzeitig queue/<dekade>-erweiterung.json schreiben.
 concurrency:
-  group: ${{ (inputs.apply && inputs.schritt == 'eintragen') && 'expand-decade-genres' || ((inputs.apply && inputs.schritt == 'anreichern') && 'discogs-anreichern' || format('merge-songs-{0}{1}', inputs.dekade, inputs.tag && format('-{0}', inputs.tag) || '')) }}
+  group: ${{ (inputs.apply && (inputs.schritt == 'eintragen' || inputs.schritt == 'freigeben')) && 'expand-decade-genres' || ((inputs.apply && inputs.schritt == 'anreichern') && 'discogs-anreichern' || format('merge-songs-{0}{1}', inputs.dekade, inputs.tag && format('-{0}', inputs.tag) || '')) }}
   cancel-in-progress: false
 
 env:
@@ -138,8 +141,17 @@ jobs:
           TAG_ARGS=(); [ -n "$TAG" ] && TAG_ARGS=(--tag "$TAG")
           python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" "${TAG_ARGS[@]}" --eintragen --min-have "$MIN_HAVE"
 
+      - name: Selten-Liste freigeben
+        if: inputs.apply && inputs.schritt == 'freigeben'
+        timeout-minutes: 15
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          TAG_ARGS=(); [ -n "$TAG" ] && TAG_ARGS=(--tag "$TAG")
+          python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" "${TAG_ARGS[@]}" --selten-freigeben
+
       - name: Backup als Artifact
-        if: inputs.apply && inputs.schritt == 'eintragen'
+        if: inputs.apply && (inputs.schritt == 'eintragen' || inputs.schritt == 'freigeben')
         uses: actions/upload-artifact@v4
         with:
           name: backup-${{ inputs.dekade }}er${{ inputs.tag && format('-{0}', inputs.tag) || '' }}
@@ -162,6 +174,9 @@ jobs:
           if [ "${{ inputs.schritt }}" = "anreichern" ]; then
             FILES="${SRC}/angereichert-${DEK}.json"
             MSG="${LABEL}: Discogs-Anreicherung"
+          elif [ "${{ inputs.schritt }}" = "freigeben" ]; then
+            FILES="queue/${DEK}-erweiterung.json ${SELTEN}"
+            MSG="${LABEL}: Selten-Liste als Kategorie Ohne in die Warteliste"
           else
             FILES="queue/${DEK}-erweiterung.json ${SELTEN}"
             MSG="${LABEL}: neue Songs in die Warteliste (min. ${{ inputs.min_have }} Sammler)"
@@ -194,7 +209,12 @@ jobs:
               exit 1
             fi
             [ "$ELAPSED" -gt 19800 ] && { echo "::error::Zeit knapp, bitte erneut starten."; exit 1; }
-            python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" --eintragen --min-have "${{ inputs.min_have }}"
+            TAG_ARGS=(); [ -n "$TAG" ] && TAG_ARGS=(--tag "$TAG")
+            if [ "${{ inputs.schritt }}" = "freigeben" ]; then
+              python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" "${TAG_ARGS[@]}" --selten-freigeben
+            else
+              python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" --eintragen --min-have "${{ inputs.min_have }}"
+            fi
             for f in $FILES; do [ -f "$f" ] && git add "$f"; done
             git diff --cached --quiet && { echo "Nichts mehr zu tun."; exit 0; }
             git commit -m "$MSG"
