@@ -2,7 +2,7 @@
 """Erzeugt sitemap.xml aus den vorhandenen Seiten (Datum der letzten Aenderung aus Git).
 
 Aufgenommen: Startseite, Rechtliches, Ueber mich, Dekaden-Uebersicht, alle *-music/-Playlist-Seiten und
-die Projektseiten, die schon in der alten Sitemap standen (Snoxi, Kitchen King, Orakel).
+die Projektseiten, die schon in der alten Sitemap standen (Snoxi, Kitchen King).
 Ausgeschlossen: Seiten mit noindex, in robots.txt gesperrte Bereiche (collectview, kitchen-king/admin.html).
 Bei den Playlist-Seiten zaehlt auch die songs.json fuer das Datum.
   python3 tools/build_sitemap.py
@@ -43,8 +43,7 @@ def main():
         if not noindex(f):
             entries.append((f"/{d}/", [f, f"{d}/songs.json"]))
     for page in ("snoxi/index.html", "snoxi/anleitung.html", "snoxi/privacy.html", "snoxi/impressum.html",
-                 "kitchen-king/index.html", "kitchen-king/anleitung.html", "kitchen-king/privacy.html",
-                 "orakel/index.html", "orakel/anleitung.html", "orakel/privacy.html"):
+                 "kitchen-king/index.html", "kitchen-king/anleitung.html", "kitchen-king/privacy.html"):
         if os.path.exists(page) and not noindex(page):
             entries.append(("/" + page.replace("index.html", ""), [page]))
     out = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
