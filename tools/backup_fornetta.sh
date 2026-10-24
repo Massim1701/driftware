@@ -52,4 +52,11 @@ with open(sys.argv[2], 'wb') as out:
 PY
 put "karaoke-queue-klein.json.gz" "$TMP/kq.json.gz"
 
+# Lebenszeichen: Der Waechter (fornetta-waechter) liest daraus, wann das Backup zuletzt vollstaendig lief.
+date -u +%Y-%m-%dT%H:%M:%SZ > "$TMP/heartbeat.txt"
+code=$(curl -sS --retry 3 --retry-delay 5 -o "$TMP/resp" -w '%{http_code}' -X PUT \
+  -H "Authorization: Bearer $FORNETTA_TOKEN" -H 'content-type: text/plain' \
+  --data-binary "@$TMP/heartbeat.txt" "$URL/b/heartbeat.txt")
+if [ "$code" != 201 ]; then echo "FEHLER heartbeat: HTTP $code $(cat "$TMP/resp")" >&2; exit 1; fi
+
 echo "Fertig: $NEU neu gespeichert, $GLEICH unveraendert."
