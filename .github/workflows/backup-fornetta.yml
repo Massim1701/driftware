@@ -1,0 +1,27 @@
+name: Backup Songdaten (fornetta)
+
+# Sichert taeglich die Songdaten in den Cloudflare-Worker fornetta-api (KV, letzte 10 Staende je Datei).
+# Unveraenderte Dateien werden uebersprungen. Von Hand: Actions -> Run workflow.
+# Benoetigt das Secret FORNETTA_BACKUP_TOKEN.
+on:
+  schedule:
+    - cron: '41 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: backup-fornetta
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sichern:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: In fornetta-api sichern
+        env:
+          FORNETTA_TOKEN: ${{ secrets.FORNETTA_BACKUP_TOKEN }}
+        run: bash tools/backup_fornetta.sh
