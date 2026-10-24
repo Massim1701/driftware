@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /kitchen-king/admin.html
 Disallow: /collectview/
 
 Sitemap: https://driftware.online/sitemap.xml
