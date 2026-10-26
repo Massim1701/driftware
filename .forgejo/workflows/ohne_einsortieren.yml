@@ -60,7 +60,7 @@ jobs:
             --cache "$RUNNER_TEMP/ohne-cache.json" --bericht "$RUNNER_TEMP/ohne-bericht.csv"
 
       - name: Bericht und Zwischenstand als Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: ohne-bericht
           path: |

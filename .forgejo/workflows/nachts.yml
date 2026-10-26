@@ -2,7 +2,7 @@ name: Nachtlauf (Daten-Kette)
 
 # Taeglich 03:17 UTC (und manuell startbar). Ersetzt seit 19.10.2026 diese einzeln laufenden Workflows durch EINE Kette, in der immer
 # nur ein Job gleichzeitig in die *-music/songs.json schreibt:
-#   Fehlende Songs -> Christmas (nur Nov-Jan) -> YouTube-Aufrufzahlen -> Billboard -> UK-Charts
+#   Fehlende Songs -> YouTube-Aufrufzahlen -> Billboard -> UK-Charts
 #   -> BPM -> Statistik
 # Jeder Job holt vor dem Start den aktuellen Stand von master und pusht ueber
 # tools/push_retry.sh (behebt den Exit-128-Fehler der alten Inline-Pushes). Faellt
@@ -20,15 +20,19 @@ on:
         options:
           - alle
           - fehlende
-          - christmas
           - aufrufzahlen
           - billboard
           - uk
           - bpm
           - statistik
+      dekade:
+        description: 'Dekade fuer billboard, uk und bpm (auto = automatisch die mit der groessten Luecke)'
+        required: false
+        type: choice
+        default: auto
+        options: [auto, 70er, 80er, 90er, 2000er, 2010er, 2020er]
   schedule:
     - cron: '17 3 * * *'
-
 concurrency:
   group: nachtlauf
   cancel-in-progress: false
@@ -76,61 +80,11 @@ jobs:
           'QUEUE_TIME_BUDGET_SECONDS=$REDO_BUDGET_SECONDS python3 tools/process_missing_queue.py' \
           queue/ '*-music/songs.json'
 
-  christmas:
-    name: Christmas-Playlist erweitern
-    runs-on: ubuntu-latest
-    timeout-minutes: 350
-    needs: fehlende
-    if: ${{ !cancelled() && (inputs.nur == '' || inputs.nur == 'alle' || inputs.nur == 'christmas') }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Saison pruefen (nur Nov-Jan, manuell immer)
-        id: saison
-        run: |
-          m=$(date -u +%-m)
-          if [ "${{ inputs.nur }}" = "christmas" ] || [ "$m" = 11 ] || [ "$m" = 12 ] || [ "$m" = 1 ]; then
-            echo "aktiv=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "aktiv=false" >> "$GITHUB_OUTPUT"
-            echo "Ausserhalb der Saison (Nov-Jan) -- Christmas wird uebersprungen."
-          fi
-
-      - name: Startzeit merken
-        if: steps.saison.outputs.aktiv == 'true'
-        run: echo "JOB_START_TS=$(date +%s)" >> "$GITHUB_ENV"
-
-      - name: Abhaengigkeiten installieren
-        if: steps.saison.outputs.aktiv == 'true'
-        run: |
-          pip install --quiet yt-dlp
-
-      - name: Warteliste verarbeiten
-        if: steps.saison.outputs.aktiv == 'true'
-        env:
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-        run: python3 tools/process_christmas_queue.py
-
-      - name: Committen und pushen
-        if: steps.saison.outputs.aktiv == 'true'
-        env:
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-        run: |
-          tools/push_retry.sh "Christmas-Playlist erweitert" \
-          'CHRISTMAS_TIME_BUDGET_SECONDS=$REDO_BUDGET_SECONDS python3 tools/process_christmas_queue.py' \
-          queue/christmas-erweiterung.json christmas-music/songs.json
-
   aufrufzahlen:
     name: YouTube-Aufrufzahlen aktualisieren
     runs-on: ubuntu-latest
     timeout-minutes: 350
-    needs: christmas
+    needs: fehlende
     if: ${{ !cancelled() && (inputs.nur == '' || inputs.nur == 'alle' || inputs.nur == 'aufrufzahlen') }}
     steps:
       - uses: actions/checkout@v4
@@ -180,7 +134,14 @@ jobs:
 
       - name: Dekade bestimmen
         id: pick
-        run: python3 tools/pick_billboard_decade.py >> "$GITHUB_OUTPUT"
+        env:
+          INPUT_DECADE: ${{ inputs.dekade }}
+        run: |
+          if [ -n "$INPUT_DECADE" ] && [ "$INPUT_DECADE" != "auto" ]; then
+            echo "decade=$INPUT_DECADE" >> "$GITHUB_OUTPUT"
+          else
+            python3 tools/pick_billboard_decade.py >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Billboard-Kandidaten sammeln (Phase A)
         env:
@@ -226,7 +187,14 @@ jobs:
 
       - name: Dekade bestimmen
         id: pick
-        run: python3 tools/pick_uk_chart_decade.py >> "$GITHUB_OUTPUT"
+        env:
+          INPUT_DECADE: ${{ inputs.dekade }}
+        run: |
+          if [ -n "$INPUT_DECADE" ] && [ "$INPUT_DECADE" != "auto" ]; then
+            echo "decade=$INPUT_DECADE" >> "$GITHUB_OUTPUT"
+          else
+            python3 tools/pick_uk_chart_decade.py >> "$GITHUB_OUTPUT"
+          fi
 
       - name: UK-Chart-Kandidaten sammeln (Phase A)
         env:
@@ -268,12 +236,19 @@ jobs:
 
       - name: Abhaengigkeiten installieren
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq libsndfile1
+          sudo apt-get update -qq && sudo apt-get install -y -qq libsndfile1 ffmpeg
           pip install --quiet yt-dlp librosa numpy
 
       - name: Dekade bestimmen
         id: pick
-        run: python3 tools/pick_bpm_decade.py >> "$GITHUB_OUTPUT"
+        env:
+          INPUT_DECADE: ${{ inputs.dekade }}
+        run: |
+          if [ -n "$INPUT_DECADE" ] && [ "$INPUT_DECADE" != "auto" ]; then
+            echo "decade=$INPUT_DECADE" >> "$GITHUB_OUTPUT"
+          else
+            python3 tools/pick_bpm_decade.py >> "$GITHUB_OUTPUT"
+          fi
 
       - name: BPM-Werte ermitteln
         env:
@@ -317,3 +292,37 @@ jobs:
           tools/push_retry.sh "Song-Statistik aktualisiert" \
           'python3 tools/count_songs.py && python3 tools/build_sitemap.py' \
           dekaden/stats.json sitemap.xml
+
+  # Ersatz fuer workflow_run (Forgejo kennt es nicht): am Ende melden wir dem Caretaker,
+  # ob der Lauf geklappt hat. Er schliesst Tickets bzw. startet bei Fehlern neu.
+  meldung:
+    needs: [fehlende, aufrufzahlen, billboard, uk, bpm, statistik]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Caretaker rufen
+        env:
+          TOKEN: ${{ secrets.FORGEJO_TOKEN || github.token }}
+          NUR: ${{ inputs.nur || github.event.inputs.nur }}
+          R_fehlende: ${{ needs.fehlende.result }}
+          R_aufrufzahlen: ${{ needs.aufrufzahlen.result }}
+          R_billboard: ${{ needs.billboard.result }}
+          R_uk: ${{ needs.uk.result }}
+          R_bpm: ${{ needs.bpm.result }}
+          R_statistik: ${{ needs.statistik.result }}
+        run: |
+          RES=success
+          echo "NUR='$NUR' fehlende=$R_fehlende aufrufzahlen=$R_aufrufzahlen billboard=$R_billboard uk=$R_uk bpm=$R_bpm statistik=$R_statistik"
+          # Einzelschritt (nur=...): uebersprungene Jobs melden 'failure', nur den gewaehlten werten
+          if [ -n "$NUR" ] && [ "$NUR" != alle ]; then
+            RESULTS=$(printenv "R_$NUR")
+          else
+            RESULTS="$R_fehlende $R_aufrufzahlen $R_billboard $R_uk $R_bpm $R_statistik"
+          fi
+          for r in $RESULTS; do case "$r" in failure|cancelled) RES=failure;; esac; done
+          API="${GITHUB_API_URL:-http://192.168.0.50:3000/api/v1}"
+          curl -fsS -m 30 -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
+            -d "{\"ref\":\"master\",\"inputs\":{\"workflow\":\"nachts.yml\",\"result\":\"$RES\"}}" \
+            "$API/repos/$GITHUB_REPOSITORY/actions/workflows/caretaker.yml/dispatches" \
+            && echo "Caretaker gerufen: nachts.yml -> $RES" || echo "Caretaker konnte nicht gerufen werden (Rechte?)"

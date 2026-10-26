@@ -1,0 +1,58 @@
+name: Caretaker (Fehler sofort bereinigen)
+
+# Wird von den ueberwachten Workflows am Ende (Job "meldung") und vom Waechter
+# gerufen, mit dem Dateinamen des Workflows (z. B. nachts.yml):
+#  - result=success     -> offenes Waechter-Ticket schliessen
+#  - result=failure     -> Workflow sofort neu starten (max. 3 Fehlschlaege pro 24 h,
+#                          danach Ticket = Mail an den Repo-Besitzer)
+# Die frueheren KI-Reparatur-Schritte (Claude) und der Log-Abruf (gh run view) gibt es
+# hier nicht mehr: Forgejo hat keine Log-Schnittstelle, und ohne API-Key lief das ohnehin nicht.
+# Logik der Entscheidungen: tools/wachter.py
+on:
+  workflow_dispatch:
+    inputs:
+      workflow:
+        description: "Dateiname des betroffenen Workflows (z. B. nachts.yml)"
+        required: true
+      result:
+        description: "success oder failure"
+        required: false
+        default: failure
+
+# Pro Ziel-Workflow eine Gruppe, damit sich gleichzeitige Meldungen nicht verdraengen.
+concurrency:
+  group: caretaker-${{ inputs.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: write
+  issues: write
+
+jobs:
+  caretaker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+      GITHUB_TOKEN: ${{ github.token }}
+      WF: ${{ inputs.workflow }}
+      WACHTER_EXTRA: ${{ vars.WACHTER_EXTRA }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: tools
+          persist-credentials: false
+
+      - name: Erfolg -> offenes Ticket schliessen
+        if: ${{ inputs.result == 'success' }}
+        run: tools/wachter.sh ok "$WF"
+
+      - name: Entscheiden (neu starten oder Ticket)
+        id: decide
+        if: ${{ inputs.result != 'success' }}
+        run: tools/wachter.sh fail "$WF"
+
+      - name: Workflow sofort neu starten
+        if: ${{ steps.decide.outputs.heal == 'true' }}
+        run: tools/wachter.sh restart "$WF"

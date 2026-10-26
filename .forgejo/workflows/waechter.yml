@@ -3,7 +3,7 @@ name: Wächter (Aktualitaet pruefen)
 # Faengt auch stille Ausfaelle ab (Lauf gar nicht gestartet, abgebrochen,
 # Workflow deaktiviert): alle 3 Stunden wird geprueft, ob jeder
 # ueberwachte Workflow in seinem Zeitfenster erfolgreich war. Wenn nicht,
-# startet der Caretaker ihn neu bzw. oeffnet ein Ticket. Logik: tools/wachter.sh
+# startet der Caretaker ihn neu bzw. oeffnet ein Ticket. Logik: tools/wachter.py
 on:
   schedule:
     - cron: '7 */3 * * *'
@@ -21,10 +21,15 @@ permissions:
 jobs:
   waechter:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout: tools
+          persist-credentials: false
 
       - name: Alle ueberwachten Workflows pruefen
         env:
-          GH_TOKEN: ${{ github.token }}
+          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: tools/wachter.sh sweep

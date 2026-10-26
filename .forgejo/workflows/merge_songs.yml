@@ -107,7 +107,7 @@ jobs:
           python3 tools/merge_into_json.py --dekade "${{ inputs.dekade }}" "${TAG_ARGS[@]}" --dry-run --bericht "$RUNNER_TEMP/bericht-${{ inputs.dekade }}er.csv"
 
       - name: Bericht als Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: bericht-${{ inputs.dekade }}er${{ inputs.tag && format('-{0}', inputs.tag) || '' }}
           path: ${{ runner.temp }}/bericht-${{ inputs.dekade }}er.csv
@@ -152,7 +152,7 @@ jobs:
 
       - name: Backup als Artifact
         if: inputs.apply && (inputs.schritt == 'eintragen' || inputs.schritt == 'freigeben')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: backup-${{ inputs.dekade }}er${{ inputs.tag && format('-{0}', inputs.tag) || '' }}
           path: |
@@ -227,14 +227,23 @@ jobs:
       - name: Naechsten Lauf starten
         if: success() && inputs.apply && inputs.schritt == 'anreichern' && inputs.kette
         env:
-          GH_TOKEN: ${{ github.token }}
+          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag }}
         run: |
           echo "nachgeschlagen: ${LOOKED_UP:-?}, offen: ${REST:-?}"
           if [ "${REST:-0}" -gt 0 ] && [ "${LOOKED_UP:-0}" -gt 0 ]; then
-            gh workflow run merge_songs.yml -R "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME" \
-              -f dekade="${{ inputs.dekade }}" -f schritt=anreichern -f apply=true -f kette=true -f tag="$TAG"
+            python3 tools/wachter.py dispatch merge_songs.yml dekade="${{ inputs.dekade }}" schritt=anreichern apply=true kette=true tag="$TAG"
             echo "Naechster Lauf gestartet."
           else
             echo "Kette beendet."
           fi
+
+      # Ersatz fuer workflow_run: am Ende jedes Anreicherungslaufs (auch bei Fehler) die Kette wecken.
+      - name: Kette wecken
+        if: always() && inputs.apply && inputs.schritt == 'anreichern'
+        continue-on-error: true
+        env:
+          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 tools/wachter.py dispatch anreichern-kette.yml
