@@ -233,3 +233,4 @@ html.anim .reveal.in { opacity: 1; transform: none; }
 .shots figure { margin: 0; border-radius: 30px; overflow: hidden; box-shadow: 0 30px 70px rgba(40,40,120,.24), 0 0 0 1px rgba(255,255,255,.6); }
 .shots img { width: 100%; height: auto; }
 @media (max-width: 760px) { .shots-grid { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; } }
+.shots .shot-link { display: block; }
