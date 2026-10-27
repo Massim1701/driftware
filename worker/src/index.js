@@ -6,9 +6,12 @@
      POST /v1/flag         "Passt nicht"-Meldung {key,page,genre,artist,title}
      POST /v1/sync/vote    Karaoke-Zeitkorrektur melden {video,offset,scale}
      GET  /v1/sync?video=  gemeinsamer Wert {median_offset,median_scale,n}
-     POST /v1/queue        fehlenden Song an queue/fehlende-lieder.json im Repo anhaengen {a,t,yt?,vk?,g?,y?}
-     POST /v1/queue/dispatch  Warteliste sofort verarbeiten (startet den GitHub-Workflow), Antwort {dispatched,count}
-     (ersetzen den frueheren Proxy driftware-warteliste-proxy; Secret GITHUB_TOKEN, Variablen GITHUB_REPO/GITHUB_BRANCH)
+     POST /v1/queue        fehlenden Song in den Posteingang (D1) legen {a,t,yt?,vk?,g?,y?}
+     POST /v1/queue/dispatch  "Jetzt einbauen": merkt die Anfrage vor, Antwort {dispatched,count}
+     GET  /v1/queue/inbox  (nur fornetta, Secret INBOX_TOKEN) Posteingang lesen {entries,fetch}
+     POST /v1/queue/inbox/ack  (nur fornetta) uebernommene Eintraege loeschen {upto,clear_fetch?}
+     Der Server fornetta holt den Posteingang regelmaessig ab und schreibt ihn nach queue/fehlende-lieder.json
+     (tools/inbox_import.py). Der Worker spricht nicht mehr mit GitHub.
    Anonym: keine IPs, keine Cookies, keine Nutzer-IDs gespeichert. Eingaben werden hart geprueft. */
 
 const VIDEO_RE = /^[A-Za-z0-9_-]{6,20}$/;
@@ -16,30 +19,22 @@ const LOCAL_RE = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 const MAX_BODY = 4096;
 const YT_RE = /^[A-Za-z0-9_-]{11}$/;
 const VK_RE = /^https:\/\/(www\.)?(vkvideo\.ru|vk\.com)\/\S{1,300}$/i;
-const QUEUE_PATH = 'queue/fehlende-lieder.json';
-const QUEUE_WORKFLOW = 'process-missing-songs.yml';
+const INBOX_MAX = 2000;
 
-async function gh(env, path, init) {
-  const res = await fetch('https://api.github.com/repos/' + env.GITHUB_REPO + path, Object.assign({}, init, {
-    headers: Object.assign({
-      'Authorization': 'Bearer ' + env.GITHUB_TOKEN,
-      'Accept': 'application/vnd.github+json',
-      'User-Agent': 'driftware-api',
-      'X-GitHub-Api-Version': '2022-11-28',
-    }, init && init.headers),
-  }));
-  return res;
-}
-
-const toB64 = text => { const bytes = new TextEncoder().encode(text); let bin = ''; for (const b of bytes) bin += String.fromCharCode(b); return btoa(bin); };
-const fromB64 = b64 => { const bin = atob(b64.replace(/\s/g, '')); return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0))); };
-
-async function readQueue(env) {
-  const res = await gh(env, '/contents/' + QUEUE_PATH + '?ref=' + encodeURIComponent(env.GITHUB_BRANCH));
-  if (!res.ok) throw new Error('read-failed: ' + res.status);
-  const file = await res.json();
-  const list = JSON.parse(fromB64(file.content));
-  return { sha: file.sha, list: Array.isArray(list) ? list : [] };
+/* Zeitkonstanter Vergleich des Bearer-Tokens (fornetta -> Worker) */
+async function authorized(request, env) {
+  if (!env.INBOX_TOKEN) return false;
+  const h = request.headers.get('Authorization') || '';
+  if (!h.startsWith('Bearer ')) return false;
+  const enc = new TextEncoder();
+  const [x, y] = await Promise.all([
+    crypto.subtle.digest('SHA-256', enc.encode(h.slice(7))),
+    crypto.subtle.digest('SHA-256', enc.encode(env.INBOX_TOKEN)),
+  ]);
+  const a = new Uint8Array(x), c = new Uint8Array(y);
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ c[i];
+  return diff === 0;
 }
 
 function corsHeaders(request, env) {
@@ -160,37 +155,36 @@ export default {
         if (typeof b.vk === 'string' && b.vk) { if (!VK_RE.test(b.vk)) return reply({ error: 'invalid' }, 400); entry.vk = b.vk; }
         if (typeof b.g === 'string' && b.g) entry.g = str(b.g, 80);
         if (Number.isInteger(b.y) && b.y >= 1900 && b.y <= 2100) entry.y = b.y;
-        /* SHA-Konflikt (parallele Meldung oder Workflow-Push): neu lesen und erneut versuchen */
-        for (let i = 0; i < 4; i++) {
-          const { sha, list } = await readQueue(env);
-          const key = (e => (e.a + '|' + e.t + '|' + (e.g || '') + '|' + (e.yt || '')).toLowerCase());
-          if (list.some(e => key(e) === key(entry))) return reply({ ok: true, duplicate: true });
-          list.push(entry);
-          const put = await gh(env, '/contents/' + QUEUE_PATH, {
-            method: 'PUT',
-            body: JSON.stringify({ message: 'Warteliste: ' + a + ' - ' + t, content: toB64(JSON.stringify(list, null, 2) + '\n'), sha, branch: env.GITHUB_BRANCH }),
-          });
-          if (put.ok) return reply({ ok: true });
-          if (put.status !== 409 && put.status !== 422) return reply({ error: 'upstream-failed', detail: 'write-failed: ' + put.status }, 502);
-        }
-        return reply({ error: 'conflict' }, 503);
+        const cnt = await env.DB.prepare('SELECT COUNT(*) AS n FROM queue_inbox').first();
+        if (cnt && cnt.n >= INBOX_MAX) return reply({ error: 'full' }, 503);
+        const dedup = (a + '|' + t + '|' + (entry.g || '') + '|' + (entry.yt || '')).toLowerCase();
+        const res = await env.DB.prepare('INSERT OR IGNORE INTO queue_inbox (dedup, entry) VALUES (?1, ?2)').bind(dedup, JSON.stringify(entry)).run();
+        if (res.meta && res.meta.changes === 0) return reply({ ok: true, duplicate: true });
+        return reply({ ok: true });
       }
 
       if (path === '/v1/queue/dispatch' && request.method === 'POST') {
         if (await limited(env, request)) return reply({ error: 'rate' }, 429);
-        const { list } = await readQueue(env);
-        if (!list.length) return reply({ dispatched: false, count: 0 });
-        /* laeuft der Job schon, nicht noch einen starten (Schutz gegen Dauerklicken) */
-        const runs = await gh(env, '/actions/workflows/' + QUEUE_WORKFLOW + '/runs?per_page=5');
-        if (runs.ok) {
-          const data = await runs.json();
-          if ((data.workflow_runs || []).some(r => r.status === 'queued' || r.status === 'in_progress')) {
-            return reply({ dispatched: true, running: true, count: list.length });
-          }
-        }
-        const res = await gh(env, '/actions/workflows/' + QUEUE_WORKFLOW + '/dispatches', { method: 'POST', body: JSON.stringify({ ref: env.GITHUB_BRANCH }) });
-        if (!res.ok) return reply({ error: 'upstream-failed', detail: 'dispatch-failed: ' + res.status }, 502);
-        return reply({ dispatched: true, count: list.length });
+        const cnt = await env.DB.prepare('SELECT COUNT(*) AS n FROM queue_inbox').first();
+        await env.DB.prepare("INSERT OR REPLACE INTO queue_flags (name, value) VALUES ('fetch_requested', datetime('now'))").run();
+        return reply({ dispatched: true, count: cnt ? cnt.n : 0 });
+      }
+
+      if (path === '/v1/queue/inbox' && request.method === 'GET') {
+        if (!(await authorized(request, env))) return reply({ error: 'unauthorized' }, 401);
+        const { results } = await env.DB.prepare('SELECT id, entry FROM queue_inbox ORDER BY id LIMIT 500').all();
+        const flag = await env.DB.prepare("SELECT value FROM queue_flags WHERE name = 'fetch_requested'").first();
+        const entries = results.map(r => Object.assign({ id: r.id }, JSON.parse(r.entry)));
+        return reply({ entries, fetch: !!flag });
+      }
+
+      if (path === '/v1/queue/inbox/ack' && request.method === 'POST') {
+        if (!(await authorized(request, env))) return reply({ error: 'unauthorized' }, 401);
+        const b = await readJson(request);
+        if (!b || !Number.isInteger(b.upto) || b.upto < 0) return reply({ error: 'invalid' }, 400);
+        const del = await env.DB.prepare('DELETE FROM queue_inbox WHERE id <= ?1').bind(b.upto).run();
+        if (b.clear_fetch === true) await env.DB.prepare("DELETE FROM queue_flags WHERE name = 'fetch_requested'").run();
+        return reply({ ok: true, deleted: del.meta ? del.meta.changes : 0 });
       }
 
       return reply({ error: 'not found' }, 404);

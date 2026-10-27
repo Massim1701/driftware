@@ -662,8 +662,7 @@
     var queueLabelEl = document.getElementById('queue-label');
     var queueN = 0;
     function loadQueueCount() {
-      var raw = 'https://raw.githubusercontent.com/Massim1701/driftware/master/queue/fehlende-lieder.json?t=' + Date.now();
-      fetch(raw).catch(function () { return fetch('/queue/fehlende-lieder.json?t=' + Date.now()); })
+      fetch('/queue/fehlende-lieder.json?t=' + Date.now(), { cache: 'no-store' })
         .then(function (r) { return r.json(); })
         .then(function (list) {
           var n = Array.isArray(list) ? list.length : 0;
@@ -742,7 +741,9 @@
         .then(function (res) {
           if (!res.ok) throw new Error('failed');
           if (res.data.dispatched) {
-            fetchStatus.textContent = 'Gestartet ✓ — ' + res.data.count + ' Song' + (res.data.count === 1 ? '' : 's') + ' werden eingebaut.';
+            fetchStatus.textContent = res.data.count
+              ? 'Gestartet ✓ — ' + res.data.count + ' Song' + (res.data.count === 1 ? '' : 's') + ' werden eingebaut.'
+              : 'Gestartet ✓ — die Warteliste wird verarbeitet.';
           } else {
             fetchStatus.textContent = 'Warteliste ist leer — nichts zu tun.';
           }

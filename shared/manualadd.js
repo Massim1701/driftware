@@ -55,7 +55,7 @@
   /* ---- Postausgang + Online-Warteliste ---- */
   var OUTBOX_KEY = 'driftware-outbox-v1';
   var QUEUE_PROXY_URL = 'https://driftware-api.driftware-api.workers.dev/v1/queue';
-  var QUEUE_RAW_URL = 'https://raw.githubusercontent.com/Massim1701/driftware/master/queue/fehlende-lieder.json';
+  var QUEUE_RAW_URL = '/queue/fehlende-lieder.json';
   var queueList = [];
   var queueLoaded = false;
   var sending = false;

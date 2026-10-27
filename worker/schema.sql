@@ -26,3 +26,15 @@ CREATE TABLE IF NOT EXISTS lyrics_sync_votes (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS lyrics_sync_votes_video_idx ON lyrics_sync_votes (video_id, id DESC);
+
+-- Posteingang der Warteliste: der Worker legt Meldungen hier ab, fornetta holt sie ab (tools/inbox_import.py)
+CREATE TABLE IF NOT EXISTS queue_inbox (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  dedup TEXT NOT NULL UNIQUE,
+  entry TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS queue_flags (
+  name TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
