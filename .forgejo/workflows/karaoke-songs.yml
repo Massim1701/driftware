@@ -14,7 +14,7 @@ name: Karaoke-Songs nachziehen
 # Bei einer YouTube-Sperre (viele Fehler in Folge) bricht der Lauf von selbst ab.
 on:
   schedule:
-    - cron: '23 7,19 * * *'
+    - cron: '23 19 * * *'
   workflow_dispatch:
     inputs:
       limit:

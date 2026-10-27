@@ -39,7 +39,6 @@ ESKALATION_H = 60    # so lange ohne Erfolg -> trotzdem Ticket
 # Datei -> (Anzeigename = Ticket-Titel, maximales Alter des letzten Erfolgs in Stunden)
 WATCHED = {
     "nachts.yml": ("Nachtlauf (Daten-Kette)", 36),
-    "update-stats.yml": ("Song-Statistik aktualisieren", 36),
     "check-dead-videos.yml": ("Tote Videos pruefen", 36),
     "karaoke-songs.yml": ("Karaoke-Songs nachziehen", 30),
 }

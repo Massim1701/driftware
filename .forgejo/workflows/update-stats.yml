@@ -1,13 +1,11 @@
 name: Song-Statistik aktualisieren
 
 # Zaehlt alle Songs (tools/count_songs.py) und schreibt dekaden/stats.json,
-# die auf /dekaden/ als Song-Zahl angezeigt wird. Laeuft taeglich (faengt auch
-# Commits der anderen Workflows ab, die per GITHUB_TOKEN keinen Push-Trigger
-# ausloesen), nach jedem Push, der songs.json aendert, und manuell.
+# die auf /dekaden/ als Song-Zahl angezeigt wird. Den taeglichen Lauf macht der
+# Nachtlauf (nachts.yml, Schritt 'statistik'); hier nur noch nach einem Push, der
+# songs.json aendert, und manuell.
 
 on:
-  schedule:
-    - cron: '30 4 * * *'
   push:
     branches: [master]
     paths:
