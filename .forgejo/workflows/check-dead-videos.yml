@@ -28,7 +28,7 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
 
@@ -68,6 +68,28 @@ jobs:
             git rebase --autostash origin/master || { git rebase --abort || true; git reset --hard origin/master; exit 1; }
           done
           exit 1
+
+      - name: Tote Videos ersetzen (neue Suche, geprueft)
+        # eigener, begrenzter Schritt: darf die Tageskette nie aufhalten oder scheitern lassen
+        continue-on-error: true
+        timeout-minutes: 25
+        env:
+          ERSATZ_TIME_BUDGET_SECONDS: '1200'
+        run: |
+          pip install --quiet yt-dlp
+          python3 tools/ersetze_tote_videos.py
+          bash tools/push_retry.sh "Tote Videos ersetzt" \
+            "ERSATZ_TIME_BUDGET_SECONDS=\$REDO_BUDGET_SECONDS python3 tools/ersetze_tote_videos.py" \
+            queue/dead-videos-ersatz.json \
+            70er-music/songs.json 80er-music/songs.json 90er-music/songs.json \
+            2000er-music/songs.json 2010er-music/songs.json 2020er-music/songs.json \
+            afterwork-music/songs.json chillhouse-music/songs.json christmas-music/songs.json \
+            cozy-music/songs.json dinnerparty-music/songs.json focuswork-music/songs.json \
+            gaming-music/songs.json grill-music/songs.json haushalt-music/songs.json \
+            karaoke-music/songs.json latenight-music/songs.json metal-music/songs.json \
+            morning-music/songs.json nostalgie-music/songs.json partyhits-music/songs.json \
+            roadtrip-music/songs.json romantic-music/songs.json summer-music/songs.json \
+            workout-music/songs.json yoga-music/songs.json
 
   # Ersatz fuer workflow_run (Forgejo kennt es nicht): am Ende melden wir dem Caretaker,
   # ob der Lauf geklappt hat. Er schliesst Tickets bzw. startet bei Fehlern neu.

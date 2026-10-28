@@ -1,0 +1,57 @@
+name: Tote Videos ersetzen
+
+# Sucht fuer tote/nicht einbettbare Videos (queue/dead-videos.json) ein neues, geprueftes Video
+# und tauscht es in den Katalogen aus (tools/ersetze_tote_videos.py). Interpret und Titel muessen
+# zum Video passen; findet sich nichts, bleibt der Eintrag unveraendert (nie loeschen).
+# Startet von selbst, wenn das Skript geaendert wird, und manuell. Taeglich laeuft derselbe Schritt
+# im Anschluss an die Video-Pruefung (check-dead-videos.yml). Wiederaufnehmbar.
+on:
+  push:
+    branches: [master]
+    paths:
+      - tools/ersetze_tote_videos.py
+  workflow_dispatch: {}
+
+concurrency:
+  group: tote-videos-ersetzen
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  ersetzen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Abhaengigkeiten installieren
+        run: pip install --quiet yt-dlp
+
+      - name: Neue Videos suchen und tauschen
+        env:
+          ERSATZ_TIME_BUDGET_SECONDS: '4800'
+        run: python3 tools/ersetze_tote_videos.py
+
+      - name: Committen und pushen
+        if: always()
+        run: |
+          bash tools/push_retry.sh "Tote Videos ersetzt" \
+            "ERSATZ_TIME_BUDGET_SECONDS=\$REDO_BUDGET_SECONDS python3 tools/ersetze_tote_videos.py" \
+            queue/dead-videos-ersatz.json \
+            70er-music/songs.json 80er-music/songs.json 90er-music/songs.json \
+            2000er-music/songs.json 2010er-music/songs.json 2020er-music/songs.json \
+            afterwork-music/songs.json chillhouse-music/songs.json christmas-music/songs.json \
+            cozy-music/songs.json dinnerparty-music/songs.json focuswork-music/songs.json \
+            gaming-music/songs.json grill-music/songs.json haushalt-music/songs.json \
+            karaoke-music/songs.json latenight-music/songs.json metal-music/songs.json \
+            morning-music/songs.json nostalgie-music/songs.json partyhits-music/songs.json \
+            roadtrip-music/songs.json romantic-music/songs.json summer-music/songs.json \
+            workout-music/songs.json yoga-music/songs.json
