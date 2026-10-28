@@ -1,0 +1,72 @@
+name: Radio-Liste sammeln
+
+# Sammelt, welcher Interpret/Titel auf den 80s80s-Kanaelen laeuft (nur Text, tools/radio_sammler.py) und legt die
+# Liste als Datei titel.jsonl in einen GitHub-Release. fornetta holt sie dort ab und macht den Rest
+# (Abgleich mit dem Katalog, Warteliste, Discogs, YouTube-Link, Einsortieren).
+# Dieser Workflow schreibt NICHTS ins Repo (Forgejo spiegelt nach GitHub und wuerde es ueberschreiben).
+# Der Release braucht einen Tag, den es auch in Forgejo gibt, sonst loescht die Spiegelung ihn:
+# radio-liste (live) und radio-liste-test (Test) wurden dort angelegt.
+#
+# TEST: manuell starten (Actions -> Radio-Liste sammeln -> Run workflow), Standard 10 Minuten, Tag radio-liste-test.
+# LIVE: die schedule-Zeilen unten einschalten. Vier Laeufe pro Tag zu je knapp 6 Stunden schliessen sich nahtlos an
+# (concurrency: der naechste wartet auf den laufenden).
+on:
+  workflow_dispatch:
+    inputs:
+      minuten:
+        description: 'Wie lange sammeln (Minuten, hoechstens 345)'
+        required: false
+        default: '10'
+      tag:
+        description: 'Release-Tag fuer die Liste (radio-liste-test zum Testen, radio-liste live)'
+        required: false
+        default: 'radio-liste-test'
+  # schedule:
+  #   - cron: '5 */6 * * *'   # LIVE: einschalten, dann Standard 345 Minuten und Tag radio-liste
+
+concurrency:
+  group: radio-liste
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sammeln:
+    if: github.repository == 'Massim1701/driftware'
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ inputs.tag || 'radio-liste' }}
+      MINUTEN: ${{ inputs.minuten || '345' }}
+    steps:
+      - name: Nur das Sammel-Skript holen
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: tools/radio_sammler.py
+          sparse-checkout-cone-mode: false
+          fetch-depth: 1
+
+      - name: Release anlegen und bisherige Liste laden
+        run: |
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --verify-tag --prerelease \
+              --title "Radio-Liste (${TAG})" \
+              --notes "Mitgeschriebene Interpreten und Titel der 80s80s-Kanaele (titel.jsonl). Wird automatisch aktualisiert."
+          fi
+          gh release download "$TAG" --pattern titel.jsonl --dir . --clobber || true
+          touch titel.jsonl
+          echo "Bisher: $(wc -l < titel.jsonl) Zeilen"
+
+      - name: Sammeln (in Abschnitten von 20 Minuten, nach jedem Abschnitt hochladen)
+        run: |
+          END=$(( $(date +%s) + MINUTEN * 60 ))
+          while true; do
+            REST=$(( (END - $(date +%s)) / 60 ))
+            [ "$REST" -lt 1 ] && break
+            STEP=$(( REST < 20 ? REST : 20 ))
+            python3 tools/radio_sammler.py titel.jsonl --minuten "$STEP"
+            gh release upload "$TAG" titel.jsonl --clobber
+            echo "hochgeladen: $(wc -l < titel.jsonl) Zeilen"
+          done
