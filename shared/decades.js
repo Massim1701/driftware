@@ -961,6 +961,47 @@ function buildMixSongsFrom(dataObj) {
 
 function normalizeText(s) { return (s || '').toString().toLowerCase(); }
 
+/* Schluessel fuer "dasselbe Lied": Interpret (ohne feat./Discogs-Zusaetze) + Titel ohne Klammern und
+   ohne Zusatz nach " - " (Remastered, Live ...). Ohne verwertbaren Schluessel bleibt das Lied einzeln. */
+function versionKey(s) {
+  var clean = function (x) { return x.replace(/[^\p{L}\p{N}]+/gu, ''); };
+  var t = clean(normalizeText(s.t).replace(/\s*[\(\[][^\)\]]*[\)\]]/g, '').replace(/\s+-\s+.*$/, ''));
+  var a = clean(normalizeText(s.a).replace(/\(\d+\)/g, '').replace(/\*/g, '').split(/\s+(?:feat\.?|ft\.?|featuring|with|&|x|vs\.?)\s+|,/)[0]);
+  return (a && t) ? a + '|' + t : songId(s);
+}
+
+/* Fasst Versionen desselben Liedes (anderes Video/andere Schreibweise) zu einem Eintrag zusammen.
+   Der Eintrag mit Video und den meisten Aufrufen bleibt sichtbar und bekommt _versions (die
+   uebrigen). expanded[key] = true klappt die Gruppe auf: die Versionen folgen dann direkt danach. */
+function groupVersions(list, expanded) {
+  var groups = {}, order = [];
+  list.forEach(function (s) {
+    delete s._versions; delete s._versionOf; delete s._versionKey;
+    var k = versionKey(s);
+    if (!groups[k]) { groups[k] = []; order.push(k); }
+    groups[k].push(s);
+  });
+  var out = [];
+  order.forEach(function (k) {
+    var g = groups[k];
+    if (g.length === 1) { out.push(g[0]); return; }
+    var best = g.slice().sort(function (x, y) {
+      var variant = function (z) { return /remix|\bmix\b|\blive\b|version|\bedit\b|remaster|instrumental|karaoke|dub\b/i.test(z.t) ? 1 : 0; };
+      return (y.yt ? 1 : 0) - (x.yt ? 1 : 0) || variant(x) - variant(y) || (y.vc || 0) - (x.vc || 0) || (y.hv || 0) - (x.hv || 0);
+    })[0];
+    var rest = g.filter(function (s) { return s !== best; });
+    best._versionKey = k;
+    if (expanded[k]) {
+      out.push(best);
+      rest.forEach(function (s) { s._versionOf = k; out.push(s); });
+    } else {
+      best._versions = rest;
+      out.push(best);
+    }
+  });
+  return out;
+}
+
 function flattenSongs(dataObj) {
   var out = [];
   Object.keys(dataObj || {}).forEach(function (k) { (dataObj[k] || []).forEach(function (s) { out.push(s); }); });
@@ -3880,7 +3921,28 @@ function renderSongGrid(container, songs) {
     artist.textContent = song.a;
     text.appendChild(artist);
 
+    var otherGenres = (typeof window.ccOtherGenres === 'function') ? window.ccOtherGenres(song) : [];
+    if (otherGenres.length) {
+      var genreLine = document.createElement('span');
+      genreLine.className = 'song-tile-genres';
+      genreLine.appendChild(document.createTextNode('auch in: '));
+      otherGenres.slice(0, 3).forEach(function (o, i) {
+        if (i) genreLine.appendChild(document.createTextNode(', '));
+        var link = document.createElement('span');
+        link.className = 'song-tile-genre-link';
+        link.setAttribute('role', 'button');
+        link.setAttribute('tabindex', '0');
+        link.textContent = o.label;
+        function jump(e) { e.stopPropagation(); e.preventDefault(); window.ccJumpGenre(o.key); }
+        link.addEventListener('click', jump);
+        link.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') jump(e); });
+        genreLine.appendChild(link);
+      });
+      text.appendChild(genreLine);
+    }
+
     tile.appendChild(text);
+    if (window.ccVersionsOn && song._versionOf) tile.classList.add('song-tile-version');
 
     /* Nur bei dekadenuebergreifenden Suchergebnissen gesetzt (song._decade) —
        zeigt, aus welcher Dekade der Treffer stammt. */
@@ -3889,6 +3951,20 @@ function renderSongGrid(container, songs) {
       decadeBadge.className = 'song-tile-decade';
       decadeBadge.textContent = song._decade;
       tile.appendChild(decadeBadge);
+    }
+
+    if (window.ccVersionsOn && song._versions && song._versions.length) {
+      var nv = song._versions.length;
+      var versionBadge = document.createElement('span');
+      versionBadge.className = 'song-tile-versions';
+      versionBadge.textContent = '+' + nv + (nv === 1 ? ' Version' : ' Versionen');
+      versionBadge.title = 'Weitere Versionen dieses Liedes anzeigen';
+      versionBadge.setAttribute('role', 'button');
+      versionBadge.setAttribute('tabindex', '0');
+      var expand = function (e) { e.stopPropagation(); e.preventDefault(); window.ccExpandVersions(song._versionKey); };
+      versionBadge.addEventListener('click', expand);
+      versionBadge.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') expand(e); });
+      tile.appendChild(versionBadge);
     }
 
     var icons = document.createElement('span');
@@ -4254,6 +4330,12 @@ function renderPlaylistGenerator(mountRoot, config) {
   var allSongsFlat = null;
   var searchDebounceHandle = null;
   var searchToken = 0;
+  var expandedVersions = {};   /* aufgeklappte Versionsgruppen der Suche */
+  var lastSearchRaw = [];
+  var lastSearchQuery = '';
+  var genreLabels = {};
+  (config.themes || []).forEach(function (t) { genreLabels[t.key] = t.label; });
+  var genresBySong = null;     /* Video-ID (sonst Song-ID) -> Genres, in denen das Lied steht */
   var ownDecadeKey = config.csvPrefix || null;
   var ownDecadeLabel = (DECADE_REGISTRY.filter(function (d) { return d.key === ownDecadeKey; })[0] || {}).label || 'dieser Dekade';
   var neighborDecades = neighborDecadesOf(ownDecadeKey);
@@ -4411,6 +4493,29 @@ function renderPlaylistGenerator(mountRoot, config) {
     return lines.join('\n');
   }
 
+  function genreIndex() {
+    if (genresBySong) return genresBySong;
+    genresBySong = {};
+    Object.keys(data || {}).forEach(function (k) {
+      if (!genreLabels[k] || k === 'Karaoke' || k === 'TextLaeuftMit' || k === 'Ohne') return;
+      (data[k] || []).forEach(function (s) {
+        var id = s.yt || songId(s);
+        (genresBySong[id] = genresBySong[id] || []).push(k);
+      });
+    });
+    return genresBySong;
+  }
+  /* Kachel-Haken: in einer Genre-Ansicht zeigt ein Lied, in welchen weiteren Genres es steht ("auch in: ...") */
+  window.ccOtherGenres = function (song) {
+    if (favMode || !data || !currentTheme || !genreLabels[currentTheme]) return [];
+    if (currentTheme === 'Karaoke' || currentTheme === 'TextLaeuftMit') return [];
+    if (song._decade && song._decade !== ownDecadeKey) return [];
+    var list = genreIndex()[song.yt || songId(song)] || [];
+    return list.filter(function (k) { return k !== currentTheme; }).map(function (k) { return { key: k, label: genreLabels[k] }; });
+  };
+  window.ccJumpGenre = function (key) { selectTheme(key); };
+  window.ccExpandVersions = function (key) { expandedVersions[key] = true; showSearchResults(); };
+
   function loadData() {
     if (data) return Promise.resolve(data);
     return fetch(config.dataUrl)
@@ -4426,6 +4531,7 @@ function renderPlaylistGenerator(mountRoot, config) {
     if (b) b.classList.toggle('active', favMode);
   }
   function refresh() {
+    window.ccVersionsOn = false;
     updateFavBtn();
     if (favMode) {
       var fl = favList().sort(function (a, b) { return (b.favAt || 0) - (a.favAt || 0); });
@@ -4521,8 +4627,9 @@ function renderPlaylistGenerator(mountRoot, config) {
       return searchAllDecades(query, ownDecadeKey).then(function (otherResults) {
         if (myToken !== searchToken) return;
         var combined = ownResults.concat(otherResults);
-        renderSongGrid(gridEl, combined);
-        countEl.textContent = combined.length + (combined.length === 1 ? ' Treffer für „' : ' Treffer für „') + query + '“';
+        lastSearchRaw = combined;
+        lastSearchQuery = query;
+        showSearchResults();
 
         if (!combined.length) {
           hintEl.innerHTML = 'Keine Treffer in irgendeiner Dekade.';
@@ -4546,7 +4653,22 @@ function renderPlaylistGenerator(mountRoot, config) {
     });
   }
 
+  /* Suchtreffer anzeigen: Versionen desselben Liedes eingeklappt, mit Zaehler "+N Versionen" */
+  function showSearchResults() {
+    var gridEl = document.getElementById('gen-grid');
+    var countEl = document.getElementById('gen-count');
+    var shown = groupVersions(lastSearchRaw, expandedVersions);
+    var folded = 0;
+    shown.forEach(function (s) { if (s._versions) folded += s._versions.length; });
+    window.ccVersionsOn = true;
+    renderSongGrid(gridEl, shown);
+    var n = shown.filter(function (s) { return !s._versionOf; }).length;
+    countEl.textContent = n + ' Treffer für „' + lastSearchQuery + '“' +
+      (folded ? ' · ' + folded + (folded === 1 ? ' weitere Version' : ' weitere Versionen') + ' zusammengefasst' : '');
+  }
+
   function showEmptyState() {
+    window.ccVersionsOn = false;
     document.getElementById('gen-count').textContent = '';
     document.getElementById('gen-actions').classList.remove('visible');
     document.getElementById('gen-grid').innerHTML =

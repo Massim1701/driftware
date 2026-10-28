@@ -646,6 +646,23 @@ main.legal-main p, main.legal-main ul { color: #e4dff0; }
 .song-tile .song-tile-year { font-weight: 700; font-style: italic; color: var(--muted); }
 .song-tile .song-tile-artist { font-size: 11px; color: var(--muted); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+.song-tile .song-tile-genres { font-size: 10px; color: var(--muted); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.song-tile-genre-link { color: var(--accent2, var(--accent)); cursor: pointer; }
+.song-tile-genre-link:hover, .song-tile-genre-link:focus-visible { text-decoration: underline; }
+.song-tile-versions {
+  flex-shrink: 0;
+  background: rgba(124,92,255,0.2);
+  color: var(--text);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 2px 7px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+.song-tile-versions:hover, .song-tile-versions:focus-visible { background: rgba(124,92,255,0.4); }
+.song-tile.song-tile-version { margin-left: 18px; opacity: 0.92; }
+
 .song-tile-decade {
   flex-shrink: 0;
   background: rgba(255,255,255,0.08);
