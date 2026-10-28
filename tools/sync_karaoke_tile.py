@@ -67,6 +67,17 @@ def karaoke_kopie(s, v):
     return n
 
 
+def ohne_doppeltes_video(lst):
+    """Behaelt je Video-ID nur den ersten Eintrag (Liste ist schon nach Beliebtheit sortiert)."""
+    gesehen, aus = set(), []
+    for s in lst:
+        if s.get("yt") and s["yt"] in gesehen:
+            continue
+        gesehen.add(s.get("yt"))
+        aus.append(s)
+    return aus
+
+
 def main():
     videos = json.load(open(os.path.join(ROOT, "karaoke", "videos.json"), encoding="utf-8"))
     ausschluss = set(json.load(open(os.path.join(ROOT, "karaoke", "ausschluss.json"), encoding="utf-8")).get("songs", []))
@@ -98,6 +109,7 @@ def main():
                 if key not in best or score(s) > score(best[key][0]):
                     best[key] = (s, v)
         kar = sorted((karaoke_kopie(s, v) for s, v in best.values()), key=lambda s: -(s.get("vc") or 0))
+        kar = ohne_doppeltes_video(kar)  # verschiedene Schreibweisen koennen dasselbe Video haben
         j["Karaoke"] = kar
         save(path, raw, j)
         for s in kar:
@@ -114,10 +126,12 @@ def main():
             if ks:
                 s["yt"], s["kar"], s["kd"] = ks["yt"], 1, ks["kd"]
                 upd += 1
-    neu = {"TextLaeuftMit": sorted((dict(s) for s in alle.values()), key=lambda s: -(s.get("vc") or 0))}
+    bestand = {k: ohne_doppeltes_video(v) for k, v in bestand.items()}  # Umstellung kann zwei Songs auf ein Video legen
+    text_laeuft_mit = ohne_doppeltes_video(sorted((dict(s) for s in alle.values()), key=lambda s: -(s.get("vc") or 0)))
+    neu = {"TextLaeuftMit": text_laeuft_mit}
     neu.update(bestand)
     save(path, raw, neu)
-    print(f"karaoke-music: TextLaeuftMit {len(alle)} Songs, {upd} Bestandssongs auf Studiofassung umgestellt")
+    print(f"karaoke-music: TextLaeuftMit {len(text_laeuft_mit)} Songs, {upd} Bestandssongs auf Studiofassung umgestellt")
 
 
 if __name__ == "__main__":
