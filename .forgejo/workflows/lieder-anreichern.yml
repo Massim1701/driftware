@@ -1,0 +1,51 @@
+name: Lieder per Discogs anreichern
+
+# Ergaenzt Genre, Stil, Land, Label, Discogs-Link und Sammlerzahl bei Liedern, die nur
+# Interpret/Titel/Jahr haben (tools/anreichern_lieder.py). Welche Lieder: queue/anreichern-lieder.json
+# (YouTube-IDs). Startet von selbst, wenn diese Liste geaendert wird, und manuell.
+# Wiederaufnehmbar: ein erneuter Start macht dort weiter, wo der letzte Lauf aufgehoert hat.
+on:
+  push:
+    branches: [master]
+    paths:
+      - queue/anreichern-lieder.json
+  workflow_dispatch: {}
+
+concurrency:
+  group: lieder-anreichern
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  anreichern:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Startzeit merken
+        run: echo "JOB_START_TS=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Bei Discogs nachschlagen
+        env:
+          DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
+          ANREICHERN_TIME_BUDGET_SECONDS: '4200'
+        run: python3 tools/anreichern_lieder.py
+
+      - name: Committen und pushen
+        if: always()
+        run: |
+          bash tools/push_retry.sh "Lieder per Discogs angereichert" \
+            "ANREICHERN_TIME_BUDGET_SECONDS=\$REDO_BUDGET_SECONDS python3 tools/anreichern_lieder.py" \
+            queue/anreichern-lieder-fortschritt.json \
+            70er-music/songs.json 80er-music/songs.json 90er-music/songs.json \
+            2000er-music/songs.json 2010er-music/songs.json 2020er-music/songs.json \
+            chillhouse-music/songs.json karaoke-music/songs.json partyhits-music/songs.json
