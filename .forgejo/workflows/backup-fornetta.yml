@@ -1,12 +1,16 @@
 name: Backup Songdaten (fornetta)
 
-# Sichert taeglich die Songdaten in den Cloudflare-Worker fornetta-api (KV, letzte 10 Staende je Datei).
+# Vierter Schritt der Tageskette (zeitplanlos; danach laeuft der Waechter). Sichert taeglich die Songdaten in den Cloudflare-Worker fornetta-api (KV, letzte 10 Staende je Datei).
 # Unveraenderte Dateien werden uebersprungen. Von Hand: Actions -> Run workflow.
 # Benoetigt das Secret FORNETTA_BACKUP_TOKEN.
 on:
-  schedule:
-    - cron: '41 3 * * *'
   workflow_dispatch:
+    inputs:
+      kette:
+        description: 'Von der Tageskette gesetzt: danach den naechsten Schritt starten (von Hand leer lassen)'
+        required: false
+        type: string
+        default: ''
 
 concurrency:
   group: backup-fornetta
@@ -25,3 +29,20 @@ jobs:
         env:
           FORNETTA_TOKEN: ${{ secrets.FORNETTA_BACKUP_TOKEN }}
         run: bash tools/backup_fornetta.sh
+
+  weiter:
+    needs: [sichern]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Tageskette - naechster Schritt (waechter.yml)
+        if: ${{ always() && (github.event_name == 'schedule' || inputs.kette == 'true') }}
+        env:
+          TOKEN: ${{ secrets.FORGEJO_TOKEN || github.token }}
+        run: |
+          API="${GITHUB_API_URL:-http://192.168.0.50:3000/api/v1}"
+          curl -fsS -m 30 -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
+            -d "{\"ref\":\"master\"}" \
+            "$API/repos/$GITHUB_REPOSITORY/actions/workflows/waechter.yml/dispatches" \
+            && echo "Tageskette: waechter.yml gestartet" || { echo "::error::Tageskette: waechter.yml konnte nicht gestartet werden"; exit 1; }

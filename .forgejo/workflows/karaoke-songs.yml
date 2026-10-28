@@ -9,14 +9,17 @@ name: Karaoke-Songs nachziehen
 # Die Kachel (Kategorie "Karaoke" in den Dekaden, "TextLaeuftMit" bei der Stimmung Karaoke)
 # wird daraus deterministisch neu gebaut und mit committet.
 #
-# Zeitplan: 2 Laeufe am Tag a hoechstens 5 h (07:23 und 19:23 UTC), ausserhalb 03:00-06:30 UTC,
-# wo die anderen yt-dlp-Workflows laufen. Ist alles erledigt, endet ein Lauf nach Sekunden.
+# Zeitplan: kein eigener -- dritter Schritt der Tageskette (check-dead-videos -> nachts -> karaoke-songs
+# -> backup-fornetta), hoechstens 5 h. Ist alles erledigt, endet ein Lauf nach Sekunden.
 # Bei einer YouTube-Sperre (viele Fehler in Folge) bricht der Lauf von selbst ab.
 on:
-  schedule:
-    - cron: '23 19 * * *'
   workflow_dispatch:
     inputs:
+      kette:
+        description: 'Von der Tageskette gesetzt: danach backup-fornetta starten (von Hand leer lassen)'
+        required: false
+        type: string
+        default: ''
       limit:
         description: 'Optional: hoechstens so viele Songs (zum Testen), leer = bis Zeitbudget'
         required: false
@@ -125,3 +128,14 @@ jobs:
             -d "{\"ref\":\"master\",\"inputs\":{\"workflow\":\"karaoke-songs.yml\",\"result\":\"$RES\"}}" \
             "$API/repos/$GITHUB_REPOSITORY/actions/workflows/caretaker.yml/dispatches" \
             && echo "Caretaker gerufen: karaoke-songs.yml -> $RES" || echo "Caretaker konnte nicht gerufen werden (Rechte?)"
+
+      - name: Tageskette - naechster Schritt (backup-fornetta.yml)
+        if: ${{ always() && (github.event_name == 'schedule' || inputs.kette == 'true') }}
+        env:
+          TOKEN: ${{ secrets.FORGEJO_TOKEN || github.token }}
+        run: |
+          API="${GITHUB_API_URL:-http://192.168.0.50:3000/api/v1}"
+          curl -fsS -m 30 -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
+            -d "{\"ref\":\"master\",\"inputs\":{\"kette\":\"true\"}}" \
+            "$API/repos/$GITHUB_REPOSITORY/actions/workflows/backup-fornetta.yml/dispatches" \
+            && echo "Tageskette: backup-fornetta.yml gestartet" || { echo "::error::Tageskette: backup-fornetta.yml konnte nicht gestartet werden"; exit 1; }

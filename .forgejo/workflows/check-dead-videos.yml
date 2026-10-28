@@ -3,12 +3,20 @@ name: Tote Videos pruefen
 # Prueft taeglich einen Teil der YouTube-IDs (tools/check_dead_videos.py, oEmbed)
 # und schreibt die toten/nicht einbettbaren IDs nach queue/dead-videos.json.
 # Es wird NICHTS automatisch entfernt -- die Liste dient der gezielten Neu-Suche.
+# ERSTER SCHRITT DER TAGESKETTE (einziger Zeitplan): check-dead-videos -> nachts -> karaoke-songs
+# -> backup-fornetta -> waechter. Jeder Schritt startet am Ende den naechsten (Runner schafft nur einen Job).
 # Der Pruefstand liegt im Actions-Cache (nicht im Repo), damit das Repo nicht waechst.
 
 on:
   schedule:
     - cron: '15 3 * * *'
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      kette:
+        description: 'Von der Tageskette gesetzt: danach den naechsten Schritt starten (von Hand leer lassen)'
+        required: false
+        type: string
+        default: ''
 
 concurrency:
   group: check-dead-videos
@@ -81,3 +89,14 @@ jobs:
             -d "{\"ref\":\"master\",\"inputs\":{\"workflow\":\"check-dead-videos.yml\",\"result\":\"$RES\"}}" \
             "$API/repos/$GITHUB_REPOSITORY/actions/workflows/caretaker.yml/dispatches" \
             && echo "Caretaker gerufen: check-dead-videos.yml -> $RES" || echo "Caretaker konnte nicht gerufen werden (Rechte?)"
+
+      - name: Tageskette - naechster Schritt (nachts.yml)
+        if: ${{ always() && (github.event_name == 'schedule' || inputs.kette == 'true') }}
+        env:
+          TOKEN: ${{ secrets.FORGEJO_TOKEN || github.token }}
+        run: |
+          API="${GITHUB_API_URL:-http://192.168.0.50:3000/api/v1}"
+          curl -fsS -m 30 -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
+            -d "{\"ref\":\"master\",\"inputs\":{\"kette\":\"true\"}}" \
+            "$API/repos/$GITHUB_REPOSITORY/actions/workflows/nachts.yml/dispatches" \
+            && echo "Tageskette: nachts.yml gestartet" || { echo "::error::Tageskette: nachts.yml konnte nicht gestartet werden"; exit 1; }

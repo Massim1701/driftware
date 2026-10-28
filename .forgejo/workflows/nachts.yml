@@ -25,14 +25,17 @@ on:
           - uk
           - bpm
           - statistik
+      kette:
+        description: 'Von der Tageskette gesetzt: danach karaoke-songs starten (von Hand leer lassen)'
+        required: false
+        type: string
+        default: ''
       dekade:
         description: 'Dekade fuer billboard, uk und bpm (auto = automatisch die mit der groessten Luecke)'
         required: false
         type: choice
         default: auto
         options: [auto, 70er, 80er, 90er, 2000er, 2010er, 2020er]
-  schedule:
-    - cron: '17 3 * * *'
 concurrency:
   group: nachtlauf
   cancel-in-progress: false
@@ -47,7 +50,9 @@ jobs:
   fehlende:
     name: Fehlende Songs verarbeiten
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 60
+    env:
+      JOB_LIMIT_SECONDS: '3300'
     if: ${{ !cancelled() && (inputs.nur == '' || inputs.nur == 'alle' || inputs.nur == 'fehlende') }}
     steps:
       - uses: actions/checkout@v4
@@ -69,6 +74,7 @@ jobs:
         env:
           DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          QUEUE_TIME_BUDGET_SECONDS: '3000'
         run: python3 tools/process_missing_queue.py
 
       - name: Committen und pushen
@@ -83,7 +89,9 @@ jobs:
   aufrufzahlen:
     name: YouTube-Aufrufzahlen aktualisieren
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 30
+    env:
+      JOB_LIMIT_SECONDS: '1200'
     needs: fehlende
     if: ${{ !cancelled() && (inputs.nur == '' || inputs.nur == 'alle' || inputs.nur == 'aufrufzahlen') }}
     steps:
@@ -101,7 +109,7 @@ jobs:
       - name: YouTube-Aufrufzahlen abrufen
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          VIEWCOUNT_TIME_BUDGET_SECONDS: '3600'
+          VIEWCOUNT_TIME_BUDGET_SECONDS: '900'
         run: python3 tools/fetch_youtube_viewcounts.py
 
       - name: Committen und pushen
@@ -113,7 +121,9 @@ jobs:
   billboard:
     name: Billboard-Hits nachziehen
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 75
+    env:
+      JOB_LIMIT_SECONDS: '3000'
     needs: aufrufzahlen
     if: ${{ !cancelled() && (inputs.nur == '' || inputs.nur == 'alle' || inputs.nur == 'billboard') }}
     steps:
@@ -145,14 +155,14 @@ jobs:
 
       - name: Billboard-Kandidaten sammeln (Phase A)
         env:
-          BILLBOARD_TIME_BUDGET_SECONDS: '3600'
+          BILLBOARD_TIME_BUDGET_SECONDS: '900'
           DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
         run: python3 tools/fetch_billboard_hits.py "${{ steps.pick.outputs.decade }}"
 
       - name: YouTube-Links aufloesen (Phase B)
         env:
           DECADE_QUEUE_KEY: ${{ steps.pick.outputs.decade }}
-          DECADE_TIME_BUDGET_SECONDS: '15000'
+          DECADE_TIME_BUDGET_SECONDS: '1800'
         run: python3 tools/process_decade_queue.py
 
       - name: Committen und pushen
@@ -166,7 +176,9 @@ jobs:
   uk:
     name: UK-Charts-Hits nachziehen
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 80
+    env:
+      JOB_LIMIT_SECONDS: '3000'
     needs: billboard
     if: ${{ !cancelled() && (inputs.nur == '' || inputs.nur == 'alle' || inputs.nur == 'uk') }}
     steps:
@@ -198,7 +210,7 @@ jobs:
 
       - name: UK-Chart-Kandidaten sammeln (Phase A)
         env:
-          UKCHARTS_TIME_BUDGET_SECONDS: '17400'
+          UKCHARTS_TIME_BUDGET_SECONDS: '2400'
           DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
         run: python3 tools/fetch_uk_chart_hits.py "${{ steps.pick.outputs.decade }}" --min-peak 40
 
@@ -219,7 +231,9 @@ jobs:
   bpm:
     name: BPM-Werte ermitteln
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 120
+    env:
+      JOB_LIMIT_SECONDS: '5700'
     needs: uk
     if: ${{ !cancelled() && (inputs.nur == '' || inputs.nur == 'alle' || inputs.nur == 'bpm') }}
     steps:
@@ -252,7 +266,7 @@ jobs:
 
       - name: BPM-Werte ermitteln
         env:
-          BPM_TIME_BUDGET_SECONDS: '20000'
+          BPM_TIME_BUDGET_SECONDS: '5400'
         run: python3 bpm_fetch.py "${{ steps.pick.outputs.decade }}"
 
       - name: Committen und pushen
@@ -266,7 +280,9 @@ jobs:
   statistik:
     name: Song-Statistik aktualisieren
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 20
+    env:
+      JOB_LIMIT_SECONDS: '1200'
     needs: bpm
     if: ${{ !cancelled() && (inputs.nur == '' || inputs.nur == 'alle' || inputs.nur == 'statistik') }}
     steps:
@@ -326,3 +342,14 @@ jobs:
             -d "{\"ref\":\"master\",\"inputs\":{\"workflow\":\"nachts.yml\",\"result\":\"$RES\"}}" \
             "$API/repos/$GITHUB_REPOSITORY/actions/workflows/caretaker.yml/dispatches" \
             && echo "Caretaker gerufen: nachts.yml -> $RES" || echo "Caretaker konnte nicht gerufen werden (Rechte?)"
+
+      - name: Tageskette - naechster Schritt (karaoke-songs.yml)
+        if: ${{ always() && (github.event_name == 'schedule' || inputs.kette == 'true') }}
+        env:
+          TOKEN: ${{ secrets.FORGEJO_TOKEN || github.token }}
+        run: |
+          API="${GITHUB_API_URL:-http://192.168.0.50:3000/api/v1}"
+          curl -fsS -m 30 -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
+            -d "{\"ref\":\"master\",\"inputs\":{\"kette\":\"true\"}}" \
+            "$API/repos/$GITHUB_REPOSITORY/actions/workflows/karaoke-songs.yml/dispatches" \
+            && echo "Tageskette: karaoke-songs.yml gestartet" || { echo "::error::Tageskette: karaoke-songs.yml konnte nicht gestartet werden"; exit 1; }

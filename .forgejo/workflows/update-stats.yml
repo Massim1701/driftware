@@ -6,10 +6,6 @@ name: Song-Statistik aktualisieren
 # songs.json aendert, und manuell.
 
 on:
-  push:
-    branches: [master]
-    paths:
-      - '*-music/songs.json'
   workflow_dispatch: {}
 
 concurrency:
