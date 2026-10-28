@@ -1,3 +1,7 @@
+# ABGELEGT (nicht aktiv): GitHub lehnt die Spiegelung ab, solange hier eine Datei unter .github/workflows liegt,
+# weil der Zugangstoken der Spiegelung (Forgejo -> GitHub) das Recht "workflow" nicht hat. Zum Einschalten:
+# Token-Recht "workflow" ergaenzen, dann diese Datei nach .github/workflows/radio-liste.yml verschieben.
+
 name: Radio-Liste sammeln
 
 # Sammelt, welcher Interpret/Titel auf den 80s80s-Kanaelen laeuft (nur Text, tools/radio_sammler.py) und legt die
