@@ -10,13 +10,17 @@ Aufruf (meist ueber tools/wachter.sh):
   wachter.py active  <workflow-datei>        Anzahl laufender/wartender Laeufe ausgeben
   wachter.py failed-last <datei> <n>         Anzahl nicht erfolgreicher unter den letzten n beendeten Laeufen
   wachter.py dispatch <datei> [key=wert ...] Workflow starten (mit Eingaben)
+  wachter.py kette                           Tageskette pruefen: gerissen -> Notiz + naechsten Schritt starten
   wachter.py selftest                        Ticket anlegen/kommentieren/schliessen und Laeufe zaehlen
 
 Umgebung: GITHUB_REPOSITORY (owner/repo), GITHUB_API_URL (Forgejo-API), FORGEJO_TOKEN
 oder GITHUB_TOKEN. DRY_RUN=1 schreibt nur, was getan wuerde.
 
-Strategie: sofort neu starten, nur bei wiederholtem Scheitern ein Ticket oeffnen
-(= Mail an den Repo-Besitzer). Eine KI-Reparatur gibt es hier nicht mehr.
+Strategie fuer die Tageskette (CHAIN): kein Neustart, sondern Notiz (Ticket = Mail an den
+Repo-Besitzer) und die Kette laeuft mit dem naechsten Schritt weiter; gefixt wird am Folgetag.
+Gerissen ist die Kette, wenn nichts mehr laeuft, aber der naechste Schritt nicht gestartet wurde
+(dann startet der Waechter ihn). Nicht zur Kette gehoerende Laeufe werden wie bisher neu gestartet.
+Eine KI-Reparatur gibt es hier nicht mehr.
 """
 import datetime as dt
 import json
@@ -34,7 +38,6 @@ BRANCH = os.environ.get("WACHTER_BRANCH", "master")
 DRY = os.environ.get("DRY_RUN") == "1"
 
 MAX_FAILS_24H = 3    # so viele Fehlschlaege in 24 h werden neu gestartet, danach Ticket
-ESKALATION_H = 60    # so lange ohne Erfolg -> trotzdem Ticket
 
 # Datei -> (Anzeigename = Ticket-Titel, maximales Alter des letzten Erfolgs in Stunden)
 WATCHED = {
@@ -46,6 +49,10 @@ WATCHED = {
 for _e in filter(None, (os.environ.get("WACHTER_EXTRA") or "").split(";")):
     _f, _n, _h = (_e.split("|") + ["", "36"])[:3]
     WATCHED[_f.strip()] = (_n.strip() or _f.strip(), int(_h or 36))
+# Reihenfolge der Tageskette (Zeitplan nur beim ersten Schritt, jeder Schritt startet den naechsten)
+CHAIN = ["check-dead-videos.yml", "nachts.yml", "karaoke-songs.yml", "backup-fornetta.yml"]
+KETTE_TITEL = "Wächter: Tageskette"
+GRACE = dt.timedelta(minutes=30)   # so lange darf zwischen zwei Schritten Pause sein
 ACTIVE = {"running", "waiting", "queued", "blocked", "in_progress", "pending"}
 DONE = {"success", "failure", "cancelled"}
 
@@ -86,10 +93,14 @@ def runs_of(wf_file, pages=6):
         for t in items:
             if t.get("workflow_id") != wf_file:
                 continue
-            g = groups.setdefault(t["run_number"], {"jobs": [], "created": t["created_at"]})
+            g = groups.setdefault(t["run_number"], {"jobs": [], "created": t["created_at"],
+                                                    "updated": t["updated_at"], "event": t.get("event", ""),
+                                                    "url": t.get("url", "")})
             g["jobs"].append(t["status"])
             if t["created_at"] < g["created"]:
                 g["created"] = t["created_at"]
+            if t["updated_at"] > g["updated"]:
+                g["updated"] = t["updated_at"]
     runs = []
     for num, g in groups.items():
         st = set(g["jobs"])
@@ -101,7 +112,8 @@ def runs_of(wf_file, pages=6):
             status = "success"
         else:
             status = "skipped"
-        runs.append({"run": num, "status": status, "created": parse(g["created"])})
+        runs.append({"run": num, "status": status, "created": parse(g["created"]),
+                     "updated": parse(g["updated"]), "event": g["event"], "url": g["url"]})
     return sorted(runs, key=lambda r: r["created"], reverse=True)
 
 
@@ -115,6 +127,8 @@ def resolve(arg):
 
 
 def title_of(wf):
+    if wf == "kette":
+        return KETTE_TITEL
     return "Wächter: " + (WATCHED[wf][0] if wf in WATCHED else wf)
 
 
@@ -141,11 +155,19 @@ def open_issue(wf, body):
         api("POST", f"/repos/{REPO}/issues", {"title": title_of(wf), "body": body})
 
 
+def note_once(wf, body):
+    """Notiz nur anlegen, wenn es noch keine offene gibt (der Waechter laeuft alle 3 h)."""
+    if find_issue(wf):
+        print(f"Notiz '{title_of(wf)}' ist schon offen, nichts ergaenzt.")
+        return
+    open_issue(wf, body)
+
+
 def close_issue(wf):
     num = find_issue(wf)
     if not num:
         return
-    name = WATCHED[wf][0] if wf in WATCHED else wf
+    name = "Tageskette" if wf == "kette" else name_of(wf)
     if DRY:
         print(f"[dry-run] Ticket #{num} schliessen")
         return
@@ -186,7 +208,27 @@ def retry(wf):
     dispatch(wf)
 
 
+def name_of(wf):
+    return WATCHED[wf][0] if wf in WATCHED else wf
+
+
+def next_of(wf):
+    return CHAIN[CHAIN.index(wf) + 1] if wf in CHAIN[:-1] else None
+
+
 def decide(wf):
+    if os.environ.get("KETTE") == "true" and wf in CHAIN:
+        # Schritt der Tageskette: nicht neu starten (das hielte die Kette auf), sondern Notiz setzen.
+        # Der naechste Schritt wurde schon vom Lauf selbst gestartet (Waechter fuellt Luecken, siehe kette()).
+        last = next((r for r in runs_of(wf) if r["status"] == "failure"), None)
+        nxt = next_of(wf)
+        open_issue(wf, f"Schritt '{name_of(wf)}' der Tageskette ist fehlgeschlagen ({now():%d.%m.%Y %H:%M} UTC).\n\n"
+                       f"Lauf: {last['url'] if last else os.environ.get('GITHUB_SERVER_URL', '') + '/' + REPO + '/actions'}\n\n"
+                       f"Die Kette laeuft mit {nxt or 'dem Ende'} weiter, nichts wird automatisch wiederholt. "
+                       f"Bitte am Folgetag Log lesen und beheben; die Notiz schliesst sich nach dem naechsten Erfolg selbst.")
+        say_output("heal", "false")
+        print("NOTE")
+        return "NOTE"
     f = fails_24h(wf)
     if f <= MAX_FAILS_24H:
         print(f"'{wf}': {f} Fehlschlag/Fehlschlaege in 24h -> wird neu gestartet.")
@@ -201,15 +243,49 @@ def decide(wf):
     return verdict
 
 
-def call_caretaker(wf):
-    if active_count(wf) > 0:
-        print(f"'{wf}': laeuft oder wartet schon, kein Eingriff noetig.")
+
+
+def kette():
+    """Prueft, ob die Tageskette gerissen ist: Der letzte Kettenstart (Zeitplan) ist da, es laeuft
+    nichts mehr, aber ein spaeterer Schritt wurde nie gestartet -> Notiz und diesen Schritt starten."""
+    runs = {wf: runs_of(wf) for wf in CHAIN}
+    if any(r["status"] == "active" for rs in runs.values() for r in rs):
+        print("KETTE  laeuft gerade.")
         return
-    if decide(wf) == "HEAL":
-        dispatch("caretaker.yml", {"workflow": wf, "result": "failure"})
+    starts = [r for r in runs[CHAIN[0]] if r["event"] == "schedule"]
+    if not starts:
+        print("KETTE  noch kein Kettenstart gesehen.")
+        return
+    prev = starts[0]
+    if now() - prev["created"] > dt.timedelta(hours=26):
+        note_once("kette", f"Die Tageskette wurde seit {prev['created']:%d.%m. %H:%M} UTC nicht mehr gestartet "
+                           f"(Zeitplan {CHAIN[0]} 03:15 UTC). Der Waechter startet sie jetzt von Hand.")
+        dispatch(CHAIN[0], {"kette": "true"})
+        return
+    for wf in CHAIN[1:]:
+        later = [r for r in runs[wf] if r["created"] >= prev["created"]]
+        if not later:
+            if now() - prev["updated"] < GRACE:
+                print(f"KETTE  {name_of(prev_wf(wf))} ist gerade erst fertig, warte.")
+                return
+            note_once("kette", f"Die Tageskette ist vor '{name_of(wf)}' gerissen: '{name_of(prev_wf(wf))}' war um "
+                               f"{prev['updated']:%d.%m. %H:%M} UTC fertig, danach wurde nichts gestartet.\n\n"
+                               f"Der Waechter startet '{name_of(wf)}' jetzt und die Kette laeuft von dort weiter. "
+                               f"Bitte am Folgetag die Ursache suchen (Token FORGEJO_TOKEN, Runner, Dispatch-Schritt).")
+            print(f"KETTE  gerissen vor {wf}, starte.")
+            dispatch(wf, {"kette": "true"})
+            return
+        prev = min(later, key=lambda r: r["created"])
+    print("KETTE  vollstaendig durchgelaufen.")
+    close_issue("kette")
+
+
+def prev_wf(wf):
+    return CHAIN[CHAIN.index(wf) - 1]
 
 
 def sweep():
+    kette()
     for wf, (name, max_h) in WATCHED.items():
         runs = runs_of(wf)
         good = [r for r in runs if r["status"] == "success"]
@@ -221,11 +297,9 @@ def sweep():
         print(f"ALT    {name} (letzter Erfolg vor {age_h}h, erlaubt {max_h}h)")
         if any(r["status"] == "active" for r in runs):
             print("       laeuft gerade, warte das Ergebnis ab.")
-        elif age_h >= ESKALATION_H:
-            open_issue(wf, f"'{name}' hatte seit {age_h} Stunden keinen erfolgreichen Lauf (erlaubt: {max_h}h). "
-                           f"Neustarts des Caretakers haben nicht geholfen.")
         else:
-            call_caretaker(wf)
+            note_once(wf, f"'{name}' hatte seit {age_h} Stunden keinen erfolgreichen Lauf (erlaubt: {max_h}h). "
+                          f"Die Tageskette laeuft weiter, es wird nichts neu gestartet. Bitte am Folgetag pruefen.")
 
 
 def selftest():
@@ -264,6 +338,8 @@ def main(argv):
             open_issue(arg, open(argv[3], encoding="utf-8").read())
         elif cmd == "sweep":
             sweep()
+        elif cmd == "kette":
+            kette()
         elif cmd == "active":
             print(active_count(arg))
         elif cmd == "failed-last":

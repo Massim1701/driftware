@@ -5,6 +5,8 @@ name: Caretaker (Fehler sofort bereinigen)
 #  - result=success     -> offenes Waechter-Ticket schliessen
 #  - result=failure     -> Workflow sofort neu starten (max. 3 Fehlschlaege pro 24 h,
 #                          danach Ticket = Mail an den Repo-Besitzer)
+#                          AUSNAHME Tageskette (kette=true): kein Neustart, sondern Notiz (Ticket);
+#                          die Kette laeuft mit dem naechsten Schritt weiter, gefixt wird am Folgetag.
 # Die frueheren KI-Reparatur-Schritte (Claude) und der Log-Abruf (gh run view) gibt es
 # hier nicht mehr: Forgejo hat keine Log-Schnittstelle, und ohne API-Key lief das ohnehin nicht.
 # Logik der Entscheidungen: tools/wachter.py
@@ -18,6 +20,10 @@ on:
         description: "success oder failure"
         required: false
         default: failure
+      kette:
+        description: "true = Schritt der Tageskette: bei Fehler Notiz statt Neustart (die Kette laeuft weiter)"
+        required: false
+        default: ''
 
 # Pro Ziel-Workflow eine Gruppe, damit sich gleichzeitige Meldungen nicht verdraengen.
 concurrency:
@@ -37,6 +43,7 @@ jobs:
       FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
       GITHUB_TOKEN: ${{ github.token }}
       WF: ${{ inputs.workflow }}
+      KETTE: ${{ inputs.kette }}
       WACHTER_EXTRA: ${{ vars.WACHTER_EXTRA }}
     steps:
       - uses: actions/checkout@v4

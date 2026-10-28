@@ -320,6 +320,7 @@ jobs:
       - name: Caretaker rufen
         env:
           TOKEN: ${{ secrets.FORGEJO_TOKEN || github.token }}
+          KETTE: ${{ (github.event_name == 'schedule' || inputs.kette == 'true') && 'true' || '' }}
           NUR: ${{ inputs.nur || github.event.inputs.nur }}
           R_fehlende: ${{ needs.fehlende.result }}
           R_aufrufzahlen: ${{ needs.aufrufzahlen.result }}
@@ -339,7 +340,7 @@ jobs:
           for r in $RESULTS; do case "$r" in failure|cancelled) RES=failure;; esac; done
           API="${GITHUB_API_URL:-http://192.168.0.50:3000/api/v1}"
           curl -fsS -m 30 -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
-            -d "{\"ref\":\"master\",\"inputs\":{\"workflow\":\"nachts.yml\",\"result\":\"$RES\"}}" \
+            -d "{\"ref\":\"master\",\"inputs\":{\"workflow\":\"nachts.yml\",\"result\":\"$RES\",\"kette\":\"$KETTE\"}}" \
             "$API/repos/$GITHUB_REPOSITORY/actions/workflows/caretaker.yml/dispatches" \
             && echo "Caretaker gerufen: nachts.yml -> $RES" || echo "Caretaker konnte nicht gerufen werden (Rechte?)"
 
