@@ -3,180 +3,112 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <title>Schriftgenerator — Driftware</title>
-<link rel="stylesheet" href="/fonts/fonts.css?v=1">
+<meta name="description" content="Text eingeben, Stil wählen, kopieren: über 60 Schriftstile und eine Emoji-Tastatur, direkt im Browser.">
+<link rel="canonical" href="https://driftware.online/schriftgenerator/">
+<link rel="preload" href="/fonts/BricolageGrotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-  :root {
-    --bg: #0c1224;
-    --card: #141c33;
-    --border: rgba(255,255,255,0.08);
-    --text: #f5f7fa;
-    --muted: #9aa3c0;
-    --accent: #3aa8ff;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    padding: 40px 16px;
-    min-height: 100vh;
-  }
-  .wrap { width: 100%; max-width: 640px; }
-  h1 { font-family: "Space Grotesk", sans-serif; font-size: 22px; font-weight: 700; margin: 0 0 4px; }
-  .back { display: inline-block; color: var(--accent); font-size: 13px; font-weight: 700; text-decoration: none; margin-bottom: 18px; }
-  .back:hover { text-decoration: underline; }
-  .linkbtn { display: inline-block; padding: 10px 16px; margin: 0 0 24px; border: 1px solid var(--accent); border-radius: 10px; color: var(--accent); font-size: 14px; font-weight: 700; text-decoration: none; }
-  .linkbtn:hover { background: var(--accent); color: #fff; }
-  .sub { color: var(--muted); font-size: 14px; margin: 0 0 24px; }
-  textarea {
-    width: 100%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    color: var(--text);
-    font-size: 17px;
-    padding: 16px;
-    resize: vertical;
-    min-height: 90px;
-    font-family: inherit;
-  }
-  textarea:focus { outline: none; border-color: var(--accent); }
-  .charcount { text-align: right; color: var(--muted); font-size: 12px; margin-top: 4px; }
-  .section-title {
-    margin: 28px 0 10px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .results { display: flex; flex-direction: column; gap: 10px; }
-  .row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px 14px;
-  }
-  .row .label {
-    color: var(--muted);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    width: 96px;
-    flex-shrink: 0;
-  }
-  .row .output { flex: 1; font-size: 16px; word-break: break-word; line-height: 1.4; }
-  .row.empty { opacity: 0.35; }
-  button.copy {
-    flex-shrink: 0;
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 999px;
-    padding: 6px 14px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  button.copy:hover { background: #1c1f23; }
-  button.copy.copied { background: var(--accent); border-color: var(--accent); color: white; }
-  .emoji-search {
-    width: 100%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    color: var(--text);
-    font-size: 14px;
-    padding: 10px 16px;
-    margin-bottom: 10px;
-    font-family: inherit;
-  }
-  .emoji-search:focus { outline: none; border-color: var(--accent); }
-  .emoji-tabs {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    margin-bottom: 10px;
-    scrollbar-width: thin;
-  }
-  .emoji-tabs button {
-    flex-shrink: 0;
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 999px;
-    padding: 6px 14px;
-    font-size: 13px;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .emoji-tabs button.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: white;
-  }
-  .emoji-grid {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 6px;
-    max-height: 260px;
-    overflow-y: auto;
-    padding: 4px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-  }
-  .emoji-grid button {
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    font-size: 21px;
-    padding: 7px 0;
-    cursor: pointer;
-    line-height: 1;
-  }
-  .emoji-grid button:hover { background: #1c1f23; }
-  .emoji-count { color: var(--muted); font-size: 11px; margin-top: 6px; text-align: right; }
-  .note {
-    margin-top: 28px;
-    font-size: 12.5px;
-    color: var(--muted);
-    line-height: 1.5;
-    border-top: 1px solid var(--border);
-    padding-top: 16px;
-  }
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:300 800;font-display:swap;src:url(/fonts/BricolageGrotesque-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:300 800;font-display:swap;src:url(/fonts/BricolageGrotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+:root{--bg:#F3F3F0;--ink:#0E0E10;--ink2:#1c1c20;--mut:#5c5c62;--blue:#2236FF;--rule:#d7d7d2}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:400 18px/1.55 'Bricolage Grotesque',system-ui,-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;accent-color:var(--blue);caret-color:var(--blue)}
+::selection{background:var(--blue);color:#fff}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:4px;border-radius:2px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 56px}
+nav{display:flex;justify-content:space-between;align-items:center}
+nav b{font-weight:700;font-size:20px;letter-spacing:-.03em;display:inline-flex;align-items:center;min-height:72px}
+nav b a{text-decoration:none}
+nav a.back{display:inline-flex;align-items:center;min-height:72px;padding:0 14px;font-size:15px;text-decoration:none;color:var(--mut)}
+.hero{padding:7vh 0 6vh}
+h1{font-weight:300;font-size:clamp(50px,10vw,164px);line-height:.92;letter-spacing:-.06em;text-wrap:balance}
+h1 em{font-style:normal;font-weight:700;color:var(--blue)}
+.sub{margin-top:40px;font-size:24px;line-height:1.45;max-width:30ch;color:var(--mut)}
+.input{border-top:1px solid var(--ink);padding:40px 0 20px}
+.lab{font-size:15px;color:var(--ink2);letter-spacing:.02em;display:flex;justify-content:space-between;margin-bottom:14px}
+textarea{width:100%;background:transparent;border:0;border-bottom:2px solid var(--ink);border-radius:0;font:300 clamp(32px,5vw,72px)/1.1 'Bricolage Grotesque',sans-serif;letter-spacing:-.045em;color:var(--ink);resize:none;padding:6px 0 16px;min-height:130px}
+textarea:focus{outline:none;border-color:var(--blue)}
+textarea::placeholder{color:#a5a5a0}
+.emoji-wrap{margin-top:36px}
+.emoji-search{width:100%;max-width:460px;min-height:48px;background:transparent;border:1px solid var(--rule);border-radius:999px;color:var(--ink);font:400 16px 'Bricolage Grotesque',sans-serif;padding:0 20px;margin-bottom:14px}
+.emoji-search:focus{outline:none;border-color:var(--blue);background:#fff}
+.emoji-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;scrollbar-width:thin}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:56px 0 20px}
+.emoji-tabs button,.chips button{flex-shrink:0;min-height:44px;padding:0 20px;border-radius:999px;border:1px solid var(--rule);background:transparent;color:var(--ink2);font:500 15px 'Bricolage Grotesque',sans-serif;cursor:pointer;white-space:nowrap}
+.emoji-tabs button:hover,.chips button:hover{border-color:var(--blue)}
+.emoji-tabs button.active,.chips button.active{background:var(--ink);border-color:var(--ink);color:#fff}
+.emoji-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:4px;max-height:280px;overflow-y:auto;padding:8px;border:1px solid var(--rule);background:#fafaf8}
+.emoji-grid button{min-height:48px;background:transparent;border:0;border-radius:12px;font-size:24px;line-height:1;cursor:pointer}
+.emoji-grid button:hover{background:#fff;box-shadow:inset 0 0 0 1px var(--blue)}
+.emoji-count{color:var(--mut);font-size:14px;margin-top:8px}
+.results{border-top:1px solid var(--ink)}
+.row{display:grid;grid-template-columns:190px 1fr auto;gap:32px;padding:28px 0;border-bottom:1px solid var(--rule);align-items:center}
+.row .label{font-size:14px;color:var(--mut);letter-spacing:.02em}
+.row .output{font-weight:300;font-size:clamp(24px,3vw,46px);line-height:1.2;letter-spacing:-.035em;word-break:break-word;transition:color .3s}
+.row.empty .output{color:#a5a5a0}
+button.copy{min-height:48px;padding:0 26px;border-radius:999px;border:1px solid var(--ink);background:transparent;font:600 16px 'Bricolage Grotesque',sans-serif;cursor:pointer;color:var(--ink);transition:background .2s,color .2s}
+button.copy:hover:not(:disabled){background:var(--ink);color:#fff}
+button.copy:disabled{opacity:.35;cursor:default}
+button.copy.copied{background:var(--blue);border-color:var(--blue);color:#fff}
+@media (hover:hover){.row:hover:not(.empty) .output{color:var(--blue)}}
+.note{margin-top:40px;font-size:15px;color:var(--mut);max-width:62ch}
+.end{margin-top:140px;background:var(--blue);color:#fff;padding:8px 0}
+.end .wrap{padding-top:100px;padding-bottom:30px}
+.end h2{font-weight:300;font-size:clamp(46px,9vw,150px);line-height:.9;letter-spacing:-.065em}
+.end h2 b{font-weight:700}
+.end p{margin-top:28px;font-size:22px;max-width:34ch;opacity:.92}
+.btn{display:inline-flex;align-items:center;min-height:56px;margin-top:40px;background:#fff;color:var(--blue);padding:0 34px;font:600 18px 'Bricolage Grotesque',sans-serif;border-radius:999px;text-decoration:none}
+.btn:hover{background:var(--ink);color:#fff}
+footer{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;padding:90px 0 24px;font-size:14px;color:rgba(255,255,255,.92)}
+footer a{color:rgba(255,255,255,.92);text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0 10px}
+footer a:hover{color:#fff;text-decoration:underline}
+footer span:last-child{display:flex;gap:2px;margin-right:-10px}
+@media (max-width:900px){.wrap{padding:0 28px}.row{grid-template-columns:1fr;gap:10px}button.copy{justify-self:start}.end{margin-top:90px}.end .wrap{padding-top:70px}.chips{margin-top:40px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <a class="back" href="/">← Zurück zu Driftware</a>
-  <h1>Schriftgenerator</h1>
-  <p class="sub">Text eingeben, Stil auswählen, kopieren, überall einfügen.</p>
-  <a class="linkbtn" href="/schriftgenerator/spruchbild-generator_3.html">Spruchbild-Generator →</a>
+<nav><b><a href="/">Driftware</a></b><a class="back" href="/">← Zurück zur Startseite</a></nav>
 
-  <textarea id="input" placeholder="Schreib etwas..." maxlength="280"></textarea>
-  <div class="charcount"><span id="count">0</span>/280</div>
+<section class="hero">
+<h1>Schrift, die <em>auffällt.</em></h1>
+<p class="sub">Text eingeben, Stil wählen, kopieren. Funktioniert überall, wo normaler Text erlaubt ist.</p>
+</section>
 
-  <div class="section-title">Emoji-Tastatur</div>
-  <input type="text" class="emoji-search" id="emojiSearch" placeholder="Emoji suchen (z.B. herz, feuer, hund)...">
-  <div class="emoji-tabs" id="emojiTabs"></div>
-  <div class="emoji-grid" id="emojiPicker"></div>
-  <div class="emoji-count" id="emojiCount"></div>
+<section class="input">
+<div class="lab"><label for="input">01 — Dein Text</label><span><span id="count">0</span>/280</span></div>
+<textarea id="input" placeholder="Schreib etwas …" maxlength="280"></textarea>
 
-  <div class="section-title">Schriftarten</div>
-  <div class="results" id="results"></div>
+<div class="emoji-wrap">
+<div class="lab"><label for="emojiSearch">02 — Emoji</label></div>
+<input type="text" class="emoji-search" id="emojiSearch" placeholder="Emoji suchen, z. B. herz, feuer, hund">
+<div class="emoji-tabs" id="emojiTabs"></div>
+<div class="emoji-grid" id="emojiPicker"></div>
+<div class="emoji-count" id="emojiCount"></div>
+</div>
+</section>
 
-  <div class="note">
-    Hinweis: Das sind Unicode-Sonderzeichen, keine echten Schriftarten – funktioniert überall dort, wo normaler Text erlaubt ist (auch X). Nicht jeder Buchstabe/jede Zahl existiert in jedem Stil; nicht unterstützte Zeichen bleiben normal. Screenreader können Sonderzeichen teils nicht korrekt vorlesen.
-  </div>
+<div class="chips" id="chips" role="group" aria-label="Stile filtern"></div>
+<section class="results" id="results" aria-live="polite"></section>
+
+<p class="note">Das sind Unicode-Sonderzeichen, keine echten Schriftarten – funktioniert überall dort, wo normaler Text erlaubt ist (auch X). Nicht jeder Buchstabe/jede Zahl existiert in jedem Stil; nicht unterstützte Zeichen bleiben normal. Screenreader können Sonderzeichen teils nicht korrekt vorlesen.</p>
+</div>
+
+<div class="end">
+<div class="wrap">
+<h2>Mehr als <b>Text?</b></h2>
+<p>Aus deinem Spruch wird ein Bild, bereit zum Teilen.</p>
+<a class="btn" href="/schriftgenerator/spruchbild-generator_3.html">Spruchbild-Generator →</a>
+<footer>
+<span>© 2026 Driftware</span>
+<span><a href="/privacy.html">Datenschutz</a><a href="/terms.html">Nutzungsbedingungen</a><a href="/impressum.html">Impressum</a></span>
+</footer>
+</div>
 </div>
 
 <script>
@@ -202,6 +134,11 @@ const upsideDownMap = {
 };
 function upsideDown(text) {
   return Array.from(text).reverse().map(ch => upsideDownMap[ch] ?? ch).join("");
+}
+
+function mapLetters(upper, lower) {
+  lower = lower ?? upper;
+  return mapTransform(buildMap("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", upper + lower));
 }
 
 const fontStyles = [
@@ -284,8 +221,64 @@ const fontStyles = [
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
     "𝖆𝖇𝖈𝖉𝖊𝖋𝖌𝖍𝖎𝖏𝖐𝖑𝖒𝖓𝖔𝖕𝖖𝖗𝖘𝖙𝖚𝖛𝖜𝖝𝖞𝖟𝕬𝕭𝕮𝕯𝕰𝕱𝕲𝕳𝕴𝕵𝕶𝕷𝕸𝕹𝕺𝕻𝕼𝕽𝕾𝕿𝖀𝖁𝖂𝖃𝖄𝖅"
   ))},
+  // ---- Weitere Stile ----
+  { name: "Eckig umrandet", fn: mapLetters("🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉") },
+  { name: "Kreise gefüllt", fn: mapLetters("🅐🅑🅒🅓🅔🅕🅖🅗🅘🅙🅚🅛🅜🅝🅞🅟🅠🅡🅢🅣🅤🅥🅦🅧🅨🅩") },
+  { name: "Klammern", fn: mapLetters("🄐🄑🄒🄓🄔🄕🄖🄗🄘🄙🄚🄛🄜🄝🄞🄟🄠🄡🄢🄣🄤🄥🄦🄧🄨🄩", "⒜⒝⒞⒟⒠⒡⒢⒣⒤⒥⒦⒧⒨⒩⒪⒫⒬⒭⒮⒯⒰⒱⒲⒳⒴⒵") },
+  { name: "Kantig", fn: mapLetters("ᗩᗷᑕᗪᗴᖴǤᕼᓰᒍᛕᒪᗰᑎᗝᑭᑫᖇᔕ丅ᑌᐯᗯ᙭Ƴ乙") },
+  { name: "Asia", fn: mapLetters("卂乃匚ᗪ乇千Ꮆ卄丨ﾌҜㄥ爪几ㄖ卩Ɋ尺丂ㄒㄩᐯ山乂ㄚ乙") },
+  { name: "Überstrichen", fn: combiningTransform("̅") },
+  { name: "Doppelt unterstrichen", fn: combiningTransform("̳") },
+  { name: "Schräg durchgestrichen", fn: combiningTransform("̸") },
+  { name: "Gewellt unterstrichen", fn: combiningTransform("̰") },
+  { name: "Punkte darunter", fn: combiningTransform("̣") },
+  { name: "Punkte darüber", fn: combiningTransform("̇") },
+  { name: "Kreuze darüber", fn: combiningTransform("̽") },
+  { name: "Glitch", fn: glitch },
+  { name: "Gesperrt", fn: text => Array.from(text).join(" ") },
+  { name: "Punkte dazwischen", fn: text => Array.from(text).join("·") },
+  { name: "Sterne dazwischen", fn: text => Array.from(text).join("★") },
+  { name: "Herzen dazwischen", fn: text => Array.from(text).join("♥") },
+  { name: "Wellen dazwischen", fn: text => Array.from(text).join("~") },
+  { name: "Stern-Rahmen", fn: text => "★彡 " + text + " 彡★" },
+  { name: "Funkeln", fn: text => "✦ " + text + " ✦" },
+  { name: "Kringel", fn: text => "꧁ " + text + " ꧂" },
+  { name: "Eckklammern", fn: text => "【" + text + "】" },
+  { name: "Anführungen", fn: text => "『" + text + "』" },
+  { name: "Wellenrand", fn: text => "•°¯`•• " + text + " ••´¯°•" },
+  { name: "Fett im Rahmen", fn: text => "【" + boldMap(text) + "】" },
+  { name: "Großbuchstaben", fn: text => text.toUpperCase() },
+  { name: "Kleinbuchstaben", fn: text => text.toLowerCase() },
+  { name: "aLtErNiErEnD", fn: text => { let i = 0; return Array.from(text).map(ch => /\p{L}/u.test(ch) ? (i++ % 2 ? ch.toUpperCase() : ch.toLowerCase()) : ch).join(""); } },
+  { name: "Rückwärts", fn: text => Array.from(text).reverse().join("") },
+  { name: "Spiegelschrift", fn: mirror },
+  { name: "Hacker (Leet)", fn: text => Array.from(text).map(ch => leetMap[ch.toLowerCase()] ?? ch).join("") },
 ];
 
+const boldMap = mapTransform(buildMap(
+  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+  "𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵"
+));
+const leetMap = { a: "4", e: "3", i: "1", o: "0", s: "5", t: "7", b: "8", g: "9", l: "1", z: "2" };
+const mirrorMap = {
+  a:"ɒ",b:"d",c:"ɔ",d:"b",e:"ɘ",f:"ꟻ",g:"ǫ",h:"ʜ",j:"į",k:"ʞ",n:"ᴎ",p:"q",q:"p",r:"ɿ",s:"ƨ",t:"ƚ",y:"ʏ",z:"ƹ",
+  A:"A",B:"ᗺ",C:"Ɔ",D:"ᗡ",E:"Ǝ",F:"ꟻ",G:"Ꭾ",J:"Ⴑ",K:"ꓘ",L:"⅃",N:"И",P:"ꟼ",Q:"Ϙ",R:"Я",S:"Ƨ",Z:"Ƹ",
+  "1":"Ɩ","2":"S","3":"Ɛ","4":"μ","5":"ƨ","6":"მ","7":"ꓷ","9":"୧","(":")",")":"(","[":"]","]":"[","?":"⸮"
+};
+function mirror(text) {
+  return Array.from(text).reverse().map(ch => mirrorMap[ch] ?? ch).join("");
+}
+// Immer gleiches Ergebnis fuer gleichen Text (kein Zufall), damit Kopieren und Anzeige uebereinstimmen
+const glitchAbove = ["̍","̎","̄","̅","̿","̑","̆","̐","͒","͗","͑","̇","̈","̊","͂","̓","̈́","͊","͋","͌","̃","̂","̌"];
+const glitchBelow = ["̖","̗","̘","̙","̜","̝","̞","̟","̠","̤","̥","̦","̩","̪","̫","̬","̭","̮","̯","̰","̱","̲","̳","̹","̺","̻","̼"];
+function glitch(text) {
+  return Array.from(text).map((ch, i) => {
+    if (/\s/.test(ch)) return ch;
+    const a = glitchAbove[(i * 7 + 3) % glitchAbove.length] + glitchAbove[(i * 5 + 11) % glitchAbove.length];
+    const b = glitchBelow[(i * 3 + 5) % glitchBelow.length] + glitchBelow[(i * 11 + 2) % glitchBelow.length];
+    return ch + a + b;
+  }).join("");
+}
 
 const emojiCategories = {
   "Smileys": "😀😃😄😁😆😅🤣😂🙂🙃🫠😉😊😇🥰😍🤩😘😗☺️😚😙🥲😋😛😜🤪😝🤑🤗🤭🫢🫣🤫🤔🫡🤐🤨😐😑😶🫥😏😒🙄😬🤥😌😔😪🤤😴😷🤒🤕🤢🤮🤧🥵🥶🥴😵🤯🤠🥳🥸😎🤓🧐😕🫤😟🙁☹️😮😯😲😳🥺🥹😦😧😨😰😥😢😭😱😖😣😞😓😩😫🥱😤😡😠🤬😈👿💀☠️💩🤡👹👺👻👽👾🤖😺😸😹😻😼😽🙀😿😾❤️🧡💛💚💙💜🖤🤍🤎💔❣️💕💞💓💗💖💘💝",
@@ -320,6 +313,18 @@ const emojiKeywords = {
   "🚗":"auto","✈️":"flugzeug fliegen","🏠":"haus zuhause","🌍":"welt erde global"
 };
 
+
+const styleGroups = {
+  "Klassisch": ["Fett","Serif Fett","Kursiv","Serif Kursiv","Fett Kursiv","Serif Fett Kursiv","Schreibschrift","Schreibschrift Dünn","Fraktur","Fraktur Fett","Doppelt","Monospace","Sans-Serif","Full-Width","Kleinkapitälchen","Hoch (x²)","Tief (x₂)"],
+  "Rahmen": ["Umrandet","Eckig","Eckig umrandet","Kreise gefüllt","Klammern","Kantig","Asia"],
+  "Linien": ["Durchgestrichen","Unterstrichen","Überstrichen","Doppelt unterstrichen","Schräg durchgestrichen","Gewellt unterstrichen","Punkte darunter","Punkte darüber","Kreuze darüber","Glitch"],
+  "Deko": ["Gesperrt","Punkte dazwischen","Sterne dazwischen","Herzen dazwischen","Wellen dazwischen","Stern-Rahmen","Funkeln","Kringel","Eckklammern","Anführungen","Wellenrand","Fett im Rahmen"],
+  "Spaß": ["Verkehrt herum","Rückwärts","Spiegelschrift","aLtErNiErEnD","Großbuchstaben","Kleinbuchstaben","Hacker (Leet)"]
+};
+const groupOf = {};
+Object.entries(styleGroups).forEach(([g, names]) => names.forEach(n => { groupOf[n] = g; }));
+let currentGroup = "Alle";
+
 let currentTab = "Smileys";
 
 const input = document.getElementById("input");
@@ -335,7 +340,7 @@ function makeRow(name, output, hasText) {
   label.textContent = name;
   const out = document.createElement("div");
   out.className = "output";
-  out.textContent = hasText ? output : "Vorschau erscheint hier";
+  out.textContent = output;
   const btn = document.createElement("button");
   btn.className = "copy";
   btn.textContent = "Kopieren";
@@ -357,10 +362,25 @@ function render() {
   results.innerHTML = "";
 
   fontStyles.forEach(style => {
-    const output = text ? style.fn(text) : "";
-    results.appendChild(makeRow(style.name, output, !!text));
+    if (currentGroup !== "Alle" && groupOf[style.name] !== currentGroup) return;
+    results.appendChild(makeRow(style.name, style.fn(text || "Driftware"), !!text));
   });
 }
+
+const chips = document.getElementById("chips");
+["Alle", ...Object.keys(styleGroups)].forEach(g => {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.textContent = g;
+  btn.className = g === currentGroup ? "active" : "";
+  btn.onclick = () => {
+    currentGroup = g;
+    [...chips.children].forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    render();
+  };
+  chips.appendChild(btn);
+});
 
 const emojiTabs = document.getElementById("emojiTabs");
 const emojiSearch = document.getElementById("emojiSearch");
