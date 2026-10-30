@@ -1,70 +1,102 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Spruchbild-Generator</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="description" content="Aus deinem Spruch ein Bild machen: Hintergrund, Schrift, Schatten und Rahmen wählen und als PNG speichern.">
+<link rel="canonical" href="https://driftware.online/schriftgenerator/spruchbild-generator_3.html">
+<title>Spruchbild-Generator — Driftware</title>
 <style>
-:root{
-  --bg:#f3f3f1; --panel:#ffffff; --ink:#1a1a1a; --muted:#6b6b6b; --line:#d9d9d5; --accent:#1f4fd8;
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){--bg:#141414;--panel:#1e1e1e;--ink:#f1f1ee;--muted:#9a9a96;--line:#333;--accent:#7fa2ff}
-}
-:root[data-theme="dark"]{--bg:#141414;--panel:#1e1e1e;--ink:#f1f1ee;--muted:#9a9a96;--line:#333;--accent:#7fa2ff}
-*{box-sizing:border-box}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-main{max-width:1000px;margin:0 auto;padding:20px;display:grid;gap:20px;grid-template-columns:minmax(0,1fr) minmax(0,340px);align-items:start}
-@media (max-width:760px){main{grid-template-columns:minmax(0,1fr)}}
-.stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;position:sticky;top:20px;z-index:5}
-@media (max-width:760px){
-  main{padding-top:calc(8px + env(safe-area-inset-top,0px))}
-  .stage{top:0;padding:8px;box-shadow:0 6px 14px rgba(0,0,0,.28)}
-  .stage canvas{width:auto;max-width:100%;max-height:38vh;margin:0 auto}
-}
-canvas{display:block;width:100%;height:auto;border-radius:6px}
-.controls{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:14px}
-label{display:grid;gap:6px;font-size:14px;color:var(--muted)}
-textarea{width:100%;min-height:110px;resize:vertical;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
-input[type=range]{width:100%}
-input[type=color]{width:100%;height:36px;border:1px solid var(--line);border-radius:6px;background:var(--bg);padding:2px}
-input[type=text]{width:100%;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
-select{padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
-.row{display:flex;gap:8px}
-.row>*{flex:1}
-button{padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer}
-button:hover{border-color:var(--accent)}
-button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.bgname{font-size:13px;color:var(--muted);text-align:center}
+@font-face{font-family:'Bricolage Grotesque';font-weight:300 800;font-display:swap;src:url(/fonts/BricolageGrotesque-latin.woff2) format('woff2')}
+:root{--bg:#F3F3F0;--ink:#0E0E10;--ink2:#1c1c20;--mut:#5c5c62;--blue:#2236FF;--rule:#d7d7d2}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:400 18px/1.55 'Bricolage Grotesque',system-ui,-apple-system,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;accent-color:var(--blue);caret-color:var(--blue)}
+::selection{background:var(--blue);color:#fff}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:2px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 56px}
+nav{display:flex;justify-content:space-between;align-items:center}
+nav b{font-weight:700;font-size:20px;letter-spacing:-.03em;display:inline-flex;align-items:center;min-height:72px}
+nav a{display:inline-flex;align-items:center;min-height:72px;padding:0 14px;font-size:15px;text-decoration:none;color:var(--mut)}
+.hero{padding:6vh 0 5vh}
+h1{font-weight:300;font-size:clamp(50px,9vw,150px);line-height:.92;letter-spacing:-.06em;text-wrap:balance}
+h1 em{font-style:normal;font-weight:700;color:var(--blue)}
+.sub{margin-top:32px;font-size:24px;line-height:1.45;max-width:30ch;color:var(--mut)}
+.studio{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:64px;border-top:1px solid var(--ink);padding-top:40px;align-items:start}
+.stage{position:sticky;top:24px;z-index:5}
+.stage canvas{display:block;width:100%;height:auto;background:var(--ink)}
+.bgbar{display:flex;align-items:center;gap:8px;margin-top:14px}
+.bgname{flex:1;text-align:center;font-size:14px;color:var(--mut)}
+.dl{margin-top:16px;width:100%}
+.sec{padding:0 0 34px;margin-bottom:34px;border-bottom:1px solid var(--rule)}
+.sec:last-child{border-bottom:0}
+.lab{font-size:15px;color:var(--ink2);letter-spacing:.02em;margin-bottom:14px}
+label.f{display:grid;gap:8px;font-size:14px;color:var(--mut);margin-top:18px}
+label.f:first-of-type{margin-top:0}
+label.f b{font-weight:600;color:var(--ink)}
+textarea{width:100%;background:transparent;border:0;border-bottom:2px solid var(--ink);border-radius:0;font:300 28px/1.2 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em;color:var(--ink);resize:vertical;padding:4px 0 12px;min-height:150px}
+textarea:focus{outline:none;border-color:var(--blue)}
+input[type=text],select{width:100%;min-height:48px;background:transparent;border:1px solid var(--rule);border-radius:999px;color:var(--ink);font:400 16px 'Bricolage Grotesque',sans-serif;padding:0 20px}
+select{appearance:none;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%230E0E10' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 20px center;padding-right:44px;cursor:pointer}
+input[type=text]:focus,select:focus{outline:none;border-color:var(--blue);background-color:#fff}
+input[type=range]{width:100%;height:28px;cursor:pointer}
+input[type=color]{width:100%;height:48px;border:1px solid var(--rule);border-radius:999px;background:transparent;padding:6px 10px;cursor:pointer}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+button{min-height:48px;padding:0 24px;border-radius:999px;border:1px solid var(--ink);background:transparent;font:600 16px 'Bricolage Grotesque',sans-serif;cursor:pointer;color:var(--ink);transition:background .2s,color .2s}
+button:hover{background:var(--ink);color:#fff}
+button.primary{background:var(--blue);border-color:var(--blue);color:#fff;font-size:18px;min-height:56px}
+button.primary:hover{background:var(--ink);border-color:var(--ink)}
+.bgbar button{padding:0 18px}
+.files{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
 input[type=file]{display:none}
-.home{grid-column:1/-1;justify-self:start;color:var(--accent);font-size:14px;font-weight:700;text-decoration:none}
-.home:hover{text-decoration:underline}
+.end{margin-top:140px;background:var(--blue);color:#fff;padding:8px 0}
+.end .wrap{padding-top:100px;padding-bottom:30px}
+.end h2{font-weight:300;font-size:clamp(46px,9vw,150px);line-height:.9;letter-spacing:-.065em}
+.end h2 b{font-weight:700}
+.end p{margin-top:28px;font-size:22px;max-width:34ch;opacity:.92}
+.btn{display:inline-flex;align-items:center;min-height:56px;margin-top:40px;background:#fff;color:var(--blue);padding:0 34px;font:600 18px 'Bricolage Grotesque',sans-serif;border-radius:999px;text-decoration:none}
+.btn:hover{background:var(--ink);color:#fff}
+footer{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;padding:90px 0 24px;font-size:14px;color:rgba(255,255,255,.92)}
+footer a{color:rgba(255,255,255,.92);text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0 10px}
+footer span:last-child{display:flex;gap:2px;margin-right:-10px}
+@media (max-width:900px){.wrap{padding:0 20px}.studio{grid-template-columns:1fr;gap:28px}.stage{top:0;background:var(--bg);padding:8px 0}.stage canvas{max-height:38vh;width:auto;max-width:100%;margin:0 auto}.dl{display:none}.end{margin-top:90px}.end .wrap{padding-top:70px}}
 </style>
 </head>
 <body>
-<main>
-  <a class="home" href="/">← Zurück zu Driftware</a>
+<div class="wrap">
+<nav><b><a href="/" style="min-height:0;padding:0;color:inherit;font-size:inherit">Driftware</a></b><a href="/">← Zurück zur Startseite</a></nav>
+<section class="hero">
+<h1>Dein Spruch. <em>Als Bild.</em></h1>
+<p class="sub">Text schreiben, Hintergrund und Rahmen wählen, als PNG speichern.</p>
+</section>
+
+<main class="studio">
   <section class="stage">
     <canvas id="c" width="1080" height="1080" aria-label="Vorschau"></canvas>
+    <div class="bgbar">
+      <button id="prev" type="button" aria-label="Voriger Hintergrund">←</button>
+      <div class="bgname" id="bgname"></div>
+      <button id="next" type="button" aria-label="Nächster Hintergrund">→</button>
+      <button id="rand" type="button">Zufall</button>
+    </div>
+    <button class="primary dl" id="download" type="button">Als PNG speichern</button>
   </section>
 
   <section class="controls">
-    <label>Text
+    <div class="sec">
+      <div class="lab">01 — Dein Text</div>
+      <label class="f" style="margin-top:0"><span class="sr" hidden>Text</span>
       <textarea id="text">One-Night-Stand klingt immer so negativ.
 
-Wie wäre es stattdessen mit Stichprobe?</textarea>
-    </label>
+Wie wäre es stattdessen mit Stichprobe?</textarea></label>
+    </div>
 
-    <label>Schriftgröße: <span id="sizeVal">64</span>
-      <input type="range" id="size" min="28" max="120" value="64">
-    </label>
-
-    <label>Schriftart
+    <div class="sec">
+      <div class="lab">02 — Schrift</div>
+      <label class="f">Schriftart
       <select id="font">
         <option value="'Trebuchet MS', 'Segoe UI', sans-serif">Trebuchet</option>
         <option value="Arial, Helvetica, sans-serif">Arial</option>
@@ -88,13 +120,16 @@ Wie wäre es stattdessen mit Stichprobe?</textarea>
         <option value="Papyrus, fantasy">Papyrus</option>
         <option value="system-ui, sans-serif">System</option>
       </select>
-    </label>
+      </label>
+      <div class="two">
+        <label class="f">Textfarbe <input type="color" id="color" value="#ffffff"></label>
+        <label class="f">Größe <b id="sizeVal">64</b> <input type="range" id="size" min="28" max="120" value="64"></label>
+      </div>
+    </div>
 
-    <label>Textfarbe
-      <input type="color" id="color" value="#ffffff">
-    </label>
-
-    <label>Schatten
+    <div class="sec">
+      <div class="lab">03 — Schatten</div>
+      <label class="f">Stil
       <select id="shStyle">
         <option value="soft" selected>Weich</option>
         <option value="hard">Hart</option>
@@ -104,25 +139,16 @@ Wie wäre es stattdessen mit Stichprobe?</textarea>
         <option value="outline">Kontur</option>
         <option value="none">Kein Schatten</option>
       </select>
-    </label>
+      </label>
+      <div class="two">
+        <label class="f">Farbe <input type="color" id="shColor" value="#000000"></label>
+        <label class="f">Stärke <b id="shSizeVal">12</b> <input type="range" id="shSize" min="2" max="40" value="12"></label>
+      </div>
+    </div>
 
-    <label>Schattenfarbe
-      <input type="color" id="shColor" value="#000000">
-    </label>
-
-    <label>Schattenstärke: <span id="shSizeVal">12</span>
-      <input type="range" id="shSize" min="2" max="40" value="12">
-    </label>
-
-    <label>Abdunklung: <span id="dimVal">45</span>%
-      <input type="range" id="dim" min="0" max="80" value="45">
-    </label>
-
-    <label>Wasserzeichen
-      <input type="text" id="wm" value="@Massimo_71_">
-    </label>
-
-    <label>Rahmen
+    <div class="sec">
+      <div class="lab">04 — Rahmen</div>
+      <label class="f">Stil
       <select id="frameStyle">
         <option value="none">Kein Rahmen</option>
         <option value="solid" selected>Durchgezogen</option>
@@ -142,34 +168,40 @@ Wie wäre es stattdessen mit Stichprobe?</textarea>
         <option value="film">Filmstreifen</option>
         <option value="mat">Passepartout</option>
       </select>
-    </label>
-
-    <label>Rahmenfarbe
-      <input type="color" id="frameColor" value="#ffffff">
-    </label>
-
-    <label>Rahmenstärke: <span id="frameWVal">24</span>
-      <input type="range" id="frameW" min="6" max="80" value="24">
-    </label>
-
-    <div>
-      <div class="row">
-        <button id="prev" type="button">← Zurück</button>
-        <button id="rand" type="button">Zufall</button>
-        <button id="next" type="button">Weiter →</button>
+      </label>
+      <div class="two">
+        <label class="f">Farbe <input type="color" id="frameColor" value="#ffffff"></label>
+        <label class="f">Stärke <b id="frameWVal">24</b> <input type="range" id="frameW" min="6" max="80" value="24"></label>
       </div>
-      <div class="bgname" id="bgname"></div>
     </div>
 
-    <label class="row" style="display:flex">
-      <button type="button" id="uploadBtn">Eigenes Bild</button>
-      <button type="button" id="resetBtn">Eigenes Bild entfernen</button>
-    </label>
-    <input type="file" id="file" accept="image/*">
+    <div class="sec">
+      <div class="lab">05 — Hintergrund</div>
+      <label class="f">Abdunklung <b><span id="dimVal">45</span> %</b> <input type="range" id="dim" min="0" max="80" value="45"></label>
+      <label class="f">Wasserzeichen <input type="text" id="wm" value="driftware.online"></label>
+      <div class="files">
+        <button type="button" id="uploadBtn">Eigenes Bild</button>
+        <button type="button" id="resetBtn">Eigenes Bild entfernen</button>
+      </div>
+      <input type="file" id="file" accept="image/*">
+    </div>
 
-    <button class="primary" id="download" type="button">Als PNG speichern</button>
+    <button class="primary dl2" id="download2" type="button" style="width:100%">Als PNG speichern</button>
   </section>
 </main>
+</div>
+
+<div class="end">
+<div class="wrap">
+<h2>Nur <b>Text?</b></h2>
+<p>Dann gib deinem Satz erst mal eine andere Schrift.</p>
+<a class="btn" href="/schriftgenerator/">Zum Schriftgenerator →</a>
+<footer>
+<span>© 2026 Driftware</span>
+<span><a href="/privacy.html">Datenschutz</a><a href="/terms.html">Nutzungsbedingungen</a><a href="/impressum.html">Impressum</a></span>
+</footer>
+</div>
+</div>
 
 <script>
 const cv = document.getElementById('c');
@@ -475,6 +507,8 @@ $('download').onclick = () => {
 };
 
 buildBackground();
+
+document.getElementById('download2').onclick = () => document.getElementById('download').click();
 </script>
 </body>
 </html>
