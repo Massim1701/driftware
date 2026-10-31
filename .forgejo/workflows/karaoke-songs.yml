@@ -10,8 +10,11 @@ name: Karaoke-Songs nachziehen
 # wird daraus deterministisch neu gebaut und mit committet.
 #
 # Zeitplan: kein eigener -- dritter Schritt der Tageskette (check-dead-videos -> nachts -> karaoke-songs
-# -> backup-fornetta), hoechstens 5 h. Ist alles erledigt, endet ein Lauf nach Sekunden.
-# Bei einer YouTube-Sperre (viele Fehler in Folge) bricht der Lauf von selbst ab.
+# -> backup-fornetta). Ein Lauf dauert hoechstens 60 Minuten, damit der einzige Runner nicht stundenlang
+# blockiert ist (Waechter, Caretaker, Backup kommen dazwischen dran). Sind danach noch Songs offen, reiht
+# sich der Workflow am Ende hinten neu ein (meldung, Schritt "Neu einreihen"). Ist alles erledigt, endet
+# ein Lauf nach Sekunden und es wird nichts mehr eingereiht.
+# Bei einer YouTube-Sperre (viele Fehler in Folge) bricht der Lauf von selbst ab und reiht sich nicht neu ein.
 on:
   workflow_dispatch:
     inputs:
@@ -39,7 +42,9 @@ env:
 jobs:
   karaoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 320
+    timeout-minutes: 90
+    outputs:
+      weiter: ${{ steps.fortschritt.outputs.weiter }}
     steps:
       - uses: actions/checkout@v4
 
@@ -51,16 +56,36 @@ jobs:
         run: pip install --quiet yt-dlp ytmusicapi
 
       - name: Studiofassungen suchen
-        timeout-minutes: 305
+        timeout-minutes: 75
         env:
-          KARAOKE_TIME_BUDGET_SECONDS: '18000'
+          KARAOKE_TIME_BUDGET_SECONDS: '3600'
           LIMIT: ${{ inputs.limit }}
         run: |
+          set -o pipefail
           if [ -n "$LIMIT" ]; then
-            python3 tools/fetch_karaoke_videos.py --limit "$LIMIT"
+            python3 tools/fetch_karaoke_videos.py --limit "$LIMIT" 2>&1 | tee /tmp/karaoke-lauf.log
           else
-            python3 tools/fetch_karaoke_videos.py
+            python3 tools/fetch_karaoke_videos.py 2>&1 | tee /tmp/karaoke-lauf.log
           fi
+
+      - name: Fortschritt auswerten (neu einreihen?)
+        id: fortschritt
+        if: always()
+        env:
+          LIMIT: ${{ inputs.limit }}
+        run: |
+          # Neu einreihen nur, wenn noch Songs offen sind, dieser Lauf etwas geschafft hat und
+          # keine YouTube-Sperre erkannt wurde (sonst Endlosschleife). Mit LIMIT (Test) nie.
+          WEITER=false
+          if [ -z "$LIMIT" ] && [ -f /tmp/karaoke-lauf.log ]; then
+            OFFEN=$(sed -n 's/.*Noch offen: \([0-9]*\)\..*/\1/p' /tmp/karaoke-lauf.log | tail -1)
+            DONE=$(sed -n 's/^Fertig fuer diesen Lauf: \([0-9]*\) bearbeitet.*/\1/p' /tmp/karaoke-lauf.log | tail -1)
+            SPERRE=$(grep -c 'Zu viele YouTube-Fehler' /tmp/karaoke-lauf.log || true)
+            echo "offen=${OFFEN:-?} bearbeitet=${DONE:-?} sperre=$SPERRE"
+            if [ "${OFFEN:-0}" -gt 0 ] && [ "${DONE:-0}" -gt 0 ] && [ "$SPERRE" = "0" ]; then WEITER=true; fi
+          fi
+          echo "weiter=$WEITER" >> "$GITHUB_OUTPUT"
+          echo "Neu einreihen: $WEITER"
 
       - name: Karaoke-Kachel neu bauen
         if: always()
@@ -140,3 +165,15 @@ jobs:
             -d "{\"ref\":\"master\",\"inputs\":{\"kette\":\"true\"}}" \
             "$API/repos/$GITHUB_REPOSITORY/actions/workflows/backup-fornetta.yml/dispatches" \
             && echo "Tageskette: backup-fornetta.yml gestartet" || { echo "::error::Tageskette: backup-fornetta.yml konnte nicht gestartet werden"; exit 1; }
+
+      - name: Neu einreihen (Karaoke weiter, nach den anderen Jobs)
+        # Als LETZTER Schritt: Backup, Waechter und Caretaker stehen dann schon vor uns in der Warteschlange.
+        if: ${{ always() && needs.karaoke.outputs.weiter == 'true' }}
+        env:
+          TOKEN: ${{ secrets.FORGEJO_TOKEN || github.token }}
+        run: |
+          API="${GITHUB_API_URL:-http://192.168.0.50:3000/api/v1}"
+          curl -fsS -m 30 -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
+            -d '{"ref":"master","inputs":{}}' \
+            "$API/repos/$GITHUB_REPOSITORY/actions/workflows/karaoke-songs.yml/dispatches" \
+            && echo "Karaoke neu eingereiht" || echo "::warning::Karaoke konnte nicht neu eingereiht werden (naechste Tageskette macht weiter)"
