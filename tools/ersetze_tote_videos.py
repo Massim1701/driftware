@@ -2,9 +2,11 @@
 """Sucht fuer tote/nicht einbettbare YouTube-Videos (queue/dead-videos.json, aus tools/check_dead_videos.py)
 ein neues Video und tauscht es in allen Katalogen aus.
 
-Ablauf je toter Video-ID: Interpret/Titel des Eintrags per yt-dlp suchen (5 Treffer, wie beim Server-Import),
-nur nehmen, wenn Interpret UND Titel zum Videotitel passen, das Video nicht selbst tot ist (oEmbed) und nicht
-schon im selben Genre steht. Dann in ALLEN Eintraegen mit der alten ID: yt tauschen; th/cv nur dann, wenn sie
+Ablauf je toter Video-ID: ZUERST die Studio-Aufnahme des Labels suchen (Kanal "Interpret - Topic": Originalton,
+als Bild nur das Albumcover, fast immer einbettbar). Nur wenn es die nicht gibt, per yt-dlp suchen (5 Treffer, wie
+beim Server-Import) -- aber nur Videos des Interpreten selbst, eines Topic- oder Vevo-Kanals, nie Fremd-Uploads.
+Immer: Interpret UND Titel muessen zum Videotitel passen, das Video darf nicht selbst tot sein (oEmbed) und nicht
+schon im selben Genre stehen. Dann in ALLEN Eintraegen mit der alten ID: yt tauschen; th/cv nur dann, wenn sie
 auf das alte Video zeigen (Discogs-Cover bleiben). Findet sich nichts, bleibt der Eintrag unveraendert --
 es wird nie ein Lied geloescht.
 
@@ -21,6 +23,7 @@ import os
 import random
 import re
 import subprocess
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -31,7 +34,12 @@ STATE = os.path.join(ROOT, "queue", "dead-videos-ersatz.json")
 YT_DLP = os.environ.get("YT_DLP", "yt-dlp")
 BUDGET = int(os.environ.get("ERSATZ_TIME_BUDGET_SECONDS", "1800"))
 ERNEUT_NACH = 30 * 86400
+# "nichts"-Eintraege aus der Zeit vor der Topic-Suche (Stand 2026-10-31) werden einmal sofort neu versucht
+METHODE_SEIT = 1793452589
 START = time.time()
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import fetch_karaoke_videos as fk  # Topic-Erkennung und Studio-Titel-Regeln gemeinsam mit dem Karaoke-Job
 
 FORMATE = [dict(separators=(",", ":"), ensure_ascii=False), dict(ensure_ascii=False), dict(indent=2, ensure_ascii=False)]
 
@@ -81,6 +89,62 @@ def suche(a, t):
     return []
 
 
+def titel_varianten(t):
+    """Discogs-Doppeltitel ("A / B", "A c/w B") in einzelne Titel zerlegen; der volle Titel kommt zuerst."""
+    teile = [x.strip() for x in re.split(r"\s+/\s+|\s+c/w\s+", t) if x.strip()]
+    return [t] + [x for x in teile if x != t][:2]
+
+
+def suche_topic(a, t):
+    """Studio-Aufnahme des Labels: Kanal "Interpret - Topic", Titel = nackter Songtitel. Gibt Treffer
+    (meistgesehene zuerst) als yt-dlp-Eintraege zurueck."""
+    # Discogs-Zusaetze entfernen: "Hope (35)" -> "Hope", "Clarendonians*" -> "Clarendonians", erster von "A / B"
+    a = re.split(r"\s+/\s+", re.sub(r"\s*\(\d+\)", "", a).replace("*", ""))[0].strip()
+    if not a or a.lower() in ("various", "unknown artist"):
+        return []
+    a_key = fk.norm(fk.lyrics_artist(a))
+    for tv in titel_varianten(t):
+        t_key = fk.norm(fk.lyrics_clean(tv))
+        if not a_key or not t_key:
+            continue
+        treffer = []
+        for q in (f"ytsearch10:{fk.lyrics_artist(a)} {fk.lyrics_clean(tv)} topic",
+                  f'ytsearch10:"{fk.lyrics_clean(tv)}" {fk.lyrics_artist(a)} "provided to youtube by"'):
+            try:
+                res = fk.yt_json([q, "--flat-playlist"])
+            except Exception:
+                continue
+            for e in res.get("entries") or []:
+                kanal = e.get("channel") or e.get("uploader") or ""
+                if not re.search(r"-\s*topic$", kanal, flags=re.IGNORECASE):
+                    continue  # nur echte Topic-Kanaele
+                ch = fk.norm(re.sub(r"\s*-\s*topic$", "", kanal, flags=re.IGNORECASE))
+                raw = e.get("title") or ""
+                head, sep, tail = raw.partition(" - ")
+                if sep and fk.norm(head) == ch:
+                    raw = tail
+                if not e.get("id") or not ch or not fk.ist_studio_titel(raw) or fk.norm(fk.lyrics_clean(raw)) != t_key:
+                    continue
+                if not (ch == a_key or (len(ch) > 3 and len(a_key) > 3 and (ch in a_key or a_key in ch))):
+                    continue
+                treffer.append(e)
+            if treffer:
+                break
+            time.sleep(random.uniform(0.5, 1.0))
+        if treffer:
+            return sorted(treffer, key=lambda x: -(x.get("view_count") or 0))
+    return []
+
+
+def vertrauenswuerdig(a, v):
+    """Fuer den Rueckfall: Kanal ist der Interpret selbst, ein Topic- oder ein Vevo-Kanal -- kein Fremd-Upload."""
+    kanal = v.get("channel") or v.get("uploader") or ""
+    ch = norm(re.sub(r"\s*-\s*topic$", "", kanal, flags=re.IGNORECASE))
+    art = norm(re.split(r"\s+(?:feat\.?|ft\.?|featuring|with|and|&|x)\s+|,", re.sub(r"^the ", "", re.sub(r"\(\d+\)", "", a.lower())))[0])
+    return bool(ch) and (bool(re.search(r"-\s*topic$", kanal, flags=re.IGNORECASE)) or "vevo" in ch
+                         or ch == art or (len(ch) > 3 and len(art) > 3 and (ch in art or art in ch)))
+
+
 def lebt(vid):
     u = f"https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={vid}&format=json"
     try:
@@ -118,7 +182,10 @@ def main():
                 if s.get("yt") in tot:
                     eintraege.setdefault(s["yt"], []).append((path, g, s))
     jetzt = time.time()
-    offen = [y for y in eintraege if y not in state["ersetzt"] and jetzt - state["nichts"].get(y, 0) > ERNEUT_NACH]
+    offen = [y for y in eintraege if y not in state["ersetzt"]
+             and (jetzt - state["nichts"].get(y, 0) > ERNEUT_NACH or state["nichts"].get(y, 0) < METHODE_SEIT)]
+    if args.dry:
+        random.shuffle(offen)  # Trockenlauf: Stichprobe quer durch alle offenen Eintraege
     print(f"Tote Videos: {len(eintraege)} in Katalogen, {len(offen)} offen")
 
     def genre_ids(path, g):
@@ -144,18 +211,24 @@ def main():
         for path, g, _ in liste:
             belegt |= genre_ids(path, g)
         # nie: Cover, Karaoke, Instrumental, Reaktionen, veraenderte Geschwindigkeit -- ausser der Titel des Liedes selbst sagt das
-        verboten = re.compile(r"karaoke|\bcover\b|instrumental|reaction|slowed|sped up|nightcore|\b8d\b|tutorial", re.I)
+        verboten = re.compile(r"karaoke|\bcover\b|instrumental|reaction|slowed|sped up|nightcore|\b8d\b|tutorial|trailer|teaser|snippet|preview", re.I)
+        # 1. Studio-Aufnahme des Labels (Topic, Albumcover als Bild)
+        neu = None
+        for v in suche_topic(a, t):
+            if v["id"] != alt and v["id"] not in tot and v["id"] not in belegt and lebt(v["id"]):
+                neu = v
+                break
+        # 2. Rueckfall: Video des Interpreten selbst / Vevo, nie Fremd-Uploads
         gute = []
-        for rang, v in enumerate(suche(a, t)):
+        for rang, v in enumerate([] if neu else suche(a, t)):
             vid = v.get("id")
             vt = v.get("title") or ""
-            if not vid or vid == alt or vid in tot or vid in belegt or not passt(a, t, v):
+            if not vid or vid == alt or vid in tot or vid in belegt or not passt(a, t, v) or not vertrauenswuerdig(a, v):
                 continue
             if verboten.search(vt) and not verboten.search(t):
                 continue
             lyrics = 1 if re.search(r"lyric", vt, re.I) and not re.search(r"lyric", t, re.I) else 0
             gute.append((lyrics, rang, v))
-        neu = None
         for _, _, v in sorted(gute, key=lambda x: (x[0], x[1])):  # ohne Lyrics zuerst, dann Suchreihenfolge (Vevo steht vorn)
             if lebt(v["id"]):
                 neu = v
