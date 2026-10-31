@@ -1,7 +1,10 @@
 name: Tote Videos pruefen
 
-# Prueft taeglich einen Teil der YouTube-IDs (tools/check_dead_videos.py, oEmbed)
+# Prueft alle 4 Wochen die YouTube-IDs (tools/check_dead_videos.py, oEmbed)
 # und schreibt die toten/nicht einbettbaren IDs nach queue/dead-videos.json.
+# Der Workflow selbst laeuft weiter jeden Tag (er startet die Tageskette); die Pruefung wird an Tagen
+# ohne Faelligkeit uebersprungen (Stempel: queue/dead-videos-letzter-lauf.txt, 28 Tage). Von Hand
+# gestartet (ohne "kette") wird immer geprueft. Das Ersetzen toter Videos laeuft taeglich weiter.
 # Es wird NICHTS automatisch entfernt -- die Liste dient der gezielten Neu-Suche.
 # ERSTER SCHRITT DER TAGESKETTE (einziger Zeitplan): check-dead-videos -> nachts -> karaoke-songs
 # -> backup-fornetta -> waechter. Jeder Schritt startet am Ende den naechsten (Runner schafft nur einen Job).
@@ -36,7 +39,23 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Pruefung faellig? (alle 28 Tage)
+        id: faellig
+        env:
+          KETTE: ${{ (github.event_name == 'schedule' || inputs.kette == 'true') && 'true' || '' }}
+        run: |
+          LETZT=$(cat queue/dead-videos-letzter-lauf.txt 2>/dev/null || echo 1970-01-01)
+          TAGE=$(( ( $(date -u +%s) - $(date -u -d "$LETZT" +%s) ) / 86400 ))
+          if [ "$KETTE" = "true" ] && [ "$TAGE" -lt 28 ]; then
+            echo "faellig=false" >> "$GITHUB_OUTPUT"
+            echo "Letzte Pruefung $LETZT (vor $TAGE Tagen) -- uebersprungen, naechste nach 28 Tagen."
+          else
+            echo "faellig=true" >> "$GITHUB_OUTPUT"
+            echo "Pruefung faellig (letzte: $LETZT, vor $TAGE Tagen)."
+          fi
+
       - name: Pruefstand wiederherstellen
+        if: steps.faellig.outputs.faellig == 'true'
         uses: actions/cache/restore@v4
         with:
           path: queue/dead-videos-state.json
@@ -44,19 +63,24 @@ jobs:
           restore-keys: dead-videos-state-
 
       - name: Pruefen (ca. 60 Minuten)
-        run: python3 tools/check_dead_videos.py 3600 12
+        if: steps.faellig.outputs.faellig == 'true'
+        run: |
+          python3 tools/check_dead_videos.py 3600 12
+          date -u +%F > queue/dead-videos-letzter-lauf.txt
 
       - name: Pruefstand speichern
+        if: steps.faellig.outputs.faellig == 'true'
         uses: actions/cache/save@v4
         with:
           path: queue/dead-videos-state.json
           key: dead-videos-state-${{ github.run_id }}
 
       - name: Ergebnis committen und pushen
+        if: steps.faellig.outputs.faellig == 'true'
         run: |
           git config user.name "driftware-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add queue/dead-videos.json
+          git add queue/dead-videos.json queue/dead-videos-letzter-lauf.txt
           if git diff --cached --quiet; then
             echo "Keine Aenderung."
             exit 0

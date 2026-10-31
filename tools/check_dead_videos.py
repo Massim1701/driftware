@@ -17,8 +17,8 @@ for f in glob.glob(os.path.join(ROOT, "*-music", "songs.json")):
         for s in v:
             if s.get("yt"): pages.setdefault(s["yt"], set()).add(slug)
 ids = [i for i in pages if i not in state["checked"]]
-# aelteste zuerst: bereits gepruefte (aelter als 30 Tage) hinten anstellen
-ids += sorted((i for i in pages if i in state["checked"] and time.time() - state["checked"][i][0] > 30 * 86400), key=lambda i: state["checked"][i][0])
+# aelteste zuerst: bereits gepruefte (aelter als 27 Tage) hinten anstellen (Lauf alle 28 Tage)
+ids += sorted((i for i in pages if i in state["checked"] and time.time() - state["checked"][i][0] > 27 * 86400), key=lambda i: state["checked"][i][0])
 t0 = time.time()
 def check(i):
     if time.time() - t0 > BUDGET: return i, None
