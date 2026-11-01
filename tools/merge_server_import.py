@@ -4,7 +4,8 @@
 
 - Ziel: <dec>-music/songs.json, Kategorie c.genre_key; Chillhouse-Dateien (chill_*) -> chillhouse-music.
 - Nicht uebernommen: Video-ID oder Interpret+Titel schon irgendwo im Katalog, doppelt im Import,
-  ohne Genre oder Genre "Ohne", Ziel-Katalog unbekannt.
+  ohne Genre-Angabe, Ziel-Katalog unbekannt. Genre "Ohne" kommt in die Kategorie "Ohne" der Dekade
+  (Genre wird spaeter zugeordnet).
 - Danach: die Dekaden-Wartelisten queue/<dekade>-erweiterung.json verlieren alle Eintraege, die jetzt im Katalog derselben Dekade stehen.
 - Schreibformat jeder Datei bleibt erhalten. Fuer die neuen Eintraege: kein Land/Label/Stil, wenn der
   Import keine hatte (die ergaenzt tools/anreichern_lieder.py).
@@ -85,7 +86,7 @@ def main():
                 skip("Interpret+Titel schon vorhanden")
                 continue
             g = c.get("genre_key")
-            if not g or g == "Ohne":
+            if not g:
                 skip("ohne Genre")
                 continue
             ziel = os.path.join(ROOT, "chillhouse-music" if chill else f"{c.get('dec')}-music", "songs.json")
