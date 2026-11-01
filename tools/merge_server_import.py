@@ -4,7 +4,7 @@
 
 - Ziel: <dec>-music/songs.json, Kategorie c.genre_key; Chillhouse-Dateien (chill_*) -> chillhouse-music.
 - Nicht uebernommen: Video-ID oder Interpret+Titel schon irgendwo im Katalog, doppelt im Import,
-  ohne Genre-Angabe, Ziel-Katalog unbekannt. Genre "Ohne" kommt in die Kategorie "Ohne" der Dekade
+  Ziel-Katalog unbekannt (Chillhouse-Eintraege ohne Genre). Dekaden-Lieder ohne Genre-Angabe und Genre "Ohne" kommen in die Kategorie "Ohne" der Dekade
   (Genre wird spaeter zugeordnet).
 - Danach: die Dekaden-Wartelisten queue/<dekade>-erweiterung.json verlieren alle Eintraege, die jetzt im Katalog derselben Dekade stehen.
 - Schreibformat jeder Datei bleibt erhalten. Fuer die neuen Eintraege: kein Land/Label/Stil, wenn der
@@ -87,8 +87,10 @@ def main():
                 continue
             g = c.get("genre_key")
             if not g:
-                skip("ohne Genre")
-                continue
+                if chill:
+                    skip("ohne Genre")
+                    continue
+                g = "Ohne"  # Dekaden-Lieder ohne Genre landen in der Kategorie "Ohne"
             ziel = os.path.join(ROOT, "chillhouse-music" if chill else f"{c.get('dec')}-music", "songs.json")
             if ziel not in kat:
                 skip("Ziel-Katalog fehlt")
