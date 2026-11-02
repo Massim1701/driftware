@@ -27,6 +27,12 @@ DISCOGS_TOKEN = os.environ.get("DISCOGS_TOKEN", "").strip()
 
 YOUTUBE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 
+# Lieder unter 30 Sekunden (Jingles, Senderkennungen, Werbung) kommen nicht in den Katalog.
+# Gemessen wird die Laenge der YouTube-Treffer (yt-dlp liefert "duration"); Treffer ohne
+# Laenge (YouTube-API-Fallback) zaehlen als lang genug.
+MIN_DAUER_S = 30
+_NUR_KURZE = False  # von search_youtube gesetzt: es gab Treffer, aber alle kuerzer als MIN_DAUER_S
+
 # Sentinel im "g"-Feld eines Warteliste-Eintrags: markiert eine
 # Loesch-Anfrage statt einer Genre-Korrektur (siehe Verwendung unten).
 # Bewusst kein gueltiger Genre-Name, damit es nie mit einem echten Bucket
@@ -204,9 +210,17 @@ def search_youtube(artist, title):
     damit ein echter Blocker (statt "Song existiert wirklich nicht") in den
     Action-Logs sichtbar ist, statt stillschweigend zu verschwinden.
     """
+    global _NUR_KURZE
+    _NUR_KURZE = False
     candidates = _youtube_candidates(artist, title)
     if not candidates:
         return None
+    lang = [c for c in candidates
+            if not (isinstance(c.get("duration"), (int, float)) and c["duration"] < MIN_DAUER_S)]
+    if not lang:
+        _NUR_KURZE = True
+        return None
+    candidates = lang
     # VEVO-Kanaele bevorzugen (Standing Rule aus dem Projekt: beste Qualitaet).
     for c in candidates:
         channel = (c.get("channel") or c.get("uploader") or "").lower()
@@ -600,6 +614,9 @@ def main():
 
             yt_id = release.get("_yt") or valid_yt_id(entry.get("yt")) or search_youtube(artist, title)
             vk_url = valid_vk_url(entry.get("vk"))
+            if not yt_id and not vk_url and _NUR_KURZE:
+                print(f"  alle YouTube-Treffer kuerzer als {MIN_DAUER_S} s -> kein Lied, wird aus der Warteliste entfernt")
+                continue
             if not yt_id and not vk_url:
                 print("  kein YouTube-Link und kein VK-Link gefunden, bleibt in der Warteliste")
                 remaining.append(entry)
