@@ -21,6 +21,16 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 QUEUE = os.path.join(ROOT, "queue", "fehlende-lieder.json")
 
 
+# Kein Lied, sondern Senderkennung/Moderation, die der Stream als Titel meldet
+# (z.B. "Koenig Boris - 90s90s"). Wird nicht in die Warteliste uebernommen.
+KEIN_LIED_TITEL = re.compile(r"^\s*\d0s\d0s\s*$", re.I)
+KEIN_LIED_INTERPRET = {"konigboris"}
+
+
+def kein_lied(a, t):
+    return bool(KEIN_LIED_TITEL.match(t or "")) or re.sub(r"[^a-z0-9]", "", deacc(a)) in KEIN_LIED_INTERPRET
+
+
 def deacc(s):
     return "".join(c for c in unicodedata.normalize("NFKD", s or "") if not unicodedata.combining(c)).lower()
 
@@ -83,7 +93,7 @@ def main():
         except (ValueError, KeyError):
             continue
         gesehen += 1
-        if not akey(a) or not tkey(t) or ist_bekannt(a, t):
+        if not akey(a) or not tkey(t) or kein_lied(a, t) or ist_bekannt(a, t):
             continue
         merke(a, t)
         neu.append({"a": a, "t": t})
