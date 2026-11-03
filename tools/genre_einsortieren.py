@@ -26,7 +26,7 @@ TOKENS = {
     "jazz": ["JazzBlues"], "blues": ["JazzBlues"], "soul jazz": ["JazzBlues"], "smooth jazz": ["JazzBlues"], "soundtrack": ["SoundtrackKlassik"],
     "hip hop": ["OldSchoolHipHop", "HipHopBoomBap"], "boom bap": ["HipHopBoomBap"], "conscious": ["OldSchoolHipHop", "HipHopBoomBap", "GangstaConsciousHipHop"],
     "gangsta": ["GangstaGFunk", "GangstaConsciousHipHop"], "g-funk": ["GangstaGFunk"], "trap": ["CrunkTrapSnap", "TrapMoombahton", "TrapPhonk"],
-    "house": ["House"], "electro house": ["ElectroHouse"], "progressive house": ["ProgTechHouse", "DeepProgTropicalHouse", "DeepProgHouse"], "deep house": ["DeepProgTropicalHouse", "DeepProgHouse"],
+    "house": ["House", "ElectroHouse", "ProgTechHouse", "DeepProgTropicalHouse"], "electro house": ["ElectroHouse"], "progressive house": ["ProgTechHouse", "DeepProgTropicalHouse", "DeepProgHouse"], "deep house": ["DeepProgTropicalHouse", "DeepProgHouse"],
     "tech house": ["ProgTechHouse"], "minimal": ["House"], "techno": ["Techno"], "trance": ["Trance", "TranceHardDance"], "electro": ["Electro"],
     "drum n bass": ["DrumNBass", "JungleDnB"], "jungle": ["JungleDnB"], "dubstep": ["DubstepGrime", "DubstepFutureBass"], "future bass": ["DubstepFutureBass"],
     "grime": ["UKBassGrimeDrill", "DubstepGrime"], "drill": ["UKBassGrimeDrill"], "ambient": ["AmbientDowntempo", "AmbientLoFi"], "downtempo": ["Downtempo", "AmbientDowntempo"],
@@ -35,7 +35,9 @@ TOKENS = {
     "nu metal": ["NuMetalHardcore", "NuMetal", "MetalcoreNuMetalHardcore"], "freestyle": ["Freestyle"],
     "chanson": ["Chanson"], "levenslied": ["Chanson"], "vocal": ["VocalEasyListening"], "easy listening": ["VocalEasyListening"], "lounge": ["VocalEasyListening"], "light music": ["VocalEasyListening"],
     "novelty": ["NoveltyComedy", "NoveltyKids"], "parody": ["NoveltyComedy", "NoveltyKids"], "comedy": ["NoveltyComedy", "NoveltyKids"],
-    "holiday": ["Holiday"], "christmas": ["Holiday"],
+    "holiday": ["Holiday"], "christmas": ["Holiday"], "pop": ["PopCharts"], "classical": ["SoundtrackKlassik"], "dance": ["DancePop"], "club": ["DancePop"],
+    "uk garage": ["DubstepGrime", "UKBassGrimeDrill"], "2-step": ["DubstepGrime", "UKBassGrimeDrill"], "2-step garage": ["DubstepGrime", "UKBassGrimeDrill"],
+    "hardcore hip-hop": ["GangstaGFunk", "GangstaConsciousHipHop", "HipHopBoomBap"], "jazzy hip-hop": ["HipHopBoomBap", "GangstaConsciousHipHop", "PopRap"], "latin hip hop": ["PopRap"],
     "ranchera": ["LatinWorld"], "african": ["LatinWorld"], "cumbia": ["LatinWorld"], "salsa": ["LatinWorld"], "bolero": ["LatinWorld"], "mpb": ["LatinWorld"], "latin": ["LatinWorld"],
     "samba": ["LatinWorld"], "bossa nova": ["LatinWorld"], "afrobeat": ["LatinWorld", "ReggaeDubAfrobeat"], "highlife": ["LatinWorld"], "flamenco": ["LatinWorld"],
 }
@@ -45,7 +47,7 @@ for _t in DARK:
 # Zweite Stufe: Discogs-GENRE (nur, wenn kein Style einen Treffer ergibt). "Rock" und "Electronic" sind zu breit/mehrdeutig und fehlen hier absichtlich;
 # "Electronic" wird ueber den Style "electronic"/"electro" abgedeckt.
 GENRE_TOKENS = {
-    "hip hop": ["OldSchoolHipHop", "HipHopBoomBap"], "funk / soul": ["FunkSoul", "ContemporaryRnB", "RnBNeoSoul"],
+    "hip hop": ["OldSchoolHipHop", "HipHopBoomBap", "GangstaConsciousHipHop", "GangstaGFunk", "PopRap"], "funk / soul": ["FunkSoul", "ContemporaryRnB", "RnBNeoSoul"],
     "reggae": ["ReggaeDub", "ReggaeDancehall", "Dancehall", "ReggaeDubAfro", "ReggaeDubAfrobeat"],
     "jazz": ["JazzBlues"], "blues": ["JazzBlues"], "country": ["Country", "FolkCountry"], "& country": ["Country", "FolkCountry"],
     "classical": ["SoundtrackKlassik"], "stage & screen": ["SoundtrackKlassik"], "latin": ["LatinWorld", "LatinReggaeton", "Reggaeton"],
@@ -79,6 +81,8 @@ def kategorie(styles, katalog_keys, genres=None):
         return "PopRock"
     if "pop" in gs and "PopCharts" in katalog_keys:
         return "PopCharts"
-    if "rock" in gs and "ClassicRock" in katalog_keys:
-        return "ClassicRock"
+    if "rock" in gs:  # nur Rock, ohne naeheren Stil: die allgemeine Rock-Kategorie der Dekade
+        for k in ("ClassicRock", "RockClassic", "RockArenaAOR"):
+            if k in katalog_keys:
+                return k
     return None
