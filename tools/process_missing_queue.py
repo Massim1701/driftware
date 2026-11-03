@@ -321,7 +321,7 @@ def pick_bucket(catalog_data, discogs_release_data):
         # lesbare Woerter zerlegen und gegen Discogs-Styles/-Genres pruefen.
         readable = re.sub(r"(?<!^)(?=[A-Z])", " ", bucket_name).lower()
         words = [w for w in readable.split() if len(w) > 2]
-        if words and all(re.search(r"\b" + re.escape(w) + r"\b", haystack) for w in words):  # ganze Woerter ("electro" steckt sonst in "electronic")
+        if words and all(w in haystack for w in words):  # "electro" trifft bewusst auch "electronic" (gleiche Sache)
             return bucket_name
     return "Ohne"
 

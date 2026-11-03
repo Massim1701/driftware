@@ -27,7 +27,7 @@ TOKENS = {
     "hip hop": ["OldSchoolHipHop", "HipHopBoomBap"], "boom bap": ["HipHopBoomBap"], "conscious": ["OldSchoolHipHop", "HipHopBoomBap", "GangstaConsciousHipHop"],
     "gangsta": ["GangstaGFunk", "GangstaConsciousHipHop"], "g-funk": ["GangstaGFunk"], "trap": ["CrunkTrapSnap", "TrapMoombahton", "TrapPhonk"],
     "house": ["House"], "electro house": ["ElectroHouse"], "progressive house": ["ProgTechHouse", "DeepProgTropicalHouse", "DeepProgHouse"], "deep house": ["DeepProgTropicalHouse", "DeepProgHouse"],
-    "tech house": ["ProgTechHouse"], "minimal": ["House"], "techno": ["Techno"], "trance": ["Trance", "TranceHardDance"], "electro": ["Electro"],
+    "tech house": ["ProgTechHouse"], "minimal": ["House"], "techno": ["Techno"], "trance": ["Trance", "TranceHardDance"], "electro": ["Electro"], "electronic": ["Electro"],
     "drum n bass": ["DrumNBass", "JungleDnB"], "jungle": ["JungleDnB"], "dubstep": ["DubstepGrime", "DubstepFutureBass"], "future bass": ["DubstepFutureBass"],
     "grime": ["UKBassGrimeDrill", "DubstepGrime"], "drill": ["UKBassGrimeDrill"], "ambient": ["AmbientDowntempo", "AmbientLoFi"], "downtempo": ["Downtempo", "AmbientDowntempo"],
     "chillwave": ["ChillwaveVaporwave"], "vaporwave": ["ChillwaveVaporwave", "HyperpopVaporwave"], "hyperpop": ["HyperpopVaporwave"], "lo-fi": ["AmbientLoFi"],
