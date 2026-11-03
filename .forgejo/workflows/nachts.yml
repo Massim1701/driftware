@@ -50,9 +50,9 @@ jobs:
   fehlende:
     name: Fehlende Songs verarbeiten
     runs-on: ubuntu-latest
-    timeout-minutes: 160
+    timeout-minutes: 220
     env:
-      JOB_LIMIT_SECONDS: '9000'
+      JOB_LIMIT_SECONDS: '12600'
     if: ${{ !cancelled() && (inputs.nur == '' || inputs.nur == 'alle' || inputs.nur == 'fehlende') }}
     steps:
       - uses: actions/checkout@v4
@@ -74,7 +74,7 @@ jobs:
         env:
           DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          QUEUE_TIME_BUDGET_SECONDS: '8400'
+          QUEUE_TIME_BUDGET_SECONDS: '12000'
         run: python3 tools/process_missing_queue.py
 
       - name: Committen und pushen
@@ -87,7 +87,7 @@ jobs:
           queue/ '*-music/songs.json'
 
   aufrufzahlen:
-    name: YouTube-Aufrufzahlen aktualisieren
+    name: YouTube-Aufrufzahlen aktualisieren (woechentlich, sonntags)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -103,16 +103,27 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Wochentag pruefen (nur sonntags, von Hand immer)
+        id: tag
+        env:
+          NUR: ${{ inputs.nur }}
+          SCHRITT: aufrufzahlen
+        run: |
+          if [ "$NUR" = "$SCHRITT" ] || [ "$(date -u +%u)" = "7" ]; then echo "los=ja" >> "$GITHUB_OUTPUT"; else echo "los=nein" >> "$GITHUB_OUTPUT"; echo "Heute kein aufrufzahlen-Lauf (nur sonntags)"; fi
+
       - name: Startzeit merken
+        if: steps.tag.outputs.los == 'ja'
         run: echo "JOB_START_TS=$(date +%s)" >> "$GITHUB_ENV"
 
       - name: YouTube-Aufrufzahlen abrufen
+        if: steps.tag.outputs.los == 'ja'
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           VIEWCOUNT_TIME_BUDGET_SECONDS: '900'
         run: python3 tools/fetch_youtube_viewcounts.py
 
       - name: Committen und pushen
+        if: steps.tag.outputs.los == 'ja'
         run: |
           tools/push_retry.sh "YouTube-Aufrufzahlen aktualisiert" \
           'VIEWCOUNT_TIME_BUDGET_SECONDS=$REDO_BUDGET_SECONDS python3 tools/fetch_youtube_viewcounts.py' \
@@ -125,7 +136,8 @@ jobs:
     env:
       JOB_LIMIT_SECONDS: '3000'
     needs: aufrufzahlen
-    if: ${{ !cancelled() && (inputs.nur == '' || inputs.nur == 'alle' || inputs.nur == 'billboard') }}
+    # Seit 03.11.2026 abgeschaltet (Kandidatenliste leer, 2 neue Songs am 01.11.); nur noch von Hand (nur=billboard).
+    if: ${{ !cancelled() && inputs.nur == 'billboard' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -229,7 +241,7 @@ jobs:
           "queue/${DECADE_QUEUE_KEY}-erweiterung.json" "queue/${DECADE_QUEUE_KEY}-erweiterung-notfound.json" "${DECADE_QUEUE_KEY}-music/songs.json"
 
   bpm:
-    name: BPM-Werte ermitteln
+    name: BPM-Werte ermitteln (woechentlich, sonntags)
     runs-on: ubuntu-latest
     timeout-minutes: 120
     env:
@@ -245,15 +257,26 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Wochentag pruefen (nur sonntags, von Hand immer)
+        id: tag
+        env:
+          NUR: ${{ inputs.nur }}
+          SCHRITT: bpm
+        run: |
+          if [ "$NUR" = "$SCHRITT" ] || [ "$(date -u +%u)" = "7" ]; then echo "los=ja" >> "$GITHUB_OUTPUT"; else echo "los=nein" >> "$GITHUB_OUTPUT"; echo "Heute kein bpm-Lauf (nur sonntags)"; fi
+
       - name: Startzeit merken
+        if: steps.tag.outputs.los == 'ja'
         run: echo "JOB_START_TS=$(date +%s)" >> "$GITHUB_ENV"
 
       - name: Abhaengigkeiten installieren
+        if: steps.tag.outputs.los == 'ja'
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq libsndfile1 ffmpeg
           pip install --quiet yt-dlp librosa numpy
 
       - name: Dekade bestimmen
+        if: steps.tag.outputs.los == 'ja'
         id: pick
         env:
           INPUT_DECADE: ${{ inputs.dekade }}
@@ -265,11 +288,13 @@ jobs:
           fi
 
       - name: BPM-Werte ermitteln
+        if: steps.tag.outputs.los == 'ja'
         env:
           BPM_TIME_BUDGET_SECONDS: '5400'
         run: python3 bpm_fetch.py "${{ steps.pick.outputs.decade }}"
 
       - name: Committen und pushen
+        if: steps.tag.outputs.los == 'ja'
         env:
           BPM_DECADE_KEY: ${{ steps.pick.outputs.decade }}
         run: |
