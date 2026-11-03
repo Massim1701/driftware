@@ -4305,7 +4305,8 @@ var THEME_KEY_ICON = {
   RockClassic: 'guitar', Schlager: 'star', Ska: 'horn', SkaPunk: 'horn', SoftRock: 'cocktail',
   SynthPop: 'synth', SynthPopSynthwave: 'synth', Techno: 'pulse', Trance: 'pulse',
   TranceHardDance: 'pulse', TrapMoombahton: 'drum', TrapPhonk: 'drum', TripHop: 'cloud',
-  UKBassGrimeDrill: 'bass', Soul: 'vinyl', NeoSoul: 'vinyl', AcidJazz: 'horn', SmoothJazz: 'cocktail', NDW: 'synth'
+  UKBassGrimeDrill: 'bass', Soul: 'vinyl', NeoSoul: 'vinyl', AcidJazz: 'horn', SmoothJazz: 'cocktail', NDW: 'synth',
+  Chanson: 'mic', VocalEasyListening: 'cocktail', PsychGarageRock: 'guitar', NoveltyComedy: 'star', LatinWorld: 'palm', Holiday: 'star', EBMIndustrialDark: 'pulse'
 };
 
 function themeIconHTML(iconName) {
