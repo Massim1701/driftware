@@ -309,7 +309,7 @@ def pick_bucket(catalog_data, discogs_release_data):
     if "Ohne" in catalog_data:
         try:
             import genre_einsortieren
-            z = genre_einsortieren.kategorie(discogs_release_data.get("styles"), {k for k in catalog_data if k != "Ohne"})
+            z = genre_einsortieren.kategorie(discogs_release_data.get("styles"), {k for k in catalog_data if k != "Ohne"}, discogs_release_data.get("genres"))
             if z:
                 return z
         except Exception as e:
