@@ -45,8 +45,11 @@ for _t in DARK:
 # Zweite Stufe: Discogs-GENRE (nur, wenn kein Style einen Treffer ergibt). "Rock" und "Electronic" sind zu breit/mehrdeutig und fehlen hier absichtlich;
 # "Electronic" wird ueber den Style "electronic"/"electro" abgedeckt.
 GENRE_TOKENS = {
-    "hip hop": ["OldSchoolHipHop", "HipHopBoomBap"], "funk / soul": ["FunkSoul", "ContemporaryRnB", "RnBNeoSoul"], "reggae": ["ReggaeDub", "ReggaeDancehall", "Dancehall", "ReggaeDubAfro", "ReggaeDubAfrobeat"],
-    "pop": ["PopCharts"], "jazz": ["JazzBlues"], "blues": ["JazzBlues"], "country": ["Country", "FolkCountry"], "classical": ["SoundtrackKlassik"], "stage & screen": ["SoundtrackKlassik"],
+    "hip hop": ["OldSchoolHipHop", "HipHopBoomBap"], "funk / soul": ["FunkSoul", "ContemporaryRnB", "RnBNeoSoul"],
+    "reggae": ["ReggaeDub", "ReggaeDancehall", "Dancehall", "ReggaeDubAfro", "ReggaeDubAfrobeat"],
+    "jazz": ["JazzBlues"], "blues": ["JazzBlues"], "country": ["Country", "FolkCountry"], "& country": ["Country", "FolkCountry"],
+    "classical": ["SoundtrackKlassik"], "stage & screen": ["SoundtrackKlassik"], "latin": ["LatinWorld", "LatinReggaeton", "Reggaeton"],
+    "children's": ["NoveltyKids", "NoveltyComedy"], "electronic": ["Electro"],
 }
 
 
@@ -66,8 +69,16 @@ def kategorie(styles, katalog_keys, genres=None):
                 return k
     if isinstance(genres, str):
         genres = genres.split(",")
-    for t in [str(g).strip().lower() for g in (genres or []) if str(g).strip()]:
+    gs = [str(g).strip().lower() for g in (genres or []) if str(g).strip()]
+    # 1. spezifische Genres (Hip Hop, Funk / Soul, Jazz, Latin, ...), 2. Pop + Rock zusammen -> "Pop Rock", 3. nur Pop, 4. nur Rock (nur wo es "ClassicRock" gibt = 70er)
+    for t in gs:
         for k in GENRE_TOKENS.get(t, []):
             if k in katalog_keys:
                 return k
+    if "pop" in gs and "rock" in gs and "PopRock" in katalog_keys:
+        return "PopRock"
+    if "pop" in gs and "PopCharts" in katalog_keys:
+        return "PopCharts"
+    if "rock" in gs and "ClassicRock" in katalog_keys:
+        return "ClassicRock"
     return None
