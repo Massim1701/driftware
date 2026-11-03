@@ -172,6 +172,15 @@ jobs:
         env:
           TOKEN: ${{ secrets.FORGEJO_TOKEN || github.token }}
         run: |
+          # Nachtfenster 02:00-03:20 UTC: nicht neu einreihen, damit der einzige Runner um 03:15
+          # fuer die Tageskette (Tote Videos -> Nachtlauf -> Karaoke -> Backup) frei ist. Karaoke
+          # laeuft danach als Teil der Kette weiter (und reiht sich dann wieder selbst ein).
+          # Eingefuehrt 03.11.2026: die Kette startete sonst erst 06:04 statt 03:15.
+          MINUTEN=$((10#$(date -u +%H%M)))
+          if [ "$MINUTEN" -ge 200 ] && [ "$MINUTEN" -lt 320 ]; then
+            echo "Nachtfenster (02:00-03:20 UTC): Karaoke wird nicht neu eingereiht, die Tageskette startet Karaoke selbst."
+            exit 0
+          fi
           API="${GITHUB_API_URL:-http://192.168.0.50:3000/api/v1}"
           curl -fsS -m 30 -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
             -d '{"ref":"master","inputs":{}}' \
