@@ -8,7 +8,7 @@
 <link rel="preload" href="/fonts/Inter-normal-500-latin-567244.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/Inter-normal-600-latin-567244.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/Inter-normal-700-latin-567244.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" as="fetch" href="songs.json?v=102" crossorigin>
+<link rel="preload" as="fetch" href="songs.json?v=103" crossorigin>
 <title>90er Music – Hits 1990–1999 als Playlist | Driftware</title>
 <link rel="canonical" href="https://driftware.online/90er-music/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -64,7 +64,7 @@ renderDecadeIndex({
 
 renderPlaylistGenerator(document.querySelector('main.decade-main'), {
   mountBefore: '.info-note',
-  dataUrl: 'songs.json?v=102',
+  dataUrl: 'songs.json?v=103',
   csvPrefix: '90er',
   themes: [
     { key: 'AlternativeRock', label: 'Alternative Rock' },
@@ -103,6 +103,34 @@ renderPlaylistGenerator(document.querySelector('main.decade-main'), {
     { key: 'HeavyMetal', label: 'Heavy Metal' },
     { key: 'EBMIndustrialDark', label: 'EBM, Industrial & Dark Wave' },
     { key: 'Electro', label: 'Electro' },
+    { key: 'AcidJazz', label: 'Acid Jazz' },
+    { key: 'Ambient', label: 'Ambient' },
+    { key: 'ArtRock', label: 'Art Rock' },
+    { key: 'Avantgarde', label: 'Avantgarde' },
+    { key: 'BluesRock', label: 'Blues Rock' },
+    { key: 'Chanson', label: 'Chanson' },
+    { key: 'Disco', label: 'Disco' },
+    { key: 'Dub', label: 'Dub' },
+    { key: 'FolkRock', label: 'Folk Rock' },
+    { key: 'FutureJazz', label: 'Future Jazz' },
+    { key: 'GarageRock', label: 'Garage Rock' },
+    { key: 'HardcorePunk', label: 'Hardcore Punk' },
+    { key: 'Idm', label: 'IDM' },
+    { key: 'IndiePop', label: 'Indie Pop' },
+    { key: 'Makina', label: 'Makina' },
+    { key: 'Mod', label: 'Mod' },
+    { key: 'Musical', label: 'Musical' },
+    { key: 'Neofolk', label: 'Neofolk' },
+    { key: 'PopRap', label: 'Pop Rap' },
+    { key: 'PostRock', label: 'Post Rock' },
+    { key: 'PsychedelicRock', label: 'Psychedelic Rock' },
+    { key: 'Punk', label: 'Punk' },
+    { key: 'Schlager', label: 'Schlager' },
+    { key: 'SpeedGarage', label: 'Speed Garage' },
+    { key: 'StonerRock', label: 'Stoner Rock' },
+    { key: 'Surf', label: 'Surf' },
+    { key: 'SynthPop', label: 'Synth-Pop' },
+    { key: 'UkGarage', label: 'UK Garage' },
     { key: 'Karaoke', label: 'Karaoke' },
     { key: 'Ohne', label: 'Ohne Genre' }
   ]
