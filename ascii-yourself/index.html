@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>ASCII Yourself — Driftware</title>
+<meta name="description" content="Foto oder Video (bis 10 Sekunden) in farbige ASCII-Kunst umwandeln. Alles läuft in deinem Browser, nichts wird hochgeladen.">
+<link rel="canonical" href="https://driftware.online/ascii-yourself/">
+<link rel="preload" href="/fonts/BricolageGrotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+<nav><b><a href="/">Driftware</a></b><a class="back" href="/">← Zurück zur Startseite</a></nav>
+
+<section class="hero">
+<h1>ASCII <em>Yourself.</em></h1>
+<p class="sub">Foto oder Video rein, Farb-ASCII raus. Alles läuft in deinem Browser.</p>
+</section>
+
+<main class="work">
+  <section class="panel" aria-label="Einstellungen">
+    <div class="lab"><span>01 — Dein Foto oder Video</span></div>
+    <div id="drop" class="drop" tabindex="0" role="button" aria-label="Foto oder Video auswählen">
+      <strong>Foto oder Video hierher ziehen</strong>
+      <span>oder klicken zum Auswählen · Video bis 10 Sekunden</span>
+      <input id="file" type="file" accept="image/*,video/*" hidden>
+    </div>
+    <div class="row two">
+      <button id="btnSelfie" type="button" class="pill">Selfie aufnehmen</button>
+      <button id="btnReset" type="button" class="pill">Zurücksetzen</button>
+      <input id="selfie" type="file" accept="image/*" capture="user" hidden>
+    </div>
+    <p id="msg" class="msg" role="status" aria-live="polite"></p>
+
+    <div class="lab sp"><span>02 — Aussehen</span></div>
+    <label>Zeichen pro Zeile <output id="o_cols">120</output>
+      <input id="cols" type="range" min="40" max="220" step="2" value="120"></label>
+    <label>Zeichensatz
+      <select id="charset">
+        <option value="classic">Klassisch  .:-=+*#%@</option>
+        <option value="dense">Dicht (viele Stufen)</option>
+        <option value="blocks">Blöcke ░▒▓█</option>
+        <option value="binary">Binär 0 und 1</option>
+        <option value="letters">Buchstaben (eigener Text)</option>
+      </select></label>
+    <label id="wordRow" hidden>Eigener Text
+      <input id="word" type="text" maxlength="40" value="DRIFTWARE" spellcheck="false"></label>
+    <label>Farbe
+      <select id="color">
+        <option value="orig">Originalfarben</option>
+        <option value="neon">Neon (sattere Farben)</option>
+        <option value="matrix">Matrix grün</option>
+        <option value="amber">Bernstein</option>
+        <option value="mono">Weiß</option>
+      </select></label>
+    <label>Hintergrund
+      <select id="bg">
+        <option value="black">Schwarz</option>
+        <option value="white">Weiß</option>
+        <option value="photo">Foto abgedunkelt (Farbfläche)</option>
+      </select></label>
+    <label>Leuchtkraft <output id="o_glow">60</output>
+      <input id="glow" type="range" min="0" max="100" value="60"></label>
+    <label>Helligkeit <output id="o_bright">0</output>
+      <input id="bright" type="range" min="-80" max="80" value="0"></label>
+    <label>Kontrast <output id="o_contrast">120</output>
+      <input id="contrast" type="range" min="50" max="220" value="120"></label>
+    <label>Sättigung <output id="o_sat">130</output>
+      <input id="sat" type="range" min="0" max="250" value="130"></label>
+    <label class="check"><input id="invert" type="checkbox"> Hell und dunkel tauschen</label>
+    <label class="check"><input id="mirror" type="checkbox"> Spiegeln (wie im Spiegel)</label>
+  </section>
+
+  <section class="stage" aria-label="Ergebnis">
+    <div class="lab"><span>Dein Ergebnis</span></div>
+    <div class="canvasbox" id="canvasbox">
+      <canvas id="out" width="960" height="540"></canvas>
+      <div id="empty" class="empty">Noch kein Bild. Zieh ein Foto oder ein Video auf die Fläche links.</div>
+    </div>
+
+    <div id="photoBar" class="bar" hidden>
+      <button id="btnPng" type="button" class="pill solid">PNG speichern</button>
+      <button id="btnHtml" type="button" class="pill">Als HTML</button>
+      <button id="btnTxt" type="button" class="pill">Als Text</button>
+    </div>
+
+    <div id="videoBar" class="bar" hidden>
+      <button id="btnPlay" type="button" class="pill">Vorschau</button>
+      <label class="check inline"><input id="audio" type="checkbox"> Ton übernehmen</label>
+      <button id="btnRec" type="button" class="pill solid">Video erzeugen</button>
+      <span id="vinfo" class="vinfo"></span>
+    </div>
+
+    <div id="result" class="result" hidden>
+      <div class="lab"><span>Fertiges Video</span></div>
+      <video id="resVideo" controls playsinline></video>
+      <a id="resDl" class="pill solid" download>Video speichern</a>
+      <p class="hint" id="resNote"></p>
+    </div>
+  </section>
+</main>
+
+<p class="note">Dein Foto und dein Video verlassen dein Gerät nicht. Die Umwandlung passiert komplett in deinem Browser. Aus langen Videos werden die ersten 10 Sekunden genommen.</p>
+</div>
+
+<div class="end">
+<div class="wrap">
+<h2>Mehr als <b>Bilder?</b></h2>
+<p>Verwandle auch deine Texte: über 60 Schriftstile, direkt zum Kopieren.</p>
+<a class="btn" href="/schriftgenerator/">Schriftgenerator →</a>
+<footer>
+<span>© 2026 Driftware</span>
+<span><a href="/privacy.html">Datenschutz</a><a href="/terms.html">Nutzungsbedingungen</a><a href="/impressum.html">Impressum</a></span>
+</footer>
+</div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
