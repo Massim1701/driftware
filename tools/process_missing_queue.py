@@ -337,6 +337,59 @@ def song_id(artist, title):
     return (artist or "").strip().lower(), (title or "").strip().lower()
 
 
+# --- Dublettenpruefung mit mehreren Indizien (eingebaut 07.11.2026) -------------------------------
+# Ein Lied gilt als schon vorhanden, wenn (a) Titel (ohne Klammern/B-Seite) und Interpret (inkl. feat./&,
+# Namensanfang erlaubt) gleich sind UND dieselbe Versions-Marke tragen (Remix/Live/Version/... bleiben
+# eigene Lieder), oder (b) die YouTube-ID schon im Katalog steht UND zum selben Titel gehoert.
+# Gepruefte Messung (Trockenlauf 07.11.): erkennt 120 von 121 bekannten Dubletten, alte Regel 92.
+import unicodedata
+from collections import defaultdict
+
+_VERSION_RE = re.compile(r"remix|version|\blive\b|\bedit\b|\bmix\b|remaster|reprise|acoustic|instrumental|unplugged|demo|cover", re.I)
+
+
+def _deacc(text):
+    return "".join(c for c in unicodedata.normalize("NFKD", text or "") if not unicodedata.combining(c)).lower()
+
+
+def _akey(artist):
+    return re.sub(r"\(\d+\)", "", _deacc(artist)).replace("*", "")
+
+
+def _tkey(title):
+    t = _deacc(title)
+    t = re.sub(r"[\(\[][^\)\]]*[\)\]]", " ", t)
+    t = re.split(r"\s-\s|\s/\s", t)[0]
+    return re.sub(r"[^a-z0-9]", "", t)
+
+
+def _version_marke(title):
+    return frozenset(m.lower() for m in _VERSION_RE.findall(title or ""))
+
+
+def neuer_index():
+    return {"titel": defaultdict(list), "ytt": defaultdict(set)}
+
+
+def _idx_add(index, artist, title, yt):
+    tk = _tkey(title)
+    if not tk:
+        return
+    index["titel"][tk].append((_akey(artist), _version_marke(title)))
+    if yt:
+        index["ytt"][yt].add(tk)
+
+
+def ist_dublette(artist, title, yt, index):
+    tk, ak, vm = _tkey(title), _akey(artist), _version_marke(title)
+    if not tk or not ak:
+        return False
+    for x, m in index["titel"].get(tk, ()):
+        if m == vm and (x == ak or (min(len(x), len(ak)) >= 4 and (x.startswith(ak) or ak.startswith(x)))):
+            return True
+    return bool(yt and tk in index["ytt"].get(yt, ()))
+
+
 def build_song_entry(artist, title, release, yt_id, vk_url=None):
     images = release.get("images") or []
     thumb = next((im.get("uri150") for im in images if im.get("uri150")), None)
@@ -402,6 +455,7 @@ def main():
     # verarbeitet). Manuelle Genre-Korrekturen sind ausgenommen -- die
     # SOLLEN einen bereits vorhandenen Katalog-Song finden, das ist ihr Zweck.
     all_catalog_ids = set()
+    KIDX = neuer_index()
     for _, _, catalog_path_rel in DECADE_CATALOGS:
         catalog_path_abs = os.path.join(ROOT, catalog_path_rel)
         if not os.path.exists(catalog_path_abs):
@@ -413,6 +467,7 @@ def main():
         for songs_list in catalog_data.values():
             for s in songs_list:
                 all_catalog_ids.add(song_id(s.get("a"), s.get("t")))
+                _idx_add(KIDX, s.get("a"), s.get("t"), s.get("yt"))
 
     cleaned_queue = []
     dropped = 0
@@ -420,7 +475,7 @@ def main():
         if not _is_quick_genre_fix(e):
             a = (e.get("a") or "").strip()
             t = (e.get("t") or "").strip()
-            if a and t and song_id(a, t) in all_catalog_ids:
+            if a and t and (song_id(a, t) in all_catalog_ids or ist_dublette(a, t, e.get("yt"), KIDX)):
                 dropped += 1
                 continue
         cleaned_queue.append(e)
@@ -638,8 +693,8 @@ def main():
             catalog_data = changed_catalogs[catalog_path_rel]
 
             existing_ids = {song_id(s.get("a"), s.get("t")) for lst in catalog_data.values() for s in lst}
-            if song_id(artist, title) in existing_ids:
-                print("  ist schon in der Datenbank, wird aus der Warteliste entfernt")
+            if song_id(artist, title) in existing_ids or ist_dublette(artist, title, yt_id, KIDX):
+                print("  ist schon in der Datenbank (oder als Dublette erkannt), wird aus der Warteliste entfernt")
                 continue  # erfolgreich (schon vorhanden) -> aus Warteliste
 
             bucket = pick_bucket(catalog_data, release)
@@ -648,6 +703,7 @@ def main():
                 song["src"] = "fallback-" + release["_quelle"]  # nicht von Discogs
             catalog_data.setdefault(bucket, []).append(song)
             print(f"  hinzugefuegt zu {catalog_path_rel} / {bucket}")
+            _idx_add(KIDX, artist, title, yt_id)
             # erfolgreich verarbeitet -> NICHT zu remaining hinzufuegen
         except Exception as e:
             print(f"  Fehler bei Eintrag, bleibt in der Warteliste: {e}")
