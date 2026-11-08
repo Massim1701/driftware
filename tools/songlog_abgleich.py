@@ -78,7 +78,9 @@ def main():
         for lst in json.load(open(path, encoding="utf-8")).values():
             for s in lst:
                 merke(s["a"], s["t"])
-    for path in [QUEUE] + glob.glob(os.path.join(ROOT, "queue", "*-erweiterung.json")):
+    for path in ([QUEUE] + glob.glob(os.path.join(ROOT, "queue", "*-erweiterung.json"))
+                  + glob.glob(os.path.join(ROOT, "queue", "*-abgelehnt.json"))
+                  + glob.glob(os.path.join(ROOT, "queue", "*-aufgegeben.json"))):
         if os.path.exists(path):
             for x in json.load(open(path, encoding="utf-8")):
                 merke(x["a"], x["t"])

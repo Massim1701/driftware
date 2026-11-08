@@ -23,6 +23,8 @@ import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 QUEUE_PATH = os.path.join(ROOT, "queue", "fehlende-lieder.json")
+AUFGEGEBEN_PATH = os.path.join(ROOT, "queue", "fehlende-lieder-aufgegeben.json")
+MAX_VERSUCHE = 3  # nach so vielen erfolglosen Naechten wandert ein Lied in die Aufgegeben-Liste (eingebaut 08.11.2026)
 DISCOGS_TOKEN = os.environ.get("DISCOGS_TOKEN", "").strip()
 
 YOUTUBE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
@@ -414,6 +416,33 @@ def build_song_entry(artist, title, release, yt_id, vk_url=None):
     return entry
 
 
+def _fehlversuch(entry):
+    """Zaehlt eine Nacht ohne Treffer (YouTube/Discogs) am Eintrag mit."""
+    entry["versuche"] = int(entry.get("versuche") or 0) + 1
+    return entry
+
+
+def _abspalten(eintraege):
+    """Trennt Eintraege, die MAX_VERSUCHE Naechte erfolglos blieben (Nutzer-Korrekturen ausgenommen), von der Warteliste.
+    Die aufgegebenen kommen in queue/fehlende-lieder-aufgegeben.json (nichts geht verloren, kein Dauerlauf mehr)."""
+    bleiben, auf = [], []
+    for e in eintraege:
+        if int(e.get("versuche") or 0) >= MAX_VERSUCHE and not (e.get("g") and e.get("y")):
+            auf.append(e)
+        else:
+            bleiben.append(e)
+    if auf:
+        alt = load_json(AUFGEGEBEN_PATH) if os.path.exists(AUFGEGEBEN_PATH) else []
+        bekannt = {song_id(x.get("a"), x.get("t")) for x in alt}
+        for e in auf:
+            if song_id(e.get("a"), e.get("t")) not in bekannt:
+                alt.append(e)
+                bekannt.add(song_id(e.get("a"), e.get("t")))
+        save_json(AUFGEGEBEN_PATH, alt)
+        print(f"{len(auf)} Eintraege nach {MAX_VERSUCHE} erfolglosen Naechten in die Aufgegeben-Liste verschoben.")
+    return bleiben
+
+
 def load_json(path):
     with open(path, encoding="utf-8") as f:
         return json.load(f)
@@ -527,7 +556,7 @@ def main():
     def save_progress(remaining_tail):
         for path_rel, data in changed_catalogs.items():
             save_json(os.path.join(ROOT, path_rel), data)
-        save_json(QUEUE_PATH, remaining + remaining_tail)
+        save_json(QUEUE_PATH, _abspalten(remaining + remaining_tail))
 
     for i, entry in enumerate(queue):
         now = time.time()
@@ -630,7 +659,7 @@ def main():
                 vk_url = valid_vk_url(entry.get("vk"))
                 if not yt_id and not vk_url:
                     print("  kein YouTube-Link und kein VK-Link gefunden, bleibt in der Warteliste")
-                    remaining.append(entry)
+                    remaining.append(_fehlversuch(entry))
                     continue
 
                 existing_ids = {song_id(s.get("a"), s.get("t")) for lst in catalog_data.values() for s in lst}
@@ -668,13 +697,13 @@ def main():
             if not release or not release.get("year"):
                 release = fallback_release(artist, title, entry)
                 if not release:
-                    remaining.append(entry)
+                    remaining.append(_fehlversuch(entry))
                     continue
 
             catalog_path_rel = catalog_path_for_year(release["year"])
             if not catalog_path_rel:
                 print(f"  Jahr {release['year']} passt zu keiner Dekaden-Kategorie, bleibt in der Warteliste")
-                remaining.append(entry)
+                remaining.append(_fehlversuch(entry))
                 continue
 
             yt_id = release.get("_yt") or valid_yt_id(entry.get("yt")) or search_youtube(artist, title)
@@ -684,7 +713,7 @@ def main():
                 continue
             if not yt_id and not vk_url:
                 print("  kein YouTube-Link und kein VK-Link gefunden, bleibt in der Warteliste")
-                remaining.append(entry)
+                remaining.append(_fehlversuch(entry))
                 continue
 
             catalog_path_abs = os.path.join(ROOT, catalog_path_rel)
@@ -712,6 +741,7 @@ def main():
     for path_rel, data in changed_catalogs.items():
         save_json(os.path.join(ROOT, path_rel), data)
 
+    remaining = _abspalten(remaining)
     save_json(QUEUE_PATH, remaining)
     print(f"Fertig. {len(queue) - len(remaining)} von {len(queue)} Eintraegen verarbeitet, {len(remaining)} bleiben in der Warteliste.")
 
