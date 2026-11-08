@@ -17,77 +17,35 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: API und yt-dlp pruefen
-        env:
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-        run: |
-          pip install --quiet yt-dlp
-          python3 - <<'PY'
-          import json, os, subprocess, urllib.parse, urllib.request, urllib.error
-          key = os.environ.get("YOUTUBE_API_KEY", "").strip()
-          print("Schluessel gesetzt:", bool(key), "| Laenge:", len(key))
-          for q in ("Violent Femmes Gone Daddy Gone", "ABC The Flames of Desire", "Donell Jones This Luv"):
-              print("\n== API:", q)
-              if not key:
-                  print("  kein Schluessel -> API wird im Nachtlauf still uebersprungen"); continue
-              url = "https://www.googleapis.com/youtube/v3/search?" + urllib.parse.urlencode(
-                  {"part": "snippet", "q": q, "type": "video", "maxResults": "5", "key": key})
-              try:
-                  with urllib.request.urlopen(url, timeout=20) as r:
-                      d = json.loads(r.read().decode())
-                      items = d.get("items", [])
-                      print("  HTTP", r.status, "| Treffer:", len(items))
-                      for it in items[:3]:
-                          print("   -", it["id"].get("videoId"), "|", it["snippet"].get("title"), "|", it["snippet"].get("channelTitle"))
-              except urllib.error.HTTPError as e:
-                  body = e.read().decode("utf-8", "replace")
-                  try:
-                      er = json.loads(body)["error"]; print("  HTTP", e.code, "| Grund:", [x.get("reason") for x in er.get("errors", [])], "|", er.get("message", "")[:200])
-                  except Exception:
-                      print("  HTTP", e.code, body[:200])
-              except Exception as e:
-                  print("  Fehler:", type(e).__name__, str(e)[:200])
-          print("\n== yt-dlp (Standard-Client, wie im Nachtlauf)")
-          r = subprocess.run(["yt-dlp", "ytsearch5:Violent Femmes Gone Daddy Gone", "--dump-json", "--skip-download", "--no-warnings"],
-                             capture_output=True, text=True, timeout=120)
-          zeilen = [l for l in r.stdout.splitlines() if l.strip().startswith("{")]
-          print("  Exit", r.returncode, "| JSON-Treffer:", len(zeilen), "| stderr:", (r.stderr.strip()[:300] or "-"))
-          PY
-      - name: Tiefendiagnose (Rohantwort, Video-Abfrage, Seite)
+      - name: Varianten der Suche
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
           python3 - <<'PY'
-          import json, os, urllib.parse, urllib.request, urllib.error
+          import json, os, urllib.parse, urllib.request, urllib.error, time
           key = os.environ.get("YOUTUBE_API_KEY", "").strip()
-          def api(path, **p):
-              p["key"] = key
-              url = "https://www.googleapis.com/youtube/v3/" + path + "?" + urllib.parse.urlencode(p)
+          def n(**p):
+              p.update(key=key, part="snippet", maxResults="5")
               try:
-                  with urllib.request.urlopen(url, timeout=20) as r:
-                      return r.status, r.read().decode()
+                  with urllib.request.urlopen("https://www.googleapis.com/youtube/v3/search?" + urllib.parse.urlencode(p), timeout=20) as r:
+                      d = json.loads(r.read().decode()); return len(d.get("items", [])), [i["snippet"]["title"][:50] for i in d.get("items", [])[:1]]
               except urllib.error.HTTPError as e:
-                  return e.code, e.read().decode("utf-8", "replace")
-          s, b = api("videos", part="snippet", id="dQw4w9WgXcQ")
-          print("videos.list dQw4w9WgXcQ:", s, "| Treffer:", len(json.loads(b).get("items", [])) if s == 200 else b[:200])
-          for p in ({"q": "Violent Femmes Gone Daddy Gone", "part": "snippet", "type": "video"},
-                    {"q": "Violent Femmes", "part": "snippet"},
-                    {"q": "Violent Femmes Gone Daddy Gone", "part": "snippet", "type": "video", "regionCode": "DE"},
-                    {"q": "Rick Astley Never Gonna Give You Up", "part": "snippet", "type": "video"}):
-              s, b = api("search", maxResults="5", **p)
-              d = json.loads(b) if s == 200 else {}
-              print("search", {k: v for k, v in p.items()}, "->", s, "| Treffer:", len(d.get("items", [])), "| pageInfo:", d.get("pageInfo"), "| region:", d.get("regionCode"))
-              if s != 200: print("  ", b[:300])
-          print("\nRohantwort (gekuerzt):", b[:500].replace(key, "***"))
-          req = urllib.request.Request("https://www.youtube.com/results?search_query=Violent+Femmes+Gone+Daddy+Gone",
-                                       headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36", "Accept-Language": "de-DE,de;q=0.9"})
-          try:
-              with urllib.request.urlopen(req, timeout=20) as r:
-                  t = r.read().decode("utf-8", "replace")
-                  print("\nSuchseite:", r.status, "| URL:", r.geturl()[:90], "| Laenge:", len(t), "| ytInitialData:", "ytInitialData" in t, "| consent:", "consent" in r.geturl() or "consent.youtube" in t, "| videoRenderer:", t.count("videoRenderer"))
-          except Exception as e:
-              print("\nSuchseite Fehler:", type(e).__name__, str(e)[:200])
+                  return "HTTP %s" % e.code, e.read().decode()[:120]
+          T = "Violent Femmes Gone Daddy Gone"
+          tests = [("Original, type=video", dict(q=T, type="video")),
+                   ("ohne type", dict(q=T)),
+                   ("Reihenfolge getauscht", dict(q="Gone Daddy Gone Violent Femmes", type="video")),
+                   ("mit Official Video", dict(q=T + " official video", type="video")),
+                   ("Musik-Kategorie", dict(q=T, type="video", videoCategoryId="10")),
+                   ("Bindestrich", dict(q="Violent Femmes - Gone Daddy Gone", type="video")),
+                   ("Anfrage mit Anfuehrungszeichen", dict(q='"Gone Daddy Gone" Violent Femmes', type="video")),
+                   ("ABC ohne type", dict(q="ABC The Flames of Desire")),
+                   ("ABC mit Hyphen", dict(q="ABC - The Flames of Desire", type="video")),
+                   ("Donell ohne type", dict(q="Donell Jones This Luv")),
+                   ("Twisted Sister Hot Love", dict(q="Twisted Sister Hot Love", type="video")),
+                   ("Duran Duran The Reflex", dict(q="Duran Duran The Reflex", type="video")),
+                   ("Rick (Kontrolle)", dict(q="Rick Astley Never Gonna Give You Up", type="video")),
+                   ("Original nochmal", dict(q=T, type="video"))]
+          for name, p in tests:
+              print("%-32s -> %s" % (name, n(**p))); time.sleep(1)
           PY
-      - name: Netz des Runners
-        run: |
-          curl -s -m 10 https://ipinfo.io/json | python3 -c "import sys,json;d=json.load(sys.stdin);print('Ausgang:',d.get('country'),d.get('org'))" || echo "ipinfo nicht erreichbar"
