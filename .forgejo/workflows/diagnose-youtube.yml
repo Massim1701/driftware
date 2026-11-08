@@ -1,0 +1,55 @@
+name: YouTube-Diagnose
+
+# Nur von Hand startbar. Prueft auf dem Runner, ob der YOUTUBE_API_KEY gesetzt ist und die YouTube-Data-API
+# antwortet (Status, Fehlergrund, Trefferzahl) und ob yt-dlp (Standard-Client) Treffer liefert.
+# Gibt NIE den Schluessel aus. Kostet 3 API-Suchen (300 Kontingent-Einheiten).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: API und yt-dlp pruefen
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          pip install --quiet yt-dlp
+          python3 - <<'PY'
+          import json, os, subprocess, urllib.parse, urllib.request, urllib.error
+          key = os.environ.get("YOUTUBE_API_KEY", "").strip()
+          print("Schluessel gesetzt:", bool(key), "| Laenge:", len(key))
+          for q in ("Violent Femmes Gone Daddy Gone", "ABC The Flames of Desire", "Donell Jones This Luv"):
+              print("\n== API:", q)
+              if not key:
+                  print("  kein Schluessel -> API wird im Nachtlauf still uebersprungen"); continue
+              url = "https://www.googleapis.com/youtube/v3/search?" + urllib.parse.urlencode(
+                  {"part": "snippet", "q": q, "type": "video", "maxResults": "5", "key": key})
+              try:
+                  with urllib.request.urlopen(url, timeout=20) as r:
+                      d = json.loads(r.read().decode())
+                      items = d.get("items", [])
+                      print("  HTTP", r.status, "| Treffer:", len(items))
+                      for it in items[:3]:
+                          print("   -", it["id"].get("videoId"), "|", it["snippet"].get("title"), "|", it["snippet"].get("channelTitle"))
+              except urllib.error.HTTPError as e:
+                  body = e.read().decode("utf-8", "replace")
+                  try:
+                      er = json.loads(body)["error"]; print("  HTTP", e.code, "| Grund:", [x.get("reason") for x in er.get("errors", [])], "|", er.get("message", "")[:200])
+                  except Exception:
+                      print("  HTTP", e.code, body[:200])
+              except Exception as e:
+                  print("  Fehler:", type(e).__name__, str(e)[:200])
+          print("\n== yt-dlp (Standard-Client, wie im Nachtlauf)")
+          r = subprocess.run(["yt-dlp", "ytsearch5:Violent Femmes Gone Daddy Gone", "--dump-json", "--skip-download", "--no-warnings"],
+                             capture_output=True, text=True, timeout=120)
+          zeilen = [l for l in r.stdout.splitlines() if l.strip().startswith("{")]
+          print("  Exit", r.returncode, "| JSON-Treffer:", len(zeilen), "| stderr:", (r.stderr.strip()[:300] or "-"))
+          PY
