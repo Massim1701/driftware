@@ -17,35 +17,33 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Varianten der Suche
+      - name: Regionstest
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
           python3 - <<'PY'
           import json, os, urllib.parse, urllib.request, urllib.error, time
           key = os.environ.get("YOUTUBE_API_KEY", "").strip()
-          def n(**p):
-              p.update(key=key, part="snippet", maxResults="5")
+          def api(path, **p):
+              p["key"] = key
               try:
-                  with urllib.request.urlopen("https://www.googleapis.com/youtube/v3/search?" + urllib.parse.urlencode(p), timeout=20) as r:
-                      d = json.loads(r.read().decode()); return len(d.get("items", [])), [i["snippet"]["title"][:50] for i in d.get("items", [])[:1]]
+                  with urllib.request.urlopen("https://www.googleapis.com/youtube/v3/%s?%s" % (path, urllib.parse.urlencode(p)), timeout=20) as r:
+                      return json.loads(r.read().decode())
               except urllib.error.HTTPError as e:
-                  return "HTTP %s" % e.code, e.read().decode()[:120]
-          T = "Violent Femmes Gone Daddy Gone"
-          tests = [("Original, type=video", dict(q=T, type="video")),
-                   ("ohne type", dict(q=T)),
-                   ("Reihenfolge getauscht", dict(q="Gone Daddy Gone Violent Femmes", type="video")),
-                   ("mit Official Video", dict(q=T + " official video", type="video")),
-                   ("Musik-Kategorie", dict(q=T, type="video", videoCategoryId="10")),
-                   ("Bindestrich", dict(q="Violent Femmes - Gone Daddy Gone", type="video")),
-                   ("Anfrage mit Anfuehrungszeichen", dict(q='"Gone Daddy Gone" Violent Femmes', type="video")),
-                   ("ABC ohne type", dict(q="ABC The Flames of Desire")),
-                   ("ABC mit Hyphen", dict(q="ABC - The Flames of Desire", type="video")),
-                   ("Donell ohne type", dict(q="Donell Jones This Luv")),
-                   ("Twisted Sister Hot Love", dict(q="Twisted Sister Hot Love", type="video")),
-                   ("Duran Duran The Reflex", dict(q="Duran Duran The Reflex", type="video")),
-                   ("Rick (Kontrolle)", dict(q="Rick Astley Never Gonna Give You Up", type="video")),
-                   ("Original nochmal", dict(q=T, type="video"))]
-          for name, p in tests:
-              print("%-32s -> %s" % (name, n(**p))); time.sleep(1)
+                  return {"fehler": e.code, "text": e.read().decode()[:150]}
+          Q = ["Violent Femmes Gone Daddy Gone", "ABC The Flames of Desire", "Donell Jones This Luv", "Twisted Sister Hot Love"]
+          for q in Q:
+              erg = {}
+              for rc in ("DE", "US", "GB", "NL"):
+                  d = api("search", part="snippet", q=q, type="video", maxResults="3", regionCode=rc)
+                  erg[rc] = [i["id"]["videoId"] for i in d.get("items", [])]
+                  time.sleep(0.5)
+              print(q, "->", {k: len(v) for k, v in erg.items()})
+              ids = erg["US"] or erg["GB"] or erg["NL"]
+              if ids:
+                  v = api("videos", part="contentDetails,status,snippet", id=ids[0])
+                  it = (v.get("items") or [{}])[0]
+                  cd = it.get("contentDetails", {}); st = it.get("status", {})
+                  print("   Video", ids[0], "|", it.get("snippet", {}).get("title", "")[:55], "| Kanal:", it.get("snippet", {}).get("channelTitle"),
+                        "| regionRestriction:", cd.get("regionRestriction"), "| embeddable:", st.get("embeddable"), "| in DE-Suche:", ids[0] in erg["DE"])
           PY
