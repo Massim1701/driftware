@@ -19,6 +19,9 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import dubletten  # gemeinsame, tolerante Dublettenpruefung (08.11.2026)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FORMATE = [dict(separators=(",", ":"), ensure_ascii=False), dict(ensure_ascii=False), dict(indent=2, ensure_ascii=False)]
 
@@ -58,11 +61,13 @@ def main():
         data = json.loads(raw)
         kat[path] = (data, erkenne_format(raw, data, path))
     yts, keys = set(), set()
+    idx = dubletten.Index()
     for data, _ in kat.values():
-        for lst in data.values():
+        for fach, lst in data.items():
             for s in lst:
                 yts.add(s.get("yt"))
                 keys.add(norm(s["a"]) + "|" + norm(s["t"]))
+                idx.add(s["a"], s["t"], s.get("yt"), fach)
 
     neu, uebersprungen = {}, {}
     gesehen = set()
@@ -85,6 +90,9 @@ def main():
             if k in keys:
                 skip("Interpret+Titel schon vorhanden")
                 continue
+            if idx.ist_dublette(c["a"], c["t"], yt):
+                skip("Interpret+Titel aehnlich vorhanden (tolerant)")
+                continue
             g = c.get("genre_key")
             if not g:
                 if chill:
@@ -102,6 +110,7 @@ def main():
             neu.setdefault((ziel, g), []).append(e)
             gesehen.add(yt)
             keys.add(k)
+            idx.add(c["a"], c["t"], yt, g)
 
     gesamt = sum(len(v) for v in neu.values())
     for (ziel, g), lst in sorted(neu.items()):
@@ -126,7 +135,12 @@ def main():
             continue
         q = json.load(open(qpath, encoding="utf-8"))
         vorhanden = {norm(x["a"]) + "|" + norm(x["t"]) for lst in kat[kpath][0].values() for x in lst}
-        rest = [x for x in q if (norm(x.get("a")) + "|" + norm(x.get("t"))) not in vorhanden]
+        didx = dubletten.Index()
+        for fach, lst in kat[kpath][0].items():
+            for x in lst:
+                didx.add(x["a"], x["t"], x.get("yt"), fach)
+        rest = [x for x in q if (norm(x.get("a")) + "|" + norm(x.get("t"))) not in vorhanden
+                and not didx.ist_dublette(x.get("a"), x.get("t"), x.get("yt"))]
         if len(rest) != len(q):
             with open(qpath, "w", encoding="utf-8") as fh:
                 json.dump(rest, fh, separators=(",", ":"), ensure_ascii=False)

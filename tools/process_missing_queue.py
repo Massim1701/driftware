@@ -21,6 +21,9 @@ import time
 import urllib.parse
 import urllib.request
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import dubletten  # gemeinsame, tolerante Dublettenpruefung (08.11.2026)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 QUEUE_PATH = os.path.join(ROOT, "queue", "fehlende-lieder.json")
 AUFGEGEBEN_PATH = os.path.join(ROOT, "queue", "fehlende-lieder-aufgegeben.json")
@@ -370,26 +373,15 @@ def _version_marke(title):
 
 
 def neuer_index():
-    return {"titel": defaultdict(list), "ytt": defaultdict(set)}
+    return dubletten.Index()
 
 
-def _idx_add(index, artist, title, yt):
-    tk = _tkey(title)
-    if not tk:
-        return
-    index["titel"][tk].append((_akey(artist), _version_marke(title)))
-    if yt:
-        index["ytt"][yt].add(tk)
+def _idx_add(index, artist, title, yt, fach=None):
+    index.add(artist, title, yt, fach)
 
 
 def ist_dublette(artist, title, yt, index):
-    tk, ak, vm = _tkey(title), _akey(artist), _version_marke(title)
-    if not tk or not ak:
-        return False
-    for x, m in index["titel"].get(tk, ()):
-        if m == vm and (x == ak or (min(len(x), len(ak)) >= 4 and (x.startswith(ak) or ak.startswith(x)))):
-            return True
-    return bool(yt and tk in index["ytt"].get(yt, ()))
+    return index.ist_dublette(artist, title, yt)
 
 
 def build_song_entry(artist, title, release, yt_id, vk_url=None):
@@ -493,10 +485,11 @@ def main():
             catalog_data = load_json(catalog_path_abs)
         except Exception:
             continue
-        for songs_list in catalog_data.values():
+        for fach, songs_list in catalog_data.items():
             for s in songs_list:
-                all_catalog_ids.add(song_id(s.get("a"), s.get("t")))
-                _idx_add(KIDX, s.get("a"), s.get("t"), s.get("yt"))
+                if fach != "Karaoke":  # Karaoke-Fassungen sind eigene Eintraege, keine Dubletten
+                    all_catalog_ids.add(song_id(s.get("a"), s.get("t")))
+                _idx_add(KIDX, s.get("a"), s.get("t"), s.get("yt"), fach)
 
     cleaned_queue = []
     dropped = 0
