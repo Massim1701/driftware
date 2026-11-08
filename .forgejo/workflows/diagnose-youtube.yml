@@ -17,33 +17,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Regionstest
+      - name: SafeSearch und Nachbarlieder
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
           python3 - <<'PY'
           import json, os, urllib.parse, urllib.request, urllib.error, time
           key = os.environ.get("YOUTUBE_API_KEY", "").strip()
-          def api(path, **p):
-              p["key"] = key
+          def n(**p):
+              p.update(key=key, part="snippet", maxResults="5", type="video")
               try:
-                  with urllib.request.urlopen("https://www.googleapis.com/youtube/v3/%s?%s" % (path, urllib.parse.urlencode(p)), timeout=20) as r:
-                      return json.loads(r.read().decode())
+                  with urllib.request.urlopen("https://www.googleapis.com/youtube/v3/search?" + urllib.parse.urlencode(p), timeout=20) as r:
+                      d = json.loads(r.read().decode()); return len(d.get("items", []))
               except urllib.error.HTTPError as e:
-                  return {"fehler": e.code, "text": e.read().decode()[:150]}
-          Q = ["Violent Femmes Gone Daddy Gone", "ABC The Flames of Desire", "Donell Jones This Luv", "Twisted Sister Hot Love"]
-          for q in Q:
-              erg = {}
-              for rc in ("DE", "US", "GB", "NL"):
-                  d = api("search", part="snippet", q=q, type="video", maxResults="3", regionCode=rc)
-                  erg[rc] = [i["id"]["videoId"] for i in d.get("items", [])]
-                  time.sleep(0.5)
-              print(q, "->", {k: len(v) for k, v in erg.items()})
-              ids = erg["US"] or erg["GB"] or erg["NL"]
-              if ids:
-                  v = api("videos", part="contentDetails,status,snippet", id=ids[0])
-                  it = (v.get("items") or [{}])[0]
-                  cd = it.get("contentDetails", {}); st = it.get("status", {})
-                  print("   Video", ids[0], "|", it.get("snippet", {}).get("title", "")[:55], "| Kanal:", it.get("snippet", {}).get("channelTitle"),
-                        "| regionRestriction:", cd.get("regionRestriction"), "| embeddable:", st.get("embeddable"), "| in DE-Suche:", ids[0] in erg["DE"])
+                  return "HTTP %s" % e.code
+          for q in ("Violent Femmes Gone Daddy Gone", "ABC The Flames of Desire", "Donell Jones This Luv", "Twisted Sister Hot Love",
+                    "Violent Femmes Blister in the Sun", "ABC Poison Arrow", "Donell Jones U Know What's Up", "Twisted Sister We're Not Gonna Take It"):
+              print("%-42s moderate(Standard)=%s | none=%s | strict=%s" % (q, n(q=q), n(q=q, safeSearch="none"), n(q=q, safeSearch="strict")))
+              time.sleep(0.5)
           PY
