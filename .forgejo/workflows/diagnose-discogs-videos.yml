@@ -1,0 +1,72 @@
+name: Diagnose Discogs-Videos
+
+# Nur von Hand startbar, schreibt nichts ins Repo. Zaehlt, fuer wie viele Lieder der Warteliste Discogs-Veroeffentlichungen
+# YouTube-Videos zum Lied hinterlegt haben (Alternative zur YouTube-Suche). Gibt den Token nie aus.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  zaehlen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Discogs-Videos zaehlen
+        env:
+          DISCOGS_TOKEN: ${{ secrets.DISCOGS_TOKEN }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python3 - <<'PY'
+          import json, os, re, sys, time, urllib.parse, urllib.request, urllib.error
+          sys.path.insert(0, "tools"); import dubletten as D
+          tok = os.environ.get("DISCOGS_TOKEN", "").strip()
+          print("Token gesetzt:", bool(tok))
+          last = [0.0]
+          def get(url):
+              w = 1.1 - (time.time() - last[0])
+              if w > 0: time.sleep(w)
+              for a in range(3):
+                  last[0] = time.time()
+                  try:
+                      req = urllib.request.Request(url, headers={"User-Agent": "DriftwareCatalogBot/1.0 (+https://driftware.online)", "Authorization": "Discogs token=" + tok})
+                      with urllib.request.urlopen(req, timeout=30) as r: return json.loads(r.read().decode())
+                  except urllib.error.HTTPError as e:
+                      if e.code == 429: time.sleep(20); continue
+                      return {}
+                  except Exception: time.sleep(3)
+              return {}
+          YT = re.compile(r"(?:youtube\.com/watch\?v=|youtu\.be/)([A-Za-z0-9_-]{11})")
+          alnum = lambda s: re.sub(r"[^a-z0-9]", "", D._deacc(s))
+          q = json.load(open("queue/fehlende-lieder.json"))
+          print("Warteliste:", len(q))
+          gefunden = 0; release_ok = 0; beispiele = []
+          for i, e in enumerate(q):
+              a, t = e["a"], e["t"]
+              tk = D.titel_key(t)
+              res = get("https://api.discogs.com/database/search?" + urllib.parse.urlencode({"type": "release", "artist": a, "track": t, "per_page": "3"})).get("results", [])
+              if res: release_ok += 1
+              treffer = []
+              for r in res[:2]:
+                  d = get("https://api.discogs.com/releases/%s" % r["id"])
+                  for v in d.get("videos", []):
+                      m = YT.search(v.get("uri", ""))
+                      if not m: continue
+                      vt = alnum(v.get("title", ""))
+                      if tk and tk in vt and any(w in vt for part in D.interpret_teile(a) for w in map(alnum, part) if len(w) >= 3):
+                          if m.group(1) not in [x[0] for x in treffer]: treffer.append((m.group(1), v.get("title", "")[:60]))
+                  if treffer: break
+              if treffer:
+                  gefunden += 1
+                  if len(beispiele) < 15: beispiele.append((a, t, treffer[0]))
+              if i % 25 == 24: print("... %d/%d | Discogs kennt Veroeffentlichung: %d | Video gefunden: %d" % (i + 1, len(q), release_ok, gefunden))
+          print("\nERGEBNIS: %d Lieder geprueft | Discogs-Veroeffentlichung gefunden: %d | passendes YouTube-Video hinterlegt: %d" % (len(q), release_ok, gefunden))
+          for a, t, (yid, vt) in beispiele: print("  ", a, "-", t, "->", yid, "|", vt)
+          PY
