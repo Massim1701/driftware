@@ -18,6 +18,7 @@ import re
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -57,18 +58,77 @@ DECADE_CATALOGS = [
 YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY", "")
 
 
+# --- Schutz vor API-Limits (09.11.2026) -------------------------------------------------------
+# Das Tageskontingent der YouTube-Data-API liegt standardmaessig bei 10.000 Einheiten, eine Suche
+# (search.list) kostet 100. Mehr als rund 90 Suchen pro Lauf sind also nicht drin. Antwortet die API
+# mit 429/403, wird nicht weiter gehaemmert, und die Nacht zaehlt fuer das Lied NICHT als Fehlversuch.
+YT_API_MAX_SUCHEN = int(os.environ.get("YT_API_MAX_SUCHEN", "90"))
+YT_API_PAUSE_S = float(os.environ.get("YT_API_PAUSE_S", "1.5"))
+_api_suchen = 0              # bisher gestellte API-Suchen in diesem Lauf
+_api_abgeschaltet = False    # nach Limit/wiederholter Ablehnung: keine API-Anfragen mehr in diesem Lauf
+_api_fehler_folge = 0        # aufeinanderfolgende Ablehnungen (429/403)
+_SUCHE_BLOCKIERT = False     # die Suche des aktuellen Eintrags wurde von YouTube abgelehnt (kein echtes "nicht gefunden")
+
+
+def _blockiert():
+    global _SUCHE_BLOCKIERT
+    _SUCHE_BLOCKIERT = True
+
+
+def _suche_zuruecksetzen():
+    """Vor jedem Eintrag aufrufen: die Ablehnung eines Liedes gilt nicht fuer das naechste."""
+    global _SUCHE_BLOCKIERT
+    _SUCHE_BLOCKIERT = False
+
+
+def _yt_dlp_blockiert(stderr):
+    """True, wenn yt-dlp von YouTube abgelehnt wurde (Bot-Pruefung, 429), statt wirklich nichts zu finden."""
+    t = (stderr or "").lower()
+    return any(k in t for k in ("http error 429", "too many requests", "confirm you", "not a bot", "sign in to confirm"))
+
+
 def _youtube_api(path, params):
     """YouTube-Data-API v3 -- laeuft unabhaengig von der Bot-Erkennung, die yt-dlp auf
-    GitHub-Actions-Runnern oft leer laufen laesst. None bei fehlendem Schluessel oder Fehler."""
+    GitHub-Actions-Runnern oft leer laufen laesst. None bei fehlendem Schluessel oder Fehler.
+    Bei Ablehnung (429/403) setzt sie _SUCHE_BLOCKIERT, damit der Eintrag nicht als erfolglose Nacht zaehlt."""
+    global _api_suchen, _api_abgeschaltet, _api_fehler_folge
     if not YOUTUBE_API_KEY:
         return None
-    url = "https://www.googleapis.com/youtube/v3/" + path + "?" + urllib.parse.urlencode({**params, "key": YOUTUBE_API_KEY})
-    try:
-        with urllib.request.urlopen(url, timeout=20) as resp:
-            return json.loads(resp.read().decode("utf-8"))
-    except Exception as e:
-        print(f"  YouTube-API fehlgeschlagen: {e}")
+    if _api_abgeschaltet:
+        _blockiert()
         return None
+    if path == "search":
+        if _api_suchen >= YT_API_MAX_SUCHEN:
+            _api_abgeschaltet = True
+            print(f"  YouTube-API: Limit von {YT_API_MAX_SUCHEN} Suchen pro Lauf erreicht, ab jetzt keine API-Suche mehr in diesem Lauf")
+            _blockiert()
+            return None
+        _api_suchen += 1
+        time.sleep(YT_API_PAUSE_S)
+    url = "https://www.googleapis.com/youtube/v3/" + path + "?" + urllib.parse.urlencode({**params, "key": YOUTUBE_API_KEY})
+    for versuch in (1, 2):
+        try:
+            with urllib.request.urlopen(url, timeout=20) as resp:
+                daten = json.loads(resp.read().decode("utf-8"))
+            _api_fehler_folge = 0
+            return daten
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and versuch == 1:
+                print("  YouTube-API: 429, einmal nach 10 s noch einmal")
+                time.sleep(10)
+                continue
+            print(f"  YouTube-API fehlgeschlagen: {e}")
+            _blockiert()
+            if e.code in (429, 403):
+                _api_fehler_folge += 1
+                if _api_fehler_folge >= 3:
+                    _api_abgeschaltet = True
+                    print("  YouTube-API lehnt wiederholt ab (Kontingent oder Limit erschoepft): ab jetzt keine API-Anfragen mehr in diesem Lauf")
+            return None
+        except Exception as e:
+            print(f"  YouTube-API fehlgeschlagen: {e}")
+            _blockiert()
+            return None
 
 
 def valid_yt_id(value):
@@ -191,6 +251,9 @@ def _youtube_candidates(artist, title):
             print(f"  yt-dlp ohne Treffer, stderr: {out.stderr.strip()[:300]}")
 
     if not candidates:
+        for r in (out, retry):
+            if r is not None and _yt_dlp_blockiert(r.stderr):
+                _blockiert()
         data = _youtube_api("search", {"part": "snippet", "q": f"{artist} {title}", "type": "video", "maxResults": "5"})
         for item in (data or {}).get("items", []):
             vid = (item.get("id") or {}).get("videoId")
@@ -409,7 +472,11 @@ def build_song_entry(artist, title, release, yt_id, vk_url=None):
 
 
 def _fehlversuch(entry):
-    """Zaehlt eine Nacht ohne Treffer (YouTube/Discogs) am Eintrag mit."""
+    """Zaehlt eine Nacht ohne Treffer (YouTube/Discogs) am Eintrag mit.
+    Hat YouTube die Anfrage nur abgelehnt (429, Bot-Pruefung, Limit), war es keine echte Nacht ohne Treffer."""
+    if _SUCHE_BLOCKIERT:
+        print("  (YouTube hat die Anfrage abgelehnt: zaehlt nicht als Fehlversuch)")
+        return entry
     entry["versuche"] = int(entry.get("versuche") or 0) + 1
     return entry
 
@@ -552,6 +619,7 @@ def main():
         save_json(QUEUE_PATH, _abspalten(remaining + remaining_tail))
 
     for i, entry in enumerate(queue):
+        _suche_zuruecksetzen()
         now = time.time()
         if now - start_time > time_budget:
             print(f"Zeitbudget ({time_budget:.0f}s) erreicht, breche kontrolliert ab -- "
