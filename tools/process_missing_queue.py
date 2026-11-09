@@ -28,7 +28,7 @@ import dubletten  # gemeinsame, tolerante Dublettenpruefung (08.11.2026)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 QUEUE_PATH = os.path.join(ROOT, "queue", "fehlende-lieder.json")
 AUFGEGEBEN_PATH = os.path.join(ROOT, "queue", "fehlende-lieder-aufgegeben.json")
-MAX_VERSUCHE = 3  # nach so vielen erfolglosen Naechten wandert ein Lied in die Aufgegeben-Liste (eingebaut 08.11.2026)
+MAX_VERSUCHE = 7  # nach so vielen erfolglosen Naechten wandert ein Lied in die Aufgegeben-Liste (eingebaut 08.11.2026; am 09.11.2026 von 3 auf 7, solange unklar ist, warum so viele YouTube-Suchen stumm leer bleiben)
 DISCOGS_TOKEN = os.environ.get("DISCOGS_TOKEN", "").strip()
 
 YOUTUBE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
@@ -81,6 +81,22 @@ def _suche_zuruecksetzen():
     _SUCHE_BLOCKIERT = False
 
 
+_ZAEHLER = {}
+
+
+def _zaehle(name):
+    _ZAEHLER[name] = _ZAEHLER.get(name, 0) + 1
+
+
+def _bilanz_ausgeben():
+    """Eine Zeile am Ende des Laufs: Wo bleiben die YouTube-Suchen haengen? (Diagnose, kostet nichts)"""
+    namen = ["ytdlp_start_fehler", "ytdlp_standard_treffer", "ytdlp_standard_leer", "ytdlp_android_treffer",
+             "ytdlp_ganz_leer", "ytdlp_leer_stumm", "ytdlp_blockiert",
+             "api_ohne_schluessel", "api_uebersprungen", "api_treffer", "api_leer", "api_fehler"]
+    teile = [f"{n}={_ZAEHLER[n]}" for n in namen if n in _ZAEHLER]
+    print("YouTube-Bilanz: " + (", ".join(teile) if teile else "keine YouTube-Suche in diesem Lauf"))
+
+
 def _yt_dlp_blockiert(stderr):
     """True, wenn yt-dlp von YouTube abgelehnt wurde (Bot-Pruefung, 429), statt wirklich nichts zu finden."""
     t = (stderr or "").lower()
@@ -93,8 +109,12 @@ def _youtube_api(path, params):
     Bei Ablehnung (429/403) setzt sie _SUCHE_BLOCKIERT, damit der Eintrag nicht als erfolglose Nacht zaehlt."""
     global _api_suchen, _api_abgeschaltet, _api_fehler_folge
     if not YOUTUBE_API_KEY:
+        if path == "search":
+            _zaehle("api_ohne_schluessel")
         return None
     if _api_abgeschaltet:
+        if path == "search":
+            _zaehle("api_uebersprungen")
         _blockiert()
         return None
     if path == "search":
@@ -111,6 +131,13 @@ def _youtube_api(path, params):
             with urllib.request.urlopen(url, timeout=20) as resp:
                 daten = json.loads(resp.read().decode("utf-8"))
             _api_fehler_folge = 0
+            if path == "search":
+                if (daten or {}).get("items"):
+                    _zaehle("api_treffer")
+                else:
+                    _zaehle("api_leer")
+                    if _ZAEHLER.get("api_leer", 0) <= 10:
+                        print(f"  YouTube-API: 0 Treffer fuer \"{params.get('q')}\"")
             return daten
         except urllib.error.HTTPError as e:
             if e.code == 429 and versuch == 1:
@@ -119,6 +146,8 @@ def _youtube_api(path, params):
                 continue
             print(f"  YouTube-API fehlgeschlagen: {e}")
             _blockiert()
+            if path == "search":
+                _zaehle("api_fehler")
             if e.code in (429, 403):
                 _api_fehler_folge += 1
                 if _api_fehler_folge >= 3:
@@ -128,6 +157,8 @@ def _youtube_api(path, params):
         except Exception as e:
             print(f"  YouTube-API fehlgeschlagen: {e}")
             _blockiert()
+            if path == "search":
+                _zaehle("api_fehler")
             return None
 
 
@@ -229,6 +260,8 @@ def _youtube_candidates(artist, title):
     """Bis zu 5 YouTube-Treffer (yt-dlp-JSON). Mit Android-Client-Retry, siehe search_youtube."""
     query = f"ytsearch5:{artist} {title}"
     out = _yt_dlp_search(query)
+    if out is None:
+        _zaehle("ytdlp_start_fehler")
     candidates = []
     if out is not None:
         for line in out.stdout.splitlines():
@@ -237,6 +270,7 @@ def _youtube_candidates(artist, title):
             except Exception:
                 continue
 
+    _zaehle("ytdlp_standard_treffer" if candidates else "ytdlp_standard_leer")
     if not candidates:
         retry = _yt_dlp_search(query, player_client="android")
         if retry is not None:
@@ -245,15 +279,21 @@ def _youtube_candidates(artist, title):
                     candidates.append(json.loads(line))
                 except Exception:
                     continue
+            if candidates:
+                _zaehle("ytdlp_android_treffer")
             if not candidates and retry.stderr and retry.stderr.strip():
                 print(f"  yt-dlp ohne Treffer, stderr: {retry.stderr.strip()[:300]}")
         elif out is not None and out.stderr and out.stderr.strip():
             print(f"  yt-dlp ohne Treffer, stderr: {out.stderr.strip()[:300]}")
 
     if not candidates:
+        _zaehle("ytdlp_ganz_leer")
+        if not any(r is not None and (r.stderr or "").strip() for r in (out, retry)):
+            _zaehle("ytdlp_leer_stumm")   # leer und ohne jede Meldung: verdaechtig nach stiller Sperre
         for r in (out, retry):
             if r is not None and _yt_dlp_blockiert(r.stderr):
                 _blockiert()
+                _zaehle("ytdlp_blockiert")
         data = _youtube_api("search", {"part": "snippet", "q": f"{artist} {title}", "type": "video", "maxResults": "5"})
         for item in (data or {}).get("items", []):
             vid = (item.get("id") or {}).get("videoId")
@@ -625,6 +665,7 @@ def main():
             print(f"Zeitbudget ({time_budget:.0f}s) erreicht, breche kontrolliert ab -- "
                   f"restliche {len(queue) - i} Eintraege bleiben in der Warteliste fuer den naechsten Lauf.")
             save_progress(queue[i:])
+            _bilanz_ausgeben()
             print(f"Fertig (Zeitlimit). {i - len(remaining)} von {len(queue)} Eintraegen "
                   f"verarbeitet, {len(queue) - (i - len(remaining))} bleiben in der Warteliste.")
             return
@@ -804,6 +845,7 @@ def main():
 
     remaining = _abspalten(remaining)
     save_json(QUEUE_PATH, remaining)
+    _bilanz_ausgeben()
     print(f"Fertig. {len(queue) - len(remaining)} von {len(queue)} Eintraegen verarbeitet, {len(remaining)} bleiben in der Warteliste.")
 
 
