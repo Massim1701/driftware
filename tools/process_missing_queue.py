@@ -37,6 +37,9 @@ YOUTUBE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 # Gemessen wird die Laenge der YouTube-Treffer (yt-dlp liefert "duration"); Treffer ohne
 # Laenge (YouTube-API-Fallback) zaehlen als lang genug.
 MIN_DAUER_S = 30
+# Zusatzwoerter fuer den Suchtext, wenn YouTube fuer "Interpret Titel" stumm nichts liefert (Messung 09.11.2026,
+# Reihenfolge nach Trefferquote: lyrics 6/6, music video 4/6, official video 3/6, audio 3/6)
+SUCH_ZUSAETZE = ["lyrics", "music video", "official video", "audio"]
 _NUR_KURZE = False  # von search_youtube gesetzt: es gab Treffer, aber alle kuerzer als MIN_DAUER_S
 
 # Sentinel im "g"-Feld eines Warteliste-Eintrags: markiert eine
@@ -94,6 +97,7 @@ def _bilanz_ausgeben():
              "ytdlp_ganz_leer", "ytdlp_leer_stumm", "ytdlp_blockiert",
              "api_ohne_schluessel", "api_uebersprungen", "api_treffer", "api_leer", "api_fehler"]
     teile = [f"{n}={_ZAEHLER[n]}" for n in namen if n in _ZAEHLER]
+    teile += [f"{k}={v}" for k, v in sorted(_ZAEHLER.items()) if k.startswith("ytdlp_zusatz_")]
     print("YouTube-Bilanz: " + (", ".join(teile) if teile else "keine YouTube-Suche in diesem Lauf"))
 
 
@@ -288,6 +292,31 @@ def _youtube_candidates(artist, title):
 
     if not candidates:
         _zaehle("ytdlp_ganz_leer")
+        # Stumm leer (kein Fehler, keine Sperre): mit Zusatzwort im Suchtext noch einmal. Nur Treffer, die
+        # zu Interpret und Titel passen (gleiche Regel wie youtube_match: halbe Titelwoerter + ein Interpret-Wort).
+        if not any(r is not None and _yt_dlp_blockiert(r.stderr) for r in (out, retry)):
+            tw, aw = _words(title), _words(artist)
+            for zusatz in SUCH_ZUSAETZE:
+                res = _yt_dlp_search(f"ytsearch5:{artist} {title} {zusatz}")
+                if res is None:
+                    continue
+                passend = []
+                for line in res.stdout.splitlines():
+                    try:
+                        c = json.loads(line)
+                    except Exception:
+                        continue
+                    hay = _words((c.get("title") or "") + " " + (c.get("channel") or c.get("uploader") or ""))
+                    t_hit = not tw or len(tw & hay) >= max(1, len(tw) // 2)
+                    a_hit = not aw or bool(aw & hay)
+                    if t_hit and a_hit and c.get("id"):
+                        passend.append(c)
+                if passend:
+                    candidates = passend
+                    _zaehle("ytdlp_zusatz_" + zusatz.replace(" ", "_"))
+                    print(f"  (yt-dlp mit Suchzusatz \"{zusatz}\")")
+                    break
+    if not candidates:
         if not any(r is not None and (r.stderr or "").strip() for r in (out, retry)):
             _zaehle("ytdlp_leer_stumm")   # leer und ohne jede Meldung: verdaechtig nach stiller Sperre
         for r in (out, retry):
