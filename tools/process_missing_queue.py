@@ -93,7 +93,7 @@ def _zaehle(name):
 
 def _bilanz_ausgeben():
     """Eine Zeile am Ende des Laufs: Wo bleiben die YouTube-Suchen haengen? (Diagnose, kostet nichts)"""
-    namen = ["ytdlp_start_fehler", "ytdlp_standard_treffer", "ytdlp_standard_leer", "ytdlp_android_treffer",
+    namen = ["namen_bereinigt", "ytdlp_start_fehler", "ytdlp_standard_treffer", "ytdlp_standard_leer", "ytdlp_android_treffer",
              "ytdlp_ganz_leer", "ytdlp_leer_stumm", "ytdlp_blockiert",
              "api_ohne_schluessel", "api_uebersprungen", "api_treffer", "api_leer", "api_fehler"]
     teile = [f"{n}={_ZAEHLER[n]}" for n in namen if n in _ZAEHLER]
@@ -189,6 +189,21 @@ def valid_vk_url(value):
 
 
 PAREN_SUFFIX_RE = re.compile(r"\s*\([^()]*\)\s*$")
+
+_DISCOGS_NR_RE = re.compile(r"\s*\(\d{1,3}\)")     # Discogs haengt "(2)", "(14)" an gleichnamige Interpreten
+_DOPPEL_A_RE = re.compile(r"\s+//?\s+")            # "A / B" oder "A // B" (nur mit Leerzeichen, "AC/DC" bleibt)
+
+
+def bereinige_namen(artist, title):
+    """Bereinigt Namen aus Discogs/Radio vor der Suche: Discogs-Nummern "(2)" und Sterne am Interpreten entfernen,
+    bei Doppel-A-Seiten "A / B" nur die erste Seite nehmen. Aendert nichts, was schon sauber ist."""
+    a = _DISCOGS_NR_RE.sub("", artist or "").replace("*", "")
+    a = re.sub(r"\s{2,}", " ", a).strip(" ,;")
+    t = (title or "").strip()
+    teile = [p.strip() for p in _DOPPEL_A_RE.split(t) if p.strip()]
+    if len(teile) > 1 and len(teile[0]) >= 2:
+        t = teile[0]
+    return (a or (artist or "")), (t or (title or ""))
 
 
 def strip_parenthetical_suffix(title):
@@ -636,6 +651,10 @@ def main():
             if a and t and (song_id(a, t) in all_catalog_ids or ist_dublette(a, t, e.get("yt"), KIDX)):
                 dropped += 1
                 continue
+            a2, t2 = bereinige_namen(a, t)
+            if (a2, t2) != (a, t) and a2 and t2 and (song_id(a2, t2) in all_catalog_ids or ist_dublette(a2, t2, e.get("yt"), KIDX)):
+                dropped += 1
+                continue
         cleaned_queue.append(e)
     if dropped:
         print(f"{dropped} Eintraege waren schon dekadenuebergreifend im Katalog, "
@@ -708,6 +727,13 @@ def main():
             if not artist or not title:
                 print("Eintrag ohne Interpret/Titel uebersprungen:", entry)
                 continue  # kaputten Eintrag verwerfen, nicht ewig behalten
+
+            if not (entry.get("g") and entry.get("y")):   # Nutzer-Korrekturen nicht anfassen
+                artist_roh, title_roh = artist, title
+                artist, title = bereinige_namen(artist, title)
+                if (artist, title) != (artist_roh, title_roh):
+                    _zaehle("namen_bereinigt")
+                    print(f"  Namen bereinigt: \"{artist_roh}\" - \"{title_roh}\" -> \"{artist}\" - \"{title}\"")
 
             manual_genre = entry.get("g") if isinstance(entry.get("g"), str) else None
             manual_genre = manual_genre.strip() if manual_genre else None
