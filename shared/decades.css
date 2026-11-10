@@ -2768,3 +2768,10 @@ html.lite :focus-visible { outline: 2px solid var(--accent, #7c5cff); outline-of
   box-shadow: inset 0 0 0 2px rgba(255,255,255,0.1); padding: 18%; box-sizing: border-box;
 }
 #dj-player .dj-vinyl-label svg { width: 100%; height: 100%; opacity: 0.85; }
+
+/* === Kompakter Player (10.11.): Plattenteller entfernt, Wellenform halbiert,
+   damit Playlist und Seite darunter sichtbar bleiben. Das YouTube-Fenster
+   (.cc-screen, 356x200) bleibt unveraendert. === */
+#dj-player .dj-vinyl { display: none !important; }
+#dj-player .dj-deck-top, #deck-B .dj-deck-top { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+#dj-player .dj-waveform { height: 42px; }
