@@ -4,6 +4,8 @@ name: Backup Songdaten (fornetta)
 # Unveraenderte Dateien werden uebersprungen. Von Hand: Actions -> Run workflow.
 # Benoetigt das Secret FORNETTA_BACKUP_TOKEN.
 on:
+  schedule:
+    - cron: '41 3 * * *'   # 10.11.2026: eigener Zeitplan, solange die Tageskette pausiert ist
   workflow_dispatch:
     inputs:
       kette:

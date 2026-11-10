@@ -37,6 +37,9 @@ TOKEN = os.environ.get("FORGEJO_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
 BRANCH = os.environ.get("WACHTER_BRANCH", "master")
 DRY = os.environ.get("DRY_RUN") == "1"
 
+# 10.11.2026 PAUSIERT (Massimo): Waechter und Tageskette ruhen, es startet nichts neu (keine YouTube-Abfragen).
+PAUSIERT = True
+
 MAX_FAILS_24H = 3    # so viele Fehlschlaege in 24 h werden neu gestartet, danach Ticket
 
 # Datei -> (Anzeigename = Ticket-Titel, maximales Alter des letzten Erfolgs in Stunden)
@@ -246,6 +249,9 @@ def decide(wf):
 
 
 def kette():
+    if PAUSIERT:
+        print("PAUSIERT (10.11.2026): keine Pruefung, kein Neustart.")
+        return
     """Prueft, ob die Tageskette gerissen ist: Der letzte Kettenstart (Zeitplan) ist da, es laeuft
     nichts mehr, aber ein spaeterer Schritt wurde nie gestartet -> Notiz und diesen Schritt starten."""
     runs = {wf: runs_of(wf) for wf in CHAIN}
@@ -285,6 +291,9 @@ def prev_wf(wf):
 
 
 def sweep():
+    if PAUSIERT:
+        print("PAUSIERT (10.11.2026): keine Pruefung, kein Neustart.")
+        return
     kette()
     for wf, (name, max_h) in WATCHED.items():
         runs = runs_of(wf)

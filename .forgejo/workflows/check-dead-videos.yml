@@ -11,8 +11,10 @@ name: Tote Videos pruefen
 # Der Pruefstand liegt im Actions-Cache (nicht im Repo), damit das Repo nicht waechst.
 
 on:
-  schedule:
-    - cron: '15 3 * * *'
+  # 10.11.2026 PAUSIERT (Massimo): keine YouTube-Abfragen, bis sich die Lage mit der YouTube-API geklaert hat.
+  # Zum Wiederaufnehmen die zwei Zeilen wieder einkommentieren und PAUSIERT in tools/wachter.py auf False setzen.
+  # schedule:
+  #   - cron: '15 3 * * *'
   workflow_dispatch:
     inputs:
       kette:
