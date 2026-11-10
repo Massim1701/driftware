@@ -703,7 +703,7 @@ var STREAMING_SERVICES = [
   {
     key: 'ytmusic',
     label: 'YouTube Music',
-    color: '#ff0000',
+    color: '#3a3a46',
     icon: '<path d="M9.8 7.8v8.4l7.2-4.2z" fill="#fff"/>',
     url: function (q) { return 'https://music.youtube.com/search?q=' + q; }
   },
@@ -1409,6 +1409,12 @@ function deckHTML(key) {
     '    <div class="cc-time" title="Restzeit / Gesamtlänge"><b id="deck-' + key + '-elapsed">−0:00</b><small id="deck-' + key + '-rem2">0:00</small></div>' +
     '    <div class="cc-bpm"><b id="deck-' + key + '-bpmbig">—</b><small><span class="cc-beat" id="deck-' + key + '-beat"><i></i><i></i><i></i><i></i></span>BPM</small></div>' +
     '  </div>' +
+    /* YouTube-API-Richtlinie I.7 (Ton und Bild nicht trennen): Das YouTube-Video laeuft
+       in einem EIGENEN, sichtbaren Fenster (mindestens 200x200, unbeschnitten, nichts
+       darueber). Die Plattenscheibe ist reine Optik und zeigt unser Logo. */
+    '  <div class="cc-screen" id="deck-' + key + '-screen" aria-label="Deck ' + key + ': YouTube-Video">' +
+    '    <div class="dj-vinyl-video"><div id="deck-' + key + '-mount"></div></div>' +
+    '  </div>' +
     '  <div class="dj-deck-mid">' +
     '    <div class="dj-waveform" id="deck-' + key + '-waveform" role="slider" tabindex="0" ' +
     '      aria-label="Deck ' + key + ': Songposition" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
@@ -1433,7 +1439,7 @@ function deckHTML(key) {
        unzentriert in der Ecke der Plattenteller-Scheibe. Mit dem stabilen
        Aussen-Div bleibt die Klasse erhalten, egal was YT.Player() mit dem
        inneren Mount-Knoten macht. */
-    '        <div class="dj-vinyl-video"><div id="deck-' + key + '-mount"></div></div>' +
+    '        <div class="dj-vinyl-label" aria-hidden="true">' + DRIFTWARE_LOGO_SVG + '</div>' +
     '        <div class="dj-vinyl-ring" aria-hidden="true"><span class="dj-vinyl-dot"></span></div>' +
     '      </div>' +
     '      <div class="dj-vinyl-hint">Song hierher ziehen</div>' +
@@ -3185,9 +3191,8 @@ function playDeckSong(key, song, autoplay) {
        Sobald ein zweiter Song auf dasselbe Deck geladen wurde, fehlte der
        Ring danach dauerhaft -- kein Element mehr da, das haette rotieren
        koennen. Ring+Punkt hier deshalb IMMER mit neu aufbauen. */
-    var discEl = document.getElementById('deck-' + key + '-disc');
-    if (discEl) discEl.innerHTML = '<div class="dj-vinyl-video"><div id="deck-' + key + '-mount"></div></div>' +
-      '<div class="dj-vinyl-ring" aria-hidden="true"><span class="dj-vinyl-dot"></span></div>';
+    var screenEl = document.getElementById('deck-' + key + '-screen');
+    if (screenEl) screenEl.innerHTML = '<div class="dj-vinyl-video"><div id="deck-' + key + '-mount"></div></div>';
   }
 
   function buildPlayer() {
