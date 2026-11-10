@@ -2796,7 +2796,7 @@ body.dnd-dragging #dj-player .cc-screen .dj-drop-shield { display: block; positi
    YouTube-Richtlinie: Video und Ton nicht trennen, Player nicht verstecken.
    Das fruehere Einklappen (Decks aus dem Bild geschoben, nur Mini-Leiste) entfaellt. */
 html[data-device="phone"] .dj-player.dj-phone:not(.dj-expanded) .dj-decks {
-  position: static; left: auto; width: auto; pointer-events: auto;
+  position: static; left: auto; width: 100%; max-width: 100vw; overflow-x: hidden; pointer-events: auto;
 }
 html[data-device="phone"] .dj-phone-toggle { display: none !important; }
 html[data-device="phone"] .dj-mini { display: none !important; }
