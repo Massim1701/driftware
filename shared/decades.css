@@ -2775,3 +2775,12 @@ html.lite :focus-visible { outline: 2px solid var(--accent, #7c5cff); outline-of
 #dj-player .dj-vinyl { display: none !important; }
 #dj-player .dj-deck-top, #deck-B .dj-deck-top { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 #dj-player .dj-waveform { height: 42px; }
+
+/* === Tempo-Regler kleiner und in die Zeile neben CUE/Play (10.11.) === */
+#dj-player .cc-pads { grid-template-columns: auto minmax(0, 1fr); column-gap: 12px; row-gap: 8px; }
+#dj-player .cc-pads .dj-deck-controls { grid-column: 1; grid-row: 1; }
+#dj-player .cc-pads .dj-pitch { grid-column: 2; grid-row: 1; justify-self: end; gap: 8px; }
+#dj-player .cc-pads .cc-cues { grid-column: 1 / -1; grid-row: 2; }
+#dj-player .dj-knob-wrap { width: 38px; height: 38px; }
+#dj-player .dj-knob { transform: scale(0.76); transform-origin: center; flex: none; }
+#dj-player .dj-pitch .cc-label { font-size: 9px; }
