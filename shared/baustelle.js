@@ -17,6 +17,9 @@
     'box-shadow:0 10px 34px rgba(0,0,0,.6)}' +
     '#dw-baustelle .dw-label small{display:block;margin-top:8px;color:#1a1a1a;font:600 clamp(12px,2.2vw,18px)/1.3 system-ui,sans-serif;letter-spacing:.01em;text-transform:none}' +
     '@media (max-width:640px){#dw-baustelle .dw-band{height:56px;margin-top:-28px;background:repeating-linear-gradient(-45deg,#d6001c 0 22px,#fff 22px 44px)}}';
+  /* YouTube-Buttons ausblenden (Massimo, 10.11.2026): rote Play-Buttons je Song, "+" zur Player-Warteschlange,
+     YouTube-Music-Symbole. Die Songliste, Filter, Playlists und die anderen Dienste bleiben. */
+  css += '.song-tile-youtube,.song-tile-play,.provider-btn[data-key="ytmusic"],.streaming-icon[href*="music.youtube.com"]{display:none!important}';
   var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
   var box = document.createElement('div'); box.id = 'dw-baustelle'; box.setAttribute('role', 'note'); box.setAttribute('aria-label', 'Baustelle: Der Player wird überarbeitet');
   box.innerHTML = '<div class="dw-band a"></div><div class="dw-band b"></div>' +
