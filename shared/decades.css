@@ -2801,3 +2801,4 @@ html[data-device="phone"] .dj-player.dj-phone:not(.dj-expanded) .dj-decks {
 html[data-device="phone"] .dj-phone-toggle { display: none !important; }
 html[data-device="phone"] .dj-mini { display: none !important; }
 html[data-device="phone"] body.has-dj-mini { padding-bottom: 0; }
+@media (max-width: 480px) { #dj-player .dj-pitch .cc-label { display: none; } #dj-player .cc-pads { column-gap: 6px; } }
