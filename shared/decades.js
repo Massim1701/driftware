@@ -2424,6 +2424,20 @@ function sleepCycle() {
   sleepRefreshBtn();
 }
 
+/* Songende (10.11., Nutzerwunsch: "nur das Logo, wenn das Lied zu Ende ist"):
+   Das fertige Deck zeigt nicht YouTubes Endbildschirm (roter Play-Knopf,
+   Vorschlaege), sondern unser Logo. Der Player wird dafuer zerstoert; fuer
+   das naechste Laden baut playDeckSong() den Mount ohnehin frisch auf. */
+function ccDeckToLogo(key) {
+  setTimeout(function () {
+    var deck = DECKS[key];
+    if (!deck || deck.isPlaying || deck.song) return; /* inzwischen wieder belegt */
+    if (deck.player) { try { deck.player.destroy(); } catch (e) {} deck.player = null; }
+    var screenEl = document.getElementById('deck-' + key + '-screen');
+    if (screenEl) screenEl.innerHTML = '<div class="dj-vinyl-video"><div id="deck-' + key + '-mount"><div class="dj-vinyl-video-logo">' + DRIFTWARE_LOGO_SVG + '</div></div></div><div class="dj-drop-shield" aria-hidden="true"></div>';
+  }, 150);
+}
+
 function onDeckStateChange(key) {
   return function (e) {
     var deck = DECKS[key];
@@ -2439,7 +2453,7 @@ function onDeckStateChange(key) {
       if (activeAutoFade && activeAutoFade.fromKey === key) {
         finishAutoCrossfade();
       } else if (!tryGaplessHandoff(key)) {
-        advanceAlternating(key);
+        if (!advanceAlternating(key)) { deck.song = null; deck.isPlaying = false; ccDeckToLogo(key); }
       }
     }
     updateDeckInfoUI(key);
@@ -2546,6 +2560,7 @@ function tryGaplessHandoff(key) {
   cancelPitchGlide(key);
   if (finished.rate !== 1) setDeckPitch(key, 1);
   updateDeckInfoUI(key);
+  ccDeckToLogo(key);
 
   maybePreloadNext(otherKey);
   return true;
@@ -2579,6 +2594,7 @@ function advanceAlternating(key) {
   cancelPitchGlide(key);
   if (finished.rate !== 1) setDeckPitch(key, 1);
   updateDeckInfoUI(key);
+  ccDeckToLogo(key);
 
   return true;
 }
@@ -2858,6 +2874,7 @@ function finishAutoCrossfade() {
   from.index = -1;
   from.isPlaying = false;
   updateDeckInfoUI(fromKey);
+  ccDeckToLogo(fromKey);
   if (Math.round(((from.rate || 1) - 1) * 100) !== 0) glideDeckPitch(fromKey, 0, 400);
 
   maybePreloadNext(toKey);
