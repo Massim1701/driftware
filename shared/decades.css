@@ -2791,3 +2791,13 @@ html.lite :focus-visible { outline: 2px solid var(--accent, #7c5cff); outline-of
 #dj-player .cc-screen .dj-drop-shield { display: none; }
 body.dnd-dragging #dj-player .cc-screen .dj-drop-shield { display: block; position: absolute; inset: 0; z-index: 6; }
 #dj-player .cc-screen.drag-over { box-shadow: 0 0 0 3px var(--dc, #22d3ee), 0 0 22px var(--dc, #22d3ee); }
+
+/* === Handy (10.11.): Player immer sichtbar ===
+   YouTube-Richtlinie: Video und Ton nicht trennen, Player nicht verstecken.
+   Das fruehere Einklappen (Decks aus dem Bild geschoben, nur Mini-Leiste) entfaellt. */
+html[data-device="phone"] .dj-player.dj-phone:not(.dj-expanded) .dj-decks {
+  position: static; left: auto; width: auto; pointer-events: auto;
+}
+html[data-device="phone"] .dj-phone-toggle { display: none !important; }
+html[data-device="phone"] .dj-mini { display: none !important; }
+html[data-device="phone"] body.has-dj-mini { padding-bottom: 0; }
