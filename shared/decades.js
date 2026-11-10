@@ -1414,6 +1414,7 @@ function deckHTML(key) {
        darueber). Die Plattenscheibe ist reine Optik und zeigt unser Logo. */
     '  <div class="cc-screen" id="deck-' + key + '-screen" aria-label="Deck ' + key + ': YouTube-Video">' +
     '    <div class="dj-vinyl-video"><div id="deck-' + key + '-mount"></div></div>' +
+    '    <div class="dj-drop-shield" aria-hidden="true"></div>' +
     '  </div>' +
     '  <div class="dj-deck-mid">' +
     '    <div class="dj-waveform" id="deck-' + key + '-waveform" role="slider" tabindex="0" ' +
@@ -1950,7 +1951,8 @@ function ensureDjPlayer() {
     ccRefreshCues(key);
     var gainEl = bar.querySelector('#dj-gain-' + key);
     if (gainEl) gainEl.addEventListener('input', function () { deckGain[key] = +gainEl.value; applyCrossfaderVolumes(); });
-    var dropzone = bar.querySelector('#deck-' + key + '-drop');
+    [bar.querySelector('#deck-' + key + '-drop'), bar.querySelector('#deck-' + key + '-screen')].forEach(function (dropzone) {
+    if (!dropzone) return;
     dropzone.addEventListener('dragover', function (e) { e.preventDefault(); dropzone.classList.add('drag-over'); });
     dropzone.addEventListener('dragleave', function () { dropzone.classList.remove('drag-over'); });
     dropzone.addEventListener('drop', function (e) {
@@ -1966,6 +1968,7 @@ function ensureDjPlayer() {
         else loadSongToDeck(song, key, lastGridSongs, false);
         ccFlipDeck(key);
       } catch (err) {}
+    });
     });
     var pitchKnob = bar.querySelector('#deck-' + key + '-pitch-knob');
     if (pitchKnob) {
@@ -3192,7 +3195,7 @@ function playDeckSong(key, song, autoplay) {
        Ring danach dauerhaft -- kein Element mehr da, das haette rotieren
        koennen. Ring+Punkt hier deshalb IMMER mit neu aufbauen. */
     var screenEl = document.getElementById('deck-' + key + '-screen');
-    if (screenEl) screenEl.innerHTML = '<div class="dj-vinyl-video"><div id="deck-' + key + '-mount"></div></div>';
+    if (screenEl) screenEl.innerHTML = '<div class="dj-vinyl-video"><div id="deck-' + key + '-mount"></div></div><div class="dj-drop-shield" aria-hidden="true"></div>';
   }
 
   function buildPlayer() {

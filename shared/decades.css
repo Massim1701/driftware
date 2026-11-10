@@ -2784,3 +2784,10 @@ html.lite :focus-visible { outline: 2px solid var(--accent, #7c5cff); outline-of
 #dj-player .dj-knob-wrap { width: 38px; height: 38px; }
 #dj-player .dj-knob { transform: scale(0.76); transform-origin: center; flex: none; }
 #dj-player .dj-pitch .cc-label { font-size: 9px; }
+
+/* === Song per Drag & Drop auf das Video-Fenster ziehen (10.11.) ===
+   Das Shield liegt NUR waehrend eines Song-Drags (body.dnd-dragging) ueber dem
+   Fenster, sonst ist es ausgeblendet (display:none) -- nichts liegt ueber dem Player. */
+#dj-player .cc-screen .dj-drop-shield { display: none; }
+body.dnd-dragging #dj-player .cc-screen .dj-drop-shield { display: block; position: absolute; inset: 0; z-index: 6; }
+#dj-player .cc-screen.drag-over { box-shadow: 0 0 0 3px var(--dc, #22d3ee), 0 0 22px var(--dc, #22d3ee); }
