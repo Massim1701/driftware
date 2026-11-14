@@ -46,6 +46,8 @@ def main():
                  "kitchen-king/index.html", "kitchen-king/anleitung.html", "kitchen-king/privacy.html"):
         if os.path.exists(page) and not noindex(page):
             entries.append(("/" + page.replace("index.html", ""), [page]))
+    for page in ("cartae/index.html", "cartae/en/index.html"):
+        entries.append(("/" + page.replace("index.html", ""), [page]))
     out = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for url, files in entries:
         out.append("  <url>")
