@@ -17,7 +17,7 @@
   --sky:#D3E3E8;
   --moss:#E3EAD2;
   --card-r:3.4%;
-  --card-ratio:480/742;
+  --card-ratio:560/866;
   --m:clamp(16px,3vw,40px);
   --step-small:clamp(.9rem,.88rem + .1vw,.9375rem);
   --step-body:clamp(1.0625rem,1rem + .25vw,1.1875rem);
@@ -213,8 +213,8 @@ footer{background:var(--ink);color:#E9EFEA;padding:clamp(56px,9vh,110px) var(--m
     <p class="go rv" data-d="2"><a class="btn" href="#ziehen">Probiere eine Karte</a></p>
   </div>
   <div class="stage" aria-hidden="true">
-    <div class="c1 card shutter"><img src="img/k/karte-31.jpg" alt="" width="480" height="742"></div>
-    <div class="c2 card shutter" style="animation-delay:.35s"><img src="img/k/karte-33.jpg" alt="" width="480" height="742" style="animation-delay:.35s"></div>
+    <div class="c1 card shutter"><img src="img/k/karte-31.jpg" alt="" width="560" height="866"></div>
+    <div class="c2 card shutter" style="animation-delay:.35s"><img src="img/k/karte-33.jpg" alt="" width="560" height="866" style="animation-delay:.35s"></div>
   </div>
 </section>
 
@@ -235,7 +235,7 @@ footer{background:var(--ink);color:#E9EFEA;padding:clamp(56px,9vh,110px) var(--m
       <button class="btn" id="zieh" type="button">Karte ziehen</button>
     </div>
     <div class="result rv" id="ergebnis" data-d="1" aria-live="polite">
-      <div class="card"><img id="k-bild" src="img/k/karte-31.jpg" alt="Die Karte Die Sonne" width="480" height="742"></div>
+      <div class="card"><img id="k-bild" src="img/k/karte-31.jpg" alt="Die Karte Die Sonne" width="560" height="866"></div>
       <div>
         <div class="name" id="k-name">Die Sonne</div>
         <p class="kw" id="k-kw">Erfolg · Energie · Lebensfreude</p>
@@ -303,7 +303,7 @@ footer{background:var(--ink);color:#E9EFEA;padding:clamp(56px,9vh,110px) var(--m
       <p>Lenormand und Tarot, mit Schnittmarken für den Druck. Lege sie aus und lass sie von Cartae deuten.</p>
       <a class="btn" href="/lenormand/">Lenormand-Deck laden</a>
     </div>
-    <div class="c"><img src="img/k/karte-16.jpg" alt="" width="480" height="742"></div>
+    <div class="c"><img src="img/k/karte-16.jpg" alt="" width="560" height="866"></div>
   </div>
 </section>
 
@@ -364,7 +364,7 @@ document.body.classList.remove('nojs');
     wand.forEach(function(n, idx){
       var k = K[n-1], f = document.createElement('figure');
       f.className = 'tile rv'; f.dataset.d = String(idx % 3 + 1);
-      f.innerHTML = '<div class="card"><img loading="lazy" src="img/k/karte-' + pad(n) + '.jpg" alt="Karte ' + n + ': ' + k.name + '" width="480" height="742"></div><figcaption>' + n + ' · ' + k.name + '</figcaption>';
+      f.innerHTML = '<div class="card"><img loading="lazy" src="img/k/karte-' + pad(n) + '.jpg" alt="Karte ' + n + ': ' + k.name + '" width="560" height="866"></div><figcaption>' + n + ' · ' + k.name + '</figcaption>';
       t.appendChild(f);
       if (!reduce && 'IntersectionObserver' in window) {
         new IntersectionObserver(function(es, o){ es.forEach(function(e){ if (e.isIntersecting){ f.classList.add('in'); o.disconnect(); } }); }, {threshold:.1}).observe(f);
