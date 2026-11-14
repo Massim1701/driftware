@@ -154,11 +154,11 @@
   </url>
   <url>
     <loc>https://driftware.online/lenormand/</loc>
-    <lastmod>2026-11-08</lastmod>
+    <lastmod>2026-11-14</lastmod>
   </url>
   <url>
     <loc>https://driftware.online/lenormand/en/</loc>
-    <lastmod>2026-11-08</lastmod>
+    <lastmod>2026-11-14</lastmod>
   </url>
   <url>
     <loc>https://driftware.online/Tarot/</loc>
@@ -167,5 +167,11 @@
   <url>
     <loc>https://driftware.online/Tarot/en/</loc>
     <lastmod>2026-11-14</lastmod>
+  </url>
+  <url>
+    <loc>https://driftware.online/cartae/es/</loc>
+  </url>
+  <url>
+    <loc>https://driftware.online/Tarot/es/</loc>
   </url>
 </urlset>
