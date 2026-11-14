@@ -252,8 +252,8 @@ footer{background:var(--ink);color:#E9EFEA;padding:clamp(56px,9vh,110px) var(--m
 
 <section class="wall" id="karten" aria-labelledby="wall-h">
   <div class="head">
-    <h2 id="wall-h" class="rv">36 cards in watercolour.</h2>
-    <p class="rv" data-d="1">Every card carries its number and the playing card it is linked to in the classic deck. The images are made for the books, the app and the printable decks.</p>
+    <h2 id="wall-h" class="rv">Lenormand and Tarot in watercolour.</h2>
+    <p class="rv" data-d="1">The top row shows Lenormand cards, each with its number and the playing card it is linked to in the classic deck. Below is a selection of the 78 Tarot cards. The images are made for the books, the app and the printable decks.</p>
   </div>
   <div class="tiles" id="tiles"></div>
 </section>
@@ -314,7 +314,7 @@ footer{background:var(--ink);color:#E9EFEA;padding:clamp(56px,9vh,110px) var(--m
       <a class="btn" href="/lenormand/en/">Download the Lenormand deck</a>
       <a class="btn alt" href="/Tarot/en/">Download the Tarot deck</a>
     </div>
-    <div class="c"><img src="img/k/karte-16.jpg" alt="" width="560" height="866"></div>
+    <div class="c"><img src="img/t/en-17.jpg?v=1" alt="" width="560" height="866"></div>
   </div>
 </section>
 
@@ -370,16 +370,21 @@ document.body.classList.remove('nojs');
       var i; do { i = Math.floor(Math.random() * K.length); } while (K[i].n === letzte);
       letzte = K[i].n; zeige(K[i]);
     });
-    var wand = [1,2,3,4,24,16,18,33,35,22,9,12], t = document.getElementById('tiles');
-    wand.forEach(function(n, idx){
-      var k = K[n-1], f = document.createElement('figure');
-      f.className = 'tile rv'; f.dataset.d = String(idx % 3 + 1);
-      f.innerHTML = '<div class="card"><img loading="lazy" src="img/k/karte-' + pad(n) + '.jpg?v=2" alt="Card ' + n + ': ' + k.name + '" width="560" height="866"></div><figcaption>' + n + ' · ' + k.kw.replace(/ · /g, ', ') + '</figcaption>';
+    var wand = [1,2,3,4,24,16], tarot = [["img/t/en-00.jpg?v=1","The Fool","0 · The Fool"],["img/t/en-02.jpg?v=1","The High Priestess","II · The High Priestess"],["img/t/en-06.jpg?v=1","The Lovers","VI · The Lovers"],["img/t/en-17.jpg?v=1","The Star","XVII · The Star"],["img/t/en-19.jpg?v=1","The Sun","XIX · The Sun"],["img/t/en-21.jpg?v=1","The World","XXI · The World"]], t = document.getElementById('tiles'), idx = 0;
+    function kachel(src, alt, cap){
+      var f = document.createElement('figure');
+      f.className = 'tile rv'; f.dataset.d = String(idx++ % 3 + 1);
+      f.innerHTML = '<div class="card"><img loading="lazy" src="' + src + '" alt="' + alt + '" width="560" height="866"></div><figcaption>' + cap + '</figcaption>';
       t.appendChild(f);
       if (!reduce && 'IntersectionObserver' in window) {
         new IntersectionObserver(function(es, o){ es.forEach(function(e){ if (e.isIntersecting){ f.classList.add('in'); o.disconnect(); } }); }, {threshold:.1}).observe(f);
       } else f.classList.add('in');
+    }
+    wand.forEach(function(n){
+      var k = K[n-1];
+      kachel('img/k/karte-' + pad(n) + '.jpg?v=2', 'Card ' + n + ': ' + k.name, n + ' · ' + k.kw.replace(/ · /g, ', '));
     });
+    tarot.forEach(function(c){ kachel(c[0], 'Tarot card ' + c[1], c[2]); });
   }).catch(function(){});
 })();
 </script>
