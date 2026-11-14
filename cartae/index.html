@@ -364,7 +364,7 @@ document.body.classList.remove('nojs');
     wand.forEach(function(n, idx){
       var k = K[n-1], f = document.createElement('figure');
       f.className = 'tile rv'; f.dataset.d = String(idx % 3 + 1);
-      f.innerHTML = '<div class="card"><img loading="lazy" src="img/k/karte-' + pad(n) + '.jpg?v=2" alt="Karte ' + n + ': ' + k.name + '" width="560" height="866"></div><figcaption>' + n + ' · ' + k.name + '</figcaption>';
+      f.innerHTML = '<div class="card"><img loading="lazy" src="img/k/karte-' + pad(n) + '.jpg?v=2" alt="Karte ' + n + ': ' + k.name + '" width="560" height="866"></div><figcaption>' + n + ' · ' + k.kw.replace(/ · /g, ', ') + '</figcaption>';
       t.appendChild(f);
       if (!reduce && 'IntersectionObserver' in window) {
         new IntersectionObserver(function(es, o){ es.forEach(function(e){ if (e.isIntersecting){ f.classList.add('in'); o.disconnect(); } }); }, {threshold:.1}).observe(f);
