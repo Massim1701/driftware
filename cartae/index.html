@@ -251,7 +251,7 @@ footer{background:var(--ink);color:#E9EFEA;padding:clamp(56px,9vh,110px) var(--m
 <section class="wall" id="karten" aria-labelledby="wall-h">
   <div class="head">
     <h2 id="wall-h" class="rv">Lenormand und Tarot in Aquarell.</h2>
-    <p class="rv" data-d="1">In der oberen Reihe Lenormand-Karten, jede mit ihrer Nummer und der Spielkarte aus dem klassischen Deck. Darunter eine Auswahl der 78 Tarotkarten. Die Bilder sind für die Bücher, die App und die Decks zum Ausdrucken gestaltet.</p>
+    <p class="rv" data-d="1">Oben Lenormand, darunter Tarot. Alle Bilder sind für die Bücher, die App und die Decks zum Ausdrucken gemalt.</p>
   </div>
   <div class="tiles" id="tiles"></div>
 </section>
@@ -374,7 +374,7 @@ document.body.classList.remove('nojs');
     function kachel(src, alt, cap){
       var f = document.createElement('figure');
       f.className = 'tile rv'; f.dataset.d = String(idx++ % 3 + 1);
-      f.innerHTML = '<div class="card"><img loading="lazy" src="' + src + '" alt="' + alt + '" width="560" height="866"></div><figcaption>' + cap + '</figcaption>';
+      f.innerHTML = '<div class="card"><img loading="lazy" src="' + src + '" alt="' + alt + '" width="560" height="866"></div>';
       t.appendChild(f);
       if (!reduce && 'IntersectionObserver' in window) {
         new IntersectionObserver(function(es, o){ es.forEach(function(e){ if (e.isIntersecting){ f.classList.add('in'); o.disconnect(); } }); }, {threshold:.1}).observe(f);
