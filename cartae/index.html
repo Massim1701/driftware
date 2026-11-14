@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cartae – Lenormand und Tarot legen und deuten</title>
+<meta name="description" content="Cartae: Karten legen, fotografieren und deuten. Lenormand zuerst, Tarot folgt. Dazu das große Lenormand-Buch mit Leseprobe und kostenlose Kartendecks zum Ausdrucken.">
+<link rel="canonical" href="https://driftware.online/cartae/">
+<style>
+:root{
+  --ground:#F3F5F1;
+  --ink:#1F2B25;
+  --soft:#53625A;
+  --sage:#46705A;
+  --sage-l:#DCE8DF;
+  --sage-m:#BCD2C3;
+  --sky:#D3E3E8;
+  --moss:#E3EAD2;
+  --card-r:3.4%;
+  --card-ratio:480/742;
+  --m:clamp(16px,3vw,40px);
+  --step-small:clamp(.9rem,.88rem + .1vw,.9375rem);
+  --step-body:clamp(1.0625rem,1rem + .25vw,1.1875rem);
+  --step-lead:clamp(1.25rem,1.1rem + .7vw,1.5rem);
+  --step-head:clamp(2rem,1.3rem + 3.2vw,4rem);
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font:400 var(--step-body)/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  letter-spacing:-.005em;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-weight:600;letter-spacing:-.035em;line-height:1;margin:0;color:var(--ink)}
+p{margin:0}
+a{color:inherit}
+img{display:block;max-width:100%;height:auto}
+:focus-visible{outline:3px solid var(--sage);outline-offset:3px}
+::selection{background:var(--sage-m)}
+
+.card{aspect-ratio:var(--card-ratio);border-radius:var(--card-r);overflow:hidden;background:var(--sage-l)}
+.card img{width:100%;height:100%;object-fit:cover}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 26px;border:0;border-radius:10px;
+  background:var(--sage);color:#fff;font:600 1rem/1 inherit;text-decoration:none;cursor:pointer;
+  transition:transform .2s var(--ease),background .2s var(--ease)}
+.btn:hover{background:#385C49}
+.btn:active{transform:scale(.97)}
+.btn.alt{background:var(--sage-l);color:var(--ink)}
+.btn.alt:hover{background:var(--sage-m)}
+ul.card-list{list-style:none;margin:0;padding:0}
+ul.card-list li{position:relative;padding-left:26px;margin:.5em 0}
+ul.card-list li::before{content:"";position:absolute;left:0;top:.42em;width:11px;height:16px;border-radius:2px;background:var(--sage)}
+
+.top{position:absolute;inset:0 0 auto 0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:28px var(--m) 0}
+.brand{font-weight:600;font-size:1.35rem;letter-spacing:-.02em;text-decoration:none}
+.top nav a{margin-left:clamp(14px,2.4vw,32px);font-size:var(--step-small);text-decoration:none;color:var(--ink);font-weight:500}
+.top nav a:hover{color:var(--sage)}
+
+.hero{position:relative;min-height:100svh;overflow:hidden;background:var(--ground)}
+.hero .copy{position:relative;z-index:3;padding:clamp(120px,15vh,170px) var(--m) 0;max-width:min(46rem,92vw)}
+.hero h1{font-size:clamp(2.75rem,5.4vw,5rem);max-width:12ch}
+.hero .lead{margin-top:28px;max-width:40ch;font-size:var(--step-lead);line-height:1.4}
+.hero .soon{margin-top:14px;font-size:var(--step-small);color:var(--soft)}
+.hero .go{margin-top:28px}
+.stage{position:absolute;z-index:1;right:0;bottom:0;width:min(62vw,880px);height:58svh;background:var(--sage-m);
+  clip-path:polygon(clamp(70px,9vw,130px) 0,100% 0,100% 100%,0 100%,0 clamp(70px,9vw,130px))}
+.stage .c1,.stage .c2{position:absolute;width:clamp(180px,22vw,330px)}
+.stage .c1{left:clamp(70px,9vw,130px);bottom:-14%;transform:rotate(-5deg)}
+.stage .c2{left:calc(clamp(70px,9vw,130px) + clamp(170px,19vw,290px));bottom:-24%;transform:rotate(6deg)}
+.shutter{clip-path:inset(0 0 0 100%);animation:shutter 1.1s var(--ease) .15s forwards}
+.shutter img{animation:settle 1.1s var(--ease) .15s both}
+@keyframes shutter{to{clip-path:inset(0 0 0 0)}}
+@keyframes settle{from{transform:scale(1.12)}to{transform:scale(1)}}
+
+.bands h2{position:absolute;left:-9999px}
+.band{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:24px;min-height:20vh;padding:34px var(--m);
+  background:var(--ground);color:var(--soft);transition:background .45s var(--ease),color .45s var(--ease)}
+.band h3{font-size:clamp(1.6rem,3.3vw,3rem);color:inherit;max-width:30ch;line-height:1.05;cursor:pointer}
+.band .more{grid-column:1;max-height:0;opacity:0;overflow:hidden;font-size:1.0625rem;color:var(--ink);max-width:52ch;
+  transition:max-height .45s var(--ease),opacity .45s var(--ease)}
+.band[data-on="true"]{color:var(--ink)}
+.band[data-on="true"] .more{max-height:8em;opacity:1;margin-top:-8px}
+.band:nth-of-type(1)[data-on="true"]{background:var(--sage-l)}
+.band:nth-of-type(2)[data-on="true"]{background:var(--sky)}
+.band:nth-of-type(3)[data-on="true"]{background:var(--moss)}
+.band:nth-of-type(4)[data-on="true"]{background:var(--sage-m)}
+.band:nth-of-type(5)[data-on="true"]{background:var(--sage-l)}
+.sw{grid-row:1;grid-column:2;width:4.2rem;height:2.4rem;border-radius:1.2rem;border:0;padding:0;cursor:pointer;background:#C7CFC9;position:relative;
+  transition:background .3s var(--ease);flex:none}
+.sw::after{content:"";position:absolute;left:.3rem;top:.3rem;width:1.8rem;height:1.8rem;border-radius:50%;background:#fff;transition:transform .3s var(--ease)}
+.sw[aria-checked="true"]{background:var(--sage)}
+.sw[aria-checked="true"]::after{transform:translateX(1.8rem)}
+.sw::before{content:"";position:absolute;inset:-6px}
+
+.live{position:relative;overflow:hidden;background:var(--sage);color:#fff;padding:clamp(56px,9vh,110px) var(--m) clamp(64px,10vh,120px)}
+.live .grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(24px,5vw,80px);align-items:start}
+.live h2{color:#fff;font-size:clamp(2rem,3.4vw,3rem);max-width:12ch}
+.live .intro{margin-top:18px;max-width:34ch;font-size:var(--step-lead);line-height:1.4;color:#FFFFFF}
+.live .btn{background:#fff;color:var(--ink);margin-top:28px}
+.live .btn:hover{background:var(--sage-l)}
+.result{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:clamp(18px,3vw,48px);align-items:start;margin-top:0}
+.result .card{width:100%;transform-origin:50% 100%}
+.result.swap .card{animation:flip .6s var(--ease)}
+@keyframes flip{from{transform:translateY(24px) rotate(-4deg);opacity:0}to{transform:none;opacity:1}}
+.result .name{font-size:clamp(1.8rem,3vw,2.6rem);font-weight:600;letter-spacing:-.03em;line-height:1}
+.result .kw{margin-top:8px;color:#FFFFFF}
+.result .kern{margin-top:18px;font-size:var(--step-lead);line-height:1.4}
+.result .rat{margin-top:16px;color:#FFFFFF}
+.result .rat b{color:#fff}
+
+
+.wall{padding:clamp(72px,12vh,140px) var(--m);background:var(--sage-l)}
+.wall .head{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,5fr);gap:var(--m);align-items:end;margin-bottom:clamp(32px,6vh,64px)}
+.wall h2{font-size:var(--step-head);max-width:13ch}
+.wall .head p{max-width:40ch;color:var(--ink)}
+.tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:clamp(8px,1.2vw,16px)}
+.tile{margin:0}
+.tile .card{background:var(--sage-m);transition:transform .35s var(--ease)}
+.tile:hover .card{transform:translateY(-6px) rotate(-1.5deg)}
+.tile figcaption{margin-top:10px;font-size:var(--step-small);font-weight:500;color:var(--ink)}
+
+.price{position:relative;overflow:hidden;padding:clamp(72px,12vh,140px) var(--m);min-height:90svh;background:var(--ground)}
+.price .grid{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:clamp(24px,5vw,80px)}
+.price h2{font-size:clamp(1.9rem,3vw,2.75rem);max-width:12ch}
+.price .txt{margin-top:18px;max-width:34ch}
+.fig{position:relative;display:flex;align-items:flex-end}
+.fig .n{font-size:clamp(7rem,17vw,15rem);font-weight:600;letter-spacing:-.06em;line-height:.85;color:var(--ink)}
+.fig .cur{font-size:clamp(3.5rem,8.5vw,7.5rem);font-weight:600;letter-spacing:-.04em;line-height:.9;margin-left:.1em;align-self:flex-start;color:var(--ink)}
+.fig .per{font-size:1.125rem;margin-left:14px;margin-bottom:.4em;color:var(--soft)}
+.fig .cover{position:absolute;right:0;top:-6%;width:clamp(120px,15vw,210px);transform:rotate(5deg);border-radius:6px;overflow:hidden}
+.price .incl{margin-top:clamp(28px,5vh,48px);font-size:var(--step-lead);line-height:1.35;max-width:calc(100% - clamp(150px,18vw,240px))}
+.price .incl p{margin:.25em 0}
+.price .acts{margin-top:30px;display:flex;flex-wrap:wrap;gap:12px}
+.why{margin-top:clamp(56px,9vh,110px);display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(24px,5vw,80px);background:var(--moss);padding:clamp(28px,4vw,56px);border-radius:10px}
+.why h3{font-size:clamp(1.6rem,2.4vw,2.2rem);max-width:16ch}
+
+.close{padding:var(--m);background:var(--ground);overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,5fr) minmax(0,1.2fr);gap:clamp(8px,1.2vw,14px);height:clamp(320px,38vh,380px)}
+.row>div{border-radius:10px}
+.row .a{background:var(--sky);margin-left:calc(var(--m) * -1)}
+.row .b{background:var(--sage);color:#fff;padding:clamp(24px,3vw,44px);display:flex;flex-direction:column;justify-content:center}
+.row .b h2{color:#fff;font-size:clamp(1.8rem,2.8vw,2.5rem);max-width:16ch}
+.row .b p{margin-top:12px;max-width:42ch;color:#FFFFFF}
+.row .b .btn{background:#fff;color:var(--ink);align-self:flex-start;margin-top:22px}
+.row .b .btn:hover{background:var(--sage-l)}
+.row .c{margin-right:calc(var(--m) * -1);overflow:hidden;background:var(--sage-m)}
+.row .c img{height:100%;width:100%;object-fit:cover}
+
+footer{background:var(--ink);color:#E9EFEA;padding:clamp(56px,9vh,110px) var(--m) 36px}
+.mark{display:flex;align-items:flex-end;gap:4px;height:clamp(110px,26vw,320px)}
+.mark span{flex:1;display:flex;align-items:flex-end;justify-content:center;border-radius:6px;color:var(--ink);font-weight:700;
+  font-size:clamp(3.5rem,15vw,15rem);line-height:.78;letter-spacing:-.04em;padding-bottom:.04em}
+.mark span:nth-child(1){background:var(--sage-m);height:86%}
+.mark span:nth-child(2){background:var(--sky);height:100%}
+.mark span:nth-child(3){background:var(--sage-l);height:72%}
+.mark span:nth-child(4){background:var(--moss);height:94%}
+.mark span:nth-child(5){background:var(--sage-m);height:80%}
+.mark span:nth-child(6){background:var(--sky);height:100%}
+.cols{margin-top:clamp(36px,6vh,56px);display:grid;grid-template-columns:repeat(4,1fr) 1.4fr;gap:24px;font-size:var(--step-small)}
+.cols a{display:block;margin:.5em 0;text-decoration:none;color:#E9EFEA}
+.cols a:hover{color:#fff;text-decoration:underline}
+.last{margin-top:clamp(28px,5vh,48px);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:var(--step-small);color:#C4D0C8}
+.last .btn{min-height:40px;padding:0 18px;background:var(--sage-l);color:var(--ink);font-size:.9rem}
+
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.rv.in{opacity:1;transform:none}
+.rv[data-d="1"]{transition-delay:.08s}.rv[data-d="2"]{transition-delay:.16s}.rv[data-d="3"]{transition-delay:.24s}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .shutter{clip-path:none;animation:none}.shutter img{animation:none}
+  .rv{opacity:1;transform:none;transition:none}
+  .result.swap .card{animation:none}
+  *{transition-duration:.01ms!important}
+}
+.nojs .rv{opacity:1;transform:none}
+
+@media(max-width:860px){
+  .top nav a:nth-child(n+3){display:none}
+  .hero .copy{padding-top:110px}
+  .hero h1{font-size:clamp(2.5rem,10vw,3.6rem)}
+  .stage{width:100%;height:46svh;clip-path:polygon(72px 0,100% 0,100% 100%,0 100%,0 72px)}
+  .stage .c1{left:72px;width:42vw;bottom:-12%}.stage .c2{left:calc(72px + 36vw);width:42vw;bottom:-20%}
+  .band{min-height:132px;gap:14px}
+  .band h3{font-size:clamp(1.4rem,6.4vw,2rem);max-width:none}
+  .sw{width:3.4rem;height:2rem}.sw::after{width:1.4rem;height:1.4rem;left:.3rem;top:.3rem}
+  .sw[aria-checked="true"]::after{transform:translateX(1.4rem)}
+  .live .grid{grid-template-columns:1fr}
+  .result{grid-template-columns:minmax(0,40vw) minmax(0,1fr)}
+  .wall .head{grid-template-columns:1fr}
+  .tiles{grid-template-columns:repeat(3,1fr)}
+  .price .grid,.why{grid-template-columns:1fr}
+  .fig .cover{width:30vw;top:-18%}
+  .row{grid-template-columns:1fr;height:auto}
+  .row .a,.row .c{margin:0;height:120px}
+  .row .b{margin:0}
+  .cols{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body class="nojs">
+
+<header class="top">
+  <a class="brand" href="#top">Cartae</a>
+  <nav aria-label="Hauptmenü"><a href="#app">App</a><a href="#karten">Karten</a><a href="#buch">Bücher</a><a href="#decks">Decks</a></nav>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="copy">
+    <h1 class="rv">Lege die Karten. Cartae deutet.</h1>
+    <p class="lead rv" data-d="1">Lenormand und Tarot, per Foto, Nummer oder Zufall. Mit Tageskarte, allen klassischen Legungen und den Deutungen aus dem großen Lenormand-Buch.</p>
+    <p class="soon rv" data-d="2">Bald im App Store und bei Google Play.</p>
+    <p class="go rv" data-d="2"><a class="btn" href="#ziehen">Probiere eine Karte</a></p>
+  </div>
+  <div class="stage" aria-hidden="true">
+    <div class="c1 card shutter"><img src="img/k/karte-31.jpg" alt="" width="480" height="742"></div>
+    <div class="c2 card shutter" style="animation-delay:.35s"><img src="img/k/karte-33.jpg" alt="" width="480" height="742" style="animation-delay:.35s"></div>
+  </div>
+</section>
+
+<section class="bands" id="app" aria-labelledby="app-h">
+  <h2 id="app-h">Was die App kann</h2>
+  <div class="band" data-on="true"><h3>Du legst echte Karten und fotografierst sie.</h3><button class="sw" role="switch" aria-checked="true" aria-label="Fotografieren ein oder aus"></button><p class="more">Cartae erkennt die Nummern, du prüfst sie vor der Deutung und korrigierst, wenn etwas nicht stimmt.</p></div>
+  <div class="band" data-on="false"><h3>Oder du lässt dir Karten ziehen.</h3><button class="sw" role="switch" aria-checked="false" aria-label="Ziehen ein oder aus"></button><p class="more">Tageskarte, Dreier- und Fünferlegung, Neun-Karten-Quadrat, Hufeisen, Entscheidungskreuz, Beziehungs- und Jahreslegung bis zur Großen Tafel.</p></div>
+  <div class="band" data-on="false"><h3>Erst kurz lesen, dann tiefer gehen.</h3><button class="sw" role="switch" aria-checked="false" aria-label="Tiefer gehen ein oder aus"></button><p class="more">Zuerst die Kurzfassung mit dem Rat der Karte. Danach Liebe, Beruf, Zeit, Chance und Warnung, bis zum ganzen Kartenlexikon.</p></div>
+  <div class="band" data-on="false"><h3>Lass dir die Deutung vorlesen.</h3><button class="sw" role="switch" aria-checked="false" aria-label="Vorlesen ein oder aus"></button><p class="more">Mit Frauen- oder Männerstimme, ausgegeben von deinem Gerät.</p></div>
+  <div class="band" data-on="true"><h3>Alles bleibt auf deinem Gerät.</h3><button class="sw" role="switch" aria-checked="true" aria-label="Datenschutz ein oder aus"></button><p class="more">Kein Konto, keine Werbung, kein Tracking.</p></div>
+</section>
+
+<section class="live" id="ziehen" aria-labelledby="live-h">
+  <div class="grid">
+    <div class="rv">
+      <h2 id="live-h">Zieh deine Tageskarte.</h2>
+      <p class="intro">Ein Klick, eine Karte, so wie die App sie deutet. Die Texte stammen aus dem Lenormand-Buch.</p>
+      <button class="btn" id="zieh" type="button">Karte ziehen</button>
+    </div>
+    <div class="result rv" id="ergebnis" data-d="1" aria-live="polite">
+      <div class="card"><img id="k-bild" src="img/k/karte-31.jpg" alt="Die Karte Die Sonne" width="480" height="742"></div>
+      <div>
+        <div class="name" id="k-name">Die Sonne</div>
+        <p class="kw" id="k-kw">Erfolg · Energie · Lebensfreude</p>
+        <p class="kern" id="k-kern">Die Sonne ist die hellste Karte des Decks: Wo sie fällt, wird es klar, warm und lebendig.</p>
+        <p class="rat"><b>Rat der Karte:</b> <span id="k-rat"></span></p>
+      </div>
+    </div>
+  </div>
+  <div class="tail"></div>
+</section>
+
+<section class="wall" id="karten" aria-labelledby="wall-h">
+  <div class="head">
+    <h2 id="wall-h" class="rv">36 Karten in Aquarell.</h2>
+    <p class="rv" data-d="1">Jede Karte trägt ihre Nummer und die Spielkarte, mit der sie im klassischen Deck verbunden ist. Die Bilder sind für die Bücher, die App und die Decks zum Ausdrucken gestaltet.</p>
+  </div>
+  <div class="tiles" id="tiles"></div>
+</section>
+
+<section class="price" id="buch" aria-labelledby="price-h">
+  <div class="grid">
+    <div class="rv">
+      <h2 id="price-h">Das Buch zur App.</h2>
+      <p class="txt">«36 Schlüssel zum Unsichtbaren», Lenormand, das große Buch mit Kartenlexikon. 144 Seiten von Massimo Manca und Christine Fracicca. Die Deutungen der App stammen aus diesem Buch.</p>
+    </div>
+    <div class="rv" data-d="1">
+      <div class="fig">
+        <span class="n">15</span><span class="cur">€</span><span class="per">als PDF</span>
+        <div class="cover card" style="background:none;border-radius:6px"><img src="img/cover-lenormand.jpg" alt="Buchcover 36 Schlüssel zum Unsichtbaren" width="720" height="1152"></div>
+      </div>
+      <div class="incl">
+        <p>Grundlagen, die 36 Karten im Kartenlexikon, Legungen von der Tageskarte bis zur Großen Tafel.</p>
+        <p>30-Tage-Plan, Beispiel-Deutungen und häufige Fehler.</p>
+        <p>Das Tarot-Buch (20 €, nur hier) folgt. Beide zusammen 35 €.</p>
+      </div>
+      <div class="acts">
+        <a class="btn" href="das-grosse-lenormand-buch-leseprobe.pdf">Leseprobe lesen, 14 Seiten</a>
+        <a class="btn alt" href="mailto:info@driftware.online?subject=Lenormand-PDF%20Benachrichtigung">Kauf, bitte benachrichtigen</a>
+        <a class="btn alt" href="https://www.amazon.de/s?k=36+Schl%C3%BCssel+zum+Unsichtbaren+Lenormand">Gedruckt bei Amazon</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="why rv">
+    <div>
+      <h3>Warum das Tarot-Buch nur als PDF erscheint.</h3>
+    </div>
+    <div>
+      <p>«Der erste Schritt ins Tarot» führt durch die 22 Karten der Großen Arkana, mit einem Übungsweg für jeden Tag. Ein Tarot-Buch lebt von seinen Bildern: Jede Karte erscheint farbig, dazu kommen Notizseiten. Farbdruck in Buchform ist teuer, und ein gedrucktes Kartenset mit sauber geschnittenen, kartonstarken Karten ist noch aufwendiger. Beides zusammen würde das Buch auf einen Preis treiben, den ein Anfängerbuch nicht haben sollte. Statt den Preis zu erhöhen oder an der Qualität zu sparen, gebe ich dir die Möglichkeit, es selbst zu machen.</p>
+      <ul class="card-list" style="margin-top:1.1em">
+        <li><b>Das Buch:</b> PDF zu Hause ausdrucken oder in einem Copyshop oder bei einem Online-Druckdienst drucken und binden lassen. Papier, Bindung und Umfang bestimmst du.</li>
+        <li><b>Die Karten:</b> Das Deck gibt es kostenlos. Am schönsten auf kräftigem Papier (200 bis 250 g/m²) mit Farblaser oder im Copyshop. Tintenstrahldrucke versiegelst du mit Fixierspray oder Klarlack.</li>
+        <li><b>Am Bildschirm</b> lässt sich das PDF auch ganz ohne Druck lesen.</li>
+      </ul>
+      <p style="margin-top:1.1em;color:var(--soft)">Das Tarot-Buch ist noch in Arbeit und wird von einer Kartenlegerin lektoriert. Sobald es erscheint, gibt es hier eine Leseprobe. <a href="mailto:info@driftware.online?subject=Tarot-Buch%20Benachrichtigung">Benachrichtige mich</a>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="close" id="decks" aria-labelledby="decks-h">
+  <div class="row">
+    <div class="a"></div>
+    <div class="b rv">
+      <h2 id="decks-h">Kartendecks zum Ausdrucken, gratis.</h2>
+      <p>Lenormand und Tarot, mit Schnittmarken für den Druck. Lege sie aus und lass sie von Cartae deuten.</p>
+      <a class="btn" href="/lenormand/">Lenormand-Deck laden</a>
+    </div>
+    <div class="c"><img src="img/k/karte-16.jpg" alt="" width="480" height="742"></div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="mark" aria-label="Cartae"><span>C</span><span>A</span><span>R</span><span>T</span><span>A</span><span>E</span></div>
+  <div class="cols">
+    <div><a href="#app">App</a><a href="#ziehen">Tageskarte</a></div>
+    <div><a href="#karten">Karten</a><a href="#buch">Bücher</a></div>
+    <div><a href="#decks">Decks</a><a href="mailto:info@driftware.online">Support</a></div>
+    <div><a href="/cartae/datenschutz/">Datenschutz (App)</a><a href="/privacy.html">Datenschutz (Web)</a></div>
+    <div><a href="/impressum.html">Impressum</a><a href="/terms.html">Nutzungsbedingungen</a><p style="margin-top:.8em;color:#C4D0C8">Fragen: info@driftware.online</p></div>
+  </div>
+  <div class="last"><span>© 2026 Driftware. Cartae ist ein Produkt von Driftware.</span><a class="btn" href="#top">Nach oben</a></div>
+</footer>
+
+<script>
+document.body.classList.remove('nojs');
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll('.band').forEach(function(b){
+    var s = b.querySelector('.sw');
+    function set(on){ b.dataset.on = on ? 'true' : 'false'; s.setAttribute('aria-checked', on ? 'true' : 'false'); }
+    s.addEventListener('click', function(){ set(s.getAttribute('aria-checked') !== 'true'); });
+    b.querySelector('h3').addEventListener('click', function(){ s.click(); });
+  });
+
+  var rv = document.querySelectorAll('.rv');
+  if (!reduce && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+    }, {threshold:.15});
+    rv.forEach(function(el){ io.observe(el); });
+  } else { rv.forEach(function(el){ el.classList.add('in'); }); }
+
+  fetch('karten-daten.json').then(function(r){ return r.json(); }).then(function(K){
+    var pad = function(n){ return (n < 10 ? '0' : '') + n; };
+    var bild = document.getElementById('k-bild');
+    var res = document.getElementById('ergebnis');
+    function zeige(k){
+      bild.src = 'img/k/karte-' + pad(k.n) + '.jpg';
+      bild.alt = 'Karte ' + k.n + ': ' + k.name;
+      document.getElementById('k-name').textContent = k.name;
+      document.getElementById('k-kw').textContent = k.kw;
+      document.getElementById('k-kern').textContent = k.kern;
+      document.getElementById('k-rat').textContent = k.rat;
+      if (!reduce){ res.classList.remove('swap'); void res.offsetWidth; res.classList.add('swap'); }
+    }
+    zeige(K[30]);
+    var letzte = 31;
+    document.getElementById('zieh').addEventListener('click', function(){
+      var i; do { i = Math.floor(Math.random() * K.length); } while (K[i].n === letzte);
+      letzte = K[i].n; zeige(K[i]);
+    });
+    var wand = [1,2,3,4,24,16,18,33,35,22,9,12], t = document.getElementById('tiles');
+    wand.forEach(function(n, idx){
+      var k = K[n-1], f = document.createElement('figure');
+      f.className = 'tile rv'; f.dataset.d = String(idx % 3 + 1);
+      f.innerHTML = '<div class="card"><img loading="lazy" src="img/k/karte-' + pad(n) + '.jpg" alt="Karte ' + n + ': ' + k.name + '" width="480" height="742"></div><figcaption>' + n + ' · ' + k.name + '</figcaption>';
+      t.appendChild(f);
+      if (!reduce && 'IntersectionObserver' in window) {
+        new IntersectionObserver(function(es, o){ es.forEach(function(e){ if (e.isIntersecting){ f.classList.add('in'); o.disconnect(); } }); }, {threshold:.1}).observe(f);
+      } else f.classList.add('in');
+    });
+  }).catch(function(){});
+})();
+</script>
+</body>
+</html>
