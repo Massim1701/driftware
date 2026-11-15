@@ -38,7 +38,9 @@ footer a{color:#E9EFEA;margin-right:18px}
     fetch('/api/status?s='+encodeURIComponent(sid)).then(function(r){return r.json();}).then(function(j){
       if(j.bezahlt){
         s.textContent='Your payment has arrived. Here is your book:';
-        a.innerHTML='<a class="btn" href="/api/download?s='+encodeURIComponent(sid)+'">Download PDF</a>';
+        var d=j.dateien||[];
+        if(d.length>1){ a.innerHTML=d.map(function(t,i){ return '<a class="btn" style="margin:0 10px 10px 0" href="/api/download?s='+encodeURIComponent(sid)+'&f='+i+'">Download PDF: '+t+'</a>'; }).join(''); }
+        else { a.innerHTML='<a class="btn" href="/api/download?s='+encodeURIComponent(sid)+'">Download PDF</a>'; }
       } else if(j.grund==='offen' && versuche++<10){ setTimeout(pruefe,2500); }
       else if(j.grund==='abgelaufen'){ fehler('This link is no longer valid. Please write to info@driftware.online.'); }
       else { fehler('The payment could not be confirmed yet. Reload this page in a few minutes or write to info@driftware.online.'); }
