@@ -197,27 +197,57 @@ footer{background:var(--ink);color:#E9EFEA;padding:clamp(56px,9vh,110px) var(--m
 <body class="nojs">
 <header class="top">
   <a class="brand" href="#top">Cartae</a>
-  <nav aria-label="Menú principal"><a href="#cartas">Cartas</a><a href="#libro">Libro</a><a href="#baraja">Baraja</a><a href="/cartae/en/">English</a><a href="/cartae/">Deutsch</a></nav>
+  <nav aria-label="Menú principal"><a href="#app">App</a><a href="#cartas">Cartas</a><a href="#libro">Libros</a><a href="#baraja">Barajas</a><a href="/cartae/en/">English</a><a href="/cartae/">Deutsch</a></nav>
 </header>
 <main id="top">
 <section class="hero">
   <div class="copy">
-    <h1 class="rv">Aprende tarot, carta a carta.</h1>
-    <p class="lead rv" data-d="1">Un libro con las 78 cartas, un camino de práctica para cada una y una baraja que puedes imprimir gratis.</p>
-    <p class="go rv" data-d="2"><a class="btn" href="#libro">Ver el libro</a></p>
+    <h1 class="rv">Coloca las cartas. Cartae las lee.</h1>
+    <p class="lead rv" data-d="1">Lenormand y tarot, por foto, por número o por sorteo. Con carta del día, todas las tiradas clásicas y las interpretaciones de los libros de Lenormand y de tarot.</p>
+    <p class="soon rv" data-d="2">Próximamente en App Store y Google Play.</p>
+    <p class="go rv" data-d="2"><a class="btn" href="#ziehen">Probar una carta</a></p>
   </div>
   <div class="stage" aria-hidden="true">
-    <div class="c1 card shutter"><img src="/cartae/img/t/es-17.jpg?v=1" alt="" width="560" height="866"></div>
+    <div class="c1 card shutter"><img src="/cartae/img/k-es/karte-31.jpg" alt="" width="560" height="866"></div>
     <div class="c2 card shutter" style="animation-delay:.35s"><img src="/cartae/img/t/es-06.jpg?v=1" alt="" width="560" height="866" style="animation-delay:.35s"></div>
   </div>
 </section>
 
+<section class="bands" id="app" aria-labelledby="app-h">
+  <h2 id="app-h">Lo que hace la app</h2>
+  <div class="band" data-on="true"><h3>Coloca cartas reales y fotografíalas.</h3><button class="sw" role="switch" aria-checked="true" aria-label="Foto activada o desactivada"></button><p class="more">Cartae reconoce los números; tú los compruebas antes de la lectura y corriges lo que no encaje.</p></div>
+  <div class="band" data-on="false"><h3>O deja que la app saque las cartas por ti.</h3><button class="sw" role="switch" aria-checked="false" aria-label="Sorteo activado o desactivado"></button><p class="more">Carta del día, tiradas de tres y de cinco cartas, cuadrado de nueve, herradura, cruz de decisión, tiradas de pareja y de año, hasta la Gran Tabla.</p></div>
+  <div class="band" data-on="false"><h3>Lee primero en breve y profundiza después.</h3><button class="sw" role="switch" aria-checked="false" aria-label="Profundizar activado o desactivado"></button><p class="more">Primero la lectura corta con el consejo de la carta. Después amor, trabajo, tiempos, oportunidad y advertencia, hasta el léxico completo de las cartas.</p></div>
+  <div class="band" data-on="false"><h3>Haz que te lean la tirada en voz alta.</h3><button class="sw" role="switch" aria-checked="false" aria-label="Lectura en voz alta activada o desactivada"></button><p class="more">Con voz femenina o masculina, reproducida por tu dispositivo.</p></div>
+  <div class="band" data-on="true"><h3>Todo se queda en tu dispositivo.</h3><button class="sw" role="switch" aria-checked="true" aria-label="Privacidad activada o desactivada"></button><p class="more">Sin cuenta, sin anuncios, sin seguimiento.</p></div>
+</section>
+
+<section class="live" id="ziehen" aria-labelledby="live-h">
+  <div class="grid">
+    <div class="rv">
+      <h2 id="live-h">Saca tu carta del día.</h2>
+      <p class="intro">Un clic, una carta, leída como la lee la app. Los textos proceden del libro de Lenormand.</p>
+      <button class="btn" id="zieh" type="button">Sacar una carta</button>
+    </div>
+    <div class="result rv" id="ergebnis" data-d="1" aria-live="polite">
+      <div class="card"><img id="k-bild" src="/cartae/img/k-es/karte-31.jpg" alt="La carta El Sol" width="560" height="866"></div>
+      <div>
+        <div class="name" id="k-name">El Sol</div>
+        <p class="kw" id="k-kw">Éxito · Energía · Alegría de vivir</p>
+        <p class="kern" id="k-kern">El Sol es la carta más luminosa de la baraja: donde cae, todo se vuelve claro, cálido y vivo.</p>
+        <p class="rat"><b>Consejo de la carta:</b> <span id="k-rat"></span></p>
+      </div>
+    </div>
+  </div>
+  <div class="tail"></div>
+</section>
+
 <section class="wall" id="cartas" aria-labelledby="wall-h">
   <div class="head">
-    <h2 id="wall-h" class="rv">Tarot en acuarela.</h2>
-    <p class="rv" data-d="1">Todas las imágenes están pintadas para el libro y para la baraja que puedes imprimir.</p>
+    <h2 id="wall-h" class="rv">Lenormand y tarot en acuarela.</h2>
+    <p class="rv" data-d="1">Arriba Lenormand, abajo tarot. Todas las imágenes están pintadas para los libros, la app y las barajas que puedes imprimir.</p>
   </div>
-  <div class="tiles" id="tiles"><figure class="tile rv" data-d="1"><div class="card"><img loading="lazy" src="/cartae/img/t/es-00.jpg?v=1" alt="Carta del tarot El Loco" width="560" height="866"></div></figure><figure class="tile rv" data-d="2"><div class="card"><img loading="lazy" src="/cartae/img/t/es-02.jpg?v=1" alt="Carta del tarot La Sacerdotisa" width="560" height="866"></div></figure><figure class="tile rv" data-d="3"><div class="card"><img loading="lazy" src="/cartae/img/t/es-06.jpg?v=1" alt="Carta del tarot Los Enamorados" width="560" height="866"></div></figure><figure class="tile rv" data-d="1"><div class="card"><img loading="lazy" src="/cartae/img/t/es-17.jpg?v=1" alt="Carta del tarot La Estrella" width="560" height="866"></div></figure><figure class="tile rv" data-d="2"><div class="card"><img loading="lazy" src="/cartae/img/t/es-19.jpg?v=1" alt="Carta del tarot El Sol" width="560" height="866"></div></figure><figure class="tile rv" data-d="3"><div class="card"><img loading="lazy" src="/cartae/img/t/es-21.jpg?v=1" alt="Carta del tarot El Mundo" width="560" height="866"></div></figure></div>
+  <div class="tiles" id="tiles"></div>
 </section>
 
 <section class="price" id="libro" aria-labelledby="price-h">
@@ -298,11 +328,57 @@ footer{background:var(--ink);color:#E9EFEA;padding:clamp(56px,9vh,110px) var(--m
 document.body.classList.remove('nojs');
 (function(){
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll('.band').forEach(function(b){
+    var s = b.querySelector('.sw');
+    function set(on){ b.dataset.on = on ? 'true' : 'false'; s.setAttribute('aria-checked', on ? 'true' : 'false'); }
+    s.addEventListener('click', function(){ set(s.getAttribute('aria-checked') !== 'true'); });
+    b.querySelector('h3').addEventListener('click', function(){ s.click(); });
+  });
+
   var rv = document.querySelectorAll('.rv');
   if (!reduce && 'IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} }); }, {threshold:.15});
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+    }, {threshold:.15});
     rv.forEach(function(el){ io.observe(el); });
   } else { rv.forEach(function(el){ el.classList.add('in'); }); }
+
+  fetch('karten-daten.json').then(function(r){ return r.json(); }).then(function(K){
+    var pad = function(n){ return (n < 10 ? '0' : '') + n; };
+    var bild = document.getElementById('k-bild');
+    var res = document.getElementById('ergebnis');
+    function zeige(k){
+      bild.src = '/cartae/img/k-es/karte-' + pad(k.n) + '.jpg';
+      bild.alt = 'Carta ' + k.n + ': ' + k.name;
+      document.getElementById('k-name').textContent = k.name;
+      document.getElementById('k-kw').textContent = k.kw;
+      document.getElementById('k-kern').textContent = k.kern;
+      document.getElementById('k-rat').textContent = k.rat;
+      if (!reduce){ res.classList.remove('swap'); void res.offsetWidth; res.classList.add('swap'); }
+    }
+    zeige(K[30]);
+    var letzte = 31;
+    document.getElementById('zieh').addEventListener('click', function(){
+      var i; do { i = Math.floor(Math.random() * K.length); } while (K[i].n === letzte);
+      letzte = K[i].n; zeige(K[i]);
+    });
+    var wand = [1,2,3,4,24,16], tarot = [["/cartae/img/t/es-00.jpg?v=1","El Loco","0 · El Loco"],["/cartae/img/t/es-02.jpg?v=1","La Sacerdotisa","II · La Sacerdotisa"],["/cartae/img/t/es-06.jpg?v=1","Los Enamorados","VI · Los Enamorados"],["/cartae/img/t/es-17.jpg?v=1","La Estrella","XVII · La Estrella"],["/cartae/img/t/es-19.jpg?v=1","El Sol","XIX · El Sol"],["/cartae/img/t/es-21.jpg?v=1","El Mundo","XXI · El Mundo"]], t = document.getElementById('tiles'), idx = 0;
+    function kachel(src, alt, cap){
+      var f = document.createElement('figure');
+      f.className = 'tile rv'; f.dataset.d = String(idx++ % 3 + 1);
+      f.innerHTML = '<div class="card"><img loading="lazy" src="' + src + '" alt="' + alt + '" width="560" height="866"></div>';
+      t.appendChild(f);
+      if (!reduce && 'IntersectionObserver' in window) {
+        new IntersectionObserver(function(es, o){ es.forEach(function(e){ if (e.isIntersecting){ f.classList.add('in'); o.disconnect(); } }); }, {threshold:.1}).observe(f);
+      } else f.classList.add('in');
+    }
+    wand.forEach(function(n){
+      var k = K[n-1];
+      kachel('/cartae/img/k-es/karte-' + pad(n) + '.jpg', 'Carta ' + n + ': ' + k.name, n + ' · ' + k.kw.replace(/ · /g, ', '));
+    });
+    tarot.forEach(function(c){ kachel(c[0], 'Carta del tarot ' + c[1], c[2]); });
+  }).catch(function(){});
 })();
 </script>
 </body>
