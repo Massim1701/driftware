@@ -216,7 +216,7 @@ footer{background:var(--ink);color:#E9EFEA;padding:clamp(56px,9vh,110px) var(--m
     <p class="go rv" data-d="2"><a class="btn" href="#ziehen">Try a card</a></p>
   </div>
   <div class="stage" aria-hidden="true">
-    <div class="c1 card shutter"><img src="img/k/karte-31.jpg" alt="" width="560" height="866"></div>
+    <div class="c1 card shutter"><img src="img/k-en/karte-31.jpg" alt="" width="560" height="866"></div>
     <div class="c2 card shutter" style="animation-delay:.35s"><img src="img/t/en-06.jpg?v=1" alt="" width="560" height="866" style="animation-delay:.35s"></div>
   </div>
 </section>
@@ -238,7 +238,7 @@ footer{background:var(--ink);color:#E9EFEA;padding:clamp(56px,9vh,110px) var(--m
       <button class="btn" id="zieh" type="button">Draw a card</button>
     </div>
     <div class="result rv" id="ergebnis" data-d="1" aria-live="polite">
-      <div class="card"><img id="k-bild" src="img/k/karte-31.jpg" alt="The card The Sun" width="560" height="866"></div>
+      <div class="card"><img id="k-bild" src="img/k-en/karte-31.jpg" alt="The card The Sun" width="560" height="866"></div>
       <div>
         <div class="name" id="k-name">The Sun</div>
         <p class="kw" id="k-kw">Success · Energy · Joy of Life</p>
@@ -358,7 +358,7 @@ document.body.classList.remove('nojs');
     var bild = document.getElementById('k-bild');
     var res = document.getElementById('ergebnis');
     function zeige(k){
-      bild.src = 'img/k/karte-' + pad(k.n) + '.jpg?v=2';
+      bild.src = 'img/k-en/karte-' + pad(k.n) + '.jpg';
       bild.alt = 'Card ' + k.n + ': ' + k.name;
       document.getElementById('k-name').textContent = k.name;
       document.getElementById('k-kw').textContent = k.kw;
@@ -384,7 +384,7 @@ document.body.classList.remove('nojs');
     }
     wand.forEach(function(n){
       var k = K[n-1];
-      kachel('img/k/karte-' + pad(n) + '.jpg?v=2', 'Card ' + n + ': ' + k.name, n + ' · ' + k.kw.replace(/ · /g, ', '));
+      kachel('img/k-en/karte-' + pad(n) + '.jpg', 'Card ' + n + ': ' + k.name, n + ' · ' + k.kw.replace(/ · /g, ', '));
     });
     tarot.forEach(function(c){ kachel(c[0], 'Tarot card ' + c[1], c[2]); });
   }).catch(function(){});
