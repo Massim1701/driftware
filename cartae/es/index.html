@@ -374,12 +374,24 @@ body.nojs .chip.fin,.legung.still .chip.fin{opacity:1;transform:none;pointer-eve
   .lb-n{position:fixed;top:calc(64px + min(23vh,200px) - 22px);bottom:auto;width:44px;height:44px;margin:0;font-size:1.2rem;background:rgba(0,0,0,.45)}
   .lb-prev{left:6px}.lb-next{right:6px}
 }
+
+/* Tageskarte kompakt (unter der Galerie) */
+.live{padding:clamp(28px,4.5vh,52px) var(--m)}
+.live .grid{grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:clamp(20px,3.5vw,56px);align-items:center}
+.live h2{font-size:clamp(1.5rem,2.3vw,2.1rem)}
+.live .intro{margin-top:10px;font-size:var(--step-body);line-height:1.4}
+.live .btn{margin-top:16px;min-height:44px}
+.result{grid-template-columns:minmax(0,clamp(110px,11vw,160px)) minmax(0,1fr);gap:clamp(14px,2vw,28px);align-items:center}
+.result .name{font-size:clamp(1.3rem,2vw,1.8rem)}
+.result .kern{margin-top:10px;font-size:var(--step-body);line-height:1.4}
+.result .rat{margin-top:8px;font-size:var(--step-small)}
+@media(max-width:860px){.live .grid{grid-template-columns:1fr}.result{grid-template-columns:minmax(0,110px) minmax(0,1fr)}}
 </style>
 </head>
 <body class="nojs">
 <header class="top">
   <a class="brand" href="#top">Cartae</a>
-  <nav aria-label="Menú principal"><a href="#libro">Libros</a><a href="#ziehen">Carta del día</a><a href="#cartas">Cartas</a><a href="#baraja">Barajas</a><a href="/cartae/en/">English</a><a href="/cartae/">Deutsch</a></nav>
+  <nav aria-label="Menú principal"><a href="#libro">Libros</a><a href="#cartas">Cartas</a><a href="#ziehen">Carta del día</a><a href="#baraja">Barajas</a><a href="/cartae/en/">English</a><a href="/cartae/">Deutsch</a></nav>
 </header>
 <main id="top">
 
@@ -502,26 +514,6 @@ body.nojs .chip.fin,.legung.still .chip.fin{opacity:1;transform:none;pointer-eve
   </div>
 </section>
 
-<section class="live" id="ziehen" aria-labelledby="live-h">
-  <div class="grid">
-    <div class="rv">
-      <h2 id="live-h">Saca tu carta del día.</h2>
-      <p class="intro">Un clic, una carta. Los textos proceden del libro de Lenormand.</p>
-      <button class="btn" id="zieh" type="button">Sacar una carta</button>
-    </div>
-    <div class="result rv" id="ergebnis" data-d="1" aria-live="polite">
-      <div class="card"><img id="k-bild" src="/cartae/img/k-es/karte-31.jpg" alt="La carta El Sol" width="560" height="866"></div>
-      <div>
-        <div class="name" id="k-name">El Sol</div>
-        <p class="kw" id="k-kw">Éxito · Energía · Alegría de vivir</p>
-        <p class="kern" id="k-kern">El Sol es la carta más luminosa de la baraja: donde cae, todo se vuelve claro, cálido y vivo.</p>
-        <p class="rat"><b>Consejo de la carta:</b> <span id="k-rat"></span></p>
-      </div>
-    </div>
-  </div>
-  <div class="tail"></div>
-</section>
-
 <section class="wall" id="cartas" aria-labelledby="wall-h">
   <div class="head">
     <h2 id="wall-h" class="rv">Lenormand y tarot en acuarela.</h2>
@@ -561,6 +553,26 @@ body.nojs .chip.fin,.legung.still .chip.fin{opacity:1;transform:none;pointer-eve
     </figcaption>
   </figure>
 </div>
+
+<section class="live" id="ziehen" aria-labelledby="live-h">
+  <div class="grid">
+    <div class="rv">
+      <h2 id="live-h">Saca tu carta del día.</h2>
+      <p class="intro">Un clic, una carta. Los textos proceden del libro de Lenormand.</p>
+      <button class="btn" id="zieh" type="button">Sacar una carta</button>
+    </div>
+    <div class="result rv" id="ergebnis" data-d="1" aria-live="polite">
+      <div class="card"><img id="k-bild" src="/cartae/img/k-es/karte-31.jpg" alt="La carta El Sol" width="560" height="866"></div>
+      <div>
+        <div class="name" id="k-name">El Sol</div>
+        <p class="kw" id="k-kw">Éxito · Energía · Alegría de vivir</p>
+        <p class="kern" id="k-kern">El Sol es la carta más luminosa de la baraja: donde cae, todo se vuelve claro, cálido y vivo.</p>
+        <p class="rat"><b>Consejo de la carta:</b> <span id="k-rat"></span></p>
+      </div>
+    </div>
+  </div>
+  <div class="tail"></div>
+</section>
 
 <section class="close" id="baraja" aria-labelledby="decks-h">
   <div class="row">
