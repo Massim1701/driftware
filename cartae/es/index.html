@@ -205,8 +205,12 @@ ul.card-list li::before{content:"";position:absolute;left:0;top:.42em;width:11px
 .reihe-kopf h3{font-size:clamp(1.4rem,2.2vw,2rem);letter-spacing:-.03em}
 .reihe-kopf h3 span{margin-left:10px;font-size:var(--step-small);font-weight:500;letter-spacing:0;color:var(--soft)}
 .pfeile{display:flex;gap:8px}
-.pf{width:46px;height:46px;border-radius:50%;border:1px solid rgba(176,141,74,.7);background:#fffdf8;color:#6e4f16;font-size:1.3rem;cursor:pointer;transition:background .2s,transform .2s}
-.pf:hover{background:#b08d4a;color:#fff}.pf:active{transform:scale(.94)}
+.strip-wrap{position:relative}
+.pf{position:absolute;top:50%;margin-top:-28px;z-index:3;width:56px;height:56px;border-radius:50%;border:1px solid rgba(176,141,74,.8);background:rgba(255,253,248,.96);color:#6e4f16;font-size:1.5rem;line-height:1;cursor:pointer;box-shadow:0 6px 18px rgba(50,32,8,.28);transition:background .2s,color .2s,transform .2s}
+.pf[data-r="-1"]{left:clamp(4px,1.4vw,22px)}
+.pf[data-r="1"]{right:clamp(4px,1.4vw,22px)}
+.pf:hover{background:#b08d4a;color:#fff}.pf:active{transform:scale(.92)}
+@media (max-width:700px){.pf{width:42px;height:42px;margin-top:-21px;font-size:1.2rem}}
 .strip{display:flex;gap:clamp(12px,1.6vw,22px);overflow-x:auto;overscroll-behavior-x:contain;padding:24px var(--m) 38px;margin:0 calc(var(--m) * -1);scroll-snap-type:x proximity;scroll-padding:0 var(--m);scrollbar-width:thin;scrollbar-color:#b08d4a transparent;-webkit-overflow-scrolling:touch}
 .strip:focus-visible{outline-offset:-3px}
 .kart{flex:0 0 clamp(138px,15vw,210px);padding:0;border:0;background:none;cursor:zoom-in;scroll-snap-align:start;border-radius:3.4%;position:relative;box-shadow:1px 2px 2px rgba(50,32,8,.35),4px 10px 18px rgba(50,32,8,.2);transition:transform .32s var(--ease),box-shadow .32s var(--ease)}
@@ -491,12 +495,20 @@ body.nojs .chip.fin,.legung.still .chip.fin{opacity:1;transform:none;pointer-eve
     <p class="rv" data-d="1">Las 114 cartas, gratis para imprimir. Recorre las filas y toca una carta para verla de cerca.</p>
   </div>
   <div class="reihe" data-typ="l">
-    <div class="reihe-kopf"><h3>Lenormand <span>36 cartas</span></h3><div class="pfeile"><button type="button" class="pf" data-r="-1" aria-label="Lenormand anterior">&#8592;</button><button type="button" class="pf" data-r="1" aria-label="Lenormand siguiente">&#8594;</button></div></div>
-    <div class="strip" id="strip-l" tabindex="0" role="list" aria-label="Las 36 cartas Lenormand"></div>
+    <div class="reihe-kopf"><h3>Lenormand <span>36 cartas</span></h3></div>
+    <div class="strip-wrap">
+      <button type="button" class="pf" data-r="-1" aria-label="Lenormand anterior">&#8592;</button>
+      <div class="strip" id="strip-l" tabindex="0" role="list" aria-label="Las 36 cartas Lenormand"></div>
+      <button type="button" class="pf" data-r="1" aria-label="Lenormand siguiente">&#8594;</button>
+    </div>
   </div>
   <div class="reihe" data-typ="t">
-    <div class="reihe-kopf"><h3>Tarot <span>78 cartas</span></h3><div class="pfeile"><button type="button" class="pf" data-r="-1" aria-label="Tarot anterior">&#8592;</button><button type="button" class="pf" data-r="1" aria-label="Tarot siguiente">&#8594;</button></div></div>
-    <div class="strip" id="strip-t" tabindex="0" role="list" aria-label="Las 78 cartas del tarot"></div>
+    <div class="reihe-kopf"><h3>Tarot <span>78 cartas</span></h3></div>
+    <div class="strip-wrap">
+      <button type="button" class="pf" data-r="-1" aria-label="Tarot anterior">&#8592;</button>
+      <div class="strip" id="strip-t" tabindex="0" role="list" aria-label="Las 78 cartas del tarot"></div>
+      <button type="button" class="pf" data-r="1" aria-label="Tarot siguiente">&#8594;</button>
+    </div>
   </div>
   <p class="wall-fuss rv"><a class="btn" href="#baraja">Descargar las dos barajas gratis</a></p>
 </section>
