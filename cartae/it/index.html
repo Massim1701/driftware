@@ -386,7 +386,7 @@ body.nojs .chip.fin,.legung.still .chip.fin{opacity:1;transform:none;pointer-eve
 <section class="legung" id="legung" aria-labelledby="hero-h">
   <div class="track">
     <div class="sticky">
-      <video id="lv" muted playsinline preload="none" poster="/cartae/assets/poster.jpg" aria-hidden="true"></video>
+      <video id="lv" muted playsinline preload="none" poster="/cartae/assets/poster.jpg?v=2" aria-hidden="true"></video>
       <div class="fade" aria-hidden="true"></div>
       <div class="offer" role="note"><a href="#baraja"><b>Carte gratis</b></a><span>·</span><a href="#libro">Libro 15 €</a><span>·</span><a href="lenormand-campione.pdf?v=1" target="_blank" rel="noopener">Anteprima gratis</a></div>
       <div class="chip first" data-from="0" data-to="115">
@@ -750,7 +750,7 @@ document.body.classList.remove('nojs');
   var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(reduce){legung.classList.add('still','ende');return;}
   var portrait=window.matchMedia('(orientation: portrait)').matches;
-  var url=portrait?'/cartae/assets/flug-m.mp4':'/cartae/assets/flug.mp4';
+  var url=portrait?'/cartae/assets/flug-m.mp4?v=2':'/cartae/assets/flug.mp4?v=2';
   // Kapitel: Das Video laeuft am Stueck (flüssig) von Halt zu Halt, Scrollen waehlt das Kapitel.
   var FPS=30,STOPS=[100,560];
   var dur=0,ready=false,started=false,canPlay=true,idx=0,lastIdx=-1;
