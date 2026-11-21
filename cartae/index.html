@@ -403,7 +403,7 @@ body.nojs .chip.fin,.legung.still .chip.fin{opacity:1;transform:none;pointer-eve
 <section class="legung" id="legung" aria-labelledby="hero-h">
   <div class="track">
     <div class="sticky">
-      <video id="lv" muted playsinline preload="none" poster="/cartae/assets/poster.jpg?v=2" aria-hidden="true"></video>
+      <video id="lv" muted playsinline preload="auto" poster="/cartae/assets/poster.jpg?v=2" aria-hidden="true"></video>
       <div class="fade" aria-hidden="true"></div>
       <div class="offer" role="note"><a href="#decks"><b>Karten gratis</b></a><span>·</span><a href="#buch">Buch 15 €</a><span>·</span><a href="das-grosse-lenormand-buch-leseprobe.pdf" target="_blank" rel="noopener">Leseprobe gratis</a></div>
       <div class="chip first" data-from="0" data-to="115">
@@ -776,8 +776,12 @@ document.body.classList.remove('nojs');
     if(started)return;started=true;
     // als Blob laden: Abspielen und Springen klappen dann auch auf Hosts ohne Byte-Range
     fetch(url).then(function(r){return r.ok?r.blob():Promise.reject(r.status);}).then(function(b){
+      function bereit(){if(ready)return;dur=v.duration;ready=true;try{v.currentTime=0;}catch(e){}}
+      v.addEventListener('loadedmetadata',bereit);v.addEventListener('loadeddata',bereit);v.addEventListener('canplay',bereit);
       v.src=URL.createObjectURL(b);
-      v.addEventListener('loadedmetadata',function(){dur=v.duration;ready=true;v.currentTime=0;});
+      v.load(); // Safari laedt ohne load() bei preload=none nie die Metadaten
+      // Notausgang: kommt in Safari nach 5 s nichts, statisches Bild statt leerer Flaeche
+      setTimeout(function(){if(v.readyState>=1)bereit();else if(!ready)legung.classList.add('still','ende');},5000);
     }).catch(function(){legung.classList.add('still','ende');});
   }
   start();
