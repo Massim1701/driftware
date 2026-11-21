@@ -344,6 +344,39 @@ footer{background:var(--ink);color:#E9EFEA;padding:clamp(56px,9vh,110px) var(--m
 body.nojs .legung .track,.legung.still .track{height:100svh}
 body.nojs .chip.fin,.legung.still .chip.fin{opacity:1;transform:none;pointer-events:auto}
 @media (prefers-reduced-motion:reduce){.chip{transition:none}}
+
+/* Handy-Korrekturen: Navigation, Hero-Start, Buchkarten, Grossansicht */
+@media (max-width:860px){
+  .top nav a:nth-child(n+2):nth-child(-n+4){display:none}
+  .top nav a:nth-child(n+5){display:inline}
+  .top nav{white-space:nowrap}
+  .top nav a{margin-left:12px;font-size:.85rem}
+}
+@media (max-width:700px){
+  .chip.first{padding:14px 16px}
+  .chip.first .eyebrow{font-size:.68rem;margin-bottom:4px}
+  .chip.first h1{font-size:1.45rem;line-height:1.08}
+  .chip.first .lead{font-size:.9rem;line-height:1.35;margin-top:8px}
+  .chip.first .go{margin-top:10px;flex-wrap:nowrap;gap:8px}
+  .chip.first .go .btn{min-height:42px;padding:0 12px;font-size:.88rem;flex:1;text-align:center}
+  .chip.first .sub{font-size:.75rem;margin-top:8px}
+  .legung .hint{font-size:.62rem;letter-spacing:.1em;white-space:nowrap;bottom:10px}
+  .buch .fig{flex-wrap:wrap;margin-top:26px;align-content:flex-start}
+  .buch .fig .n{font-size:3rem}
+  .buch .fig .cur{font-size:1.5rem}
+  .buch .fig .per{flex-basis:100%;margin:6px 0 0}
+  .buch .fig .cover{width:78px}
+  .buch .fig .siegel{width:48px;height:48px;left:-18px;top:-18px;font-size:.45rem}
+  .buch .fig .siegel b{font-size:.95rem}
+  .lb-fig{padding-bottom:20px;gap:12px}
+  .lb-img{height:min(46vh,400px)}
+  .lb-txt h3{font-size:1.6rem}
+  .lb-kern{font-size:.92rem;margin-top:8px}
+  .lb-acts{margin-top:14px;flex-direction:column;align-items:stretch}
+  .lb-acts .btn{text-align:center}
+  .lb-n{position:fixed;top:calc(64px + min(23vh,200px) - 22px);bottom:auto;width:44px;height:44px;margin:0;font-size:1.2rem;background:rgba(0,0,0,.45)}
+  .lb-prev{left:6px}.lb-next{right:6px}
+}
 </style>
 </head>
 <body class="nojs">
