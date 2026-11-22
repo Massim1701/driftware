@@ -537,7 +537,7 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
     </article>
   </div>
 
-  <div class="paket rv" aria-label="Los dos libros juntos">
+  <div class="paket rv" role="group" aria-label="Los dos libros juntos">
     <div class="paket-bilder" aria-hidden="true"><img src="/cartae/img/cover-es.jpg" alt="" width="720" height="1152"><img src="/cartae/img/galerie/es/t-17-s.webp" alt="" width="320" height="495"></div>
     <div class="paket-text">
       <p class="eyebrow-b">Los dos libros juntos</p>
@@ -594,10 +594,10 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
   <button type="button" class="lb-n lb-prev" aria-label="Carta anterior">&#8592;</button>
   <button type="button" class="lb-n lb-next" aria-label="Carta siguiente">&#8594;</button>
   <figure class="lb-fig">
-    <img class="lb-img" id="lb-img" alt="" width="560" height="866">
+    <img class="lb-img" id="lb-img" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="560" height="866">
     <figcaption class="lb-txt">
       <p class="lb-art" id="lb-art"></p>
-      <h3 id="lb-name"></h3>
+      <h3 id="lb-name">&nbsp;</h3>
       <p class="lb-kw" id="lb-kw"></p>
       <p class="lb-kern" id="lb-kern"></p>
       <p class="lb-acts"><a class="btn kauf" id="lb-kauf" href="#libro"></a> <a class="btn alt" id="lb-mehr" href="#libro">Más sobre el libro</a></p>
@@ -622,10 +622,10 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
 <div class="lb tk" id="tk" role="dialog" aria-modal="true" aria-label="Tu carta del día" aria-hidden="true">
   <button type="button" class="lb-x" id="tk-x" aria-label="Cerrar">&times;</button>
   <figure class="lb-fig">
-    <img class="lb-img" id="tk-bild" alt="" width="560" height="866">
+    <img class="lb-img" id="tk-bild" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="560" height="866">
     <figcaption class="lb-txt">
       <p class="lb-art">Tu carta del día</p>
-      <h3 id="tk-name"></h3>
+      <h3 id="tk-name">&nbsp;</h3>
       <p class="lb-kw" id="tk-kw"></p>
       <p class="lb-kern" id="tk-kern"></p>
       <p class="lb-kern"><b>Consejo de la carta:</b> <span id="tk-rat"></span></p>
@@ -677,7 +677,7 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
 
 <div class="kaufleiste" id="kaufleiste" aria-hidden="true"><span><b>El libro de Lenormand</b> · PDF · 144 páginas</span><a class="btn kauf" href="/api/kaufen?p=lenormand-es" tabindex="-1">Comprar ahora, 15 €</a></div>
 <footer>
-  <div class="mark" aria-label="Cartae"><span>C</span><span>A</span><span>R</span><span>T</span><span>A</span><span>E</span></div>
+  <div class="mark" role="img" aria-label="Cartae"><span>C</span><span>A</span><span>R</span><span>T</span><span>A</span><span>E</span></div>
   <div class="cols">
     <div><a href="#cartas">Cartas</a><a href="#libro">Libro</a></div>
     <div><a href="#baraja">Baraja</a><a href="mailto:info@driftware.online">Contacto</a></div>
