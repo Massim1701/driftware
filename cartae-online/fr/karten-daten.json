@@ -1,0 +1,254 @@
+[
+ {
+  "n": 1,
+  "name": "Le Cavalier",
+  "kw": "Message · Visite · Rapidité",
+  "kern": "Le Cavalier met les choses en mouvement : quelque chose arrive vers toi, souvent plus vite que tu ne le crois – un message, une visite ou une nouvelle impulsion.",
+  "rat": "Reste souple et ouvre-toi à ce qui arrive."
+ },
+ {
+  "n": 2,
+  "name": "Le Trèfle",
+  "kw": "Chance · Occasion · Courte durée",
+  "kern": "Le Trèfle apporte un moment heureux : petit, léger et fugace. Celui qui le remarque peut en profiter.",
+  "rat": "Saisis ce qui se présente avec légèreté et réjouis-t'en."
+ },
+ {
+  "n": 3,
+  "name": "Le Navire",
+  "kw": "Voyage · Lointain · Commerce",
+  "kern": "Le Navire quitte le port : il évoque le départ, l'horizon et tout ce qui dépasse le quotidien.",
+  "rat": "Hisse les voiles quand tu sais où tu veux aller."
+ },
+ {
+  "n": 4,
+  "name": "La Maison",
+  "kw": "Foyer · Famille · Sécurité",
+  "kern": "La Maison montre ce qui te porte : ton chez-toi, ta famille et tout ce que tu as construit.",
+  "rat": "Prends soin de ce qui te porte et bâtis dessus."
+ },
+ {
+  "n": 5,
+  "name": "L'Arbre",
+  "kw": "Santé · Croissance · Patience",
+  "kern": "L'Arbre pousse lentement et profondément : il représente la santé, la constance et les évolutions qui durent.",
+  "rat": "Donne à ce que tu construis le temps qu'il lui faut."
+ },
+ {
+  "n": 6,
+  "name": "Les Nuages",
+  "kw": "Flou · Doute · Trouble",
+  "kern": "Les Nuages voilent la vue : quelque chose n'est pas clair et une décision demande encore plus de clarté.",
+  "rat": "Attends que le ciel se dégage et pose des questions."
+ },
+ {
+  "n": 7,
+  "name": "Le Serpent",
+  "kw": "Détour · Complication · Ruse",
+  "kern": "Le Serpent se faufile : il montre des détours et des complications, mais aussi de l'intelligence et de l'adaptation.",
+  "rat": "Prends le détour les yeux ouverts et reste honnête."
+ },
+ {
+  "n": 8,
+  "name": "Le Cercueil",
+  "kw": "Fin · Adieu · Pause",
+  "kern": "Le Cercueil ne représente presque jamais la mort, mais une fin : quelque chose est terminé, se repose ou peut être lâché.",
+  "rat": "Lâche ce qui est fini et fais de la place."
+ },
+ {
+  "n": 9,
+  "name": "Le Bouquet",
+  "kw": "Joie · Cadeau · Beauté",
+  "kern": "Le Bouquet est un geste aimable : un cadeau, une invitation, un compliment.",
+  "rat": "Offre un mot gentil et accepte-en un."
+ },
+ {
+  "n": 10,
+  "name": "La Faux",
+  "kw": "Coupure · Soudaineté · Récolte",
+  "kern": "La Faux coupe net et vite : elle sépare ce qui est mûr et apporte soit une rupture, soit une récolte.",
+  "rat": "Décide clairement et récolte ce qui est mûr."
+ },
+ {
+  "n": 11,
+  "name": "Les Verges",
+  "kw": "Dispute · Répétition · Explication",
+  "kern": "Les Verges représentent la confrontation : elles montrent la dispute, les reproches et les schémas qui demandent à être éclaircis.",
+  "rat": "Dis-le avant que cela ne se répète."
+ },
+ {
+  "n": 12,
+  "name": "Les Oiseaux",
+  "kw": "Conversation · Agitation · Échange",
+  "kern": "Les Oiseaux pépient dans tous les sens : conversations, appels, échanges et parfois aussi nervosité.",
+  "rat": "Parle avec mesure et écoute attentivement."
+ },
+ {
+  "n": 13,
+  "name": "L'Enfant",
+  "kw": "Nouveau départ · Innocence · Confiance",
+  "kern": "L'Enfant représente tout ce qui est petit et nouveau : un début, de la spontanéité et de la confiance.",
+  "rat": "Commence sans a priori et laisse au nouveau le temps de grandir."
+ },
+ {
+  "n": 14,
+  "name": "Le Renard",
+  "kw": "Ruse · Prudence · Travail",
+  "kern": "Le Renard est malin et vigilant : il conseille la prudence et représente aussi le travail quotidien.",
+  "rat": "Fais confiance à ton instinct, mais vérifie avant de t'engager."
+ },
+ {
+  "n": 15,
+  "name": "L'Ours",
+  "kw": "Force · Autorité · Abondance",
+  "kern": "L'Ours est puissant et protecteur : il représente la force, l'influence et l'abondance, mais peut aussi paraître dominant.",
+  "rat": "Utilise ta force pour protéger, pas pour dominer."
+ },
+ {
+  "n": 16,
+  "name": "Les Étoiles",
+  "kw": "Orientation · Espoir · Clarté",
+  "kern": "Les Étoiles montrent le chemin : elles représentent l'espoir, l'inspiration et le sentiment d'être sur la bonne voie.",
+  "rat": "Garde ton cap et fais le premier pas."
+ },
+ {
+  "n": 17,
+  "name": "La Cigogne",
+  "kw": "Changement · Passage · Nouveauté",
+  "kern": "La Cigogne apporte le changement : elle représente une évolution vers le mieux, un déménagement, un passage et parfois une naissance.",
+  "rat": "Laisse entrer la nouveauté et accueille le changement."
+ },
+ {
+  "n": 18,
+  "name": "Le Chien",
+  "kw": "Fidélité · Ami · Confiance",
+  "kern": "Le Chien est fidèle et loyal : il montre un ami fiable et la force qui naît de l'attachement.",
+  "rat": "Prends soin de ceux qui restent à tes côtés et reste à leurs côtés."
+ },
+ {
+  "n": 19,
+  "name": "La Tour",
+  "kw": "Distance · Fonction · Solitude",
+  "kern": "La Tour représente le recul et la vue d'ensemble : les administrations, les institutions et le désir de se retirer.",
+  "rat": "Prends du recul pour avoir une vue d'ensemble, mais laisse la porte ouverte."
+ },
+ {
+  "n": 20,
+  "name": "Le Jardin",
+  "kw": "Public · Rencontre · Nature",
+  "kern": "Le Jardin est un lieu de rencontre : fêtes, société et le fait de se montrer.",
+  "rat": "Montre-toi et entretiens tes relations."
+ },
+ {
+  "n": 21,
+  "name": "La Montagne",
+  "kw": "Obstacle · Blocage · Patience",
+  "kern": "La Montagne se dresse sur le chemin : elle montre un obstacle ou un retard qui demande patience et endurance.",
+  "rat": "Avance pas à pas et ne renonce pas."
+ },
+ {
+  "n": 22,
+  "name": "Les Chemins",
+  "kw": "Décision · Choix · Carrefour",
+  "kern": "Les Chemins se séparent : tu dois choisir, et la carte demande une décision consciente.",
+  "rat": "Décide-toi en conscience et suis ta voie."
+ },
+ {
+  "n": 23,
+  "name": "Les Souris",
+  "kw": "Perte · Usure · Stress",
+  "kern": "Les Souris rongent doucement mais sans relâche : elles représentent la perte, les soucis et tout ce qui épuise lentement.",
+  "rat": "Protège tes forces et mets à l'abri ce qui est rongé."
+ },
+ {
+  "n": 24,
+  "name": "Le Cœur",
+  "kw": "Amour · Sentiment · Compassion",
+  "kern": "Le Cœur représente l'amour sous toutes ses formes : l'affection, la compassion et ce qui te tient vraiment à cœur.",
+  "rat": "Suis ton cœur et garde la tête froide."
+ },
+ {
+  "n": 25,
+  "name": "L'Anneau",
+  "kw": "Lien · Contrat · Engagement",
+  "kern": "L'Anneau se referme en cercle : il représente le lien, les promesses, les contrats et tout ce qui revient.",
+  "rat": "Engage-toi en conscience et tiens ce que tu promets."
+ },
+ {
+  "n": 26,
+  "name": "Le Livre",
+  "kw": "Savoir · Secret · Apprentissage",
+  "kern": "Le Livre est fermé ou ouvert : il représente le savoir, l'apprentissage et un secret qui se dévoile ou reste gardé.",
+  "rat": "Continue d'apprendre et pose des questions."
+ },
+ {
+  "n": 27,
+  "name": "La Lettre",
+  "kw": "Message · Document · Écrit",
+  "kern": "La Lettre est une communication écrite : elle représente les courriers, les e-mails, les documents et tout ce qui est consigné de façon ferme.",
+  "rat": "Mets l'essentiel par écrit et lis attentivement."
+ },
+ {
+  "n": 28,
+  "name": "L'Homme",
+  "kw": "Personne · Consultant · masculin",
+  "kern": "L'Homme est une carte de personne : il représente le consultant si cette image te correspond mieux, ou un homme important de ton entourage.",
+  "rat": "Regarde de près quel rôle joue cette personne."
+ },
+ {
+  "n": 29,
+  "name": "La Femme",
+  "kw": "Personne · Consultante · féminin",
+  "kern": "La Femme est une carte de personne : elle représente la consultante si cette image te correspond mieux, ou une femme importante de ton entourage.",
+  "rat": "Regarde de près quel rôle joue cette personne."
+ },
+ {
+  "n": 30,
+  "name": "Le Lys",
+  "kw": "Calme · Maturité · Harmonie",
+  "kern": "Le Lys est paisible et pur : il apporte le calme, la maturité et l'harmonie.",
+  "rat": "Fais le silence et perçois ce qui est mûr."
+ },
+ {
+  "n": 31,
+  "name": "Le Soleil",
+  "kw": "Succès · Énergie · Joie de vivre",
+  "kern": "Le Soleil est la carte la plus lumineuse du jeu : là où il tombe, tout devient clair, chaud et vivant.",
+  "rat": "Montre-toi et accepte le bien qui te revient."
+ },
+ {
+  "n": 32,
+  "name": "La Lune",
+  "kw": "Reconnaissance · Sentiment · Créativité",
+  "kern": "La Lune montre les sentiments, l'intuition et la créativité : elle représente une reconnaissance méritée et des humeurs qui vont et viennent.",
+  "rat": "Écoute ta voix intérieure et montre ce dont tu es capable."
+ },
+ {
+  "n": 33,
+  "name": "La Clé",
+  "kw": "Solution · Accès · Certitude",
+  "kern": "La Clé ouvre ce qui était fermé : elle représente la solution, la percée et la certitude.",
+  "rat": "Ouvre la porte qui se présente."
+ },
+ {
+  "n": 34,
+  "name": "Les Poissons",
+  "kw": "Argent · Abondance · Flux",
+  "kern": "Les Poissons nagent dans le courant : ils représentent l'argent, l'abondance et les affaires, tout ce qui coule, vient et repart.",
+  "rat": "Profite du flux et mets quelque chose de côté."
+ },
+ {
+  "n": 35,
+  "name": "L'Ancre",
+  "kw": "Soutien · Stabilité · But",
+  "kern": "L'Ancre donne un appui : elle représente la stabilité, un but atteint et tout ce qui te retient solidement, pour le meilleur comme pour l'enlisement.",
+  "rat": "Trouve ton appui et vérifie qu'il te porte."
+ },
+ {
+  "n": 36,
+  "name": "La Croix",
+  "kw": "Destin · Fardeau · Sens",
+  "kern": "La Croix représente le destin, le fardeau et l'épreuve, mais aussi le sens et la signification.",
+  "rat": "Porte ce qui t'appartient et partage ce qui est trop lourd."
+ }
+]

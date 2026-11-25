@@ -1,0 +1,1064 @@
+[
+ {
+  "typ": "l",
+  "nr": 1,
+  "name": "Le Cavalier",
+  "art": "Lenormand · Carte 1",
+  "kw": "Message · Visite · Rapidité",
+  "kern": "Le Cavalier met les choses en mouvement : quelque chose arrive vers toi, souvent plus vite que tu ne le crois – un message, une visite ou une nouvelle impulsion.",
+  "s": "/img/galerie/fr/l-01-s.webp",
+  "g": "/img/galerie/fr/l-01-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 2,
+  "name": "Le Trèfle",
+  "art": "Lenormand · Carte 2",
+  "kw": "Chance · Occasion · Courte durée",
+  "kern": "Le Trèfle apporte un moment heureux : petit, léger et fugace. Celui qui le remarque peut en profiter.",
+  "s": "/img/galerie/fr/l-02-s.webp",
+  "g": "/img/galerie/fr/l-02-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 3,
+  "name": "Le Navire",
+  "art": "Lenormand · Carte 3",
+  "kw": "Voyage · Lointain · Commerce",
+  "kern": "Le Navire quitte le port : il évoque le départ, l'horizon et tout ce qui dépasse le quotidien.",
+  "s": "/img/galerie/fr/l-03-s.webp",
+  "g": "/img/galerie/fr/l-03-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 4,
+  "name": "La Maison",
+  "art": "Lenormand · Carte 4",
+  "kw": "Foyer · Famille · Sécurité",
+  "kern": "La Maison montre ce qui te porte : ton chez-toi, ta famille et tout ce que tu as construit.",
+  "s": "/img/galerie/fr/l-04-s.webp",
+  "g": "/img/galerie/fr/l-04-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 5,
+  "name": "L'Arbre",
+  "art": "Lenormand · Carte 5",
+  "kw": "Santé · Croissance · Patience",
+  "kern": "L'Arbre pousse lentement et profondément : il représente la santé, la constance et les évolutions qui durent.",
+  "s": "/img/galerie/fr/l-05-s.webp",
+  "g": "/img/galerie/fr/l-05-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 6,
+  "name": "Les Nuages",
+  "art": "Lenormand · Carte 6",
+  "kw": "Flou · Doute · Trouble",
+  "kern": "Les Nuages voilent la vue : quelque chose n'est pas clair et une décision demande encore plus de clarté.",
+  "s": "/img/galerie/fr/l-06-s.webp",
+  "g": "/img/galerie/fr/l-06-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 7,
+  "name": "Le Serpent",
+  "art": "Lenormand · Carte 7",
+  "kw": "Détour · Complication · Ruse",
+  "kern": "Le Serpent se faufile : il montre des détours et des complications, mais aussi de l'intelligence et de l'adaptation.",
+  "s": "/img/galerie/fr/l-07-s.webp",
+  "g": "/img/galerie/fr/l-07-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 8,
+  "name": "Le Cercueil",
+  "art": "Lenormand · Carte 8",
+  "kw": "Fin · Adieu · Pause",
+  "kern": "Le Cercueil ne représente presque jamais la mort, mais une fin : quelque chose est terminé, se repose ou peut être lâché.",
+  "s": "/img/galerie/fr/l-08-s.webp",
+  "g": "/img/galerie/fr/l-08-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 9,
+  "name": "Le Bouquet",
+  "art": "Lenormand · Carte 9",
+  "kw": "Joie · Cadeau · Beauté",
+  "kern": "Le Bouquet est un geste aimable : un cadeau, une invitation, un compliment.",
+  "s": "/img/galerie/fr/l-09-s.webp",
+  "g": "/img/galerie/fr/l-09-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 10,
+  "name": "La Faux",
+  "art": "Lenormand · Carte 10",
+  "kw": "Coupure · Soudaineté · Récolte",
+  "kern": "La Faux coupe net et vite : elle sépare ce qui est mûr et apporte soit une rupture, soit une récolte.",
+  "s": "/img/galerie/fr/l-10-s.webp",
+  "g": "/img/galerie/fr/l-10-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 11,
+  "name": "Les Verges",
+  "art": "Lenormand · Carte 11",
+  "kw": "Dispute · Répétition · Explication",
+  "kern": "Les Verges représentent la confrontation : elles montrent la dispute, les reproches et les schémas qui demandent à être éclaircis.",
+  "s": "/img/galerie/fr/l-11-s.webp",
+  "g": "/img/galerie/fr/l-11-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 12,
+  "name": "Les Oiseaux",
+  "art": "Lenormand · Carte 12",
+  "kw": "Conversation · Agitation · Échange",
+  "kern": "Les Oiseaux pépient dans tous les sens : conversations, appels, échanges et parfois aussi nervosité.",
+  "s": "/img/galerie/fr/l-12-s.webp",
+  "g": "/img/galerie/fr/l-12-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 13,
+  "name": "L'Enfant",
+  "art": "Lenormand · Carte 13",
+  "kw": "Nouveau départ · Innocence · Confiance",
+  "kern": "L'Enfant représente tout ce qui est petit et nouveau : un début, de la spontanéité et de la confiance.",
+  "s": "/img/galerie/fr/l-13-s.webp",
+  "g": "/img/galerie/fr/l-13-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 14,
+  "name": "Le Renard",
+  "art": "Lenormand · Carte 14",
+  "kw": "Ruse · Prudence · Travail",
+  "kern": "Le Renard est malin et vigilant : il conseille la prudence et représente aussi le travail quotidien.",
+  "s": "/img/galerie/fr/l-14-s.webp",
+  "g": "/img/galerie/fr/l-14-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 15,
+  "name": "L'Ours",
+  "art": "Lenormand · Carte 15",
+  "kw": "Force · Autorité · Abondance",
+  "kern": "L'Ours est puissant et protecteur : il représente la force, l'influence et l'abondance, mais peut aussi paraître dominant.",
+  "s": "/img/galerie/fr/l-15-s.webp",
+  "g": "/img/galerie/fr/l-15-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 16,
+  "name": "Les Étoiles",
+  "art": "Lenormand · Carte 16",
+  "kw": "Orientation · Espoir · Clarté",
+  "kern": "Les Étoiles montrent le chemin : elles représentent l'espoir, l'inspiration et le sentiment d'être sur la bonne voie.",
+  "s": "/img/galerie/fr/l-16-s.webp",
+  "g": "/img/galerie/fr/l-16-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 17,
+  "name": "La Cigogne",
+  "art": "Lenormand · Carte 17",
+  "kw": "Changement · Passage · Nouveauté",
+  "kern": "La Cigogne apporte le changement : elle représente une évolution vers le mieux, un déménagement, un passage et parfois une naissance.",
+  "s": "/img/galerie/fr/l-17-s.webp",
+  "g": "/img/galerie/fr/l-17-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 18,
+  "name": "Le Chien",
+  "art": "Lenormand · Carte 18",
+  "kw": "Fidélité · Ami · Confiance",
+  "kern": "Le Chien est fidèle et loyal : il montre un ami fiable et la force qui naît de l'attachement.",
+  "s": "/img/galerie/fr/l-18-s.webp",
+  "g": "/img/galerie/fr/l-18-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 19,
+  "name": "La Tour",
+  "art": "Lenormand · Carte 19",
+  "kw": "Distance · Fonction · Solitude",
+  "kern": "La Tour représente le recul et la vue d'ensemble : les administrations, les institutions et le désir de se retirer.",
+  "s": "/img/galerie/fr/l-19-s.webp",
+  "g": "/img/galerie/fr/l-19-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 20,
+  "name": "Le Jardin",
+  "art": "Lenormand · Carte 20",
+  "kw": "Public · Rencontre · Nature",
+  "kern": "Le Jardin est un lieu de rencontre : fêtes, société et le fait de se montrer.",
+  "s": "/img/galerie/fr/l-20-s.webp",
+  "g": "/img/galerie/fr/l-20-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 21,
+  "name": "La Montagne",
+  "art": "Lenormand · Carte 21",
+  "kw": "Obstacle · Blocage · Patience",
+  "kern": "La Montagne se dresse sur le chemin : elle montre un obstacle ou un retard qui demande patience et endurance.",
+  "s": "/img/galerie/fr/l-21-s.webp",
+  "g": "/img/galerie/fr/l-21-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 22,
+  "name": "Les Chemins",
+  "art": "Lenormand · Carte 22",
+  "kw": "Décision · Choix · Carrefour",
+  "kern": "Les Chemins se séparent : tu dois choisir, et la carte demande une décision consciente.",
+  "s": "/img/galerie/fr/l-22-s.webp",
+  "g": "/img/galerie/fr/l-22-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 23,
+  "name": "Les Souris",
+  "art": "Lenormand · Carte 23",
+  "kw": "Perte · Usure · Stress",
+  "kern": "Les Souris rongent doucement mais sans relâche : elles représentent la perte, les soucis et tout ce qui épuise lentement.",
+  "s": "/img/galerie/fr/l-23-s.webp",
+  "g": "/img/galerie/fr/l-23-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 24,
+  "name": "Le Cœur",
+  "art": "Lenormand · Carte 24",
+  "kw": "Amour · Sentiment · Compassion",
+  "kern": "Le Cœur représente l'amour sous toutes ses formes : l'affection, la compassion et ce qui te tient vraiment à cœur.",
+  "s": "/img/galerie/fr/l-24-s.webp",
+  "g": "/img/galerie/fr/l-24-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 25,
+  "name": "L'Anneau",
+  "art": "Lenormand · Carte 25",
+  "kw": "Lien · Contrat · Engagement",
+  "kern": "L'Anneau se referme en cercle : il représente le lien, les promesses, les contrats et tout ce qui revient.",
+  "s": "/img/galerie/fr/l-25-s.webp",
+  "g": "/img/galerie/fr/l-25-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 26,
+  "name": "Le Livre",
+  "art": "Lenormand · Carte 26",
+  "kw": "Savoir · Secret · Apprentissage",
+  "kern": "Le Livre est fermé ou ouvert : il représente le savoir, l'apprentissage et un secret qui se dévoile ou reste gardé.",
+  "s": "/img/galerie/fr/l-26-s.webp",
+  "g": "/img/galerie/fr/l-26-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 27,
+  "name": "La Lettre",
+  "art": "Lenormand · Carte 27",
+  "kw": "Message · Document · Écrit",
+  "kern": "La Lettre est une communication écrite : elle représente les courriers, les e-mails, les documents et tout ce qui est consigné de façon ferme.",
+  "s": "/img/galerie/fr/l-27-s.webp",
+  "g": "/img/galerie/fr/l-27-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 28,
+  "name": "L'Homme",
+  "art": "Lenormand · Carte 28",
+  "kw": "Personne · Consultant · masculin",
+  "kern": "L'Homme est une carte de personne : il représente le consultant si cette image te correspond mieux, ou un homme important de ton entourage.",
+  "s": "/img/galerie/fr/l-28-s.webp",
+  "g": "/img/galerie/fr/l-28-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 29,
+  "name": "La Femme",
+  "art": "Lenormand · Carte 29",
+  "kw": "Personne · Consultante · féminin",
+  "kern": "La Femme est une carte de personne : elle représente la consultante si cette image te correspond mieux, ou une femme importante de ton entourage.",
+  "s": "/img/galerie/fr/l-29-s.webp",
+  "g": "/img/galerie/fr/l-29-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 30,
+  "name": "Le Lys",
+  "art": "Lenormand · Carte 30",
+  "kw": "Calme · Maturité · Harmonie",
+  "kern": "Le Lys est paisible et pur : il apporte le calme, la maturité et l'harmonie.",
+  "s": "/img/galerie/fr/l-30-s.webp",
+  "g": "/img/galerie/fr/l-30-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 31,
+  "name": "Le Soleil",
+  "art": "Lenormand · Carte 31",
+  "kw": "Succès · Énergie · Joie de vivre",
+  "kern": "Le Soleil est la carte la plus lumineuse du jeu : là où il tombe, tout devient clair, chaud et vivant.",
+  "s": "/img/galerie/fr/l-31-s.webp",
+  "g": "/img/galerie/fr/l-31-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 32,
+  "name": "La Lune",
+  "art": "Lenormand · Carte 32",
+  "kw": "Reconnaissance · Sentiment · Créativité",
+  "kern": "La Lune montre les sentiments, l'intuition et la créativité : elle représente une reconnaissance méritée et des humeurs qui vont et viennent.",
+  "s": "/img/galerie/fr/l-32-s.webp",
+  "g": "/img/galerie/fr/l-32-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 33,
+  "name": "La Clé",
+  "art": "Lenormand · Carte 33",
+  "kw": "Solution · Accès · Certitude",
+  "kern": "La Clé ouvre ce qui était fermé : elle représente la solution, la percée et la certitude.",
+  "s": "/img/galerie/fr/l-33-s.webp",
+  "g": "/img/galerie/fr/l-33-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 34,
+  "name": "Les Poissons",
+  "art": "Lenormand · Carte 34",
+  "kw": "Argent · Abondance · Flux",
+  "kern": "Les Poissons nagent dans le courant : ils représentent l'argent, l'abondance et les affaires, tout ce qui coule, vient et repart.",
+  "s": "/img/galerie/fr/l-34-s.webp",
+  "g": "/img/galerie/fr/l-34-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 35,
+  "name": "L'Ancre",
+  "art": "Lenormand · Carte 35",
+  "kw": "Soutien · Stabilité · But",
+  "kern": "L'Ancre donne un appui : elle représente la stabilité, un but atteint et tout ce qui te retient solidement, pour le meilleur comme pour l'enlisement.",
+  "s": "/img/galerie/fr/l-35-s.webp",
+  "g": "/img/galerie/fr/l-35-g.webp"
+ },
+ {
+  "typ": "l",
+  "nr": 36,
+  "name": "La Croix",
+  "art": "Lenormand · Carte 36",
+  "kw": "Destin · Fardeau · Sens",
+  "kern": "La Croix représente le destin, le fardeau et l'épreuve, mais aussi le sens et la signification.",
+  "s": "/img/galerie/fr/l-36-s.webp",
+  "g": "/img/galerie/fr/l-36-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 0,
+  "name": "Le Mat",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-00-s.webp",
+  "g": "/img/galerie/fr/t-00-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 1,
+  "name": "Le Magicien",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-01-s.webp",
+  "g": "/img/galerie/fr/t-01-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 2,
+  "name": "La Grande Prêtresse",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-02-s.webp",
+  "g": "/img/galerie/fr/t-02-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 3,
+  "name": "L'Impératrice",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-03-s.webp",
+  "g": "/img/galerie/fr/t-03-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 4,
+  "name": "L'Empereur",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-04-s.webp",
+  "g": "/img/galerie/fr/t-04-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 5,
+  "name": "L'Hiérophante",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-05-s.webp",
+  "g": "/img/galerie/fr/t-05-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 6,
+  "name": "Les Amoureux",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-06-s.webp",
+  "g": "/img/galerie/fr/t-06-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 7,
+  "name": "Le Chariot",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-07-s.webp",
+  "g": "/img/galerie/fr/t-07-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 8,
+  "name": "La Force",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-08-s.webp",
+  "g": "/img/galerie/fr/t-08-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 9,
+  "name": "L'Ermite",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-09-s.webp",
+  "g": "/img/galerie/fr/t-09-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 10,
+  "name": "La Roue de Fortune",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-10-s.webp",
+  "g": "/img/galerie/fr/t-10-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 11,
+  "name": "La Justice",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-11-s.webp",
+  "g": "/img/galerie/fr/t-11-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 12,
+  "name": "Le Pendu",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-12-s.webp",
+  "g": "/img/galerie/fr/t-12-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 13,
+  "name": "La Mort",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-13-s.webp",
+  "g": "/img/galerie/fr/t-13-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 14,
+  "name": "La Tempérance",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-14-s.webp",
+  "g": "/img/galerie/fr/t-14-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 15,
+  "name": "Le Diable",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-15-s.webp",
+  "g": "/img/galerie/fr/t-15-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 16,
+  "name": "La Tour",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-16-s.webp",
+  "g": "/img/galerie/fr/t-16-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 17,
+  "name": "L'Étoile",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-17-s.webp",
+  "g": "/img/galerie/fr/t-17-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 18,
+  "name": "La Lune",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-18-s.webp",
+  "g": "/img/galerie/fr/t-18-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 19,
+  "name": "Le Soleil",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-19-s.webp",
+  "g": "/img/galerie/fr/t-19-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 20,
+  "name": "Le Jugement",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-20-s.webp",
+  "g": "/img/galerie/fr/t-20-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 21,
+  "name": "Le Monde",
+  "art": "Tarot · Arcanes majeurs",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-21-s.webp",
+  "g": "/img/galerie/fr/t-21-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 22,
+  "name": "As de Bâtons",
+  "art": "Tarot · Arcanes mineurs, Bâtons",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-22-s.webp",
+  "g": "/img/galerie/fr/t-22-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 23,
+  "name": "Deux de Bâtons",
+  "art": "Tarot · Arcanes mineurs, Bâtons",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-23-s.webp",
+  "g": "/img/galerie/fr/t-23-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 24,
+  "name": "Trois de Bâtons",
+  "art": "Tarot · Arcanes mineurs, Bâtons",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-24-s.webp",
+  "g": "/img/galerie/fr/t-24-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 25,
+  "name": "Quatre de Bâtons",
+  "art": "Tarot · Arcanes mineurs, Bâtons",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-25-s.webp",
+  "g": "/img/galerie/fr/t-25-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 26,
+  "name": "Cinq de Bâtons",
+  "art": "Tarot · Arcanes mineurs, Bâtons",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-26-s.webp",
+  "g": "/img/galerie/fr/t-26-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 27,
+  "name": "Six de Bâtons",
+  "art": "Tarot · Arcanes mineurs, Bâtons",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-27-s.webp",
+  "g": "/img/galerie/fr/t-27-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 28,
+  "name": "Sept de Bâtons",
+  "art": "Tarot · Arcanes mineurs, Bâtons",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-28-s.webp",
+  "g": "/img/galerie/fr/t-28-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 29,
+  "name": "Huit de Bâtons",
+  "art": "Tarot · Arcanes mineurs, Bâtons",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-29-s.webp",
+  "g": "/img/galerie/fr/t-29-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 30,
+  "name": "Neuf de Bâtons",
+  "art": "Tarot · Arcanes mineurs, Bâtons",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-30-s.webp",
+  "g": "/img/galerie/fr/t-30-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 31,
+  "name": "Dix de Bâtons",
+  "art": "Tarot · Arcanes mineurs, Bâtons",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-31-s.webp",
+  "g": "/img/galerie/fr/t-31-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 32,
+  "name": "Valet de Bâtons",
+  "art": "Tarot · Arcanes mineurs, Bâtons",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-32-s.webp",
+  "g": "/img/galerie/fr/t-32-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 33,
+  "name": "Cavalier de Bâtons",
+  "art": "Tarot · Arcanes mineurs, Bâtons",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-33-s.webp",
+  "g": "/img/galerie/fr/t-33-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 34,
+  "name": "Reine de Bâtons",
+  "art": "Tarot · Arcanes mineurs, Bâtons",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-34-s.webp",
+  "g": "/img/galerie/fr/t-34-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 35,
+  "name": "Roi de Bâtons",
+  "art": "Tarot · Arcanes mineurs, Bâtons",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-35-s.webp",
+  "g": "/img/galerie/fr/t-35-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 36,
+  "name": "As de Coupes",
+  "art": "Tarot · Arcanes mineurs, Coupes",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-36-s.webp",
+  "g": "/img/galerie/fr/t-36-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 37,
+  "name": "Deux de Coupes",
+  "art": "Tarot · Arcanes mineurs, Coupes",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-37-s.webp",
+  "g": "/img/galerie/fr/t-37-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 38,
+  "name": "Trois de Coupes",
+  "art": "Tarot · Arcanes mineurs, Coupes",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-38-s.webp",
+  "g": "/img/galerie/fr/t-38-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 39,
+  "name": "Quatre de Coupes",
+  "art": "Tarot · Arcanes mineurs, Coupes",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-39-s.webp",
+  "g": "/img/galerie/fr/t-39-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 40,
+  "name": "Cinq de Coupes",
+  "art": "Tarot · Arcanes mineurs, Coupes",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-40-s.webp",
+  "g": "/img/galerie/fr/t-40-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 41,
+  "name": "Six de Coupes",
+  "art": "Tarot · Arcanes mineurs, Coupes",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-41-s.webp",
+  "g": "/img/galerie/fr/t-41-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 42,
+  "name": "Sept de Coupes",
+  "art": "Tarot · Arcanes mineurs, Coupes",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-42-s.webp",
+  "g": "/img/galerie/fr/t-42-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 43,
+  "name": "Huit de Coupes",
+  "art": "Tarot · Arcanes mineurs, Coupes",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-43-s.webp",
+  "g": "/img/galerie/fr/t-43-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 44,
+  "name": "Neuf de Coupes",
+  "art": "Tarot · Arcanes mineurs, Coupes",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-44-s.webp",
+  "g": "/img/galerie/fr/t-44-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 45,
+  "name": "Dix de Coupes",
+  "art": "Tarot · Arcanes mineurs, Coupes",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-45-s.webp",
+  "g": "/img/galerie/fr/t-45-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 46,
+  "name": "Valet de Coupes",
+  "art": "Tarot · Arcanes mineurs, Coupes",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-46-s.webp",
+  "g": "/img/galerie/fr/t-46-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 47,
+  "name": "Cavalier de Coupes",
+  "art": "Tarot · Arcanes mineurs, Coupes",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-47-s.webp",
+  "g": "/img/galerie/fr/t-47-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 48,
+  "name": "Reine de Coupes",
+  "art": "Tarot · Arcanes mineurs, Coupes",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-48-s.webp",
+  "g": "/img/galerie/fr/t-48-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 49,
+  "name": "Roi de Coupes",
+  "art": "Tarot · Arcanes mineurs, Coupes",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-49-s.webp",
+  "g": "/img/galerie/fr/t-49-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 50,
+  "name": "As d'Épées",
+  "art": "Tarot · Arcanes mineurs, Épées",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-50-s.webp",
+  "g": "/img/galerie/fr/t-50-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 51,
+  "name": "Deux d'Épées",
+  "art": "Tarot · Arcanes mineurs, Épées",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-51-s.webp",
+  "g": "/img/galerie/fr/t-51-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 52,
+  "name": "Trois d'Épées",
+  "art": "Tarot · Arcanes mineurs, Épées",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-52-s.webp",
+  "g": "/img/galerie/fr/t-52-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 53,
+  "name": "Quatre d'Épées",
+  "art": "Tarot · Arcanes mineurs, Épées",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-53-s.webp",
+  "g": "/img/galerie/fr/t-53-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 54,
+  "name": "Cinq d'Épées",
+  "art": "Tarot · Arcanes mineurs, Épées",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-54-s.webp",
+  "g": "/img/galerie/fr/t-54-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 55,
+  "name": "Six d'Épées",
+  "art": "Tarot · Arcanes mineurs, Épées",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-55-s.webp",
+  "g": "/img/galerie/fr/t-55-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 56,
+  "name": "Sept d'Épées",
+  "art": "Tarot · Arcanes mineurs, Épées",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-56-s.webp",
+  "g": "/img/galerie/fr/t-56-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 57,
+  "name": "Huit d'Épées",
+  "art": "Tarot · Arcanes mineurs, Épées",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-57-s.webp",
+  "g": "/img/galerie/fr/t-57-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 58,
+  "name": "Neuf d'Épées",
+  "art": "Tarot · Arcanes mineurs, Épées",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-58-s.webp",
+  "g": "/img/galerie/fr/t-58-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 59,
+  "name": "Dix d'Épées",
+  "art": "Tarot · Arcanes mineurs, Épées",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-59-s.webp",
+  "g": "/img/galerie/fr/t-59-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 60,
+  "name": "Valet d'Épées",
+  "art": "Tarot · Arcanes mineurs, Épées",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-60-s.webp",
+  "g": "/img/galerie/fr/t-60-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 61,
+  "name": "Cavalier d'Épées",
+  "art": "Tarot · Arcanes mineurs, Épées",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-61-s.webp",
+  "g": "/img/galerie/fr/t-61-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 62,
+  "name": "Reine d'Épées",
+  "art": "Tarot · Arcanes mineurs, Épées",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-62-s.webp",
+  "g": "/img/galerie/fr/t-62-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 63,
+  "name": "Roi d'Épées",
+  "art": "Tarot · Arcanes mineurs, Épées",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-63-s.webp",
+  "g": "/img/galerie/fr/t-63-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 64,
+  "name": "As de Deniers",
+  "art": "Tarot · Arcanes mineurs, Deniers",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-64-s.webp",
+  "g": "/img/galerie/fr/t-64-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 65,
+  "name": "Deux de Deniers",
+  "art": "Tarot · Arcanes mineurs, Deniers",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-65-s.webp",
+  "g": "/img/galerie/fr/t-65-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 66,
+  "name": "Trois de Deniers",
+  "art": "Tarot · Arcanes mineurs, Deniers",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-66-s.webp",
+  "g": "/img/galerie/fr/t-66-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 67,
+  "name": "Quatre de Deniers",
+  "art": "Tarot · Arcanes mineurs, Deniers",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-67-s.webp",
+  "g": "/img/galerie/fr/t-67-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 68,
+  "name": "Cinq de Deniers",
+  "art": "Tarot · Arcanes mineurs, Deniers",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-68-s.webp",
+  "g": "/img/galerie/fr/t-68-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 69,
+  "name": "Six de Deniers",
+  "art": "Tarot · Arcanes mineurs, Deniers",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-69-s.webp",
+  "g": "/img/galerie/fr/t-69-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 70,
+  "name": "Sept de Deniers",
+  "art": "Tarot · Arcanes mineurs, Deniers",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-70-s.webp",
+  "g": "/img/galerie/fr/t-70-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 71,
+  "name": "Huit de Deniers",
+  "art": "Tarot · Arcanes mineurs, Deniers",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-71-s.webp",
+  "g": "/img/galerie/fr/t-71-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 72,
+  "name": "Neuf de Deniers",
+  "art": "Tarot · Arcanes mineurs, Deniers",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-72-s.webp",
+  "g": "/img/galerie/fr/t-72-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 73,
+  "name": "Dix de Deniers",
+  "art": "Tarot · Arcanes mineurs, Deniers",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-73-s.webp",
+  "g": "/img/galerie/fr/t-73-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 74,
+  "name": "Valet de Deniers",
+  "art": "Tarot · Arcanes mineurs, Deniers",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-74-s.webp",
+  "g": "/img/galerie/fr/t-74-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 75,
+  "name": "Cavalier de Deniers",
+  "art": "Tarot · Arcanes mineurs, Deniers",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-75-s.webp",
+  "g": "/img/galerie/fr/t-75-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 76,
+  "name": "Reine de Deniers",
+  "art": "Tarot · Arcanes mineurs, Deniers",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-76-s.webp",
+  "g": "/img/galerie/fr/t-76-g.webp"
+ },
+ {
+  "typ": "t",
+  "nr": 77,
+  "name": "Roi de Deniers",
+  "art": "Tarot · Arcanes mineurs, Deniers",
+  "kern": "Ce que signifie cette carte est expliqué dans le livre de Tarot sur deux pages de texte, plus une page pour tes notes.",
+  "s": "/img/galerie/fr/t-77-s.webp",
+  "g": "/img/galerie/fr/t-77-g.webp"
+ }
+]
