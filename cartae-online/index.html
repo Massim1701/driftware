@@ -465,13 +465,29 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
 .price .kopf h2{font-weight:700;font-size:clamp(2.4rem,6vw,3.6rem);letter-spacing:-.01em}
 @media (max-width:560px){.pill.gold{font-size:1.02rem;gap:8px;padding:0 14px 0 18px}.pill.gold .pfeil{margin-right:-6px}.hero-neu .k1{left:-1%}.hero-neu .k3{right:-1%}.pill{width:100%;max-width:340px;justify-content:center}.pill .pfeil{margin-right:-12px}.hero-neu .cta .reihe2{width:100%;flex-direction:column;align-items:center}}
 @media (prefers-reduced-motion:reduce){.hero-neu .k,.hero-neu .rv-n{animation:none;opacity:1;transform:translateY(var(--y,0)) rotate(var(--r,0))}.hero-neu .rv-n{transform:none}}
-.tarot-cover{margin:clamp(28px,5vw,64px) 0 clamp(16px,2.4vw,34px) clamp(8px,3vw,48px);width:clamp(150px,17vw,240px)}.tarot-cover img{display:block;width:100%;height:auto;border-radius:4px;transform:rotate(-5deg);box-shadow:0 14px 26px rgba(28,44,30,.38),0 4px 8px rgba(28,44,30,.26)}</style>
+.tarot-cover{margin:clamp(28px,5vw,64px) 0 clamp(16px,2.4vw,34px) clamp(8px,3vw,48px);width:clamp(150px,17vw,240px)}.tarot-cover img{display:block;width:100%;height:auto;border-radius:4px;transform:rotate(-5deg);box-shadow:0 14px 26px rgba(28,44,30,.38),0 4px 8px rgba(28,44,30,.26)}
+/* === Tageskarte im Hero: verdeckte Karten, antippen = umdrehen (26.11.) === */
+.hero-neu .hint{font-family:var(--serif);font-style:italic;font-size:clamp(1.05rem,2.2vw,1.3rem);color:#2C5A44;margin:0 0 clamp(10px,1.6vw,16px);min-height:1.5em}
+.hero-neu button.k{border:0;padding:0;cursor:pointer;overflow:visible;background:transparent;box-shadow:none;-webkit-tap-highlight-color:transparent;font:inherit}
+.hero-neu button.k:focus-visible{outline:2px solid rgba(184,145,63,.7);outline-offset:3px;border-radius:9px}
+.hero-neu .k .fl{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .9s var(--spring);border-radius:5.4%}
+.hero-neu .k .fl>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:5.4%;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:transparent;box-shadow:0 22px 34px -14px rgba(70,50,20,.42),0 8px 16px -8px rgba(70,50,20,.28)}
+.hero-neu .k .fl .vorn{transform:rotateY(180deg)}
+.hero-neu .k .fl .rueck{filter:none}
+.hero-neu button.k:hover .fl,.hero-neu button.k:focus-visible .fl{transform:translateY(-9px)}
+.hero-neu button.k.um .fl{transform:rotateY(180deg)}
+.hero-neu button.k.um{z-index:3}
+.hero-neu .faecher.gezogen button.k:not(.um) .fl{opacity:.4;transition:opacity .6s,transform .9s var(--spring)}
+.hero-neu .k.sofort .fl{transition:none}
+@media (prefers-reduced-motion:reduce){.hero-neu .k .fl{transition:none}}
+#tk .lb-acts{display:flex;flex-wrap:wrap;gap:10px}
+</style>
 </head>
 <body class="nojs">
 
 <header class="top">
   <a class="brand" href="#top"><svg viewBox="0 0 32 32" fill="none" stroke="#B8913F" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M21 5.5a11 11 0 1 0 5.5 18.3A9.5 9.5 0 0 1 21 5.5Z" fill="#E9CE8E" fill-opacity=".55"/><path d="M5 7l1.6 1.6M3.5 12h2.3M8 4v2.3"/></svg>Lenormand &amp; Tarot</a>
-  <nav id="hnav" aria-label="Hauptmenü"><a href="#buch">Bücher</a><a href="#karten">Karten</a><a href="#decks">Decks</a><a href="/en/" hreflang="en" lang="en">English</a><a href="/es/" hreflang="es" lang="es">Español</a><a href="/it/" hreflang="it" lang="it">Italiano</a><a href="/fr/" hreflang="fr" lang="fr">Français</a></nav><button type="button" class="menu" id="menu" aria-expanded="false" aria-controls="hnav" aria-label="Menü"><i></i><i></i></button>
+  <nav id="hnav" aria-label="Hauptmenü"><a href="#legung" data-hero-tk>Tageskarte</a><a href="/lernen/">Lernen</a><a href="#buch">Bücher</a><a href="#karten">Karten</a><a href="#decks">Decks</a><a href="/en/" hreflang="en" lang="en">English</a><a href="/es/" hreflang="es" lang="es">Español</a><a href="/it/" hreflang="it" lang="it">Italiano</a><a href="/fr/" hreflang="fr" lang="fr">Français</a></nav><button type="button" class="menu" id="menu" aria-expanded="false" aria-controls="hnav" aria-label="Menü"><i></i><i></i></button>
 </header>
 
 <main id="top">
@@ -480,14 +496,15 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
   <div class="foto links" aria-hidden="true"><img src="/img/hero-links.jpg" alt="" width="474" height="1320"></div>
   <div class="kerze" aria-hidden="true"></div>
   <div class="foto rechts" aria-hidden="true"><img src="/img/hero-rechts.jpg" alt="" width="618" height="954"></div>
-  <div class="faecher" aria-hidden="true">
-    <div class="k k1"><img src="/img/galerie/de/l-01-g.webp" alt="" width="560" height="866"></div>
-    <div class="k k2"><img src="/img/galerie/de/l-24-g.webp" alt="" width="560" height="866"></div>
-    <div class="k k3"><img src="/img/galerie/de/l-16-g.webp" alt="" width="560" height="866"></div>
+  <p class="hint rv-n d1" id="hint">Zieh deine Tageskarte. Tippe eine Karte an.</p>
+  <div class="faecher" id="faecher">
+    <button type="button" class="k k1" aria-label="Karte ziehen: erste Karte"><span class="fl"><img class="rueck" src="/img/rueckseite.webp" alt="" width="560" height="866"><img class="vorn" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="560" height="866"></span></button>
+    <button type="button" class="k k2" aria-label="Karte ziehen: zweite Karte"><span class="fl"><img class="rueck" src="/img/rueckseite.webp" alt="" width="560" height="866"><img class="vorn" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="560" height="866"></span></button>
+    <button type="button" class="k k3" aria-label="Karte ziehen: dritte Karte"><span class="fl"><img class="rueck" src="/img/rueckseite.webp" alt="" width="560" height="866"><img class="vorn" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="560" height="866"></span></button>
   </div>
   <h1 id="hero-h" class="rv-n d1">Lenormand &amp; Tarot</h1>
   <div class="zier rv-n d2" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#B8913F" aria-hidden="true"><path d="M12 1.5l2.1 8.4 8.4 2.1-8.4 2.1L12 22.5l-2.1-8.4L1.5 12l8.4-2.1z"/></svg></div>
-  <p class="tag rv-n d2">Klare Botschaften für dein Leben</p>
+  <p class="tag rv-n d2">Karten selbst legen und deuten lernen</p>
   <p class="lead-n rv-n d3">Entdecke die kraftvolle Symbolsprache von Lenormand und Tarot, für Orientierung, neue Impulse und mehr Klarheit in Alltag, Liebe, Beruf und Entscheidungen.</p>
   <div class="cta rv-n d4">
     <a class="pill gold" href="#karten" data-tk aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="11" height="15" rx="1.8" transform="rotate(-8 8.5 12.5)"/><rect x="9.5" y="3.5" width="11" height="15" rx="1.8" transform="rotate(6 15 11)"/><path d="M15 8.5l.9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/></svg><span>Tageskarte ziehen, kostenlos</span><span class="pfeil"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></span></a>
@@ -573,7 +590,7 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
 <section class="wall" id="karten" aria-labelledby="wall-h">
   <div class="head">
     <h2 id="wall-h" class="rv">Lenormand und Tarot in Aquarell.</h2>
-    <p class="rv" data-d="1">Alle 114 Karten, gratis zum Ausdrucken. Scrolle durch die Reihen und tippe eine Karte an, dann kommt sie nach vorn.</p>
+    <p class="rv" data-d="1">Alle 114 Karten, gratis zum Ausdrucken. Scrolle durch die Reihen und tippe eine Karte an, dann kommt sie nach vorn. <a href="/karten/" style="color:#244c39">Die Bedeutung jeder Lenormand-Karte nachlesen</a>.</p>
   </div>
   <div class="reihe" data-typ="l">
     <div class="reihe-kopf"><h3>Lenormand <span>36 Karten</span></h3></div>
@@ -636,7 +653,7 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
       <p class="lb-kw" id="tk-kw"></p>
       <p class="lb-kern" id="tk-kern"></p>
       <p class="lb-kern"><b>Rat der Karte:</b> <span id="tk-rat"></span></p>
-      <p class="lb-acts"><a class="btn alt" id="tk-mehr" href="#buch">Mehr zum Buch</a></p>
+      <p class="lb-acts"><button type="button" class="btn kauf" id="tk-teilen">Karte teilen</button> <a class="btn alt" id="tk-lernen" href="/lernen/">So deutest du sie selbst</a> <a class="btn alt" id="tk-mehr" href="#buch">Mehr zum Buch</a></p><p class="lb-kern" id="tk-teilen-info" role="status" aria-live="polite" style="font-size:.9rem"></p>
     </figcaption>
   </figure>
 </div>
@@ -859,6 +876,76 @@ document.body.classList.remove('nojs');
     bar.classList.toggle('zeigen',h<0&&!amBuch);
   }
   window.addEventListener('scroll',pruefen,{passive:true});window.addEventListener('resize',pruefen);pruefen();
+})();
+</script>
+<script>
+(function(){
+  var F=document.getElementById('faecher'),hint=document.getElementById('hint');
+  if(!F)return;
+  var K=null,pad=function(n){return (n<10?'0':'')+n;},heute=new Date().toISOString().slice(0,10);
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function laden(){return K?Promise.resolve(K):fetch('karten-daten.json').then(function(r){return r.json();}).then(function(d){K=d;return d;});}
+  function gespeichert(d){try{var m=JSON.parse(localStorage.getItem('cartae-tageskarte')||'null');if(m&&m.d===heute)return d.filter(function(x){return x.n===m.n;})[0]||null;}catch(e){}return null;}
+  function waehlen(d){var k=gespeichert(d);if(!k){k=d[Math.floor(Math.random()*d.length)];try{localStorage.setItem('cartae-tageskarte',JSON.stringify({d:heute,n:k.n}));}catch(e){}}return k;}
+  function bild(k){return '/img/k/karte-'+pad(k.n)+'.jpg?v=2';}
+  var knoepfe=[].slice.call(F.querySelectorAll('button.k'));
+  function auf(btn,k,sofort){
+    var vo=btn.querySelector('.vorn');vo.src=bild(k);vo.alt=k.name;
+    if(sofort)btn.classList.add('sofort');
+    btn.classList.add('um');F.classList.add('gezogen');
+    btn.setAttribute('aria-label','Deine Tageskarte: '+k.name);
+  }
+  function dialog(){var a=document.querySelector('.pill.gold[data-tk]');if(a)a.click();}
+  knoepfe.forEach(function(btn){
+    btn.addEventListener('click',function(){
+      laden().then(function(d){
+        var k=waehlen(d);
+        if(btn.classList.contains('um')){dialog();return;}
+        if(F.classList.contains('gezogen')){
+          // Es gibt nur eine Tageskarte pro Tag: andere Karten drehen sich nicht um
+          if(hint)hint.textContent='Pro Tag gibt es eine Karte. Deine: '+k.name+'. Tippe sie an.';
+          return;
+        }
+        auf(btn,k,false);
+        if(hint)hint.textContent='Deine Tageskarte: '+k.name;
+        setTimeout(dialog,reduce?0:900);
+      }).catch(function(){dialog();});
+    });
+  });
+  // Wer heute schon gezogen hat, sieht die Karte sofort
+  laden().then(function(d){
+    var k=gespeichert(d);
+    if(k){auf(knoepfe[1],k,true);if(hint)hint.textContent='Deine Tageskarte heute: '+k.name+'. Tippe sie an.';}
+  }).catch(function(){});
+  var nav=document.querySelector('[data-hero-tk]');
+  if(nav)nav.addEventListener('click',function(){});
+  // Karte teilen: Bild bauen, Teilen-Menue oder Download
+  var tb=document.getElementById('tk-teilen'),info=document.getElementById('tk-teilen-info');
+  if(tb)tb.addEventListener('click',function(){
+    laden().then(function(d){
+      var k=gespeichert(d);if(!k)return;
+      var im=new Image();im.onload=function(){
+        var W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');
+        var g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#F7F0E2');g.addColorStop(1,'#E8D9BC');x.fillStyle=g;x.fillRect(0,0,W,H);
+        var ch=1000,cw=ch*im.width/im.height,cx=(W-cw)/2,cy=60;
+        x.shadowColor='rgba(70,50,20,.35)';x.shadowBlur=40;x.shadowOffsetY=18;x.drawImage(im,cx,cy,cw,ch);x.shadowColor='transparent';
+        x.textAlign='center';x.fillStyle='#1F4130';x.font='italic 500 64px Georgia,serif';x.fillText('Meine Tageskarte: '+k.name,W/2,1180);
+        x.fillStyle='#8A6A25';x.font='600 44px Georgia,serif';x.fillText('Zieh deine auf cartae.online',W/2,1255);
+        c.toBlob(function(bl){
+          if(!bl)return;
+          var f=new File([bl],'cartae-tageskarte.png',{type:'image/png'});
+          var text='Meine Tageskarte: '+k.name+'. Zieh deine auf cartae.online';
+          if(navigator.canShare&&navigator.canShare({files:[f]})){
+            navigator.share({files:[f],title:'Cartae Tageskarte',text:text,url:'https://cartae.online/'}).catch(function(){});
+          }else{
+            var u=URL.createObjectURL(bl),a=document.createElement('a');a.href=u;a.download='cartae-tageskarte.png';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},4000);
+            if(info)info.textContent='Das Bild wurde gespeichert. Du kannst es jetzt überall teilen.';
+          }
+        },'image/png');
+      };
+      im.crossOrigin='anonymous';im.src=bild(k);
+    });
+  });
 })();
 </script>
 </body>
