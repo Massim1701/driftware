@@ -431,6 +431,8 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
 .hero-neu .hv::after{content:"";position:absolute;inset:0;background:radial-gradient(70% 60% at 50% 48%,rgba(251,246,236,.82),rgba(251,246,236,.35) 70%,rgba(251,246,236,.55))}
 .hero-neu .foto.rechts{display:none}
 @media (prefers-reduced-motion:reduce){.hero-neu .hv video{display:none}}
+.hero-neu .probe{display:inline-block;margin-top:2px;font-size:var(--step-small,.95rem);color:var(--sage);text-decoration:underline;text-underline-offset:3px}
+.hero-neu .probe:hover{color:var(--gold-d)}
 .hero-neu .foto{position:absolute;pointer-events:none;z-index:0;opacity:0;animation:foto-ein 1.6s var(--spring) .1s forwards}
 .hero-neu .foto img{display:block;width:100%;height:100%;object-fit:cover}
 .hero-neu .foto.links{left:0;top:10%;height:56%;aspect-ratio:158/440;-webkit-mask-image:linear-gradient(90deg,#000 55%,transparent 100%),linear-gradient(180deg,transparent 0,#000 12%,#000 80%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,#000 55%,transparent 100%),linear-gradient(180deg,transparent 0,#000 12%,#000 80%,transparent 100%);mask-composite:intersect;transform-origin:0 100%;animation:foto-ein 1.6s var(--spring) .1s forwards,wiegen 9s ease-in-out 1.7s infinite alternate}
@@ -496,6 +498,7 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
       <a class="pill gruen" href="#baraja"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M4.5 19.5h15"/></svg><span>Télécharge les cartes gratuitement</span></a>
       <a class="pill rand" href="#libro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5ZM12 6.5v13"/></svg><span>Voir le livre</span></a>
     </div>
+    <a class="probe" href="lenormand-extrait.pdf?v=3" target="_blank" rel="noopener">Lire un extrait gratuit (PDF)</a>
   </div>
 </section>
 
@@ -518,7 +521,7 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
         
         <div class="acts">
           <a class="btn kauf" href="/api/kaufen?p=lenormand-fr">Acheter maintenant, 15 €</a>
-          <a class="btn alt" href="lenormand-extrait.pdf?v=1" target="_blank" rel="noopener">Extrait</a>
+          <a class="btn alt" href="lenormand-extrait.pdf?v=3" target="_blank" rel="noopener">Extrait</a>
         </div>
       </div></div></div>
     </article>
@@ -535,7 +538,7 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
         <p class="proseite">PDF uniquement, à imprimer toi-même.</p>
         <div class="acts">
           <a class="btn kauf" href="/api/kaufen?p=tarot-fr">Acheter maintenant, 20 €</a>
-          <a class="btn alt" href="tarot-extrait.pdf?v=1" target="_blank" rel="noopener">Extrait</a>
+          <a class="btn alt" href="tarot-extrait.pdf?v=3" target="_blank" rel="noopener">Extrait</a>
         </div>
         <p class="klein"><a href="#tarot-drucken">Comment imprimer le livre toi-même</a></p>
       </div></div></div>
