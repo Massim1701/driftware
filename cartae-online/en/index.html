@@ -471,6 +471,12 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
 @media (max-width:560px){.pill.gold{font-size:1.02rem;gap:8px;padding:0 14px 0 18px}.pill.gold .pfeil{margin-right:-6px}.hero-neu .k1{left:-1%}.hero-neu .k3{right:-1%}.pill{width:100%;max-width:340px;justify-content:center}.pill .pfeil{margin-right:-12px}.hero-neu .cta .reihe2{width:100%;flex-direction:column;align-items:center}}
 @media (prefers-reduced-motion:reduce){.hero-neu .k,.hero-neu .rv-n{animation:none;opacity:1;transform:translateY(var(--y,0)) rotate(var(--r,0))}.hero-neu .rv-n{transform:none}}
 .tarot-cover{margin:clamp(28px,5vw,64px) 0 clamp(16px,2.4vw,34px) clamp(8px,3vw,48px);width:clamp(150px,17vw,240px)}.tarot-cover img{display:block;width:100%;height:auto;border-radius:4px;transform:rotate(-5deg);box-shadow:0 14px 26px rgba(28,44,30,.38),0 4px 8px rgba(28,44,30,.26)}</style>
+<style>
+html[data-cur="usd"] .fig .cur,html[data-cur="usd"] .paket-preis .cur,html[data-cur="gbp"] .fig .cur,html[data-cur="gbp"] .paket-preis .cur{order:-1;margin-left:0;margin-right:.08em}
+.curswitch{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 auto 22px;font-size:.9rem;color:var(--soft)}
+.curswitch button{font:inherit;min-width:44px;min-height:36px;padding:0 12px;border-radius:999px;border:1px solid rgba(184,145,63,.55);background:#fffdf8;color:var(--ink);cursor:pointer}
+.curswitch button[aria-pressed="true"]{background:var(--sage);border-color:var(--sage);color:#fff}
+</style>
 </head>
 <body class="nojs">
 
@@ -510,6 +516,7 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
     <p class="txt">Lenormand and Tarot, each as a PDF you can read at once. The cards are free.</p>
   </div>
 
+<div class="curswitch" role="group" aria-label="Currency"><span>Prices in</span><button type="button" data-c="eur" aria-pressed="true">€ EUR</button><button type="button" data-c="usd" aria-pressed="false">$ USD</button><button type="button" data-c="gbp" aria-pressed="false">£ GBP</button></div>
   <div class="buecher">
     <article class="buch rv" aria-label="36 Keys to the Invisible">
       <div class="rahmen"><div class="passepartout"><div class="blatt">
@@ -865,6 +872,45 @@ document.body.classList.remove('nojs');
     bar.classList.toggle('zeigen',h<0&&!amBuch);
   }
   window.addEventListener('scroll',pruefen,{passive:true});window.addEventListener('resize',pruefen);pruefen();
+})();
+</script>
+<script>
+(function(){
+  var P={15:{eur:15,usd:17,gbp:13},20:{eur:20,usd:22,gbp:17},35:{eur:35,usd:38,gbp:29}},S={eur:'€',usd:'$',gbp:'£'},cur='eur';
+  function sym(n,c){var x=P[n];return x?S[c]+x[c]:null;}
+  function setText(el){
+    // Preis im Knopftext: "€15" aus dem Originaltext, bleibt als Vorlage in data-orig
+    if(!el.dataset.orig)el.dataset.orig=el.textContent;
+    el.textContent=el.dataset.orig.replace(/€(15|20|35)/g,function(m,n){return sym(+n,cur);});
+  }
+  function apply(c){
+    cur=c;
+    [].forEach.call(document.querySelectorAll('.fig .n,.paket-preis .n'),function(n){
+      if(!n.dataset.eur)n.dataset.eur=n.textContent.trim();
+      var v=P[+n.dataset.eur];if(!v)return;
+      n.textContent=v[c];
+      var s=n.nextElementSibling;if(s&&s.classList.contains('cur'))s.textContent=S[c];
+    });
+    [].forEach.call(document.querySelectorAll('a.kauf'),setText);
+    [].forEach.call(document.querySelectorAll('.curswitch button'),function(b){b.setAttribute('aria-pressed',b.dataset.c===c?'true':'false');});
+    document.documentElement.setAttribute('data-cur',c);
+  }
+  // Kaufknopf: Waehrung beim Klick anhaengen (auch fuer den Dialog, dessen Link sich aendert)
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('a[href^="/api/kaufen"]');if(!a)return;
+    var h=a.getAttribute('href').replace(/&c=[a-z]{3}/,'');a.setAttribute('href',h+'&c='+cur);
+  },true);
+  // Dialog: Text im Kaufknopf der Grossansicht wird per Script gesetzt, danach umrechnen
+  var lb=document.getElementById('lb-kauf');
+  if(lb&&window.MutationObserver){new MutationObserver(function(){
+    var t=lb.textContent;if(/€(15|20|35)/.test(t)){lb.dataset.orig=t;lb.textContent=t.replace(/€(15|20|35)/g,function(m,n){return sym(+n,cur);});}
+  }).observe(lb,{childList:true,characterData:true,subtree:true});}
+  [].forEach.call(document.querySelectorAll('.curswitch button'),function(b){
+    b.addEventListener('click',function(){try{localStorage.setItem('cartae-cur',b.dataset.c);}catch(e){}apply(b.dataset.c);});
+  });
+  var saved=null;try{saved=localStorage.getItem('cartae-cur');}catch(e){}
+  if(saved&&S[saved]){apply(saved);return;}
+  fetch('/api/waehrung',{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){if(j&&S[j.c])apply(j.c);}).catch(function(){});
 })();
 </script>
 </body>
