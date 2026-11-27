@@ -426,6 +426,11 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
 .pill.gruen:hover{background:#2c5a44}
 .pill.rand{border-color:rgba(44,90,68,.55);color:#244c39;background:rgba(255,255,255,.35)}
 .pill.rand:hover{background:rgba(255,255,255,.8)}
+.hero-neu .hv{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.hero-neu .hv video{width:100%;height:100%;object-fit:cover;opacity:.55;filter:saturate(.9)}
+.hero-neu .hv::after{content:"";position:absolute;inset:0;background:radial-gradient(70% 60% at 50% 48%,rgba(251,246,236,.82),rgba(251,246,236,.35) 70%,rgba(251,246,236,.55))}
+.hero-neu .foto.rechts{display:none}
+@media (prefers-reduced-motion:reduce){.hero-neu .hv video{display:none}}
 .hero-neu .foto{position:absolute;pointer-events:none;z-index:0;opacity:0;animation:foto-ein 1.6s var(--spring) .1s forwards}
 .hero-neu .foto img{display:block;width:100%;height:100%;object-fit:cover}
 .hero-neu .foto.links{left:0;top:10%;height:56%;aspect-ratio:158/440;-webkit-mask-image:linear-gradient(90deg,#000 55%,transparent 100%),linear-gradient(180deg,transparent 0,#000 12%,#000 80%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,#000 55%,transparent 100%),linear-gradient(180deg,transparent 0,#000 12%,#000 80%,transparent 100%);mask-composite:intersect;transform-origin:0 100%;animation:foto-ein 1.6s var(--spring) .1s forwards,wiegen 9s ease-in-out 1.7s infinite alternate}
@@ -435,7 +440,7 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
 @keyframes wiegen{from{transform:rotate(-.8deg) scale(1)}to{transform:rotate(1deg) scale(1.025)}}
 @keyframes gleiten{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(-8px,6px,0) scale(1.03)}}
 @keyframes flackern{from{opacity:.45;transform:scale(.96)}to{opacity:.9;transform:scale(1.06)}}
-.hero-neu>*:not(.foto):not(.kerze){position:relative;z-index:1}
+.hero-neu>*:not(.foto):not(.kerze):not(.hv){position:relative;z-index:1}
 @media (max-width:560px){.hero-neu .foto.links{height:50%;top:12%}.hero-neu .foto.rechts{height:30%}}
 @media (prefers-reduced-motion:reduce){.hero-neu .foto,.hero-neu .kerze{animation:none;opacity:1}}
 .top .menu{display:none}
@@ -472,6 +477,7 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
 <main id="top">
 
 <section class="hero-neu" id="legung" aria-labelledby="hero-h">
+  <div class="hv" aria-hidden="true"><video autoplay muted loop playsinline preload="auto" poster="/img/hero-hand-poster.jpg"><source src="/img/hero-hand.mp4" type="video/mp4"></video></div>
   <div class="foto links" aria-hidden="true"><img src="/img/hero-links.jpg" alt="" width="474" height="1320"></div>
   <div class="kerze" aria-hidden="true"></div>
   <div class="foto rechts" aria-hidden="true"><img src="/img/hero-rechts.jpg" alt="" width="618" height="954"></div>
@@ -682,13 +688,13 @@ h1,h2,h3,.brand{font-family:var(--serif);letter-spacing:-.01em}
   <div class="mark" role="img" aria-label="Cartae"><span>C</span><span>A</span><span>R</span><span>T</span><span>A</span><span>E</span></div>
   <div class="cols">
     <div><a href="#cartas">Cartes</a><a href="#libro">Livre</a></div>
-    <div><a href="#baraja">Jeu</a><a href="mailto:info@driftware.online">Contact</a></div>
+    <div><a href="#baraja">Jeu</a><a href="/cdn-cgi/l/email-protection#c7aea9a1a887a3b5aea1b3b0a6b5a2e9a8a9abaea9a2">Contact</a></div>
     <div><a href="/fr/confidentialite/">Confidentialité</a><a href="/fr/avertissement/">Avertissement sur les cartes</a><a href="/impressum.html">Mentions légales (allemand)</a></div>
-    <div><a href="/fr/conditions/">Conditions de vente</a><a href="/fr/retractation/">Rétractation</a><p style="margin-top:.8em;color:#C4D0C8">Questions : info@driftware.online</p></div>
+    <div><a href="/fr/conditions/">Conditions de vente</a><a href="/fr/retractation/">Rétractation</a><p style="margin-top:.8em;color:#C4D0C8">Questions : <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="61080f070e210513080715160013044f0e0f0d080f04">[email&#160;protected]</a></p></div>
   </div>
   <div class="last"><span>© 2026 Driftware. Cartae est un produit de <a href="https://driftware.online/" style="color:inherit">Driftware</a>.</span><a class="btn" href="#top">Haut de page</a></div>
 </footer>
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 document.body.classList.remove('nojs');
 (function(){
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
